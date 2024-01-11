@@ -1,6 +1,6 @@
 rootProject.name = "Template-library-with-app"
 include(":composeApp")
-include(":templateLibrary")
+include(":KMaP")
 includeBuild("convention-plugins")
 
 pluginManagement {

@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.multiplatform)
     alias(libs.plugins.android.library)
+    alias(libs.plugins.compose)
     id("convention.publication")
 }
 
@@ -22,7 +23,7 @@ kotlin {
     js {
         browser {
             webpackTask {
-                mainOutputFileName = "templateLibrary.js"
+                mainOutputFileName = "KMaP.js"
             }
         }
         binaries.executable()
@@ -34,13 +35,18 @@ kotlin {
         iosSimulatorArm64()
     ).forEach {
         it.binaries.framework {
-            baseName = "templateLibrary"
+            baseName = "KMaP"
             isStatic = true
         }
     }
 
     sourceSets {
         commonMain.dependencies {
+            implementation(compose.runtime)
+            implementation(compose.material3)
+            implementation(compose.materialIconsExtended)
+            @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+            implementation(compose.components.resources)
         }
 
         commonTest.dependencies {
@@ -57,7 +63,7 @@ kotlin {
 }
 
 android {
-    namespace = "io.github.rafambn.templatelibrary"
+    namespace = "io.github.rafambn.KMaP"
     compileSdk = 34
 
     defaultConfig {
