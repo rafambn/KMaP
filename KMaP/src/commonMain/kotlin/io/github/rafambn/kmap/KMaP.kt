@@ -12,10 +12,9 @@ fun KMaP(
     content: @Composable () -> Unit = {}
 ) {
 
-    MapPlacements(modifier) {
+    CameraState(modifier) {
+
         TileCanvas(Modifier, 200F)
-
-
 
     }
 //    ZoomPanRotate(

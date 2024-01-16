@@ -19,12 +19,8 @@ import kotlin.random.Random
 @Composable
 internal fun TileCanvas(
     modifier: Modifier,
-//    tilesToRender: List<Tile>,
     tileSize: Float
 ) {
-    val subSample = remember { mutableStateOf(0F) }
-    val flingSpec = rememberSplineBasedDecay<Offset>()
-
 
     val listTiles = mutableListOf<Tile>()
 
@@ -37,40 +33,13 @@ internal fun TileCanvas(
     Canvas(
         modifier = modifier
             .fillMaxSize()
-            .pointerInput(true) {
-                detectMapGestures(
-                    onTap = { offset -> println("onTap $offset")},
-                    onDoubleTap = { offset ->  println("onDoubleTap $offset")},
-                    onTwoFingersTap = { offset -> println("onTwoFingersTap $offset")},
-                    onLongPress = { offset -> println("onLongPress $offset") },
-                    onTapLongPress = { offset ->  println("onTapLongPress $offset")},
-                    onTapSwipe = { offset -> println("onTapSwipe $offset") },
-                    onGesture = { centroid, pan, zoom, rotation -> println("onGesture $centroid $pan $zoom $rotation")},
-                    onDrag = { dragAmount -> println("onDrag $dragAmount") },
-                    onDragStart = { offset ->  println("onDragStart $offset")},
-                    onDragEnd = { println("onDragEnd") },
-                    onFling = { velocity ->  println("onFling $velocity")},
-                    onFlingZoom = { velocity -> println("onFlingZoom $velocity") },
-                    onFlingRotation = { velocity ->  println("onFlingRotation $velocity")},
-                    onHover = { offset -> },
-                    onScroll = { offset ->  }
-                )
-            }
     ) {
-        withTransform({
-//            rotate(
-//                )
-//            translate(left = -zoomPRState.scrollX, top = -zoomPRState.scrollY)
-//            scale(1F, 2.5F, Offset.Zero)
-        }) {
-
-            drawIntoCanvas {
-                for (tile in listTiles) {
-                    it.drawRect(tileSize * tile.col, tileSize * tile.row, tileSize * tile.col + tileSize, tileSize * tile.row + tileSize, Paint().apply {
-                        color = generateRandomColor()
-                        isAntiAlias = false
-                    })
-                }
+        drawIntoCanvas {
+            for (tile in listTiles) {
+                it.drawRect(tileSize * tile.col, tileSize * tile.row, tileSize * tile.col + tileSize, tileSize * tile.row + tileSize, Paint().apply {
+                    color = generateRandomColor()
+                    isAntiAlias = false
+                })
             }
         }
     }

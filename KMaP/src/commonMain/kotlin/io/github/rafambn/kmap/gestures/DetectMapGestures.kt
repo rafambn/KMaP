@@ -6,7 +6,6 @@ import androidx.compose.foundation.gestures.calculateCentroidSize
 import androidx.compose.foundation.gestures.calculatePan
 import androidx.compose.foundation.gestures.calculateRotation
 import androidx.compose.foundation.gestures.calculateZoom
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
 import androidx.compose.ui.input.pointer.PointerEvent
@@ -106,6 +105,7 @@ internal suspend fun PointerInputScope.detectMapGestures(   //TODO There are pro
                     event = tempEvent
                 } catch (_: PointerEventTimeoutCancellationException) {
                     hasTimeOut = true
+                    previousEvent = event
                 }
             }
 
@@ -264,7 +264,7 @@ internal suspend fun PointerInputScope.detectMapGestures(   //TODO There are pro
 
             if (eventChanges.any { it == GestureChangeState.RELEASE } && gestureState == GestureState.CTRL) {
                 gestureState = GestureState.HOVER
-                handleGestureWithCtrl(previousEvent, firstCtrlEvent!!) { zoomChange, rotationChange, _ ->
+                handleGestureWithCtrl(event, previousEvent, firstCtrlEvent!!, touchSlop) { zoomChange, rotationChange, _ ->
                     val zoomVelocity = abs(zoomChange - 1) / (previousEvent.changes[0].uptimeMillis - previousEvent.changes[0].previousUptimeMillis)
                     val rotationVelocity = abs(rotationChange) / (previousEvent.changes[0].uptimeMillis - previousEvent.changes[0].previousUptimeMillis)
 
@@ -324,14 +324,14 @@ internal suspend fun PointerInputScope.detectMapGestures(   //TODO There are pro
 
             //Finally, here are the gestures
             if (gestureState == GestureState.CTRL) {
-                handleGestureWithCtrl(event, firstCtrlEvent!!) { zoomChange, rotationChange, centroidSize ->
+                handleGestureWithCtrl(event, previousEvent, firstCtrlEvent!!, touchSlop) { zoomChange, rotationChange, centroidSize ->
                     onGesture.invoke(centroidSize, null, zoomChange, rotationChange)
                 }
                 continue
             }
 
             if (gestureState == GestureState.DRAG) {
-                onDrag.invoke(event.changes[0].position - event.changes[0].previousPosition)
+                onDrag.invoke(event.changes[0].position - previousEvent.changes[0].position)
                 continue
             }
 
@@ -346,12 +346,12 @@ internal suspend fun PointerInputScope.detectMapGestures(   //TODO There are pro
             }
 
             if (gestureState == GestureState.TAP_LONG_PRESS) {
-                onTapLongPress?.invoke(event.changes[0].position - event.changes[0].previousPosition)
+                onTapLongPress?.invoke(event.changes[0].position - previousEvent.changes[0].position)
                 continue
             }
 
             if (gestureState == GestureState.TAP_MAP) {
-                onTapSwipe?.invoke(event.changes[0].position - event.changes[0].previousPosition)
+                onTapSwipe?.invoke(event.changes[0].position - previousEvent.changes[0].position)
                 continue
             }
 
@@ -440,72 +440,46 @@ internal suspend fun AwaitPointerEventScope.awaitAllPointersUp() {
 
 fun handleGestureWithCtrl(
     event: PointerEvent,
+    previousEvent: PointerEvent,
     firstCtrlEvent: PointerEvent,
+    touchSlop: Float,
     result: (
         zoomChange: Float,
         rotationChange: Float, centroid: Offset
     ) -> Unit
 ) {
-    val zoomChange = event.calculateZoomWithCtrl(firstCtrlEvent)
-    val rotationChange = event.calculateRotationWithCtrl(firstCtrlEvent)
-    val centroidSize = event.calculateCentroidWithCtrl(true, firstCtrlEvent)
-    result(zoomChange, rotationChange, centroidSize)
+    val zoomChange = firstCtrlEvent.calculateZoomWithCtrl(previousEvent, event)
+    val rotationChange = firstCtrlEvent.calculateRotationWithCtrl(previousEvent, event)
+    val centroidSize = firstCtrlEvent.calculateCentroidWithCtrl(event)
+
+    if (touchSlop < centroidSize.getDistance())
+        result(zoomChange, rotationChange, centroidSize)
+    else
+        result(1F, 0F, Offset.Zero)
 }
 
-fun PointerEvent.calculateZoomWithCtrl(firstCtrlEvent: PointerEvent): Float {
-    val currentCentroidSize = calculateCentroidSizeWithCtrl(true, firstCtrlEvent)
-    val previousCentroidSize = calculateCentroidSizeWithCtrl(false, firstCtrlEvent)
+fun PointerEvent.calculateZoomWithCtrl(previousEvent: PointerEvent, currentEvent: PointerEvent): Float {
+    val currentCentroidSize = this.calculateCentroidWithCtrl(currentEvent).getDistance()
+    val previousCentroidSize = this.calculateCentroidWithCtrl(previousEvent).getDistance()
+
     if (currentCentroidSize == 0f || previousCentroidSize == 0f) {
         return 1f
     }
     return currentCentroidSize / previousCentroidSize
 }
 
-fun PointerEvent.calculateRotationWithCtrl(firstCtrlEvent: PointerEvent): Float {
-    var rotation = 0f
-    if (changes[0].pressed && changes[0].previousPressed) {
-        val currentCentroid = changes[0].position - firstCtrlEvent.changes[0].position
-        val previousCentroid = changes[0].previousPosition - firstCtrlEvent.changes[0].position
+fun PointerEvent.calculateRotationWithCtrl(previousEvent: PointerEvent, currentEvent: PointerEvent): Float {
+    val currentCentroid = this.calculateCentroidWithCtrl(currentEvent)
+    val previousCentroid = this.calculateCentroidWithCtrl(previousEvent)
 
-        rotation = previousCentroid.angle() - currentCentroid.angle()
-        rotation = when {
-            rotation > 180f -> rotation - 360f
-            rotation < -180f -> rotation + 360f
-            else -> rotation
-        }
-    }
-
-    return rotation
+    return previousCentroid.angle() - currentCentroid.angle()
 }
 
 private fun Offset.angle(): Float =
     if (x == 0f && y == 0f) 0f else -atan2(x, y) * 180f / PI.toFloat()
 
-fun PointerEvent.calculateCentroidSizeWithCtrl(useCurrent: Boolean = true, firstCtrlEvent: PointerEvent): Float {
-    val centroid = firstCtrlEvent.changes[0].position
-    if (centroid == Offset.Unspecified) {
-        return 0f
-    }
-
-    var distanceToCentroid = 0f
-    var distanceWeight = 0
-    changes.forEach { change ->
-        if (change.pressed && change.previousPressed) {
-            val position = if (useCurrent) change.position else change.previousPosition
-            distanceToCentroid += (position - centroid).getDistance()
-            distanceWeight++
-        }
-    }
-    if (distanceWeight == 0)
-        return 0F
-    return distanceToCentroid / distanceWeight.toFloat()
-}
-
 fun PointerEvent.calculateCentroidWithCtrl(
-    useCurrent: Boolean = true,
-    firstCtrlEvent: PointerEvent
+    currentEvent: PointerEvent
 ): Offset {
-    val position = if (useCurrent) changes[0].position else changes[0].previousPosition
-
-    return position - firstCtrlEvent.changes[0].position
+    return currentEvent.changes[0].position - this.changes[0].position
 }
