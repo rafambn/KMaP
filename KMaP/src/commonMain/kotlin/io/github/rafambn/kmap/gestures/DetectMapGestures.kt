@@ -1,4 +1,4 @@
-package io.github.rafambn.kmap
+package io.github.rafambn.kmap.gestures
 
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.calculateCentroid
@@ -6,6 +6,7 @@ import androidx.compose.foundation.gestures.calculateCentroidSize
 import androidx.compose.foundation.gestures.calculatePan
 import androidx.compose.foundation.gestures.calculateRotation
 import androidx.compose.foundation.gestures.calculateZoom
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
 import androidx.compose.ui.input.pointer.PointerEvent
@@ -23,7 +24,10 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.atan2
 
-internal suspend fun PointerInputScope.detectMapGestures(
+/**
+ * [detectMapGestures] detects all kinds of gestures needed for KMaP
+ */
+internal suspend fun PointerInputScope.detectMapGestures(   //TODO There are probably a lot of optimization or better ways to implements this function.
     onTap: ((Offset) -> Unit)?,
     onDoubleTap: ((Offset) -> Unit)?,
     onTwoFingersTap: ((Offset) -> Unit)?,
@@ -73,7 +77,6 @@ internal suspend fun PointerInputScope.detectMapGestures(
                 } while (this@coroutineScope.isActive)
             }
         }
-
 
     awaitMapGesture {
         lateinit var event: PointerEvent
@@ -189,7 +192,7 @@ internal suspend fun PointerInputScope.detectMapGestures(
                 if (event.type == PointerEventType.Move) {
                     panSlop += event.calculatePan()
                     if (panSlop.getDistance() > touchSlop) {
-                        gestureState = GestureState.TAP_SWIPE
+                        gestureState = GestureState.TAP_MAP
                         panSlop = Offset.Zero
                     }
                     continue
@@ -298,7 +301,7 @@ internal suspend fun PointerInputScope.detectMapGestures(
                 continue
             }
 
-            if (gestureState == GestureState.TAP_SWIPE && event.changes.all { !it.pressed }) {
+            if (gestureState == GestureState.TAP_MAP && event.changes.all { !it.pressed }) {
                 onFling.invoke(
                     abs(
                         event.calculatePan().getDistance()
@@ -347,7 +350,7 @@ internal suspend fun PointerInputScope.detectMapGestures(
                 continue
             }
 
-            if (gestureState == GestureState.TAP_SWIPE) {
+            if (gestureState == GestureState.TAP_MAP) {
                 onTapSwipe?.invoke(event.changes[0].position - event.changes[0].previousPosition)
                 continue
             }
@@ -356,8 +359,10 @@ internal suspend fun PointerInputScope.detectMapGestures(
     }
 }
 
-
-fun getGestureStateChanges(
+/**
+ * [getGestureStateChanges] detects what type of change happened from the last input to the new one.
+ */
+fun getGestureStateChanges( //TODO Verify if its possible to use only the parameters of PointerEvent to represent this states
     currentEvent: PointerEvent,
     previousEvent: PointerEvent
 ): List<GestureChangeState> {
@@ -391,12 +396,9 @@ fun getGestureStateChanges(
     return gestureChangeStates
 }
 
-
 /**
  * [awaitMapGesture] is a version of [awaitEachGesture] where after the gestures ends it does
- * not [awaitAllPointersUp]. This is necessary because the implementation of [detectMapGestures]
- * needs to change smoothly between [androidx.compose.foundation.gestures.detectTransformGestures]
- * and [androidx.compose.foundation.gestures.detectDragGestures] when a finger is released.
+ * not [awaitAllPointersUp].
  *
  * Repeatedly calls [block] to handle gestures. If there is a [CancellationException],
  * it will wait until all pointers are raised before another gesture is detected, or it
