@@ -1,18 +1,18 @@
 package io.github.rafambn.kmap
 
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 @Composable
 fun KMaP(
     modifier: Modifier = Modifier,
-//    cameraState: CameraState,
-//    mapProperties: MapProperties,
-//    gestures: MapGestures,
+//    cameraState: CameraState = rememberCameraState(),
     content: @Composable () -> Unit = {}
 ) {
 
-    CameraState(modifier) {
+
+    MotionManager(modifier) {
 
         TileCanvas(Modifier, 200F)
 

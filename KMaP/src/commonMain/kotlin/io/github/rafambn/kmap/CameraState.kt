@@ -1,73 +1,42 @@
 package io.github.rafambn.kmap
 
-import androidx.compose.animation.rememberSplineBasedDecay
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.withTransform
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.Layout
-import io.github.rafambn.kmap.gestures.detectMapGestures
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
-@Composable
-internal fun CameraState(
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
+
+class CameraState(
+    startPosition: Offset = Offset.Zero,
+    zoom: Float = 0F,
+    rotation: Float = 0F
 ) {
+    private val _isMoving = MutableStateFlow(false)
+    val isMoving = _isMoving.asStateFlow()
 
-    var topLeft = mutableStateOf(Offset(0F, 0F))
-    var scale = mutableStateOf(1F)
-    var angle = mutableStateOf(0F)
-    val flingSpec = rememberSplineBasedDecay<Offset>()
+    private var _rawPosition = MutableStateFlow(startPosition)
+    val rawPosition = _rawPosition.asStateFlow()
 
+    private var _rawZoom = MutableStateFlow(zoom)
+    val rawZoom = _rawZoom.asStateFlow()
 
-    Layout(
-        content = content,
-        modifier
-            .background(Color.Gray)
-            .clipToBounds()
-            .fillMaxSize()
-            .pointerInput(true) {
-                detectMapGestures(
-                    onTap = { offset -> println("onTap $offset") },
-                    onDoubleTap = { offset -> scale.value /= 2 },
-                    onTwoFingersTap = { offset -> scale.value *= 2 },
-                    onLongPress = { offset -> println("onLongPress $offset") },
-                    onTapLongPress = { offset -> topLeft.value += offset },
-                    onTapSwipe = { offset -> scale.value += offset.x / 7 },
-                    onGesture = { centroid, pan, zoom, rotation ->
-                        angle.value -= rotation
-                        scale.value *= zoom
-                        pan?.let { topLeft.value += pan }
-                    },
-                    onDrag = { dragAmount -> topLeft.value += dragAmount },
-                    onDragStart = { offset -> println("onDragStart $offset") },
-                    onDragEnd = { println("onDragEnd") },
-                    onFling = { velocity -> println("onFling $velocity") },
-                    onFlingZoom = { velocity -> println("onFlingZoom $velocity") },
-                    onFlingRotation = { velocity -> println("onFlingRotation $velocity") },
-                    onHover = { offset -> },
-                    onScroll = { offset -> scale.value -= offset.y / 5 }
-                )
-            }
+    private var _rawRotation = MutableStateFlow(rotation)
+    val rawRotation = _rawRotation.asStateFlow()
 
-    ) { measurables, constraints ->
-        val placeables = measurables.map { measurable ->
-            measurable.measure(constraints)
+    var position: Offset
+        get() = _rawPosition.value
+        set(value) {
+            _rawPosition.value = value
         }
-        layout(constraints.maxWidth, constraints.maxHeight) {
-            placeables.forEach { placeable ->
-                placeable.placeRelativeWithLayer(x = topLeft.value.x.toInt(), y = topLeft.value.y.toInt()){
-                    rotationZ = angle.value
-                    scaleX = scale.value
-                    scaleY = scale.value
-                }
-            }
+
+    var zoom: Float
+        get() = _rawZoom.value
+        set(value) {
+            _rawZoom.value = value.coerceAtLeast(1F)
         }
-    }
+
+    var rotation: Float
+        get() = _rawRotation.value
+        set(value) {
+            _rawRotation.value = value
+        }
 }

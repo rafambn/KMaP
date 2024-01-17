@@ -337,7 +337,7 @@ internal suspend fun PointerInputScope.detectMapGestures(   //TODO There are pro
 
             if (gestureState == GestureState.MOBILE) {
                 val zoomChange = event.calculateZoom()
-                val rotationChange = event.calculateRotation()
+                val rotationChange = -event.calculateRotation()
                 val panChange = event.calculatePan()
                 val centroid = event.calculateCentroid()
 
