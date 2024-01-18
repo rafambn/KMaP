@@ -1,6 +1,5 @@
 package io.github.rafambn.kmap
 
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
@@ -14,7 +13,7 @@ fun KMaP(
 
     MotionManager(modifier) {
 
-        TileCanvas(Modifier, 200F)
+        TileCanvas(Modifier, 256F)
 
     }
 //    ZoomPanRotate(

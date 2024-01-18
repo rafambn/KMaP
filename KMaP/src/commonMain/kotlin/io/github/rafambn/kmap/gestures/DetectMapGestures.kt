@@ -287,13 +287,21 @@ internal suspend fun PointerInputScope.detectMapGestures(   //TODO There are pro
                 val zoomVelocity = abs(zoomChange - 1) / (previousEvent.changes[0].uptimeMillis - previousEvent.changes[0].previousUptimeMillis)
                 val rotationVelocity = abs(rotationChange) / (previousEvent.changes[0].uptimeMillis - previousEvent.changes[0].previousUptimeMillis)
 
-                onFling.invoke(panVelocity)
-                onFlingZoom.invoke(zoomVelocity)
-                onFlingRotation.invoke(rotationVelocity)
+                if (event.changes[0].pressed) {
+                    onFlingZoom.invoke(zoomVelocity)
+                    onFlingRotation.invoke(rotationVelocity)
 
-                onDragStart.invoke(event.changes[0].position)
-                gestureState = GestureState.DRAG
-                continue
+                    onDragStart.invoke(event.changes[0].position)
+                    gestureState = GestureState.DRAG
+                    continue
+                } else {
+                    onFling.invoke(panVelocity)
+                    onFlingZoom.invoke(zoomVelocity)
+                    onFlingRotation.invoke(rotationVelocity)
+
+                    gestureState = GestureState.HOVER
+                    continue
+                }
             }
 
             if (gestureState == GestureState.TAP_LONG_PRESS && eventChanges.any { it == GestureChangeState.RELEASE }) {

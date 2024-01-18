@@ -1,42 +1,56 @@
 package io.github.rafambn.kmap
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Offset
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-
+import androidx.compose.ui.unit.IntSize
 
 class CameraState(
-    startPosition: Offset = Offset.Zero,
-    zoom: Float = 0F,
+    position: Offset = Offset.Zero,
+    zoom: Float = 1F,
     rotation: Float = 0F
 ) {
-    private val _isMoving = MutableStateFlow(false)
-    val isMoving = _isMoving.asStateFlow()
-
-    private var _rawPosition = MutableStateFlow(startPosition)
-    val rawPosition = _rawPosition.asStateFlow()
-
-    private var _rawZoom = MutableStateFlow(zoom)
-    val rawZoom = _rawZoom.asStateFlow()
-
-    private var _rawRotation = MutableStateFlow(rotation)
-    val rawRotation = _rawRotation.asStateFlow()
-
-    var position: Offset
-        get() = _rawPosition.value
+    var mapSize: IntSize = IntSize.Zero
         set(value) {
-            _rawPosition.value = value
+            _rawPosition.value = latLongToRaw(position, value)
+            field = value
         }
 
-    var zoom: Float
-        get() = _rawZoom.value
-        set(value) {
-            _rawZoom.value = value.coerceAtLeast(1F)
-        }
+    internal val _rawPosition = mutableStateOf(latLongToRaw(position, mapSize))
+    internal val _zoom = mutableStateOf(zoom)
+    internal val _rotation = mutableStateOf(rotation)
 
-    var rotation: Float
-        get() = _rawRotation.value
+    val tileSize = 256F
+
+    var position
+        get() = rawToLatLong(_rawPosition.value, mapSize)
         set(value) {
-            _rawRotation.value = value
+            _rawPosition.value = latLongToRaw(value, mapSize)
         }
+    var zoom
+        get() = _zoom.value
+        set(value) {
+            _zoom.value = value.coerceAtLeast(1F)
+        }
+    var rotation
+        get() = _rotation.value
+        set(value) {
+            _rotation.value = value
+        }
+}
+
+fun latLongToRaw(latLong: Offset, mapIntSize: IntSize): Offset {
+    return latLong - Offset(256 * 5 / 2F, 256 * 5 / 2F) + Offset((mapIntSize.width / 2).toFloat(), (mapIntSize.height / 2).toFloat())
+}
+
+fun rawToLatLong(raw: Offset, mapIntSize: IntSize): Offset {
+    return raw + Offset(256 * 5 / 2F, 256 * 5 / 2F) - Offset((mapIntSize.width / 2).toFloat(), (mapIntSize.height / 2).toFloat())
+}
+
+@Composable
+inline fun rememberCameraState(
+    crossinline init: CameraState.() -> Unit = {}
+): CameraState = remember {
+    CameraState().apply(init)
 }

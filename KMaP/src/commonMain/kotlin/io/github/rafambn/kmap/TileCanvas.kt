@@ -1,19 +1,12 @@
 package io.github.rafambn.kmap
 
-import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.drawscope.withTransform
-import androidx.compose.ui.input.pointer.pointerInput
-import io.github.rafambn.kmap.gestures.detectMapGestures
 import kotlin.random.Random
 
 @Composable
@@ -37,7 +30,7 @@ internal fun TileCanvas(
         drawIntoCanvas {
             for (tile in listTiles) {
                 it.drawRect(tileSize * tile.col, tileSize * tile.row, tileSize * tile.col + tileSize, tileSize * tile.row + tileSize, Paint().apply {
-                    color = generateRandomColor()
+                    color = generateRandomColor(tile.row, tile.col)
                     isAntiAlias = false
                 })
             }
@@ -45,9 +38,13 @@ internal fun TileCanvas(
     }
 }
 
-fun generateRandomColor(): Color {
-    val r = Random.nextFloat()
-    val g = Random.nextFloat()
-    val b = Random.nextFloat()
-    return Color(r, g, b)
+fun generateRandomColor(row: Int, collumn: Int): Color {
+    if (row == 2 && collumn == 2)
+        return Color.Green
+    else
+        return Color.White
+//    val r = Random.nextFloat()
+//    val g = Random.nextFloat()
+//    val b = Random.nextFloat()
+//    return Color(r, g, b)
 }
