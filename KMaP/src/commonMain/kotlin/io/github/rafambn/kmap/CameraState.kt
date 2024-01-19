@@ -7,26 +7,29 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.IntSize
 
 class CameraState(
-    position: Offset = Offset.Zero,
+    private val initialPosition: Offset = Offset.Zero,
     zoom: Float = 1F,
     rotation: Float = 0F
 ) {
     var mapSize: IntSize = IntSize.Zero
         set(value) {
-            _rawPosition.value = latLongToRaw(position, value)
+            _tileSize.value = minOf(value.height, value.width).toFloat()
+            if (field == IntSize.Zero)
+                _rawPosition.value = initialPosition.toRaw(value)
+            else
+                _rawPosition.value = position.toRaw(value)
             field = value
         }
 
-    internal val _rawPosition = mutableStateOf(latLongToRaw(position, mapSize))
+    internal val _tileSize = mutableStateOf(minOf(mapSize.height, mapSize.width).toFloat())
     internal val _zoom = mutableStateOf(zoom)
     internal val _rotation = mutableStateOf(rotation)
-
-    val tileSize = 256F
+    internal val _rawPosition = mutableStateOf(initialPosition)
 
     var position
-        get() = rawToLatLong(_rawPosition.value, mapSize)
+        get() = _rawPosition.value.toLatLong(mapSize)
         set(value) {
-            _rawPosition.value = latLongToRaw(value, mapSize)
+            _rawPosition.value = value.toRaw(mapSize)
         }
     var zoom
         get() = _zoom.value
@@ -38,15 +41,22 @@ class CameraState(
         set(value) {
             _rotation.value = value
         }
+
+    private fun Offset.toRaw(mapIntSize: IntSize): Offset {
+        return this - Offset(_tileSize.value * zoom / 2, _tileSize.value * zoom / 2) + Offset(
+            (mapIntSize.width / 2).toFloat(),
+            (mapIntSize.height / 2).toFloat()
+        )
+    }
+
+    private fun Offset.toLatLong(mapIntSize: IntSize): Offset {
+        return this + Offset(_tileSize.value * zoom / 2, _tileSize.value * zoom / 2) - Offset(
+            (mapIntSize.width / 2).toFloat(),
+            (mapIntSize.height / 2).toFloat()
+        )
+    }
 }
 
-fun latLongToRaw(latLong: Offset, mapIntSize: IntSize): Offset {
-    return latLong - Offset(256 * 5 / 2F, 256 * 5 / 2F) + Offset((mapIntSize.width / 2).toFloat(), (mapIntSize.height / 2).toFloat())
-}
-
-fun rawToLatLong(raw: Offset, mapIntSize: IntSize): Offset {
-    return raw + Offset(256 * 5 / 2F, 256 * 5 / 2F) - Offset((mapIntSize.width / 2).toFloat(), (mapIntSize.height / 2).toFloat())
-}
 
 @Composable
 inline fun rememberCameraState(

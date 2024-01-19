@@ -2,18 +2,19 @@ package io.github.rafambn.kmap
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.layoutId
 
 @Composable
 fun KMaP(
     modifier: Modifier = Modifier,
-//    cameraState: CameraState = rememberCameraState(),
-    content: @Composable () -> Unit = {}
+    cameraState: CameraState,
+    mapProperties: MapProperties
+//    content: @Composable () -> Unit = {}
 ) {
 
+    MotionManager(modifier, cameraState, mapProperties) {
 
-    MotionManager(modifier) {
-
-        TileCanvas(Modifier, 256F)
+        TileCanvas(Modifier.layoutId(MapComponentType.CANVAS), cameraState._tileSize.value)
 
     }
 //    ZoomPanRotate(

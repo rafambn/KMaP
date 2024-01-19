@@ -3,27 +3,24 @@ package io.github.rafambn.kmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.unit.IntSize
 import io.github.rafambn.kmap.gestures.GestureInterface
 import io.github.rafambn.kmap.gestures.detectMapGestures
 
 @Composable
 internal fun MotionManager(
     modifier: Modifier = Modifier,
+    cameraState: CameraState,
+    mapProperties: MapProperties,
     content: @Composable () -> Unit
 ) {
-
-    val cameraState = rememberCameraState()
 
     val gestureListener = object : GestureInterface {
         override fun onTap(offset: Offset) {
@@ -119,22 +116,30 @@ internal fun MotionManager(
             }
             .onGloballyPositioned { coordinates ->
                 cameraState.mapSize = coordinates.size
+                println(coordinates.size)
             }
     ) { measurables, constraints ->
-        val placeables = measurables.map { measurable ->
-            measurable.measure(constraints)
-        }
+
+        val canvasPlaceable = measurables.first {
+            it.layoutId == MapComponentType.CANVAS
+        }.measure(constraints)
+
+//        val markersPlaceable = measurables.first {
+//            it.layoutId == MapComponentType.MARKER
+//        }.measure(constraints)
+
         layout(constraints.maxWidth, constraints.maxHeight) {
-            placeables.forEach { placeable ->
-                placeable.placeRelativeWithLayer(
-                    x = cameraState._rawPosition.value.x.toInt(),
-                    y = cameraState._rawPosition.value.y.toInt()
-                ) {
-                    rotationZ = cameraState.rotation
-                    scaleX = cameraState.zoom
-                    scaleY = cameraState.zoom
-                }
+
+            canvasPlaceable.placeRelativeWithLayer(
+                x = cameraState._rawPosition.value.x.toInt(),
+                y = cameraState._rawPosition.value.y.toInt()
+            ) {
+                println(cameraState._rawPosition.value)
+                rotationZ = cameraState.rotation
+                scaleX = cameraState.zoom
+                scaleY = cameraState.zoom
             }
+
         }
     }
 }

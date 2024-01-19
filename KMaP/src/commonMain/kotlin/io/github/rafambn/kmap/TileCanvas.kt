@@ -15,11 +15,12 @@ internal fun TileCanvas(
     tileSize: Float
 ) {
 
+    val tempSize = tileSize /3
     val listTiles = mutableListOf<Tile>()
 
-    for (i in 0..24) {
-        val row = i % 5
-        val collumn = i / 5 % 5
+    for (i in 0..8) {
+        val row = i % 3
+        val collumn = i / 3 % 3
         listTiles.add(Tile(0, row, collumn))
     }
 
@@ -29,7 +30,7 @@ internal fun TileCanvas(
     ) {
         drawIntoCanvas {
             for (tile in listTiles) {
-                it.drawRect(tileSize * tile.col, tileSize * tile.row, tileSize * tile.col + tileSize, tileSize * tile.row + tileSize, Paint().apply {
+                it.drawRect(tempSize * tile.col, tempSize * tile.row, tempSize * tile.col + tempSize, tempSize * tile.row + tempSize, Paint().apply {
                     color = generateRandomColor(tile.row, tile.col)
                     isAntiAlias = false
                 })
@@ -39,10 +40,10 @@ internal fun TileCanvas(
 }
 
 fun generateRandomColor(row: Int, collumn: Int): Color {
-    if (row == 2 && collumn == 2)
-        return Color.Green
+    return if (row == 1 && collumn == 1)
+        Color.Green
     else
-        return Color.White
+        Color.White
 //    val r = Random.nextFloat()
 //    val g = Random.nextFloat()
 //    val b = Random.nextFloat()

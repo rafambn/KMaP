@@ -9,17 +9,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.rafambn.kmap.KMaP
+import io.github.rafambn.kmap.rememberCameraState
+import io.github.rafambn.kmap.rememberMapProperties
 import io.github.rafambn.templateapp.theme.AppTheme
 
 @Composable
 internal fun App() = AppTheme {
     Surface(modifier = Modifier.fillMaxSize()) {
         Box {
-            KMaP(
-                modifier = Modifier.align(Alignment.Center).size(300.dp, 600.dp)
-            ) {
 
-            }
+            val cameraState = rememberCameraState()
+            val mapProperties = rememberMapProperties()
+            KMaP(
+                modifier = Modifier.align(Alignment.Center).size(300.dp, 600.dp),
+                cameraState = cameraState,
+                mapProperties = mapProperties
+            )
         }
     }
 }
