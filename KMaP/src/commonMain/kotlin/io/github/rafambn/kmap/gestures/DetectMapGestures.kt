@@ -34,7 +34,7 @@ internal suspend fun PointerInputScope.detectMapGestures(   //TODO There are pro
     onTapLongPress: ((Offset) -> Unit)?,
     onTapSwipe: ((Offset) -> Unit)?,
 
-    onGesture: (centroid: Offset, pan: Offset?, zoom: Float, rotation: Float) -> Unit,
+    onGesture: (centroid: Offset, pan: Offset, zoom: Float, rotation: Float) -> Unit,
 
     onDrag: (dragAmount: Offset) -> Unit,
     onDragStart: (Offset) -> Unit = { },
@@ -264,13 +264,9 @@ internal suspend fun PointerInputScope.detectMapGestures(   //TODO There are pro
 
             if (eventChanges.any { it == GestureChangeState.RELEASE } && gestureState == GestureState.CTRL) {
                 gestureState = GestureState.HOVER
-                handleGestureWithCtrl(event, previousEvent, firstCtrlEvent!!, touchSlop) { zoomChange, rotationChange, _ ->
-                    val zoomVelocity = abs(zoomChange - 1) / (previousEvent.changes[0].uptimeMillis - previousEvent.changes[0].previousUptimeMillis)
+                handleGestureWithCtrl(event, previousEvent, firstCtrlEvent!!, touchSlop) { rotationChange, centroid ->
                     val rotationVelocity = abs(rotationChange) / (previousEvent.changes[0].uptimeMillis - previousEvent.changes[0].previousUptimeMillis)
 
-                    if (zoomVelocity > 0.001) {
-                        onFlingZoom.invoke(zoomChange)
-                    }
                     if (rotationVelocity > 0.5) {
                         onFlingRotation.invoke(rotationChange)
                     }
@@ -332,8 +328,8 @@ internal suspend fun PointerInputScope.detectMapGestures(   //TODO There are pro
 
             //Finally, here are the gestures
             if (gestureState == GestureState.CTRL) {
-                handleGestureWithCtrl(event, previousEvent, firstCtrlEvent!!, touchSlop) { zoomChange, rotationChange, centroidSize ->
-                    onGesture.invoke(centroidSize, null, zoomChange, rotationChange)
+                handleGestureWithCtrl(event, previousEvent, firstCtrlEvent!!, touchSlop) { rotationChange, centroid ->
+                    onGesture.invoke(centroid, Offset.Zero, 0F, rotationChange)
                 }
                 continue
             }
@@ -451,29 +447,15 @@ fun handleGestureWithCtrl(
     previousEvent: PointerEvent,
     firstCtrlEvent: PointerEvent,
     touchSlop: Float,
-    result: (
-        zoomChange: Float,
-        rotationChange: Float, centroid: Offset
-    ) -> Unit
+    result: (rotationChange: Float, centroid: Offset) -> Unit
 ) {
-    val zoomChange = firstCtrlEvent.calculateZoomWithCtrl(previousEvent, event)
     val rotationChange = firstCtrlEvent.calculateRotationWithCtrl(previousEvent, event)
     val centroidSize = firstCtrlEvent.calculateCentroidWithCtrl(event)
 
     if (touchSlop < centroidSize.getDistance())
-        result(zoomChange, rotationChange, centroidSize)
+        result(rotationChange, centroidSize)
     else
-        result(1F, 0F, Offset.Zero)
-}
-
-fun PointerEvent.calculateZoomWithCtrl(previousEvent: PointerEvent, currentEvent: PointerEvent): Float {
-    val currentCentroidSize = this.calculateCentroidWithCtrl(currentEvent).getDistance()
-    val previousCentroidSize = this.calculateCentroidWithCtrl(previousEvent).getDistance()
-
-    if (currentCentroidSize == 0f || previousCentroidSize == 0f) {
-        return 1f
-    }
-    return currentCentroidSize / previousCentroidSize
+        result(0F, Offset.Zero)
 }
 
 fun PointerEvent.calculateRotationWithCtrl(previousEvent: PointerEvent, currentEvent: PointerEvent): Float {

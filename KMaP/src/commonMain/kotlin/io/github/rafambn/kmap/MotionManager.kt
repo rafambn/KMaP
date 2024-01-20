@@ -11,6 +11,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.layout.onGloballyPositioned
+import io.github.rafambn.kmap.enums.MapComponentType
 import io.github.rafambn.kmap.gestures.GestureInterface
 import io.github.rafambn.kmap.gestures.detectMapGestures
 
@@ -18,7 +19,6 @@ import io.github.rafambn.kmap.gestures.detectMapGestures
 internal fun MotionManager(
     modifier: Modifier = Modifier,
     cameraState: CameraState,
-    mapProperties: MapProperties,
     content: @Composable () -> Unit
 ) {
 
@@ -124,22 +124,8 @@ internal fun MotionManager(
             it.layoutId == MapComponentType.CANVAS
         }.measure(constraints)
 
-//        val markersPlaceable = measurables.first {
-//            it.layoutId == MapComponentType.MARKER
-//        }.measure(constraints)
-
         layout(constraints.maxWidth, constraints.maxHeight) {
-
-            canvasPlaceable.placeRelativeWithLayer(
-                x = cameraState._rawPosition.value.x.toInt(),
-                y = cameraState._rawPosition.value.y.toInt()
-            ) {
-                println(cameraState._rawPosition.value)
-                rotationZ = cameraState.rotation
-                scaleX = cameraState.zoom
-                scaleY = cameraState.zoom
-            }
-
+            canvasPlaceable.placeRelativeWithLayer(x = 0, y = 0, zIndex = 0F)
         }
     }
 }

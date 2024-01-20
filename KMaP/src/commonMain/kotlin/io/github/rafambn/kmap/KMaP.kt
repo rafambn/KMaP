@@ -3,6 +3,7 @@ package io.github.rafambn.kmap
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.layoutId
+import io.github.rafambn.kmap.enums.MapComponentType
 
 @Composable
 fun KMaP(
@@ -12,9 +13,9 @@ fun KMaP(
 //    content: @Composable () -> Unit = {}
 ) {
 
-    MotionManager(modifier, cameraState, mapProperties) {
+    MotionManager(modifier, cameraState) {
 
-        TileCanvas(Modifier.layoutId(MapComponentType.CANVAS), cameraState._tileSize.value)
+        TileCanvas(Modifier.layoutId(MapComponentType.CANVAS), cameraState, mapProperties)
 
     }
 //    ZoomPanRotate(

@@ -4,18 +4,23 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import kotlin.random.Random
+import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.drawscope.withTransform
 
 @Composable
 internal fun TileCanvas(
     modifier: Modifier,
-    tileSize: Float
+    cameraState: CameraState,
+    mapProperties: MapProperties
 ) {
 
-    val tempSize = tileSize /3
+    val tempSize = cameraState._tileSize.value / 3
     val listTiles = mutableListOf<Tile>()
 
     for (i in 0..8) {
@@ -28,12 +33,21 @@ internal fun TileCanvas(
         modifier = modifier
             .fillMaxSize()
     ) {
-        drawIntoCanvas {
-            for (tile in listTiles) {
-                it.drawRect(tempSize * tile.col, tempSize * tile.row, tempSize * tile.col + tempSize, tempSize * tile.row + tempSize, Paint().apply {
-                    color = generateRandomColor(tile.row, tile.col)
-                    isAntiAlias = false
-                })
+        withTransform({
+            rotate(
+                degrees = cameraState.rotation,
+                pivot = Offset.Zero
+            )
+            translate(left = cameraState.position.x, top = cameraState.position.y)
+            scale(scale = cameraState.zoom, Offset.Zero)
+        }) {
+            drawIntoCanvas {
+                for (tile in listTiles) {
+                    it.drawRect(Rect(Offset(tempSize * tile.col, tempSize * tile.row), Size(tempSize, tempSize)), Paint().apply {
+                        color = generateRandomColor(tile.row, tile.col)
+                        isAntiAlias = false
+                    })
+                }
             }
         }
     }
