@@ -35,11 +35,11 @@ internal fun TileCanvas(
     ) {
         withTransform({
             rotate(
-                degrees = cameraState.rotation,
+                degrees = cameraState._angleDegres.value,
                 pivot = Offset.Zero
             )
-            translate(left = cameraState.position.x, top = cameraState.position.y)
-            scale(scale = cameraState.zoom, Offset.Zero)
+            translate(left = cameraState._rawPosition.value.x, top = cameraState._rawPosition.value.y)
+            scale(scale = cameraState._zoom.value, Offset.Zero)
         }) {
             drawIntoCanvas {
                 for (tile in listTiles) {

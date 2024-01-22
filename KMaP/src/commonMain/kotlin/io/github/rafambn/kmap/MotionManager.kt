@@ -28,11 +28,11 @@ internal fun MotionManager(
         }
 
         override fun onDoubleTap(offset: Offset) {
-            cameraState.zoom -= 1
+            cameraState.scale(offset, -1 / 3F)
         }
 
         override fun onTwoFingersTap(offset: Offset) {
-            cameraState.zoom += 1
+            cameraState.scale(offset, 1 / 3F)
         }
 
         override fun onLongPress(offset: Offset) {
@@ -40,21 +40,21 @@ internal fun MotionManager(
         }
 
         override fun onTapLongPress(offset: Offset) {
-            cameraState.position += offset
+            cameraState.move(offset)
         }
 
         override fun onTapSwipe(offset: Offset) {
-            cameraState.zoom += offset.x
+            cameraState.scale(cameraState._rawPosition.value, offset.x / 30) //TODO use tileCenter and improve this scale change
         }
 
-        override fun onGesture(centroid: Offset, pan: Offset?, zoom: Float, rotation: Float) {
-            cameraState.rotation -= rotation
-            cameraState.zoom *= zoom
-            pan?.let { cameraState.position += pan }
+        override fun onGesture(centroid: Offset, pan: Offset, zoom: Float, rotation: Float) {
+            cameraState.rotate(centroid, rotation)
+            cameraState.scale(centroid, zoom / 3)
+            cameraState.move(pan)
         }
 
         override fun onDrag(dragAmount: Offset) {
-            cameraState.position += dragAmount
+            cameraState.move(dragAmount)
         }
 
         override fun onDragStart(offset: Offset) {
@@ -82,8 +82,8 @@ internal fun MotionManager(
 
         }
 
-        override fun onScroll(offset: Offset) {
-            cameraState.zoom -= offset.y
+        override fun onScroll(mouseOffset: Offset, scrollAmount: Float) {
+            cameraState.scale(mouseOffset, scrollAmount / 3)
         }
     }
 
@@ -111,12 +111,12 @@ internal fun MotionManager(
                     onFlingZoom = { velocity -> gestureListener.onFling(velocity) },
                     onFlingRotation = { velocity -> gestureListener.onFling(velocity) },
                     onHover = { offset -> gestureListener.onHover(offset) },
-                    onScroll = { offset -> gestureListener.onScroll(offset) }
+                    onScroll = { mouseOffset, scrollAmount -> gestureListener.onScroll(mouseOffset, scrollAmount) }
                 )
             }
             .onGloballyPositioned { coordinates ->
                 cameraState.mapSize = coordinates.size
-                println(coordinates.size)
+//                println(coordinates.size)
             }
     ) { measurables, constraints ->
 

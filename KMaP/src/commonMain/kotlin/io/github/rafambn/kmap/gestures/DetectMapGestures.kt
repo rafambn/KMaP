@@ -45,7 +45,7 @@ internal suspend fun PointerInputScope.detectMapGestures(   //TODO There are pro
     onFlingRotation: ((velocity: Float) -> Unit) = { },
 
     onHover: ((Offset) -> Unit)? = null,
-    onScroll: ((Offset) -> Unit)? = null
+    onScroll: ((mouseOffset: Offset, scrollAmount: Float) -> Unit)? = null
 ) = coroutineScope {
 
     // Launches separately coroutine checking if any event is not consumed or pressed indicating that the mouse is just hovering
@@ -71,7 +71,7 @@ internal suspend fun PointerInputScope.detectMapGestures(   //TODO There are pro
                     event = awaitPointerEvent()
                     if (event.type == PointerEventType.Scroll) {
                         event.changes.forEach { it.consume() }
-                        onScroll.invoke(event.changes[0].scrollDelta)
+                        onScroll.invoke(event.changes[0].position, event.changes[0].scrollDelta.y)
                     }
                 } while (this@coroutineScope.isActive)
             }
@@ -453,7 +453,7 @@ fun handleGestureWithCtrl(
     val centroidSize = firstCtrlEvent.calculateCentroidWithCtrl(event)
 
     if (touchSlop < centroidSize.getDistance())
-        result(rotationChange, centroidSize)
+        result(rotationChange, firstCtrlEvent.changes[0].position)
     else
         result(0F, Offset.Zero)
 }
@@ -466,7 +466,7 @@ fun PointerEvent.calculateRotationWithCtrl(previousEvent: PointerEvent, currentE
 }
 
 private fun Offset.angle(): Float =
-    if (x == 0f && y == 0f) 0f else -atan2(x, y) * 180f / PI.toFloat()
+    if (x == 0f && y == 0f) 0f else atan2(x, y) * 180f / PI.toFloat()
 
 fun PointerEvent.calculateCentroidWithCtrl(
     currentEvent: PointerEvent

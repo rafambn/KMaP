@@ -10,7 +10,7 @@ interface GestureInterface {
     fun onTapLongPress(offset: Offset)
     fun onTapSwipe(offset: Offset)
 
-    fun onGesture(centroid: Offset, pan: Offset?, zoom: Float, rotation: Float)
+    fun onGesture(centroid: Offset, pan: Offset, zoom: Float, rotation: Float)
 
     fun onDrag(dragAmount: Offset)
     fun onDragStart(offset: Offset)
@@ -21,5 +21,5 @@ interface GestureInterface {
     fun onFlingRotation(velocity: Float)
 
     fun onHover(offset: Offset)
-    fun onScroll(offset: Offset)
+    fun onScroll(mouseOffset: Offset, scrollAmount: Float)
 }
