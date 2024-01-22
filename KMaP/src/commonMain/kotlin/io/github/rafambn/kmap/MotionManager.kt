@@ -3,6 +3,7 @@ package io.github.rafambn.kmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
@@ -14,6 +15,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import io.github.rafambn.kmap.enums.MapComponentType
 import io.github.rafambn.kmap.gestures.GestureInterface
 import io.github.rafambn.kmap.gestures.detectMapGestures
+import kotlinx.coroutines.delay
 
 @Composable
 internal fun MotionManager(
@@ -21,7 +23,14 @@ internal fun MotionManager(
     cameraState: CameraState,
     content: @Composable () -> Unit
 ) {
-
+    LaunchedEffect(true) {
+        delay(2000L)
+        cameraState.rotate(Offset(100F, 100F), 45F)
+//        delay(2000L)
+//        cameraState.rotate(Offset(100F, 100F), 45F)
+//        delay(2000L)
+//        cameraState.rotate(Offset(100F, 100F), 45F)
+    }
     val gestureListener = object : GestureInterface {
         override fun onTap(offset: Offset) {
 
