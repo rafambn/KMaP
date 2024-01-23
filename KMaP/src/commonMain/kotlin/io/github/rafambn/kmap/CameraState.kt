@@ -6,7 +6,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.IntSize
 import kotlin.math.PI
-import kotlin.math.atan
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -26,40 +25,31 @@ class CameraState(
     internal val _angleDegres = mutableStateOf(rotation)
     internal val _rawPosition = mutableStateOf(initialPosition)
 
-    var angleRadian = -_angleDegres.value * PI / 180
+    var angleRadian = 0F
 
     fun move(offset: Offset) {
         println(_rawPosition.value)
-        _rawPosition.value += rotateVector(offset,-angleRadian.toFloat())
+        _rawPosition.value += offset
     }
 
     fun scale(offset: Offset, scale: Float) {
         if (_zoom.value + scale < 1F)
-            return
+            return  //TODO improve this to coerce at zoom =1
         _zoom.value += scale
-        val rotatedOffset = rotateVector(offset,-angleRadian.toFloat())
+        val rotatedOffset = rotateVector(offset, -angleRadian)
         _rawPosition.value = rotatedOffset + ((_rawPosition.value - rotatedOffset) * _zoom.value / (_zoom.value - scale))
     }
 
     fun rotate(offset: Offset, angle: Float) {
         if (offset != Offset.Zero) {
+            val tempRadianAngle = (angle * PI / 180).toFloat()
             _angleDegres.value += angle
-            angleRadian = _angleDegres.value * PI / 180
-
-//            val tempRadianAngle = angle * PI / 180
-//            val tempRadianAngTotal = angleRadian
-//
-//            val rotatedPosition = rotateVector(-offset, -tempRadianAngle.toFloat())
-//            println("raw = ${_rawPosition.value}")
-//            println("offset = $offset")
-//            println("rotatedPosition = $rotatedPosition")
-//            println("angle = ${_angleDegres.value}")
-//            _rawPosition.value = rotatedPosition
-//            println("post raw = ${_rawPosition.value}")
+            angleRadian = (_angleDegres.value * PI / 180).toFloat()
+            _rawPosition.value = rotateVector(_rawPosition.value - offset, tempRadianAngle) + offset
         }
     }
 
-    private fun rotateVector(offset: Offset, angle: Float): Offset{
+    private fun rotateVector(offset: Offset, angle: Float): Offset {
         return Offset(
             (offset.x * cos(angle) - offset.y * sin(angle)),
             (offset.x * sin(angle) + offset.y * cos(angle))

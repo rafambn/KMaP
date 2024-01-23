@@ -23,14 +23,6 @@ internal fun MotionManager(
     cameraState: CameraState,
     content: @Composable () -> Unit
 ) {
-    LaunchedEffect(true) {
-        delay(2000L)
-        cameraState.rotate(Offset(100F, 100F), 45F)
-//        delay(2000L)
-//        cameraState.rotate(Offset(100F, 100F), 45F)
-//        delay(2000L)
-//        cameraState.rotate(Offset(100F, 100F), 45F)
-    }
     val gestureListener = object : GestureInterface {
         override fun onTap(offset: Offset) {
 

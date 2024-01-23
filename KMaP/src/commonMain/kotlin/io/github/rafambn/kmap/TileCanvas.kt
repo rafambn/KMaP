@@ -25,8 +25,8 @@ internal fun TileCanvas(
 
     for (i in 0..8) {
         val row = i % 3
-        val collumn = i / 3 % 3
-        listTiles.add(Tile(0, row, collumn))
+        val column = i / 3 % 3
+        listTiles.add(Tile(0, row, column))
     }
 
     Canvas(
@@ -36,7 +36,7 @@ internal fun TileCanvas(
         withTransform({
             rotate(
                 degrees = cameraState._angleDegres.value,
-                pivot = Offset.Zero
+                pivot = cameraState._rawPosition.value
             )
             translate(left = cameraState._rawPosition.value.x, top = cameraState._rawPosition.value.y)
             scale(scale = cameraState._zoom.value, Offset.Zero)
@@ -56,6 +56,8 @@ internal fun TileCanvas(
 fun generateRandomColor(row: Int, collumn: Int): Color {
     return if (row == 1 && collumn == 1)
         Color.Green
+    else if (row == 2 && collumn == 1)
+        Color.Cyan
     else
         Color.White
 //    val r = Random.nextFloat()
