@@ -1,9 +1,15 @@
 package io.github.rafambn.kmap
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector2D
+import androidx.compose.animation.core.FloatExponentialDecaySpec
+import androidx.compose.animation.core.VectorConverter
+import androidx.compose.animation.core.generateDecayAnimationSpec
+import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
@@ -12,10 +18,11 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.Velocity
 import io.github.rafambn.kmap.enums.MapComponentType
 import io.github.rafambn.kmap.gestures.GestureInterface
 import io.github.rafambn.kmap.gestures.detectMapGestures
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 internal fun MotionManager(
@@ -23,6 +30,17 @@ internal fun MotionManager(
     cameraState: CameraState,
     content: @Composable () -> Unit
 ) {
+
+    val coroutineScope = rememberCoroutineScope()
+
+    val flingAnimatable: Animatable<Offset, AnimationVector2D> = Animatable(Offset.Zero, Offset.VectorConverter)
+    val flingZoomAnimatable = Animatable(0f)
+    val flingRotationAnimatable = Animatable(0f)
+
+    val flingSpec = rememberSplineBasedDecay<Offset>()
+    val flingZoomSpec = FloatExponentialDecaySpec().generateDecayAnimationSpec<Float>()
+    val flingRotationSpec = FloatExponentialDecaySpec().generateDecayAnimationSpec<Float>()
+
     val gestureListener = object : GestureInterface {
         override fun onTap(offset: Offset) {
 
@@ -44,8 +62,8 @@ internal fun MotionManager(
             cameraState.move(offset)
         }
 
-        override fun onTapSwipe(offset: Offset) {
-            cameraState.scale(cameraState._rawPosition.value, offset.x / 30) //TODO use tileCenter and improve this scale change
+        override fun onTapSwipe(centroid: Offset, zoom: Float) {
+            cameraState.scale(centroid, zoom / 30)
         }
 
         override fun onGesture(centroid: Offset, pan: Offset, zoom: Float, rotation: Float) {
@@ -66,17 +84,26 @@ internal fun MotionManager(
 
         }
 
-        override fun onFling(velocity: Float) {
+        override fun onFling(velocity: Velocity) {
+            coroutineScope.launch {
+                flingAnimatable.snapTo(Offset.Zero)
+                flingAnimatable.animateDecay(
+                    initialVelocity = Offset(velocity.x, velocity.y) / 10F,
+                    animationSpec = flingSpec,
+                ) {
+                    cameraState.move(value)
+                    println(value)
+                }
+            }
 
         }
 
         override fun onFlingZoom(velocity: Float) {
-
+            println("onFlingZoom")
         }
 
-        //        override fun onFlingRotation(velocity: Velocity) {
         override fun onFlingRotation(velocity: Float) {
-
+            println("onFlingRotation")
         }
 
         override fun onHover(offset: Offset) {
@@ -101,16 +128,16 @@ internal fun MotionManager(
                     onTwoFingersTap = { offset -> gestureListener.onTwoFingersTap(offset) },
                     onLongPress = { offset -> gestureListener.onLongPress(offset) },
                     onTapLongPress = { offset -> gestureListener.onTapLongPress(offset) },
-                    onTapSwipe = { offset -> gestureListener.onTapSwipe(offset) },
+                    onTapSwipe = { centroid, zoom -> gestureListener.onTapSwipe(centroid, zoom) },
                     onGesture = { centroid, pan, zoom, rotation ->
                         gestureListener.onGesture(centroid, pan, zoom, rotation)
                     },
                     onDrag = { dragAmount -> gestureListener.onDrag(dragAmount) },
                     onDragStart = { offset -> gestureListener.onDragStart(offset) },
                     onDragEnd = { gestureListener.onDragEnd() },
-                    onFling = { velocity -> gestureListener.onFling(velocity) },
-                    onFlingZoom = { velocity -> gestureListener.onFling(velocity) },
-                    onFlingRotation = { velocity -> gestureListener.onFling(velocity) },
+                    onFling = { targetLocation -> gestureListener.onFling(targetLocation) },
+                    onFlingZoom = { targetZoom -> gestureListener.onFlingZoom(targetZoom) },
+                    onFlingRotation = { targetRotation -> gestureListener.onFlingRotation(targetRotation) },
                     onHover = { offset -> gestureListener.onHover(offset) },
                     onScroll = { mouseOffset, scrollAmount -> gestureListener.onScroll(mouseOffset, scrollAmount) }
                 )

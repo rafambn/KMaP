@@ -1,6 +1,7 @@
 package io.github.rafambn.kmap.gestures
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.Velocity
 
 interface GestureInterface {
     fun onTap(offset: Offset)
@@ -8,7 +9,7 @@ interface GestureInterface {
     fun onTwoFingersTap(offset: Offset)
     fun onLongPress(offset: Offset)
     fun onTapLongPress(offset: Offset)
-    fun onTapSwipe(offset: Offset)
+    fun onTapSwipe(centroid: Offset, zoom: Float)
 
     fun onGesture(centroid: Offset, pan: Offset, zoom: Float, rotation: Float)
 
@@ -16,7 +17,7 @@ interface GestureInterface {
     fun onDragStart(offset: Offset)
     fun onDragEnd()
 
-    fun onFling(velocity: Float)
+    fun onFling(velocity: Velocity)
     fun onFlingZoom(velocity: Float)
     fun onFlingRotation(velocity: Float)
 

@@ -17,7 +17,6 @@ import io.github.rafambn.templateapp.theme.AppTheme
 internal fun App() = AppTheme {
     Surface(modifier = Modifier.fillMaxSize()) {
         Box {
-
             val cameraState = rememberCameraState()
             val mapProperties = rememberMapProperties()
             KMaP(
@@ -28,5 +27,3 @@ internal fun App() = AppTheme {
         }
     }
 }
-
-internal expect fun openUrl(url: String?)

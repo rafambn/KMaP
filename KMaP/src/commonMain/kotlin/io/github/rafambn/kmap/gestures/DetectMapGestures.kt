@@ -6,6 +6,7 @@ import androidx.compose.foundation.gestures.calculateCentroidSize
 import androidx.compose.foundation.gestures.calculatePan
 import androidx.compose.foundation.gestures.calculateRotation
 import androidx.compose.foundation.gestures.calculateZoom
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
 import androidx.compose.ui.input.pointer.PointerEvent
@@ -14,6 +15,10 @@ import androidx.compose.ui.input.pointer.PointerEventTimeoutCancellationExceptio
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.isCtrlPressed
+import androidx.compose.ui.input.pointer.util.VelocityTracker
+import androidx.compose.ui.input.pointer.util.VelocityTracker1D
+import androidx.compose.ui.unit.Velocity
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
@@ -22,17 +27,18 @@ import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.atan2
+import kotlin.math.pow
 
 /**
  * [detectMapGestures] detects all kinds of gestures needed for KMaP
  */
-internal suspend fun PointerInputScope.detectMapGestures(   //TODO There are probably a lot of optimization or better ways to implements this function.
+internal suspend fun PointerInputScope.detectMapGestures(   //TODO Trash class make it better - make it expect
     onTap: ((Offset) -> Unit)?,
     onDoubleTap: ((Offset) -> Unit)?,
     onTwoFingersTap: ((Offset) -> Unit)?,
     onLongPress: ((Offset) -> Unit)?,
     onTapLongPress: ((Offset) -> Unit)?,
-    onTapSwipe: ((Offset) -> Unit)?,
+    onTapSwipe: ((centroid: Offset, zoom: Float) -> Unit)?,
 
     onGesture: (centroid: Offset, pan: Offset, zoom: Float, rotation: Float) -> Unit,
 
@@ -40,7 +46,7 @@ internal suspend fun PointerInputScope.detectMapGestures(   //TODO There are pro
     onDragStart: (Offset) -> Unit = { },
     onDragEnd: () -> Unit = { },
 
-    onFling: ((velocity: Float) -> Unit) = {},
+    onFling: ((velocity: Velocity) -> Unit) = {},
     onFlingZoom: ((velocity: Float) -> Unit) = { },
     onFlingRotation: ((velocity: Float) -> Unit) = { },
 
@@ -83,6 +89,7 @@ internal suspend fun PointerInputScope.detectMapGestures(   //TODO There are pro
         var gestureState = GestureState.HOVER
 
         var firstCtrlEvent: PointerEvent? = null
+        var firstTapEvent: PointerEvent? = null
         val longPressTimeout = viewConfiguration.longPressTimeoutMillis
         val doubleTapTimeout = viewConfiguration.doubleTapTimeoutMillis
         val touchSlop = viewConfiguration.touchSlop
@@ -91,6 +98,18 @@ internal suspend fun PointerInputScope.detectMapGestures(   //TODO There are pro
         var zoomSlop = 1f
         var panSlop = Offset.Zero
         var hasTimeOut = false
+        val panVelocityTracker = VelocityTracker()
+        val zoomVelocityTracker = VelocityTracker1D(isDataDifferential = false)
+        val zoomRotationTracker = VelocityTracker1D(isDataDifferential = false)
+
+        val flingVelocityThreshold = 200.dp.toPx().pow(2)
+        val flingVelocityMaxRange = -8000f..8000f
+
+        val flingZoomThreshold = 1f
+        val flingZoomMaxVelocity = 2500f
+
+        val flingRotationThreshold = 1f
+        val flingRotationMaxVelocity = 2500f
 
         val firsPointerEvent = awaitPointerEvent()
         do {
@@ -193,6 +212,7 @@ internal suspend fun PointerInputScope.detectMapGestures(   //TODO There are pro
                     panSlop += event.calculatePan()
                     if (panSlop.getDistance() > touchSlop) {
                         gestureState = GestureState.TAP_MAP
+                        firstTapEvent = event  //TODO improve this when this fucntion becomes actual
                         panSlop = Offset.Zero
                     }
                     continue
@@ -267,7 +287,7 @@ internal suspend fun PointerInputScope.detectMapGestures(   //TODO There are pro
                 handleGestureWithCtrl(event, previousEvent, firstCtrlEvent!!, touchSlop) { rotationChange, centroid ->
                     val rotationVelocity = abs(rotationChange) / (previousEvent.changes[0].uptimeMillis - previousEvent.changes[0].previousUptimeMillis)
 
-                    if (rotationVelocity > 0.5) {
+                    if (rotationVelocity > 0.2) {
                         onFlingRotation.invoke(rotationChange)
                     }
                 }
@@ -291,7 +311,7 @@ internal suspend fun PointerInputScope.detectMapGestures(   //TODO There are pro
                     gestureState = GestureState.DRAG
                     continue
                 } else {
-                    onFling.invoke(panVelocity)
+//                    onFling.invoke(panVelocity)
                     onFlingZoom.invoke(zoomVelocity)
                     onFlingRotation.invoke(rotationVelocity)
 
@@ -306,10 +326,8 @@ internal suspend fun PointerInputScope.detectMapGestures(   //TODO There are pro
             }
 
             if (gestureState == GestureState.TAP_MAP && event.changes.all { !it.pressed }) {
-                onFling.invoke(
-                    abs(
-                        event.calculatePan().getDistance()
-                    ) / (previousEvent.changes[0].uptimeMillis - previousEvent.changes[0].previousUptimeMillis)
+                onFlingZoom.invoke(
+                    abs(event.calculatePan().getDistance()) / (previousEvent.changes[0].uptimeMillis - previousEvent.changes[0].previousUptimeMillis)
                 )
                 gestureState = GestureState.HOVER
                 continue
@@ -317,11 +335,17 @@ internal suspend fun PointerInputScope.detectMapGestures(   //TODO There are pro
 
             if (gestureState == GestureState.DRAG && eventChanges.any { it == GestureChangeState.RELEASE }) {
                 onDragEnd.invoke()
-                onFling.invoke(
-                    abs(
-                        event.calculatePan().getDistance()
-                    ) / (previousEvent.changes[0].uptimeMillis - previousEvent.changes[0].previousUptimeMillis)
+                val velocity = runCatching {
+                    panVelocityTracker.calculateVelocity()
+                }.getOrDefault(Velocity.Zero)
+                val velocitySquared = velocity.x.pow(2) + velocity.y.pow(2)
+                val velocityCapped = Velocity(
+                    velocity.x.coerceIn(flingVelocityMaxRange),
+                    velocity.y.coerceIn(flingVelocityMaxRange)
                 )
+                if (velocitySquared > flingVelocityThreshold) {
+                    onFling(velocityCapped)
+                }
                 gestureState = GestureState.HOVER
                 continue
             }
@@ -336,6 +360,7 @@ internal suspend fun PointerInputScope.detectMapGestures(   //TODO There are pro
 
             if (gestureState == GestureState.DRAG) {
                 onDrag.invoke(event.changes[0].position - previousEvent.changes[0].position)
+                panVelocityTracker.addPosition(event.changes[0].uptimeMillis, event.changes[0].position)
                 continue
             }
 
@@ -355,7 +380,7 @@ internal suspend fun PointerInputScope.detectMapGestures(   //TODO There are pro
             }
 
             if (gestureState == GestureState.TAP_MAP) {
-                onTapSwipe?.invoke(event.changes[0].position - previousEvent.changes[0].position)
+                onTapSwipe?.invoke(firstTapEvent!!.changes[0].position, event.changes[0].position.y - previousEvent.changes[0].position.y)
                 continue
             }
 
