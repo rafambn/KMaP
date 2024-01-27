@@ -21,7 +21,7 @@ enum class GestureState {
     CTRL,
     MOBILE,
     TAP_LONG_PRESS,
-    TAP_MAP,
+    TAP_SWIPE,
     HOVER,
     WAITING_UP,
     WAITING_UP_AFTER_TAP,

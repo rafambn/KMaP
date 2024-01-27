@@ -14,12 +14,12 @@ interface GestureInterface {
     fun onGesture(centroid: Offset, pan: Offset, zoom: Float, rotation: Float)
 
     fun onDrag(dragAmount: Offset)
-    fun onDragStart(offset: Offset)
-    fun onDragEnd()
+    fun onGestureStart(gestureType: GestureState, offset: Offset)
+    fun onGestureEnd(gestureType: GestureState)
 
     fun onFling(velocity: Velocity)
-    fun onFlingZoom(velocity: Float)
-    fun onFlingRotation(velocity: Float)
+    fun onFlingZoom(centroid: Offset, velocity: Float)
+    fun onFlingRotation(centroid: Offset, velocity: Float)
 
     fun onHover(offset: Offset)
     fun onScroll(mouseOffset: Offset, scrollAmount: Float)

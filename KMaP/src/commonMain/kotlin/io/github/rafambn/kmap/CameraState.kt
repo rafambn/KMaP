@@ -29,17 +29,14 @@ class CameraState(
     private var angleRadian = 0F
 
     fun move(offset: Offset) {
-//        println("${offset.y} ---- ${_rawPosition.value.y}")
         _rawPosition.value += offset
     }
 
     fun scale(offset: Offset, scale: Float) {
-        var tempScale = scale
-        if (_zoom.value + scale < 1F)
-            tempScale = 1 - _zoom.value
-        _zoom.value += tempScale
+        val previousZoom = _zoom.value
+        _zoom.value = (scale + _zoom.value).coerceIn(1F, 21F)
         val rotatedOffset = rotateVector(offset, -angleRadian)
-        _rawPosition.value = rotatedOffset + ((_rawPosition.value - rotatedOffset) * _zoom.value / (_zoom.value - tempScale))
+        _rawPosition.value = rotatedOffset + ((_rawPosition.value - rotatedOffset) * _zoom.value / (previousZoom))
     }
 
     fun rotate(offset: Offset, angle: Float) {
