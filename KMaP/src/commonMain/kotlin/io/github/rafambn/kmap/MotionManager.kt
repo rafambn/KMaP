@@ -67,7 +67,7 @@ internal fun MotionManager(
         }
 
         override fun onTapSwipe(centroid: Offset, zoom: Float) {
-            cameraState.scale(centroid, zoom / 30)
+            cameraState.scale(centroid, zoom)
         }
 
         override fun onGesture(centroid: Offset, pan: Offset, zoom: Float, rotation: Float) {
@@ -107,7 +107,7 @@ internal fun MotionManager(
                     initialVelocity = velocity,
                     animationSpec = flingZoomSpec,
                 ) {
-                    cameraState.scale(centroid, value) //TODO improve this because its does not go negative
+                    cameraState.scale(centroid, value)
                 }
             }
         }
@@ -115,11 +115,11 @@ internal fun MotionManager(
         override fun onFlingRotation(centroid: Offset, velocity: Float) {
             coroutineScope.launch {
                 flingRotationAnimatable.snapTo(0F)
-                flingZoomAnimatable.animateDecay(
+                flingRotationAnimatable.animateDecay(
                     initialVelocity = velocity,
                     animationSpec = flingRotationSpec,
                 ) {
-                    cameraState.rotate(centroid, value)//TODO improve this because its does not go negative
+                    cameraState.rotate(centroid, value)
                 }
             }
         }

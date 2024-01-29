@@ -22,7 +22,9 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.math.abs
 import kotlin.math.pow
+import kotlin.math.sqrt
 
 /**
  * [detectMapGestures] detects all kinds of gestures needed for KMaP
@@ -59,16 +61,21 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
         var panSlop = Offset.Zero
         val panVelocityTracker = VelocityTracker()
         val zoomVelocityTracker = VelocityTracker1D(isDataDifferential = false)
-        val rotationVelocityTracker = VelocityTracker1D(isDataDifferential = false)
+        val rotationVelocityTracker = VelocityTracker1D(isDataDifferential = true)
 
-        val flingVelocityThreshold = 200.dp.toPx().pow(2)
-        val flingVelocityMaxRange = -8000f..8000f
+        val flingVelocityThreshold = 100.dp.toPx().pow(2)
+        val flingVelocityMaxRange = -300F..300F
+        val flingVelocityScale = 10F
 
-        val flingZoomThreshold = 200.dp.toPx()
-        val flingZoomMaxRange = -1000f..1000f
+        val flingZoomThreshold = 0.1.dp.toPx()
+        val flingZoomMaxRange = -0.5F..0.5F
+        val flingZoomScale = 50F
 
-        val flingRotationThreshold = 50.dp.toPx()
-        val flingRotationMaxRange = -1000f..1000f
+        val flingRotationThreshold = 2F
+        val flingRotationMaxRange = -7.5F..7.5F
+        val flingRotationScale = 100F
+
+        val tapSwipeScale = 100F
 
         onGestureStart.invoke(GestureState.HOVER, event.changes[0].position)
         do {
@@ -209,10 +216,9 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                         val velocity = runCatching {
                             rotationVelocityTracker.calculateVelocity()
                         }.getOrDefault(0F)
-                        val rotationCapped = velocity.coerceIn(flingRotationMaxRange)
-                        println("$rotationCapped  ---- $flingRotationThreshold")
-                        if (rotationCapped > flingRotationThreshold) {
-                            onFlingRotation(firstCtrlEvent.changes[0].position, rotationCapped / 100F)
+                        val rotationCapped = (velocity / flingRotationScale).coerceIn(flingRotationMaxRange)
+                        if (abs(rotationCapped) > flingRotationThreshold) {
+                            onFlingRotation(firstCtrlEvent.changes[0].position, rotationCapped)
                         }
                     }
                     event.changes.forEach { it.consume() }
@@ -234,10 +240,9 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                     val velocity = runCatching {
                         zoomVelocityTracker.calculateVelocity()
                     }.getOrDefault(0F)
-                    val zoomCapped = velocity.coerceIn(flingZoomMaxRange)
-                    println("$zoomCapped  ---- $flingZoomThreshold")
-                    if (zoomCapped > flingZoomThreshold) {
-                        onFlingZoom(event.changes[0].position, zoomCapped / 1000F)
+                    val zoomCapped = (velocity / (flingZoomScale * tapSwipeScale)).coerceIn(flingZoomMaxRange)
+                    if (abs(zoomCapped) > flingZoomThreshold) {
+                        onFlingZoom(event.changes[0].position, zoomCapped)
                     }
                     event.changes.forEach { it.consume() }
                     gestureState = GestureState.HOVER
@@ -250,13 +255,14 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                     val velocity = runCatching {
                         panVelocityTracker.calculateVelocity()
                     }.getOrDefault(Velocity.Zero)
-                    val velocitySquared = velocity.x.pow(2) + velocity.y.pow(2)
                     val velocityCapped = Velocity(
-                        velocity.x.coerceIn(flingVelocityMaxRange),
-                        velocity.y.coerceIn(flingVelocityMaxRange)
+                        (velocity.x / flingVelocityScale).coerceIn(flingVelocityMaxRange),
+                        (velocity.y / flingVelocityScale).coerceIn(flingVelocityMaxRange)
                     )
+                    val velocitySquared = velocityCapped.x.pow(2) + velocityCapped.y.pow(2)
+                    println("$velocitySquared --- $flingVelocityThreshold --- $velocityCapped")
                     if (velocitySquared > flingVelocityThreshold) {
-                        onFling(velocityCapped / 10F)
+                        onFling(velocityCapped)
                     }
                     event.changes.forEach { it.consume() }
                     gestureState = GestureState.HOVER
@@ -288,7 +294,7 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                 }
 
                 if (gestureState == GestureState.TAP_SWIPE) {
-                    onTapSwipe.invoke(firstTapEvent!!.changes[0].position, event.changes[0].position.y - previousEvent.changes[0].position.y)
+                    onTapSwipe.invoke(firstTapEvent!!.changes[0].position, (event.changes[0].position.y - previousEvent.changes[0].position.y) / tapSwipeScale)
                     zoomVelocityTracker.addDataPoint(event.changes[0].uptimeMillis, event.changes[0].position.y)
                     event.changes.forEach { it.consume() }
                     continue
