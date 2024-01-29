@@ -24,7 +24,6 @@ import kotlinx.coroutines.isActive
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.abs
 import kotlin.math.pow
-import kotlin.math.sqrt
 
 /**
  * [detectMapGestures] detects all kinds of gestures needed for KMaP
@@ -212,14 +211,12 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
 
                 if (eventChanges.any { it == GestureChangeState.RELEASE } && gestureState == GestureState.CTRL) {
                     onGestureEnd.invoke(gestureState)
-                    handleGestureWithCtrl(event, previousEvent, firstCtrlEvent!!, touchSlop) { rotationChange, centroid ->
-                        val velocity = runCatching {
-                            rotationVelocityTracker.calculateVelocity()
-                        }.getOrDefault(0F)
-                        val rotationCapped = (velocity / flingRotationScale).coerceIn(flingRotationMaxRange)
-                        if (abs(rotationCapped) > flingRotationThreshold) {
-                            onFlingRotation(firstCtrlEvent.changes[0].position, rotationCapped)
-                        }
+                    val velocity = runCatching {
+                        rotationVelocityTracker.calculateVelocity()
+                    }.getOrDefault(0F)
+                    val rotationCapped = (velocity / flingRotationScale).coerceIn(flingRotationMaxRange)
+                    if (abs(rotationCapped) > flingRotationThreshold) {
+                        onFlingRotation(firstCtrlEvent!!.changes[0].position, rotationCapped)
                     }
                     event.changes.forEach { it.consume() }
                     gestureState = GestureState.HOVER
