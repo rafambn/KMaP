@@ -3,17 +3,26 @@ package io.github.rafambn.kmap.gestures
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.calculatePan
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
+import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventTimeoutCancellationException
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.isCtrlPressed
 import androidx.compose.ui.input.pointer.isOutOfBounds
+import androidx.compose.ui.input.pointer.util.VelocityTracker
+import androidx.compose.ui.input.pointer.util.VelocityTracker1D
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.math.abs
 import kotlin.math.pow
 
 /**
@@ -40,18 +49,18 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
     awaitMapGesture {
         var previousEvent = awaitPointerEvent()
         var event = previousEvent
-        var gestureState = io.github.rafambn.kmap.gestures.GestureState.HOVER
+        var gestureState = GestureState.HOVER
 
-        var firstCtrlEvent: androidx.compose.ui.input.pointer.PointerEvent? = null
-        var firstTapEvent: androidx.compose.ui.input.pointer.PointerEvent? = null
+        var firstCtrlEvent: PointerEvent? = null
+        var firstTapEvent: PointerEvent? = null
         val longPressTimeout = viewConfiguration.longPressTimeoutMillis
         val doubleTapTimeout = viewConfiguration.doubleTapTimeoutMillis
         val touchSlop = viewConfiguration.touchSlop
         var timeoutCount = 0L
-        var panSlop = androidx.compose.ui.geometry.Offset.Zero
-        val panVelocityTracker = androidx.compose.ui.input.pointer.util.VelocityTracker()
-        val zoomVelocityTracker = androidx.compose.ui.input.pointer.util.VelocityTracker1D(isDataDifferential = false)
-        val rotationVelocityTracker = androidx.compose.ui.input.pointer.util.VelocityTracker1D(isDataDifferential = true)
+        var panSlop = Offset.Zero
+        val panVelocityTracker = VelocityTracker()
+        val zoomVelocityTracker = VelocityTracker1D(isDataDifferential = false)
+        val rotationVelocityTracker = VelocityTracker1D(isDataDifferential = true)
 
         val flingVelocityThreshold = 100.dp.toPx().pow(2)
         val flingVelocityMaxRange = -300F..300F
@@ -67,7 +76,7 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
 
         val tapSwipeScale = 100F
 
-        onGestureStart.invoke(io.github.rafambn.kmap.gestures.GestureState.HOVER, event.changes[0].position)
+        onGestureStart.invoke(GestureState.HOVER, event.changes[0].position)
         do {
             //Awaits for a pointer event
             try {
@@ -77,39 +86,39 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                     awaitPointerEvent()
                 }
 
-                if (event.type == androidx.compose.ui.input.pointer.PointerEventType.Scroll) {
+                if (event.type == PointerEventType.Scroll) {
                     event.changes.forEach { it.consume() }
-                    onScroll.invoke(event.changes[0].position, event.changes[0].scrollDelta.y)
+                    onScroll.invoke(event.changes[0].position, event.changes[0].scrollDelta.y / 100)
                     continue
                 }
 
                 //If doesn't timeout them checks if there is any changes in the state
-                val eventChanges = io.github.rafambn.kmap.gestures.getGestureStateChanges(event, previousEvent)
+                val eventChanges = getGestureStateChanges(event, previousEvent)
 
                 //Here are the cases that leads to an gesture
 
-                if (eventChanges.any { it == io.github.rafambn.kmap.gestures.GestureChangeState.PRESS } && !event.keyboardModifiers.isCtrlPressed && gestureState == io.github.rafambn.kmap.gestures.GestureState.HOVER) {
+                if (eventChanges.any { it == GestureChangeState.PRESS } && !event.keyboardModifiers.isCtrlPressed && gestureState == GestureState.HOVER) {
                     onGestureEnd.invoke(gestureState)
                     event.changes.forEach { it.consume() }
-                    gestureState = io.github.rafambn.kmap.gestures.GestureState.WAITING_UP
+                    gestureState = GestureState.WAITING_UP
                     timeoutCount = longPressTimeout
                     continue
                 }
 
-                if (gestureState == io.github.rafambn.kmap.gestures.GestureState.WAITING_UP) {
-                    if (eventChanges.any { it == io.github.rafambn.kmap.gestures.GestureChangeState.RELEASE }) {
+                if (gestureState == GestureState.WAITING_UP) {
+                    if (eventChanges.any { it == GestureChangeState.RELEASE }) {
                         event.changes.forEach { it.consume() }
-                        gestureState = io.github.rafambn.kmap.gestures.GestureState.WAITING_DOWN
+                        gestureState = GestureState.WAITING_DOWN
                         timeoutCount = doubleTapTimeout
                         continue
                     }
-                    if (event.type == androidx.compose.ui.input.pointer.PointerEventType.Move) {
+                    if (event.type == PointerEventType.Move) {
                         panSlop += event.calculatePan()
                         if (panSlop.getDistance() > touchSlop) {
                             event.changes.forEach { it.consume() }
-                            gestureState = io.github.rafambn.kmap.gestures.GestureState.DRAG
+                            gestureState = GestureState.DRAG
                             onGestureStart.invoke(gestureState, event.changes[0].position)
-                            panSlop = androidx.compose.ui.geometry.Offset.Zero
+                            panSlop = Offset.Zero
                             continue
                         }
                     }
@@ -118,17 +127,17 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                         onGestureEnd.invoke(gestureState)
                         onLongPress.invoke(event.changes[0].position)
                         event.changes.forEach { it.consume() }
-                        gestureState = io.github.rafambn.kmap.gestures.GestureState.HOVER
+                        gestureState = GestureState.HOVER
                         onGestureStart.invoke(gestureState, event.changes[0].position)
                         continue
                     }
                     continue
                 }
 
-                if (gestureState == io.github.rafambn.kmap.gestures.GestureState.WAITING_DOWN) {
-                    if (eventChanges.any { it == io.github.rafambn.kmap.gestures.GestureChangeState.PRESS }) {
+                if (gestureState == GestureState.WAITING_DOWN) {
+                    if (eventChanges.any { it == GestureChangeState.PRESS }) {
                         event.changes.forEach { it.consume() }
-                        gestureState = io.github.rafambn.kmap.gestures.GestureState.WAITING_UP_AFTER_TAP
+                        gestureState = GestureState.WAITING_UP_AFTER_TAP
                         timeoutCount = longPressTimeout
                         continue
                     }
@@ -137,180 +146,191 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                         onGestureEnd.invoke(gestureState)
                         onTap.invoke(event.changes[0].position)
                         event.changes.forEach { it.consume() }
-                        gestureState = io.github.rafambn.kmap.gestures.GestureState.HOVER
+                        gestureState = GestureState.HOVER
                         onGestureStart.invoke(gestureState, event.changes[0].position)
                         continue
                     }
                     continue
                 }
 
-                if (gestureState == io.github.rafambn.kmap.gestures.GestureState.WAITING_UP_AFTER_TAP) {
-                    if (eventChanges.any { it == io.github.rafambn.kmap.gestures.GestureChangeState.RELEASE }) {
+                if (gestureState == GestureState.WAITING_UP_AFTER_TAP) {
+                    if (eventChanges.any { it == GestureChangeState.RELEASE }) {
                         onDoubleTap.invoke(event.changes[0].position)
                         event.changes.forEach { it.consume() }
-                        gestureState = io.github.rafambn.kmap.gestures.GestureState.HOVER
+                        gestureState = GestureState.HOVER
                         onGestureStart.invoke(gestureState, event.changes[0].position)
                         continue
                     }
-                    if (event.type == androidx.compose.ui.input.pointer.PointerEventType.Move) {
+                    if (event.type == PointerEventType.Move) {
                         panSlop += event.calculatePan()
                         if (panSlop.getDistance() > touchSlop) {
                             firstTapEvent = event
                             event.changes.forEach { it.consume() }
-                            gestureState = io.github.rafambn.kmap.gestures.GestureState.TAP_SWIPE
+                            gestureState = GestureState.TAP_SWIPE
                             onGestureStart.invoke(gestureState, event.changes[0].position)
-                            panSlop = androidx.compose.ui.geometry.Offset.Zero
+                            panSlop = Offset.Zero
                             continue
                         }
                     }
                     timeoutCount -= event.changes[0].uptimeMillis - previousEvent.changes[0].uptimeMillis
                     if (timeoutCount < 0) {
                         event.changes.forEach { it.consume() }
-                        gestureState = io.github.rafambn.kmap.gestures.GestureState.TAP_LONG_PRESS
+                        gestureState = GestureState.TAP_LONG_PRESS
                         onGestureStart.invoke(gestureState, event.changes[0].position)
                         continue
                     }
                     continue
                 }
 
-                if (eventChanges.any { it == io.github.rafambn.kmap.gestures.GestureChangeState.PRESS } && event.keyboardModifiers.isCtrlPressed && gestureState == io.github.rafambn.kmap.gestures.GestureState.HOVER) {
+                if (eventChanges.any { it == GestureChangeState.PRESS } && event.keyboardModifiers.isCtrlPressed && gestureState == GestureState.HOVER) {
                     onGestureEnd.invoke(gestureState)
                     firstCtrlEvent = event
                     event.changes.forEach { it.consume() }
-                    gestureState = io.github.rafambn.kmap.gestures.GestureState.CTRL
+                    gestureState = GestureState.CTRL
                     onGestureStart.invoke(gestureState, event.changes[0].position)
                     continue
                 }
 
-                if (eventChanges.any { it == io.github.rafambn.kmap.gestures.GestureChangeState.CTRL_PRESS } && gestureState == io.github.rafambn.kmap.gestures.GestureState.DRAG) {
+                if (eventChanges.any { it == GestureChangeState.CTRL_PRESS } && gestureState == GestureState.DRAG) {
                     onGestureEnd.invoke(gestureState)
                     firstCtrlEvent = event
                     event.changes.forEach { it.consume() }
-                    gestureState = io.github.rafambn.kmap.gestures.GestureState.CTRL
+                    gestureState = GestureState.CTRL
                     onGestureStart.invoke(gestureState, event.changes[0].position)
                     continue
                 }
 
                 //Here are the cases that exits of an gesture to another
-                if (eventChanges.any { it == io.github.rafambn.kmap.gestures.GestureChangeState.CTRL_RELEASE } && gestureState == io.github.rafambn.kmap.gestures.GestureState.CTRL) {
+                if (eventChanges.any { it == GestureChangeState.CTRL_RELEASE } && gestureState == GestureState.CTRL) {
                     onGestureEnd.invoke(gestureState)
                     event.changes.forEach { it.consume() }
-                    gestureState = io.github.rafambn.kmap.gestures.GestureState.DRAG
+                    gestureState = GestureState.DRAG
                     onGestureStart.invoke(gestureState, event.changes[0].position)
                     continue
                 }
 
-                if (eventChanges.any { it == io.github.rafambn.kmap.gestures.GestureChangeState.RELEASE } && gestureState == io.github.rafambn.kmap.gestures.GestureState.CTRL) {
+                if (eventChanges.any { it == GestureChangeState.RELEASE } && gestureState == GestureState.CTRL) {
                     onGestureEnd.invoke(gestureState)
                     val velocity = runCatching {
                         rotationVelocityTracker.calculateVelocity()
                     }.getOrDefault(0F)
                     val rotationCapped = (velocity / flingRotationScale).coerceIn(flingRotationMaxRange)
-                    if (kotlin.math.abs(rotationCapped) > flingRotationThreshold) {
+                    if (abs(rotationCapped) > flingRotationThreshold) {
                         onFlingRotation(firstCtrlEvent!!.changes[0].position, rotationCapped)
                     }
                     event.changes.forEach { it.consume() }
-                    gestureState = io.github.rafambn.kmap.gestures.GestureState.HOVER
+                    gestureState = GestureState.HOVER
                     onGestureStart.invoke(gestureState, event.changes[0].position)
                     continue
                 }
 
-                if (gestureState == io.github.rafambn.kmap.gestures.GestureState.TAP_LONG_PRESS && eventChanges.any { it == io.github.rafambn.kmap.gestures.GestureChangeState.RELEASE }) {
+                if (gestureState == GestureState.TAP_LONG_PRESS && eventChanges.any { it == GestureChangeState.RELEASE }) {
                     onGestureEnd.invoke(gestureState)
                     event.changes.forEach { it.consume() }
-                    gestureState = io.github.rafambn.kmap.gestures.GestureState.HOVER
+                    gestureState = GestureState.HOVER
                     onGestureStart.invoke(gestureState, event.changes[0].position)
                     continue
                 }
 
-                if (gestureState == io.github.rafambn.kmap.gestures.GestureState.TAP_SWIPE && event.changes.all { !it.pressed }) {
+                if (gestureState == GestureState.TAP_SWIPE && event.changes.all { !it.pressed }) {
                     onGestureEnd.invoke(gestureState)
                     val velocity = runCatching {
                         zoomVelocityTracker.calculateVelocity()
                     }.getOrDefault(0F)
                     val zoomCapped = (velocity / (flingZoomScale * tapSwipeScale)).coerceIn(flingZoomMaxRange)
-                    if (kotlin.math.abs(zoomCapped) > flingZoomThreshold) {
+                    if (abs(zoomCapped) > flingZoomThreshold) {
                         onFlingZoom(event.changes[0].position, zoomCapped)
                     }
                     event.changes.forEach { it.consume() }
-                    gestureState = io.github.rafambn.kmap.gestures.GestureState.HOVER
+                    gestureState = GestureState.HOVER
                     onGestureStart.invoke(gestureState, event.changes[0].position)
                     continue
                 }
 
-                if (gestureState == io.github.rafambn.kmap.gestures.GestureState.DRAG && eventChanges.any { it == io.github.rafambn.kmap.gestures.GestureChangeState.RELEASE }) {
+                if (gestureState == GestureState.DRAG && eventChanges.any { it == GestureChangeState.RELEASE }) {
                     onGestureEnd.invoke(gestureState)
                     val velocity = runCatching {
                         panVelocityTracker.calculateVelocity()
-                    }.getOrDefault(androidx.compose.ui.unit.Velocity.Zero)
-                    val velocityCapped = androidx.compose.ui.unit.Velocity(
+                    }.getOrDefault(Velocity.Zero)
+                    val velocityCapped = Velocity(
                         (velocity.x / flingVelocityScale).coerceIn(flingVelocityMaxRange),
                         (velocity.y / flingVelocityScale).coerceIn(flingVelocityMaxRange)
                     )
                     val velocitySquared = velocityCapped.x.pow(2) + velocityCapped.y.pow(2)
-                    kotlin.io.println("$velocitySquared --- $flingVelocityThreshold --- $velocityCapped")
                     if (velocitySquared > flingVelocityThreshold) {
                         onFling(velocityCapped)
                     }
                     event.changes.forEach { it.consume() }
-                    gestureState = io.github.rafambn.kmap.gestures.GestureState.HOVER
+                    gestureState = GestureState.HOVER
                     onGestureStart.invoke(gestureState, event.changes[0].position)
                     continue
                 }
 
                 //Finally, here are the gestures
-                if (gestureState == io.github.rafambn.kmap.gestures.GestureState.CTRL) {
-                    io.github.rafambn.kmap.gestures.handleGestureWithCtrl(event, previousEvent, firstCtrlEvent!!, touchSlop) { rotationChange, centroid ->
-                        onGesture.invoke(centroid, androidx.compose.ui.geometry.Offset.Zero, 0F, rotationChange)
+                if (gestureState == GestureState.CTRL) {
+                    handleGestureWithCtrl(event, previousEvent, firstCtrlEvent!!, touchSlop) { rotationChange, centroid ->
+                        onGesture.invoke(centroid, Offset.Zero, 0F, rotationChange)
                         rotationVelocityTracker.addDataPoint(event.changes[0].uptimeMillis, rotationChange)
                     }
                     event.changes.forEach { it.consume() }
                     continue
                 }
 
-                if (gestureState == io.github.rafambn.kmap.gestures.GestureState.DRAG) {
+                if (gestureState == GestureState.DRAG) {
                     onDrag.invoke(event.changes[0].position - previousEvent.changes[0].position)
                     panVelocityTracker.addPosition(event.changes[0].uptimeMillis, event.changes[0].position)
                     event.changes.forEach { it.consume() }
                     continue
                 }
 
-                if (gestureState == io.github.rafambn.kmap.gestures.GestureState.TAP_LONG_PRESS) {
+                if (gestureState == GestureState.TAP_LONG_PRESS) {
                     onTapLongPress.invoke(event.changes[0].position - previousEvent.changes[0].position)
                     event.changes.forEach { it.consume() }
                     continue
                 }
 
-                if (gestureState == io.github.rafambn.kmap.gestures.GestureState.TAP_SWIPE) {
+                if (gestureState == GestureState.TAP_SWIPE) {
                     onTapSwipe.invoke(firstTapEvent!!.changes[0].position, (event.changes[0].position.y - previousEvent.changes[0].position.y) / tapSwipeScale)
                     zoomVelocityTracker.addDataPoint(event.changes[0].uptimeMillis, event.changes[0].position.y)
                     event.changes.forEach { it.consume() }
                     continue
                 }
 
-                if (gestureState == io.github.rafambn.kmap.gestures.GestureState.HOVER) {
+                if (gestureState == GestureState.HOVER) {
                     onHover.invoke(event.changes[0].position)
                 }
 
-            } catch (_: androidx.compose.ui.input.pointer.PointerEventTimeoutCancellationException) {
+            } catch (_: PointerEventTimeoutCancellationException) {
                 //It case of a timeout them just check the case where timeout is necessary
                 timeoutCount -= 10L
-                if (gestureState == io.github.rafambn.kmap.gestures.GestureState.WAITING_UP || gestureState == io.github.rafambn.kmap.gestures.GestureState.WAITING_DOWN || gestureState == io.github.rafambn.kmap.gestures.GestureState.WAITING_UP_AFTER_TAP) {
+                if (gestureState == GestureState.WAITING_UP || gestureState == GestureState.WAITING_DOWN || gestureState == GestureState.WAITING_UP_AFTER_TAP) {
                     if (timeoutCount < 0) {
                         onGestureEnd.invoke(gestureState)
                         onLongPress.invoke(event.changes[0].position)
                         event.changes.forEach { it.consume() }
                         gestureState =
-                            if (gestureState == io.github.rafambn.kmap.gestures.GestureState.WAITING_UP_AFTER_TAP) io.github.rafambn.kmap.gestures.GestureState.TAP_LONG_PRESS else io.github.rafambn.kmap.gestures.GestureState.HOVER
+                            if (gestureState == GestureState.WAITING_UP_AFTER_TAP) GestureState.TAP_LONG_PRESS else GestureState.HOVER
                         onGestureStart.invoke(gestureState, event.changes[0].position)
                         continue
                     }
                 }
             }
-        } while (this@coroutineScope.isActive && !event.changes.any { it.isOutOfBounds(size, extendedTouchPadding) })
+        } while (this@coroutineScope.isActive && !event.changes.any { it.customIsOutOfBounds(size, extendedTouchPadding) })
 
         onGestureEnd.invoke(gestureState)
     }
+}
+
+//This is necessary because for js method isOutOfBounds doesn't work properly at all
+fun PointerInputChange.customIsOutOfBounds(size: IntSize, extendedTouchPadding: Size): Boolean {
+    val position = position
+    val x = position.x
+    val y = position.y
+    val minX = -extendedTouchPadding.width
+    val maxX = size.width + extendedTouchPadding.width
+    val minY = -extendedTouchPadding.height
+    val maxY = size.height + extendedTouchPadding.height
+    return x <= minX || x >= maxX || y <= minY || y >= maxY
 }
 
 /**

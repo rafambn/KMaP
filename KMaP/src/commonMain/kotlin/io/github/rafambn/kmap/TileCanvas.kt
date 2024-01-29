@@ -38,8 +38,8 @@ internal fun TileCanvas(
                 degrees = cameraState._angleDegres.value,
                 pivot = cameraState._rawPosition.value
             )
+            scale(scale = cameraState._zoom.value, cameraState._rawPosition.value)
             translate(left = cameraState._rawPosition.value.x, top = cameraState._rawPosition.value.y)
-            scale(scale = cameraState._zoom.value, Offset.Zero)
         }) {
             drawIntoCanvas {
                 for (tile in listTiles) {

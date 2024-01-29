@@ -3,7 +3,6 @@ package io.github.rafambn.kmap
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.IntSize
 import kotlin.math.PI
@@ -35,8 +34,7 @@ class CameraState(
     fun scale(offset: Offset, scale: Float) {
         val previousZoom = _zoom.value
         _zoom.value = (scale + _zoom.value).coerceIn(1F, 21F)
-        val rotatedOffset = rotateVector(offset, -angleRadian)
-        _rawPosition.value = rotatedOffset + ((_rawPosition.value - rotatedOffset) * _zoom.value / (previousZoom))
+        _rawPosition.value = offset + ((_rawPosition.value - offset) * _zoom.value / previousZoom)
     }
 
     fun rotate(offset: Offset, angle: Float) {

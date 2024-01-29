@@ -257,7 +257,6 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                         (velocity.y / flingVelocityScale).coerceIn(flingVelocityMaxRange)
                     )
                     val velocitySquared = velocityCapped.x.pow(2) + velocityCapped.y.pow(2)
-                    println("$velocitySquared --- $flingVelocityThreshold --- $velocityCapped")
                     if (velocitySquared > flingVelocityThreshold) {
                         onFling(velocityCapped)
                     }
