@@ -31,7 +31,7 @@ import kotlin.math.pow
 internal actual suspend fun PointerInputScope.detectMapGestures(
     onTap: (Offset) -> Unit,
     onDoubleTap: (Offset) -> Unit,
-    onTwoFingersTap: (Offset) -> Unit, //There isn't a call for this method in Desktop
+    onTwoFingersTap: (Offset) -> Unit, //There isn't a call for this method in Js
     onLongPress: (Offset) -> Unit,
     onTapLongPress: (Offset) -> Unit,
     onTapSwipe: (centroid: Offset, zoom: Float) -> Unit,
@@ -303,13 +303,28 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
             } catch (_: PointerEventTimeoutCancellationException) {
                 //It case of a timeout them just check the case where timeout is necessary
                 timeoutCount -= 10L
-                if (gestureState == GestureState.WAITING_UP || gestureState == GestureState.WAITING_DOWN || gestureState == GestureState.WAITING_UP_AFTER_TAP) {
+                if (gestureState == GestureState.WAITING_UP) {
                     if (timeoutCount < 0) {
-                        onGestureEnd.invoke(gestureState)
                         onLongPress.invoke(event.changes[0].position)
                         event.changes.forEach { it.consume() }
-                        gestureState =
-                            if (gestureState == GestureState.WAITING_UP_AFTER_TAP) GestureState.TAP_LONG_PRESS else GestureState.HOVER
+                        gestureState = GestureState.HOVER
+                        onGestureStart.invoke(gestureState, event.changes[0].position)
+                        continue
+                    }
+                }
+                if (gestureState == GestureState.WAITING_DOWN) {
+                    if (timeoutCount < 0) {
+                        onTap.invoke(event.changes[0].position)
+                        event.changes.forEach { it.consume() }
+                        gestureState = GestureState.HOVER
+                        onGestureStart.invoke(gestureState, event.changes[0].position)
+                        continue
+                    }
+                }
+                if (gestureState == GestureState.WAITING_UP_AFTER_TAP) {
+                    if (timeoutCount < 0) {
+                        event.changes.forEach { it.consume() }
+                        gestureState = GestureState.TAP_LONG_PRESS
                         onGestureStart.invoke(gestureState, event.changes[0].position)
                         continue
                     }

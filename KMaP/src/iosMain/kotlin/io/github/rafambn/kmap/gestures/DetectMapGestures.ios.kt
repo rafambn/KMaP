@@ -1,10 +1,11 @@
 package io.github.rafambn.kmap.gestures
 
+import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.unit.Velocity
-import kotlinx.coroutines.coroutineScope
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * [detectMapGestures] detects all kinds of gestures needed for KMaP
@@ -22,10 +23,10 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
     onGestureEnd: (gestureType: GestureState) -> Unit,
     onFling: (velocity: Velocity) -> Unit,
     onFlingZoom: (centroid: Offset, velocity: Float) -> Unit,
-    onFlingRotation: (centroid: Offset,velocity: Float) -> Unit,
+    onFlingRotation: (centroid: Offset, velocity: Float) -> Unit,
     onHover: (Offset) -> Unit,
     onScroll: (mouseOffset: Offset, scrollAmount: Float) -> Unit
-) = coroutineScope {
+) {
 }
 
 /**

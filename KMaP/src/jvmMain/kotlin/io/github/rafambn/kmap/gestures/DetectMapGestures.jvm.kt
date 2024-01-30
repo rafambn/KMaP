@@ -2,6 +2,7 @@ package io.github.rafambn.kmap.gestures
 
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.calculatePan
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
@@ -45,7 +46,6 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
     onHover: (Offset) -> Unit,
     onScroll: (mouseOffset: Offset, scrollAmount: Float) -> Unit
 ) = coroutineScope {
-
     awaitMapGesture {
         var previousEvent = awaitPointerEvent()
         var event = previousEvent
@@ -303,12 +303,28 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
             } catch (_: PointerEventTimeoutCancellationException) {
                 //It case of a timeout them just check the case where timeout is necessary
                 timeoutCount -= 10L
-                if (gestureState == GestureState.WAITING_UP || gestureState == GestureState.WAITING_DOWN || gestureState == GestureState.WAITING_UP_AFTER_TAP) {
+                if (gestureState == GestureState.WAITING_UP) {
                     if (timeoutCount < 0) {
-                        onGestureEnd.invoke(gestureState)
                         onLongPress.invoke(event.changes[0].position)
                         event.changes.forEach { it.consume() }
-                        gestureState = if (gestureState == GestureState.WAITING_UP_AFTER_TAP) GestureState.TAP_LONG_PRESS else GestureState.HOVER
+                        gestureState = GestureState.HOVER
+                        onGestureStart.invoke(gestureState, event.changes[0].position)
+                        continue
+                    }
+                }
+                if (gestureState == GestureState.WAITING_DOWN) {
+                    if (timeoutCount < 0) {
+                        onTap.invoke(event.changes[0].position)
+                        event.changes.forEach { it.consume() }
+                        gestureState = GestureState.HOVER
+                        onGestureStart.invoke(gestureState, event.changes[0].position)
+                        continue
+                    }
+                }
+                if (gestureState == GestureState.WAITING_UP_AFTER_TAP) {
+                    if (timeoutCount < 0) {
+                        event.changes.forEach { it.consume() }
+                        gestureState = GestureState.TAP_LONG_PRESS
                         onGestureStart.invoke(gestureState, event.changes[0].position)
                         continue
                     }

@@ -7,7 +7,6 @@ import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.generateDecayAnimationSpec
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -16,7 +15,6 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layoutId
@@ -52,14 +50,15 @@ internal fun MotionManager(
 
         override fun onDoubleTap(offset: Offset) {
             cameraState.scale(offset, -1 / 3F)
+            println("onDoubleTap")
         }
 
         override fun onTwoFingersTap(offset: Offset) {
             cameraState.scale(offset, 1 / 3F)
+            println("onTwoFingersTap")
         }
 
         override fun onLongPress(offset: Offset) {
-
         }
 
         override fun onTapLongPress(offset: Offset) {
@@ -72,7 +71,7 @@ internal fun MotionManager(
 
         override fun onGesture(centroid: Offset, pan: Offset, zoom: Float, rotation: Float) {
             cameraState.rotate(centroid, rotation)
-            cameraState.scale(centroid, zoom / 3)
+            cameraState.scale(centroid, zoom)
             cameraState.move(pan)
         }
 
