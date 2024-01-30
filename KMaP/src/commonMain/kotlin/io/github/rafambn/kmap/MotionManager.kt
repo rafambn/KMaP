@@ -128,7 +128,7 @@ internal fun MotionManager(
         }
 
         override fun onScroll(mouseOffset: Offset, scrollAmount: Float) {
-            cameraState.scale(mouseOffset, scrollAmount / 3)
+            cameraState.scale(mouseOffset, scrollAmount)
         }
     }
 
@@ -159,7 +159,6 @@ internal fun MotionManager(
             }
             .onGloballyPositioned { coordinates ->
                 cameraState.mapSize = coordinates.size
-//                println(coordinates.size)
             }
     ) { measurables, constraints ->
 

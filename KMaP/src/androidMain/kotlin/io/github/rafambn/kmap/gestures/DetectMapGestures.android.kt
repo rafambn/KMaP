@@ -67,18 +67,18 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
         val rotationVelocityTracker = VelocityTracker1D(isDataDifferential = true)
 
         val flingVelocityThreshold = 100.dp.toPx().pow(2)
-        val flingVelocityMaxRange = -300F..300F
+        val flingVelocityMaxRange = -1000F..1000F
         val flingVelocityScale = 10F
 
         val flingZoomThreshold = 0.1.dp.toPx()
         val flingZoomMaxRange = -0.5F..0.5F
-        val flingZoomScale = 50F
+        val flingZoomScale = 20F
 
         val flingRotationThreshold = 2F
-        val flingRotationMaxRange = -7.5F..7.5F
-        val flingRotationScale = 100F
+        val flingRotationMaxRange = -5F..5F
+        val flingRotationScale = 300F
 
-        val tapSwipeScale = 100F
+        val tapSwipeScale = 400F
 
         do {
             //Awaits for a pointer event
@@ -277,13 +277,13 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
 
                 if (gestureState == GestureState.MOBILE && eventChanges.any { it == GestureChangeState.TWO_RELEASE }) {
                     onGestureEnd.invoke(gestureState)
-                   val zoomVelocity = runCatching {
-                        zoomVelocityTracker.calculateVelocity()
-                    }.getOrDefault(0F)
-                    val zoomCapped = (zoomVelocity / (flingZoomScale * tapSwipeScale)).coerceIn(flingZoomMaxRange)
-                    if (abs(zoomCapped) > flingZoomThreshold) {
-                        onFlingZoom(event.changes[0].position, zoomCapped)
-                    }
+//                   val zoomVelocity = runCatching {
+//                        -zoomVelocityTracker.calculateVelocity()
+//                    }.getOrDefault(0F)
+//                    val zoomCapped = (zoomVelocity / flingZoomScale).coerceIn(flingZoomMaxRange)
+//                    if (abs(zoomCapped) > flingZoomThreshold) {
+//                        onFlingZoom(event.changes[0].position, zoomCapped)
+//                    }
                     val rotationVelocity = runCatching {
                         rotationVelocityTracker.calculateVelocity()
                     }.getOrDefault(0F)
@@ -291,6 +291,7 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                     if (abs(rotationCapped) > flingRotationThreshold) {
                         onFlingRotation(event.changes[0].position, rotationCapped)
                     }
+                    println("$rotationVelocity ----- $rotationCapped ---- ${abs(rotationCapped)} ----- $flingRotationThreshold")
                     event.changes.forEach { it.consume() }
                     gestureState = GestureState.WAITING_UP_AFTER_TWO_RELEASE
                     timeoutCount = doubleTapTimeout
@@ -412,12 +413,8 @@ internal actual suspend fun PointerInputScope.awaitMapGesture(block: suspend Awa
                 awaitForGestureReset()
             } catch (e: CancellationException) {
                 if (currentContext.isActive) {
-                    // The current gesture was canceled. Wait for all fingers to be "up" before
-                    // looping again.
                     awaitForGestureReset()
                 } else {
-                    // detectGesture was cancelled externally. Rethrow the cancellation exception to
-                    // propagate it upwards.
                     throw e
                 }
             }
