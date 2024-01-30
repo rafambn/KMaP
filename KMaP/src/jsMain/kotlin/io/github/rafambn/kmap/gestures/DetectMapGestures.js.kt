@@ -88,7 +88,7 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
 
                 if (event.type == PointerEventType.Scroll) {
                     event.changes.forEach { it.consume() }
-                    onScroll.invoke(event.changes[0].position, event.changes[0].scrollDelta.y / 100)
+                    onScroll.invoke(event.changes[0].position, event.changes[0].scrollDelta.y / 300)
                     continue
                 }
 
