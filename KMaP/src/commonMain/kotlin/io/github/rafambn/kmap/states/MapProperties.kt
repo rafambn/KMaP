@@ -1,4 +1,4 @@
-package io.github.rafambn.kmap
+package io.github.rafambn.kmap.states
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf

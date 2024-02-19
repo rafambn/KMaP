@@ -24,6 +24,7 @@ import io.github.rafambn.kmap.enums.MapComponentType
 import io.github.rafambn.kmap.gestures.GestureInterface
 import io.github.rafambn.kmap.gestures.GestureState
 import io.github.rafambn.kmap.gestures.detectMapGestures
+import io.github.rafambn.kmap.states.CameraState
 import kotlinx.coroutines.launch
 
 @Composable
@@ -50,12 +51,10 @@ internal fun MotionManager(
 
         override fun onDoubleTap(offset: Offset) {
             cameraState.scale(offset, -1 / 3F)
-            println("onDoubleTap")
         }
 
         override fun onTwoFingersTap(offset: Offset) {
             cameraState.scale(offset, 1 / 3F)
-            println("onTwoFingersTap")
         }
 
         override fun onLongPress(offset: Offset) {
