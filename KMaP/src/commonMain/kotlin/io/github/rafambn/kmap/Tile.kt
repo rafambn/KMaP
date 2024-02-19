@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
 
-internal data class Tile(
+data class Tile(
     val zoom: Int,
     val row: Int,
     val col: Int

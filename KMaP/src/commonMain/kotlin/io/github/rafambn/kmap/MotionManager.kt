@@ -46,7 +46,6 @@ internal fun MotionManager(
 
     val gestureListener = object : GestureInterface {
         override fun onTap(offset: Offset) {
-
         }
 
         override fun onDoubleTap(offset: Offset) {
@@ -157,7 +156,7 @@ internal fun MotionManager(
                 )
             }
             .onGloballyPositioned { coordinates ->
-                cameraState.mapSize = coordinates.size
+                cameraState.mapSize.value = coordinates.size
             }
     ) { measurables, constraints ->
 

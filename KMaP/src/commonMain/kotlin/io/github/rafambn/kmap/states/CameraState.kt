@@ -14,9 +14,7 @@ class CameraState(
     initialZoom: Float = 1F,
     initialRotation: Float = 0F
 ) {
-    internal var mapSize: IntSize = IntSize.Zero
-
-    internal val tileSize = 256F
+    internal var mapSize = mutableStateOf(IntSize.Zero)
     internal val zoom = mutableStateOf(initialZoom)
     internal val angleDegres = mutableStateOf(initialRotation)
     internal val rawPosition = mutableStateOf(initialPosition)
