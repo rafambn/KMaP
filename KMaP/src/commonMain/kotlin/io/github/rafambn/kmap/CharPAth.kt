@@ -282,10 +282,10 @@ class CharPath {
             close()
         }
         paths['-'] = Path().apply {
-            moveTo(4f, 8f - 25f)
-            cubicTo(4.5f, 7.5f - 25f, 11.5f, 7.5f - 25f, 11.5f, 8.5f - 25f)
-            lineTo(4.5f, 8.5f - 25f)
-            cubicTo(4.5f, 8.5f - 25f, 4f, 8f - 25f, 4f, 8f - 25f)
+            moveTo(0f, -15f)
+            lineTo(15f, -15f)
+            lineTo(15f, -5f)
+            lineTo(0f, -5f)
             close()
         }
         paths[' '] = Path().apply {

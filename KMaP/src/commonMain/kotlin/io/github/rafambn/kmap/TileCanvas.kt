@@ -79,9 +79,10 @@ internal fun TileCanvas(
 }
 
 fun generateRandomColor(row: Int, collumn: Int): Color {
-    return if (row == 1 && collumn == 1) Color.Green
-    else if (row == 2 && collumn == 1) Color.Cyan
-    else Color.White
+    return if ((row + collumn) % 2 == 0)
+        Color.Green
+    else
+        Color.Cyan
 //    val r = Random.nextFloat()
 //    val g = Random.nextFloat()
 //    val b = Random.nextFloat()
