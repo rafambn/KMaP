@@ -24,13 +24,13 @@ import io.github.rafambn.kmap.enums.MapComponentType
 import io.github.rafambn.kmap.gestures.GestureInterface
 import io.github.rafambn.kmap.gestures.GestureState
 import io.github.rafambn.kmap.gestures.detectMapGestures
-import io.github.rafambn.kmap.states.CameraState
+import io.github.rafambn.kmap.states.MapState
 import kotlinx.coroutines.launch
 
 @Composable
 internal fun MotionManager(
     modifier: Modifier = Modifier,
-    cameraState: CameraState,
+    mapState: MapState,
     content: @Composable () -> Unit
 ) {
 
@@ -49,40 +49,38 @@ internal fun MotionManager(
         }
 
         override fun onDoubleTap(offset: Offset) {
-            cameraState.scale(offset, -1 / 3F)
+            mapState.scale(offset, -1 / 3F)
         }
 
         override fun onTwoFingersTap(offset: Offset) {
-            cameraState.scale(offset, 1 / 3F)
+            mapState.scale(offset, 1 / 3F)
         }
 
         override fun onLongPress(offset: Offset) {
         }
 
         override fun onTapLongPress(offset: Offset) {
-            cameraState.move(offset)
+            mapState.move(offset)
         }
 
         override fun onTapSwipe(centroid: Offset, zoom: Float) {
-            cameraState.scale(centroid, zoom)
+            mapState.scale(centroid, zoom)
         }
 
         override fun onGesture(centroid: Offset, pan: Offset, zoom: Float, rotation: Float) {
-            cameraState.rotate(centroid, rotation)
-            cameraState.scale(centroid, zoom)
-            cameraState.move(pan)
+            mapState.rotate(centroid, rotation)
+            mapState.scale(centroid, zoom)
+            mapState.move(pan)
         }
 
         override fun onDrag(dragAmount: Offset) {
-            cameraState.move(dragAmount)
+            mapState.move(dragAmount)
         }
 
         override fun onGestureStart(gestureType: GestureState, offset: Offset) {
-            println("start $gestureType")
         }
 
         override fun onGestureEnd(gestureType: GestureState) {
-            println("end $gestureType")
         }
 
         override fun onFling(velocity: Velocity) {
@@ -92,7 +90,7 @@ internal fun MotionManager(
                     initialVelocity = Offset(velocity.x, velocity.y),
                     animationSpec = flingSpec,
                 ) {
-                    cameraState.move(value)
+                    mapState.move(value)
                 }
             }
         }
@@ -104,7 +102,7 @@ internal fun MotionManager(
                     initialVelocity = velocity,
                     animationSpec = flingZoomSpec,
                 ) {
-                    cameraState.scale(centroid, value)
+                    mapState.scale(centroid, value)
                 }
             }
         }
@@ -116,7 +114,7 @@ internal fun MotionManager(
                     initialVelocity = velocity,
                     animationSpec = flingRotationSpec,
                 ) {
-                    cameraState.rotate(centroid, value)
+                    mapState.rotate(centroid, value)
                 }
             }
         }
@@ -126,7 +124,7 @@ internal fun MotionManager(
         }
 
         override fun onScroll(mouseOffset: Offset, scrollAmount: Float) {
-            cameraState.scale(mouseOffset, scrollAmount)
+            mapState.scale(mouseOffset, scrollAmount)
         }
     }
 
@@ -156,7 +154,7 @@ internal fun MotionManager(
                 )
             }
             .onGloballyPositioned { coordinates ->
-                cameraState.mapSize.value = coordinates.size
+                mapState.mapViewSize = coordinates.size
             }
     ) { measurables, constraints ->
 

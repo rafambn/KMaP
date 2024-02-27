@@ -12,18 +12,18 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
-import androidx.compose.ui.unit.IntSize
+import io.github.rafambn.kmap.states.MapState
 import io.github.rafambn.kmap.states.rememberTileState
 
 @Composable
 internal fun TileCanvas(
     modifier: Modifier,
-    angle: Float,
-    position: Offset,
-    zoom: Float,
-    mapSize: IntSize
+    mapState: MapState
 ) {
     val tileCanvasState = rememberTileState()
+
+    VisibleTilesResolver(mapState)
+
     val charPath = CharPath()
     val charWidth = 15f
 
@@ -32,12 +32,12 @@ internal fun TileCanvas(
     ) {
         withTransform({
             rotate(
-                degrees = angle, pivot = position
+                degrees = mapState.angleDegrees, pivot = mapState.rawPosition
             )
-            scale(scale = zoom, position)
+            scale(scale = mapState.zoom, mapState.rawPosition)
             translate(
-                left = position.x + (mapSize.width - tileCanvasState.tileSize) / 2,
-                top = position.y + (mapSize.height - tileCanvasState.tileSize) / 2
+                left = mapState.rawPosition.x,
+                top = mapState.rawPosition.y
             )
         }) {
             drawIntoCanvas {
@@ -53,7 +53,7 @@ internal fun TileCanvas(
 
 
                     //TODO later remove this char
-                    val pathString = "${tile.col} - ${tile.row}"
+                    val pathString = "${tile.col} - ${tile.row} - ${mapState.zoom.toInt()}"
                     var xOffset = 0f
                     it.save()
                     it.translate(tileCanvasState.tileSize * tile.col + 80F, tileCanvasState.tileSize * tile.row + 160F)
