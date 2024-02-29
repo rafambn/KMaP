@@ -32,12 +32,12 @@ internal fun TileCanvas(
     ) {
         withTransform({
             rotate(
-                degrees = mapState.angleDegrees, pivot = mapState.rawPosition
+                degrees = mapState.angleDegrees, pivot = mapState.mapViewCenter
             )
-            scale(scale = mapState.zoom, mapState.rawPosition)
+            scale(scale = mapState.zoom, mapState.mapViewCenter)
             translate(
-                left = mapState.rawPosition.x,
-                top = mapState.rawPosition.y
+                left = mapState.mapViewCenter.x,
+                top = mapState.mapViewCenter.y
             )
         }) {
             drawIntoCanvas {

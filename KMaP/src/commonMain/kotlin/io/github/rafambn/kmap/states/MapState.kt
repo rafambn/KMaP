@@ -21,33 +21,33 @@ class MapState(
     maxZoom: Float = 10F,
     minZoom: Float = 1F
 ) {
-    internal var mapViewSize by mutableStateOf(Offset.Zero)
+    internal var tileCanvasSize by mutableStateOf(Offset.Zero)
+    private var tileMapSize = Offset(256 * 3F, 256 * 3F)
+
     internal var angleDegrees by mutableStateOf(initialRotation)
     internal var zoom by mutableStateOf(initialZoom)
     internal var rawPosition by mutableStateOf(initialPosition)
-    internal val mapViewCenter by derivedStateOf { rawPosition + (mapViewSize / 2F) }
+    internal val mapViewCenter by derivedStateOf { rawPosition + (tileCanvasSize / 2F) }
+
     private var boundHorizontal by mutableStateOf(boundHorizontal)
     private var boundVertical by mutableStateOf(boundVertical)
     private var maxZoom by mutableStateOf(maxZoom)
     private var minZoom by mutableStateOf(minZoom)
 
-    private val angleRadian by derivedStateOf { angleDegrees.degreesToRadian() }
-    private var gridSize = Offset(256 * 3F, 256 * 3F)
-
     fun move(offset: Offset) {
-        rawPosition = (offset + rawPosition).coerceInCanvas(gridSize * zoom, angleRadian, boundHorizontal, boundVertical)
+        rawPosition = (offset + rawPosition).coerceInCanvas(tileMapSize * zoom, angleDegrees.degreesToRadian(), boundHorizontal, boundVertical)
     }
 
     fun scale(offset: Offset, scale: Float) {
         val previousZoom = zoom
         zoom = (scale + zoom).coerceIn(minZoom, maxZoom)
-        move(offset + ((rawPosition - offset) * zoom / previousZoom) - rawPosition)
+        move(offset - mapViewCenter + ((mapViewCenter - offset) * zoom / previousZoom))
     }
 
     fun rotate(offset: Offset, angle: Float) {
         if (offset != Offset.Zero) {
             angleDegrees += angle
-            move(rotateVector(rawPosition - offset, angle.degreesToRadian()) + offset - rawPosition)
+            move(rotateVector(mapViewCenter - offset, angle.degreesToRadian()) + offset - mapViewCenter)
         }
     }
 

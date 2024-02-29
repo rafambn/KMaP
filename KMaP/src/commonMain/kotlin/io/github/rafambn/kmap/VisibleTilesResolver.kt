@@ -7,7 +7,7 @@ import io.github.rafambn.kmap.states.MapState
 fun VisibleTilesResolver(mapState: MapState) {
     mapState.rawPosition
     mapState.angleDegrees
-    mapState.mapViewSize
+    mapState.tileCanvasSize
     val tileSize = 256F
 
 }
