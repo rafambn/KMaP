@@ -7,14 +7,10 @@ import io.github.rafambn.kmap.Tile
 
 class TileCanvasState {
     internal val tileSize = 256F
-    val listTiles = mutableStateListOf<Tile>()
+    var listTiles = mutableStateListOf<Tile>()
 
-    init {
-        for (i in 0..8) {
-            val row = i % 3
-            val column = i / 3 % 3
-            listTiles.add(Tile(0, row, column))
-        }
+    fun addTile(tile: Tile) {
+        listTiles = mutableStateListOf(tile)
     }
 }
 

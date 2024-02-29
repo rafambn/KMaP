@@ -11,11 +11,12 @@ import io.github.rafambn.kmap.enums.MapBorderType
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.floor
+import kotlin.math.pow
 import kotlin.math.sin
 
 class MapState(
     initialPosition: Offset = Offset.Zero,
-    initialZoom: Float = 1.15F,
+    initialZoom: Float = 1F,
     initialRotation: Float = 0F,
     boundHorizontal: MapBorderType = MapBorderType.BOUND,
     boundVertical: MapBorderType = MapBorderType.BOUND,
@@ -23,11 +24,11 @@ class MapState(
     minZoom: Float = 1F
 ) {
     internal var tileCanvasSize by mutableStateOf(Offset.Zero)
-    private var tileMapSize = Offset(256 * 3F, 256 * 3F)
+    internal var tileMapSize = Offset(256 * 2F, 256 * 2F)
 
     internal var angleDegrees by mutableStateOf(initialRotation)
     internal var zoom by mutableStateOf(initialZoom)
-    internal val zoomLevel by derivedStateOf { floor(zoom) }
+    internal val zoomLevel by derivedStateOf { floor(zoom).toInt() }
     internal val magnifierScale by derivedStateOf { zoom - zoomLevel + 1F }
     internal var rawPosition by mutableStateOf(initialPosition)
     internal val mapViewCenter by derivedStateOf { rawPosition + (tileCanvasSize / 2F) }
@@ -38,13 +39,19 @@ class MapState(
     private var minZoom by mutableStateOf(minZoom)
 
     fun move(offset: Offset) {
-        rawPosition = (offset + rawPosition).coerceInCanvas(tileMapSize * zoom, angleDegrees.degreesToRadian(), boundHorizontal, boundVertical)
+        rawPosition =
+            (offset + rawPosition).coerceInCanvas(
+                tileMapSize * 2F.pow(zoomLevel - 1) * magnifierScale,
+                angleDegrees.degreesToRadian(),
+                boundHorizontal,
+                boundVertical
+            )
     }
 
     fun scale(offset: Offset, scale: Float) {
-        val previousZoom = magnifierScale
+        val previousMagnifierScale = magnifierScale
         zoom = (scale + zoom).coerceIn(minZoom, maxZoom)
-        move(offset - mapViewCenter + ((mapViewCenter - offset) * magnifierScale / previousZoom))
+        move(offset - mapViewCenter + ((mapViewCenter - offset) * magnifierScale / previousMagnifierScale))
     }
 
     fun rotate(offset: Offset, angle: Float) {
@@ -77,6 +84,10 @@ class MapState(
             )
         return rotateVector(Offset(x, y), angleRadian)
     }
+}
+
+private fun Offset.pow(zoomLevel: Float): Offset {
+    return Offset(this.x.pow(zoomLevel), this.y.pow(zoomLevel))
 }
 
 @Composable

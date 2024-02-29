@@ -3,6 +3,7 @@ package io.github.rafambn.kmap
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -14,6 +15,7 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import io.github.rafambn.kmap.states.MapState
 import io.github.rafambn.kmap.states.rememberTileState
+import kotlin.math.pow
 
 @Composable
 internal fun TileCanvas(
@@ -22,7 +24,16 @@ internal fun TileCanvas(
 ) {
     val tileCanvasState = rememberTileState()
 
-    VisibleTilesResolver(mapState)
+    remember(key1 = mapState.rawPosition) {
+        val centerTile = getXYTile(
+            mapState.rawPosition.x.toDouble()/(2F.pow(mapState.zoomLevel - 1) * mapState.magnifierScale),//TODO rotate raw
+            mapState.rawPosition.y.toDouble()/(2F.pow(mapState.zoomLevel - 1) * mapState.magnifierScale),
+            mapState.zoomLevel,
+            mapState.tileMapSize.x.toDouble(),
+            mapState.tileMapSize.y.toDouble()
+        )
+        tileCanvasState.addTile(Tile(mapState.zoomLevel, centerTile.second, centerTile.first))
+    }
 
     val charPath = CharPath()
     val charWidth = 15f
