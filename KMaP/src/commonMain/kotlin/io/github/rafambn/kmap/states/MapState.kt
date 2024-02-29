@@ -1,13 +1,12 @@
 package io.github.rafambn.kmap.states
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.unit.IntSize
 import io.github.rafambn.kmap.enums.MapBorderType
 import kotlin.math.PI
 import kotlin.math.cos
@@ -22,34 +21,33 @@ class MapState(
     maxZoom: Float = 10F,
     minZoom: Float = 1F
 ) {
-    internal var mapViewSize by mutableStateOf(IntSize.Zero)
+    internal var mapViewSize by mutableStateOf(Offset.Zero)
     internal var angleDegrees by mutableStateOf(initialRotation)
     internal var zoom by mutableStateOf(initialZoom)
     internal var rawPosition by mutableStateOf(initialPosition)
-    var boundHorizontal by mutableStateOf(boundHorizontal)
-    var boundVertical by mutableStateOf(boundVertical)
-    var maxZoom by mutableStateOf(maxZoom)
-    var minZoom by mutableStateOf(minZoom)
+    internal val mapViewCenter by derivedStateOf { rawPosition + (mapViewSize / 2F) }
+    private var boundHorizontal by mutableStateOf(boundHorizontal)
+    private var boundVertical by mutableStateOf(boundVertical)
+    private var maxZoom by mutableStateOf(maxZoom)
+    private var minZoom by mutableStateOf(minZoom)
 
-    private var angleRadian = 0F
-    private var gridSize = Size(256 * 3F, 256 * 3F)
+    private val angleRadian by derivedStateOf { angleDegrees.degreesToRadian() }
+    private var gridSize = Offset(256 * 3F, 256 * 3F)
 
     fun move(offset: Offset) {
-        rawPosition += offset
+        rawPosition = (offset + rawPosition).coerceInCanvas(gridSize * zoom, angleRadian, boundHorizontal, boundVertical)
     }
 
     fun scale(offset: Offset, scale: Float) {
         val previousZoom = zoom
         zoom = (scale + zoom).coerceIn(minZoom, maxZoom)
-        rawPosition = offset + ((rawPosition - offset) * zoom / previousZoom)
+        move(offset + ((rawPosition - offset) * zoom / previousZoom) - rawPosition)
     }
 
     fun rotate(offset: Offset, angle: Float) {
         if (offset != Offset.Zero) {
-            val tempRadianAngle = (angle * PI / 180).toFloat()
             angleDegrees += angle
-            angleRadian = (angleDegrees * PI / 180).toFloat()
-            rawPosition = rotateVector(rawPosition - offset, tempRadianAngle) + offset
+            move(rotateVector(rawPosition - offset, angle.degreesToRadian()) + offset - rawPosition)
         }
     }
 
@@ -58,6 +56,23 @@ class MapState(
             (offset.x * cos(angle) - offset.y * sin(angle)),
             (offset.x * sin(angle) + offset.y * cos(angle))
         )
+    }
+
+    private fun Float.degreesToRadian(): Float {
+        return (this * PI / 180).toFloat()
+    }
+
+    private fun Offset.coerceInCanvas(gridSizeOnCanvas: Offset, angleRadian: Float, boundHorizontal: MapBorderType, boundVertical: MapBorderType): Offset {
+        val unRotatedPosition = rotateVector(this, -angleRadian)
+        val x = if (boundHorizontal == MapBorderType.BOUND) unRotatedPosition.x.coerceIn(
+            -gridSizeOnCanvas.x,
+            0F
+        ) else (unRotatedPosition.x - gridSizeOnCanvas.x).rem(gridSizeOnCanvas.x)
+        val y =
+            if (boundVertical == MapBorderType.BOUND) unRotatedPosition.y.coerceIn(-gridSizeOnCanvas.y, 0F) else (unRotatedPosition.y - gridSizeOnCanvas.y).rem(
+                gridSizeOnCanvas.y
+            )
+        return rotateVector(Offset(x, y), angleRadian)
     }
 }
 

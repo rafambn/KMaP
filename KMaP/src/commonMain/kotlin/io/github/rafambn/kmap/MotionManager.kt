@@ -13,6 +13,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
@@ -20,6 +21,7 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.Velocity
+import androidx.compose.ui.unit.toSize
 import io.github.rafambn.kmap.enums.MapComponentType
 import io.github.rafambn.kmap.gestures.GestureInterface
 import io.github.rafambn.kmap.gestures.GestureState
@@ -154,7 +156,7 @@ internal fun MotionManager(
                 )
             }
             .onGloballyPositioned { coordinates ->
-                mapState.mapViewSize = coordinates.size
+                mapState.mapViewSize = coordinates.size.toSize().toRect().bottomRight
             }
     ) { measurables, constraints ->
 
