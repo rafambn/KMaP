@@ -10,11 +10,12 @@ import androidx.compose.ui.geometry.Offset
 import io.github.rafambn.kmap.enums.MapBorderType
 import kotlin.math.PI
 import kotlin.math.cos
+import kotlin.math.floor
 import kotlin.math.sin
 
 class MapState(
     initialPosition: Offset = Offset.Zero,
-    initialZoom: Float = 1F,
+    initialZoom: Float = 1.15F,
     initialRotation: Float = 0F,
     boundHorizontal: MapBorderType = MapBorderType.BOUND,
     boundVertical: MapBorderType = MapBorderType.BOUND,
@@ -26,6 +27,8 @@ class MapState(
 
     internal var angleDegrees by mutableStateOf(initialRotation)
     internal var zoom by mutableStateOf(initialZoom)
+    internal val zoomLevel by derivedStateOf { floor(zoom) }
+    internal val magnifierScale by derivedStateOf { zoom - zoomLevel + 1F }
     internal var rawPosition by mutableStateOf(initialPosition)
     internal val mapViewCenter by derivedStateOf { rawPosition + (tileCanvasSize / 2F) }
 
@@ -39,9 +42,9 @@ class MapState(
     }
 
     fun scale(offset: Offset, scale: Float) {
-        val previousZoom = zoom
+        val previousZoom = magnifierScale
         zoom = (scale + zoom).coerceIn(minZoom, maxZoom)
-        move(offset - mapViewCenter + ((mapViewCenter - offset) * zoom / previousZoom))
+        move(offset - mapViewCenter + ((mapViewCenter - offset) * magnifierScale / previousZoom))
     }
 
     fun rotate(offset: Offset, angle: Float) {

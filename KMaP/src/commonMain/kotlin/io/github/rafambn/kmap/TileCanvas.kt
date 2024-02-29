@@ -34,7 +34,7 @@ internal fun TileCanvas(
             rotate(
                 degrees = mapState.angleDegrees, pivot = mapState.mapViewCenter
             )
-            scale(scale = mapState.zoom, mapState.mapViewCenter)
+            scale(scale = mapState.magnifierScale, mapState.mapViewCenter)
             translate(
                 left = mapState.mapViewCenter.x,
                 top = mapState.mapViewCenter.y
