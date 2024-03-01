@@ -31,7 +31,7 @@ class MapState(
     internal val zoomLevel by derivedStateOf { floor(zoom).toInt() }
     internal val magnifierScale by derivedStateOf { zoom - zoomLevel + 1F }
     internal var rawPosition by mutableStateOf(initialPosition)
-    internal val mapViewCenter by derivedStateOf { rawPosition + (tileCanvasSize / 2F) }
+    internal val gridCenterOffset by derivedStateOf { rawPosition.rotateVector(angleDegrees.degreesToRadian()) + (tileCanvasSize / 2F) }
 
     private var boundHorizontal by mutableStateOf(boundHorizontal)
     private var boundVertical by mutableStateOf(boundVertical)
@@ -40,9 +40,8 @@ class MapState(
 
     fun move(offset: Offset) {
         rawPosition =
-            (offset + rawPosition).coerceInCanvas(
+            (offset.rotateVector(-angleDegrees.degreesToRadian()) + rawPosition).coerceInCanvas(
                 tileMapSize * 2F.pow(zoomLevel - 1) * magnifierScale,
-                angleDegrees.degreesToRadian(),
                 boundHorizontal,
                 boundVertical
             )
@@ -51,20 +50,20 @@ class MapState(
     fun scale(offset: Offset, scale: Float) {
         val previousMagnifierScale = magnifierScale
         zoom = (scale + zoom).coerceIn(minZoom, maxZoom)
-        move(offset - mapViewCenter + ((mapViewCenter - offset) * magnifierScale / previousMagnifierScale))
+        move(offset - gridCenterOffset + ((gridCenterOffset - offset) * magnifierScale / previousMagnifierScale))
     }
 
     fun rotate(offset: Offset, angle: Float) {
         if (offset != Offset.Zero) {
             angleDegrees += angle
-            move(rotateVector(mapViewCenter - offset, angle.degreesToRadian()) + offset - mapViewCenter)
+            move((offset - (tileCanvasSize / 2F) + ((tileCanvasSize / 2F) - offset).rotateVector(angle.degreesToRadian())))
         }
     }
 
-    private fun rotateVector(offset: Offset, angle: Float): Offset {
+    private fun Offset.rotateVector(angleRadians: Float): Offset {
         return Offset(
-            (offset.x * cos(angle) - offset.y * sin(angle)),
-            (offset.x * sin(angle) + offset.y * cos(angle))
+            (this.x * cos(angleRadians) - this.y * sin(angleRadians)),
+            (this.x * sin(angleRadians) + this.y * cos(angleRadians))
         )
     }
 
@@ -72,22 +71,22 @@ class MapState(
         return (this * PI / 180).toFloat()
     }
 
-    private fun Offset.coerceInCanvas(gridSizeOnCanvas: Offset, angleRadian: Float, boundHorizontal: MapBorderType, boundVertical: MapBorderType): Offset {
-        val unRotatedPosition = rotateVector(this, -angleRadian)
-        val x = if (boundHorizontal == MapBorderType.BOUND) unRotatedPosition.x.coerceIn(
-            -gridSizeOnCanvas.x,
-            0F
-        ) else (unRotatedPosition.x - gridSizeOnCanvas.x).rem(gridSizeOnCanvas.x)
+    private fun Offset.coerceInCanvas(
+        gridSizeOnCanvas: Offset,
+        boundHorizontal: MapBorderType,
+        boundVertical: MapBorderType
+    ): Offset {
+        val x = if (boundHorizontal == MapBorderType.BOUND)
+            this.x.coerceIn(-gridSizeOnCanvas.x, 0F)
+        else
+            (this.x - gridSizeOnCanvas.x).rem(gridSizeOnCanvas.x)
         val y =
-            if (boundVertical == MapBorderType.BOUND) unRotatedPosition.y.coerceIn(-gridSizeOnCanvas.y, 0F) else (unRotatedPosition.y - gridSizeOnCanvas.y).rem(
-                gridSizeOnCanvas.y
-            )
-        return rotateVector(Offset(x, y), angleRadian)
+            if (boundVertical == MapBorderType.BOUND)
+                this.y.coerceIn(-gridSizeOnCanvas.y, 0F)
+            else
+                (this.y - gridSizeOnCanvas.y).rem(gridSizeOnCanvas.y)
+        return Offset(x, y)
     }
-}
-
-private fun Offset.pow(zoomLevel: Float): Offset {
-    return Offset(this.x.pow(zoomLevel), this.y.pow(zoomLevel))
 }
 
 @Composable

@@ -26,8 +26,8 @@ internal fun TileCanvas(
 
     remember(key1 = mapState.rawPosition) {
         val centerTile = getXYTile(
-            mapState.mapViewCenter.x.toDouble()/(2F.pow(mapState.zoomLevel - 1) * mapState.magnifierScale),//TODO rotate raw
-            mapState.mapViewCenter.y.toDouble()/(2F.pow(mapState.zoomLevel - 1) * mapState.magnifierScale),
+            mapState.rawPosition.x.toDouble()/(2F.pow(mapState.zoomLevel - 1) * mapState.magnifierScale),//TODO rotate raw
+            mapState.rawPosition.y.toDouble()/(2F.pow(mapState.zoomLevel - 1) * mapState.magnifierScale),
             mapState.zoomLevel,
             mapState.tileMapSize.x.toDouble(),
             mapState.tileMapSize.y.toDouble()
@@ -43,12 +43,12 @@ internal fun TileCanvas(
     ) {
         withTransform({
             rotate(
-                degrees = mapState.angleDegrees, pivot = mapState.mapViewCenter
+                degrees = mapState.angleDegrees, pivot = mapState.gridCenterOffset
             )
-            scale(scale = mapState.magnifierScale, mapState.mapViewCenter)
+            scale(scale = mapState.magnifierScale, mapState.gridCenterOffset)
             translate(
-                left = mapState.mapViewCenter.x,
-                top = mapState.mapViewCenter.y
+                left = mapState.gridCenterOffset.x,
+                top = mapState.gridCenterOffset.y
             )
         }) {
             drawIntoCanvas {
