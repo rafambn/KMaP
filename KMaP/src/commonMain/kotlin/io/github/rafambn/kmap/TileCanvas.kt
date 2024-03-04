@@ -14,7 +14,9 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import io.github.rafambn.kmap.states.MapState
-import io.github.rafambn.kmap.states.rememberTileState
+import io.github.rafambn.kmap.states.TileCanvasState
+import io.github.rafambn.kmap.states.rememberTileCanvasState
+import io.github.rafambn.kmap.tiles.Tile
 import kotlin.math.pow
 
 @Composable
@@ -22,17 +24,13 @@ internal fun TileCanvas(
     modifier: Modifier,
     mapState: MapState
 ) {
-    val tileCanvasState = rememberTileState()
+    val tileCanvasState = rememberTileCanvasState()
 
     remember(key1 = mapState.rawPosition) {
-        val centerTile = getXYTile(
-            mapState.rawPosition.x.toDouble()/(2F.pow(mapState.zoomLevel - 1) * mapState.magnifierScale),//TODO rotate raw
-            mapState.rawPosition.y.toDouble()/(2F.pow(mapState.zoomLevel - 1) * mapState.magnifierScale),
-            mapState.zoomLevel,
-            mapState.tileMapSize.x.toDouble(),
-            mapState.tileMapSize.y.toDouble()
-        )
-        tileCanvasState.addTile(Tile(mapState.zoomLevel, centerTile.second, centerTile.first))
+        tileCanvasState.onPositionChange(mapState.rawPosition, mapState.zoomLevel, mapState.magnifierScale, mapState.tileCanvasSize)
+    }
+    remember(key1 = mapState.zoomLevel) {
+        tileCanvasState.onZoomChange()
     }
 
     val charPath = CharPath()
@@ -52,11 +50,14 @@ internal fun TileCanvas(
             )
         }) {
             drawIntoCanvas {
-                for (tile in tileCanvasState.listTiles) {
+                for (tile in tileCanvasState.visibleTilesList) {
                     it.drawRect(
                         Rect(
-                            Offset(tileCanvasState.tileSize * tile.col, tileCanvasState.tileSize * tile.row),
-                            Size(tileCanvasState.tileSize, tileCanvasState.tileSize)
+                            Offset(
+                                TileCanvasState.tileSize * tile.col,
+                                TileCanvasState.tileSize * tile.row
+                            ),
+                            Size(TileCanvasState.tileSize, TileCanvasState.tileSize)
                         ), Paint().apply {
                             color = generateRandomColor(tile.row, tile.col)
                             isAntiAlias = false
@@ -64,10 +65,15 @@ internal fun TileCanvas(
 
 
                     //TODO later remove this char
-                    val pathString = "${tile.col} - ${tile.row} - ${mapState.zoom.toInt()}"
+                    val pathString = "${
+                        (tile.col + 2F.pow(mapState.zoomLevel).rem(2F.pow(mapState.zoomLevel))).toInt()
+                    } - ${tile.row} - ${mapState.zoom.toInt()}"
                     var xOffset = 0f
                     it.save()
-                    it.translate(tileCanvasState.tileSize * tile.col + 80F, tileCanvasState.tileSize * tile.row + 160F)
+                    it.translate(
+                        TileCanvasState.tileSize * tile.col + 80F,
+                        TileCanvasState.tileSize * tile.row + 160F
+                    )
                     for (char in pathString) {
                         val path = charPath.paths[char]
                         if (path != null) {

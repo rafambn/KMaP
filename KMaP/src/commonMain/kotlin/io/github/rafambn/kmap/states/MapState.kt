@@ -8,6 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import io.github.rafambn.kmap.enums.MapBorderType
+import io.github.rafambn.kmap.enums.OutsideBorderType
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.floor
@@ -20,6 +21,7 @@ class MapState(
     initialRotation: Float = 0F,
     boundHorizontal: MapBorderType = MapBorderType.BOUND,
     boundVertical: MapBorderType = MapBorderType.BOUND,
+    outsideBorderType: OutsideBorderType = OutsideBorderType.NONE,
     maxZoom: Float = 10F,
     minZoom: Float = 1F
 ) {
