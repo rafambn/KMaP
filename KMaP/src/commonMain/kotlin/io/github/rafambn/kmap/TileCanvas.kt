@@ -27,7 +27,14 @@ internal fun TileCanvas(
     val tileCanvasState = rememberTileCanvasState()
 
     remember(key1 = mapState.rawPosition) {
-        tileCanvasState.onPositionChange(mapState.rawPosition, mapState.zoomLevel, mapState.magnifierScale, mapState.tileCanvasSize)
+        tileCanvasState.onPositionChange(
+            mapState.rawPosition,
+            mapState.zoomLevel,
+            mapState.magnifierScale,
+            mapState.angleDegrees,
+            mapState.tileCanvasSize,
+            mapState.tileMapSize
+        )
     }
     remember(key1 = mapState.zoomLevel) {
         tileCanvasState.onZoomChange()
@@ -50,19 +57,14 @@ internal fun TileCanvas(
             )
         }) {
             drawIntoCanvas {
-                for (tile in tileCanvasState.visibleTilesList) {
-                    it.drawRect(
-                        Rect(
-                            Offset(
-                                TileCanvasState.tileSize * tile.col,
-                                TileCanvasState.tileSize * tile.row
-                            ),
-                            Size(TileCanvasState.tileSize, TileCanvasState.tileSize)
-                        ), Paint().apply {
-                            color = generateRandomColor(tile.row, tile.col)
-                            isAntiAlias = false
-                        })
-
+                for (tile in tileCanvasState.visibleTilesList.toList()) {
+                    it.drawImage(tile.imageBitmap, Offset(
+                        TileCanvasState.tileSize * tile.row,
+                        TileCanvasState.tileSize * tile.col
+                    ), Paint().apply {
+                        color = generateRandomColor(tile.row, tile.col)
+                        isAntiAlias = false
+                    })
 
                     //TODO later remove this char
                     val pathString = "${
@@ -71,8 +73,8 @@ internal fun TileCanvas(
                     var xOffset = 0f
                     it.save()
                     it.translate(
-                        TileCanvasState.tileSize * tile.col + 80F,
-                        TileCanvasState.tileSize * tile.row + 160F
+                        TileCanvasState.tileSize * tile.row + 80F,
+                        TileCanvasState.tileSize * tile.col + 160F
                     )
                     for (char in pathString) {
                         val path = charPath.paths[char]

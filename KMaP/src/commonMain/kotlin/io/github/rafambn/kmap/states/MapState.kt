@@ -26,14 +26,17 @@ class MapState(
     minZoom: Float = 1F
 ) {
     internal var tileCanvasSize by mutableStateOf(Offset.Zero)
-    internal var tileMapSize = Offset(256 * 2F, 256 * 2F)
+    internal var tileMapSize = Offset(TileCanvasState.tileSize * 2F.pow(maxZoom), TileCanvasState.tileSize * 2F.pow(maxZoom))
 
     internal var angleDegrees by mutableStateOf(initialRotation)
+
     internal var zoom by mutableStateOf(initialZoom)
     internal val zoomLevel by derivedStateOf { floor(zoom).toInt() }
     internal val magnifierScale by derivedStateOf { zoom - zoomLevel + 1F }
+
     internal var rawPosition by mutableStateOf(initialPosition)
-    internal val gridCenterOffset by derivedStateOf { rawPosition.rotateVector(angleDegrees.degreesToRadian()) + (tileCanvasSize / 2F) }
+    internal val scaledPosition by derivedStateOf { rawPosition * magnifierScale / 2F.pow(maxZoom - zoomLevel) }
+    internal val gridCenterOffset by derivedStateOf { scaledPosition.rotateVector(angleDegrees.degreesToRadian()) + (tileCanvasSize / 2F) }
 
     private var boundHorizontal by mutableStateOf(boundHorizontal)
     private var boundVertical by mutableStateOf(boundVertical)
@@ -42,17 +45,15 @@ class MapState(
 
     fun move(offset: Offset) {
         rawPosition =
-            (offset.rotateVector(-angleDegrees.degreesToRadian()) + rawPosition).coerceInCanvas(
-                tileMapSize * 2F.pow(zoomLevel - 1) * magnifierScale,
-                boundHorizontal,
-                boundVertical
+            ((offset * 2F.pow(maxZoom - zoomLevel) / magnifierScale).rotateVector(-angleDegrees.degreesToRadian()) + rawPosition).coerceInCanvas(
+                tileMapSize, boundHorizontal, boundVertical
             )
     }
 
     fun scale(offset: Offset, scale: Float) {
         val previousMagnifierScale = magnifierScale
         zoom = (scale + zoom).coerceIn(minZoom, maxZoom)
-        move(offset - gridCenterOffset + ((gridCenterOffset - offset) * magnifierScale / previousMagnifierScale))
+//        move((offset - gridCenterOffset + ((gridCenterOffset - offset) * magnifierScale / previousMagnifierScale)) * magnifierScale / 2F.pow(maxZoom - zoomLevel))
     }
 
     fun rotate(offset: Offset, angle: Float) {
@@ -62,31 +63,13 @@ class MapState(
         }
     }
 
-    private fun Offset.rotateVector(angleRadians: Float): Offset {
-        return Offset(
-            (this.x * cos(angleRadians) - this.y * sin(angleRadians)),
-            (this.x * sin(angleRadians) + this.y * cos(angleRadians))
-        )
-    }
-
-    private fun Float.degreesToRadian(): Float {
-        return (this * PI / 180).toFloat()
-    }
-
     private fun Offset.coerceInCanvas(
-        gridSizeOnCanvas: Offset,
-        boundHorizontal: MapBorderType,
-        boundVertical: MapBorderType
+        gridSizeOnCanvas: Offset, boundHorizontal: MapBorderType, boundVertical: MapBorderType
     ): Offset {
-        val x = if (boundHorizontal == MapBorderType.BOUND)
-            this.x.coerceIn(-gridSizeOnCanvas.x, 0F)
-        else
-            (this.x - gridSizeOnCanvas.x).rem(gridSizeOnCanvas.x)
-        val y =
-            if (boundVertical == MapBorderType.BOUND)
-                this.y.coerceIn(-gridSizeOnCanvas.y, 0F)
-            else
-                (this.y - gridSizeOnCanvas.y).rem(gridSizeOnCanvas.y)
+        val x = if (boundHorizontal == MapBorderType.BOUND) this.x.coerceIn(-gridSizeOnCanvas.x, 0F)
+        else (this.x - gridSizeOnCanvas.x).rem(gridSizeOnCanvas.x)
+        val y = if (boundVertical == MapBorderType.BOUND) this.y.coerceIn(-gridSizeOnCanvas.y, 0F)
+        else (this.y - gridSizeOnCanvas.y).rem(gridSizeOnCanvas.y)
         return Offset(x, y)
     }
 }
@@ -96,4 +79,14 @@ inline fun rememberCameraState(
     crossinline init: MapState.() -> Unit = {}
 ): MapState = remember {
     MapState().apply(init)
+}
+
+fun Float.degreesToRadian(): Float {
+    return (this * PI / 180).toFloat()
+}
+
+fun Offset.rotateVector(angleRadians: Float): Offset {
+    return Offset(
+        (this.x * cos(angleRadians) - this.y * sin(angleRadians)), (this.x * sin(angleRadians) + this.y * cos(angleRadians))
+    )
 }
