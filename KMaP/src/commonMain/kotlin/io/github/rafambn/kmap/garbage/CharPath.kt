@@ -1,4 +1,4 @@
-package io.github.rafambn.kmap
+package io.github.rafambn.kmap.garbage
 
 import androidx.compose.ui.graphics.Path
 

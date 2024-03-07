@@ -1,4 +1,4 @@
-package io.github.rafambn.kmap
+package io.github.rafambn.kmap.composables
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector2D
@@ -156,7 +156,7 @@ internal fun MotionManager(
                 )
             }
             .onGloballyPositioned { coordinates ->
-                mapState.tileCanvasSize = coordinates.size.toSize().toRect().bottomRight
+                mapState.canvasSize = coordinates.size.toSize().toRect().bottomRight
             }
     ) { measurables, constraints ->
 

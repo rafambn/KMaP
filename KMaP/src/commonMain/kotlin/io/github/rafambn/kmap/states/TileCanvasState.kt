@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
-import io.github.rafambn.kmap.KtorClient
+import io.github.rafambn.kmap.garbage.KtorClient
 import io.github.rafambn.kmap.tiles.Tile
 import io.github.rafambn.kmap.tiles.TileSpecs
 import io.github.rafambn.kmap.toImageBitmap
@@ -29,7 +29,7 @@ class TileCanvasState {
     }
 
     fun onZoomChange() {
-        visibleTilesList.clear()
+//        visibleTilesList.clear()
     }
 
     fun onPositionChange(position: Offset, zoomLevel: Int, magnifierScale: Float, angle: Float, viewSize: Offset, tileMapSize: Offset) {
@@ -109,7 +109,7 @@ class TileCanvasState {
                                 println("teste")
                                 imageBitmap =
                                     client.get("http://tile.openstreetmap.org/${tileSpecs.zoom}/${tileSpecs.row}/${tileSpecs.col}.png") {
-                                        header("User-Agent", "my.app")
+                                        header("User-Agent", "my.app.test1")
                                     }.readBytes().toImageBitmap()
                                 visibleTilesList.add(Tile(tileSpecs.zoom, tileSpecs.row, tileSpecs.col, imageBitmap))
                             } catch (_: Exception) {
