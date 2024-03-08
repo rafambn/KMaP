@@ -291,7 +291,6 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                     if (abs(rotationCapped) > flingRotationThreshold) {
                         onFlingRotation(event.changes[0].position, rotationCapped)
                     }
-                    println("$rotationVelocity ----- $rotationCapped ---- ${abs(rotationCapped)} ----- $flingRotationThreshold")
                     event.changes.forEach { it.consume() }
                     gestureState = GestureState.WAITING_UP_AFTER_TWO_RELEASE
                     timeoutCount = doubleTapTimeout

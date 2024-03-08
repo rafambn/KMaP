@@ -8,7 +8,7 @@ import io.github.rafambn.kmap.enums.OutsideTilesType
 class MapProperties(
    val boundMap: BoundMapBorder = BoundMapBorder(MapBorderType.BOUND, MapBorderType.BOUND),
    val  outsideTiles: OutsideMapTiles = OutsideMapTiles(OutsideTilesType.NONE, OutsideTilesType.NONE),
-   val maxMapZoom: Float = 10F,
+   val maxMapZoom: Float = 20F,
    val minMapZoom: Float = 0F
 ) {
 }

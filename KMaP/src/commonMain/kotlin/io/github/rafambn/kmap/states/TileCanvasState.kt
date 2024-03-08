@@ -105,14 +105,18 @@ class TileCanvasState {
                         specsBeingProcessed.add(tileSpecs)
                         CoroutineScope(Dispatchers.Default).launch {
                             val imageBitmap: ImageBitmap
+                            val byteArray: ByteArray
                             try {
-                                println("teste")
-                                imageBitmap =
+                                println("${tileSpecs.zoom}/${tileSpecs.row}/${tileSpecs.col}")
+                                byteArray =
                                     client.get("http://tile.openstreetmap.org/${tileSpecs.zoom}/${tileSpecs.row}/${tileSpecs.col}.png") {
                                         header("User-Agent", "my.app.test1")
-                                    }.readBytes().toImageBitmap()
+                                    }.readBytes()
+                                println(byteArray)
+                                imageBitmap = byteArray.toImageBitmap()
                                 visibleTilesList.add(Tile(tileSpecs.zoom, tileSpecs.row, tileSpecs.col, imageBitmap))
-                            } catch (_: Exception) {
+                            } catch (ex: Exception) {
+                                println(ex)
                             }
                         }
                     }
