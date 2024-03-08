@@ -1,4 +1,4 @@
-package io.github.rafambn.kmap.tiles
+package io.github.rafambn.kmap.model
 
 data class TileSpecs(
     val zoom: Int,

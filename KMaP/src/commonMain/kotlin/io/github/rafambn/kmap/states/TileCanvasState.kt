@@ -5,9 +5,12 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
+import io.github.rafambn.kmap.degreesToRadian
+import io.github.rafambn.kmap.enums.OutsideTilesType
 import io.github.rafambn.kmap.garbage.KtorClient
-import io.github.rafambn.kmap.tiles.Tile
-import io.github.rafambn.kmap.tiles.TileSpecs
+import io.github.rafambn.kmap.model.Tile
+import io.github.rafambn.kmap.model.TileSpecs
+import io.github.rafambn.kmap.rotateVector
 import io.github.rafambn.kmap.toImageBitmap
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -18,11 +21,12 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import kotlin.math.floor
+import kotlin.math.pow
 
 class TileCanvasState {
     var visibleTilesList = mutableStateListOf<Tile>()
     private val tileKernelChannel = Channel<TileSpecs>(capacity = Channel.UNLIMITED)
-    val client = KtorClient.provideHttpClient()
+    private val client = KtorClient.provideHttpClient()
 
     init {
         CoroutineScope(Dispatchers.Default).tilesKernel(tileKernelChannel)
@@ -32,65 +36,69 @@ class TileCanvasState {
 //        visibleTilesList.clear()
     }
 
-    fun onPositionChange(position: Offset, zoomLevel: Int, magnifierScale: Float, angle: Float, viewSize: Offset, tileMapSize: Offset) {
-        val tile = getXYTile(
-            position.x.toDouble(),
-            position.y.toDouble(),
+    fun onPositionChange(
+        position: Offset,
+        zoomLevel: Int,
+        maxZoom: Float,
+        magnifierScale: Float,
+        angle: Float,
+        viewSize: Offset,
+        mapSize: Offset,
+        outsideTiles: OutsideMapTiles
+    ) {
+        val halfScreenScaled = (viewSize / 2F) * 2F.pow(maxZoom - zoomLevel) / magnifierScale
+        val topLeft = (-halfScreenScaled - position).rotateVector(-angle.degreesToRadian())
+        val bottomRight = (halfScreenScaled - position).rotateVector(-angle.degreesToRadian())
+        val topRight = (Offset(halfScreenScaled.x, -halfScreenScaled.y) - position).rotateVector(-angle.degreesToRadian())
+        val bottomLeft = (Offset(-halfScreenScaled.x, halfScreenScaled.y) - position).rotateVector(-angle.degreesToRadian())
+        //TODO fix problem with rotation
+        val maxHorizontal = maxOf(topLeft.x, topRight.x, bottomRight.x, bottomLeft.x)
+        val minHorizontal = minOf(topLeft.x, topRight.x, bottomRight.x, bottomLeft.x)
+        val maxVertical = maxOf(topLeft.y, topRight.y, bottomRight.y, bottomLeft.y)
+        val minVertical = minOf(topLeft.y, topRight.y, bottomRight.y, bottomLeft.y)
+
+        val topLeftTile = getXYTile(
+            minHorizontal.toDouble(),
+            minVertical.toDouble(),
             zoomLevel,
-            tileMapSize.x.toDouble(),
-            tileMapSize.y.toDouble()
+            mapSize.x.toDouble(),
+            mapSize.y.toDouble()
         )
+        val bottomRightTile = getXYTile(
+            maxHorizontal.toDouble(),
+            maxVertical.toDouble(),
+            zoomLevel,
+            mapSize.x.toDouble(),
+            mapSize.y.toDouble()
+        )
+        val visibleTileSpecs = mutableListOf<TileSpecs>()
+        for (x in topLeftTile.first..bottomRightTile.first)
+            for (y in topLeftTile.second..bottomRightTile.second) {
+                var xTile: Int
+                if (outsideTiles.horizontal == OutsideTilesType.NONE)
+                    if (x < 0 || x > 2F.pow(zoomLevel) - 1)
+                        continue
+                    else
+                        xTile = x
+                else
+                    xTile = loop(x, zoomLevel)
+                var yTile: Int
+                if (outsideTiles.vertical == OutsideTilesType.NONE)
+                    if (y < 0 || y > 2F.pow(zoomLevel) - 1)
+                        continue
+                    else
+                        yTile = y
+                else
+                    yTile = loop(y, zoomLevel)
+                visibleTileSpecs.add(TileSpecs(zoomLevel,xTile,yTile))
+            }
 
-        visibleTilesList.find { it.zoom == zoomLevel && it.col == tile.second && it.row == tile.first } ?: run {
-            tileKernelChannel.trySend(TileSpecs(zoomLevel, tile.first, tile.second))
+        visibleTileSpecs.forEach {tilesSpecs ->
+            visibleTilesList.find { it.zoom == zoomLevel && it.col == tilesSpecs.col && it.row == tilesSpecs.row } ?: run {
+                tileKernelChannel.trySend(TileSpecs(zoomLevel, tilesSpecs.row, tilesSpecs.col))
+            }
         }
-
-//        val halfScreenScaled = (viewSize / 2F) * magnifierScale / 2F.pow(zoomLevel-1)
-//        println(halfScreenScaled)
-//        val bottomRight = (position + halfScreenScaled).rotateVector(angle.degreesToRadian())
-//        val bottomLeft = (position + Offset(-halfScreenScaled.x, halfScreenScaled.y).rotateVector(angle.degreesToRadian()))
-//        val topRight = -bottomLeft
-//        val topLeft = -bottomRight
-//
-//        val maxHorizontal = maxOf(bottomRight.x, bottomLeft.x, topRight.x, topLeft.x)
-//        val minHorizontal = maxOf(bottomRight.x, bottomLeft.x, topRight.x, topLeft.x)
-//        val maxVertical = maxOf(bottomRight.y, bottomLeft.y, topRight.y, topLeft.y)
-//        val minVertical = maxOf(bottomRight.y, bottomLeft.y, topRight.y, topLeft.y)
-//
-//
-//        getVisibleTiles(
-//            Offset(maxHorizontal, maxVertical),
-//            Offset(minHorizontal, minVertical),
-//            zoomLevel,
-//            tileMapSize
-//        ).forEach { tile ->
-//            visibleTilesList.find { it == tile } ?: run { visibleTilesList.add(tile) }
-//        }
     }
-
-//    private fun getVisibleTiles(bottomRight: Offset, topLeft: Offset, zoomLevel: Int, tileMapSize: Offset): List<Tile> {
-//        val topLeftTile = getXYTile(
-//            topLeft.x.toDouble(),
-//            topLeft.y.toDouble(),
-//            zoomLevel,
-//            tileMapSize.x.toDouble(),
-//            tileMapSize.y.toDouble()
-//        )
-//        val bottomRightTile = getXYTile(
-//            bottomRight.x.toDouble(),
-//            bottomRight.y.toDouble(),
-//            zoomLevel,
-//            tileMapSize.x.toDouble(),
-//            tileMapSize.y.toDouble()
-//        )
-//
-//
-//        val tileSpecsList = mutableListOf<Tile>()
-//        for (i in topLeftTile.first..bottomRightTile.first)
-//            for (j in topLeftTile.second..bottomRightTile.second)
-//                tileSpecsList.add(Tile(zoomLevel, i, j))
-//        return tileSpecsList
-//    }
 
 
     private fun CoroutineScope.tilesKernel(
@@ -101,7 +109,7 @@ class TileCanvasState {
         while (true) {
             select {
                 tilesToProcess.onReceive { tileSpecs ->
-                    specsBeingProcessed.find { it == tileSpecs }?: run {
+                    specsBeingProcessed.find { it == tileSpecs } ?: run {
                         specsBeingProcessed.add(tileSpecs)
                         CoroutineScope(Dispatchers.Default).launch {
                             val imageBitmap: ImageBitmap
@@ -126,26 +134,16 @@ class TileCanvasState {
     }
 
     private fun getXYTile(x: Double, y: Double, zoom: Int, width: Double, height: Double): Pair<Int, Int> {
-        var xtile = floor(-x / width * (1 shl zoom)).toInt()
-        var ytile = floor(-y / height * (1 shl zoom)).toInt()
+        return Pair(floor(x / width * (1 shl zoom)).toInt(), floor(y / height * (1 shl zoom)).toInt())
+    }
 
-        if (xtile < 0) {
-            xtile = 0
-        }
-        if (xtile >= (1 shl zoom)) {
-            xtile = (1 shl zoom) - 1
-        }
-        if (ytile < 0) {
-            ytile = 0
-        }
-        if (ytile >= (1 shl zoom)) {
-            ytile = (1 shl zoom) - 1
-        }
-        return Pair(xtile, ytile)
+    fun loop(value: Int, zoom: Int): Int {
+        val zoomFactor = 1 shl zoom
+        return (value + zoomFactor) % zoomFactor
     }
 
     companion object {
-        internal val tileSize = 256F
+        internal const val TILE_SIZE = 256F
     }
 }
 

@@ -35,7 +35,6 @@ internal fun MotionManager(
     mapState: MapState,
     content: @Composable () -> Unit
 ) {
-
     val coroutineScope = rememberCoroutineScope()
 
     val flingAnimatable: Animatable<Offset, AnimationVector2D> = Animatable(Offset.Zero, Offset.VectorConverter)

@@ -19,7 +19,7 @@ class MapState(
     initialRotation: Float = 0F,
     maxZoom: Float = 20F,
     minZoom: Float = 0F,
-    private val mapProperties: MapProperties = MapProperties()
+    val mapProperties: MapProperties = MapProperties()
 ) {
     private var maxZoom by mutableStateOf(maxZoom.coerceIn(mapProperties.minMapZoom, mapProperties.maxMapZoom))
     private var minZoom by mutableStateOf(minZoom.coerceIn(mapProperties.minMapZoom, mapProperties.maxMapZoom))
@@ -32,7 +32,7 @@ class MapState(
 
     internal var canvasSize by mutableStateOf(Offset.Zero)
     internal var mapSize =
-        Offset(TileCanvasState.tileSize * 2F.pow(mapProperties.maxMapZoom), TileCanvasState.tileSize * 2F.pow(mapProperties.maxMapZoom))
+        Offset(TileCanvasState.TILE_SIZE * 2F.pow(mapProperties.maxMapZoom), TileCanvasState.TILE_SIZE * 2F.pow(mapProperties.maxMapZoom))
 
     internal var mapPosition by mutableStateOf(initialPosition)//TODO fix weird motion when zoomLevel is high
     internal val topLeftCanvas by derivedStateOf { mapPosition.toCanvasReference() + canvasSize / 2F }

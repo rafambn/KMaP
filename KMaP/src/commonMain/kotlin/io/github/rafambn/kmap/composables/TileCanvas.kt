@@ -28,14 +28,13 @@ internal fun TileCanvas(
         tileCanvasState.onPositionChange(
             mapState.mapPosition,
             mapState.zoomLevel,
+            mapState.mapProperties.maxMapZoom,
             mapState.magnifierScale,
             mapState.angleDegrees,
             mapState.canvasSize,
-            mapState.mapSize
+            mapState.mapSize,
+            mapState.mapProperties.outsideTiles
         )
-    }
-    remember(key1 = mapState.zoomLevel) {
-        tileCanvasState.onZoomChange()
     }
 
     val charPath = CharPath()
@@ -58,8 +57,8 @@ internal fun TileCanvas(
                 for (tile in tileCanvasState.visibleTilesList.toList()) {
                     if (tile.zoom == mapState.zoomLevel) {
                         it.drawImage(tile.imageBitmap, Offset(
-                            TileCanvasState.tileSize * tile.row,
-                            TileCanvasState.tileSize * tile.col
+                            TileCanvasState.TILE_SIZE * tile.row,
+                            TileCanvasState.TILE_SIZE * tile.col
                         ), Paint().apply {
                             color = generateRandomColor(tile.row, tile.col)
                             isAntiAlias = false   //TODO check performance when true
@@ -72,8 +71,8 @@ internal fun TileCanvas(
                         var xOffset = 0f
                         it.save()
                         it.translate(
-                            TileCanvasState.tileSize * tile.row + 80F,
-                            TileCanvasState.tileSize * tile.col + 160F
+                            TileCanvasState.TILE_SIZE * tile.row + 80F,
+                            TileCanvasState.TILE_SIZE * tile.col + 160F
                         )
                         for (char in pathString) {
                             val path = charPath.paths[char]
