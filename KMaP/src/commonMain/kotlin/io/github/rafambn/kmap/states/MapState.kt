@@ -17,7 +17,7 @@ class MapState(
     initialPosition: Offset = Offset.Zero,
     initialZoom: Float = 0F,
     initialRotation: Float = 0F,
-    maxZoom: Float = 20F,
+    maxZoom: Float = 19F,
     minZoom: Float = 0F,
     val mapProperties: MapProperties = MapProperties()
 ) {
