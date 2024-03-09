@@ -32,10 +32,6 @@ class TileCanvasState {
         CoroutineScope(Dispatchers.Default).tilesKernel(tileKernelChannel)
     }
 
-    fun onZoomChange() {
-//        visibleTilesList.clear()
-    }
-
     fun onPositionChange(
         position: Offset,
         zoomLevel: Int,
@@ -47,11 +43,11 @@ class TileCanvasState {
         outsideTiles: OutsideMapTiles
     ) {
         val halfScreenScaled = (viewSize / 2F) * 2F.pow(maxZoom - zoomLevel) / magnifierScale
-        val topLeft = (-halfScreenScaled - position).rotateVector(-angle.degreesToRadian())
-        val bottomRight = (halfScreenScaled - position).rotateVector(-angle.degreesToRadian())
-        val topRight = (Offset(halfScreenScaled.x, -halfScreenScaled.y) - position).rotateVector(-angle.degreesToRadian())
-        val bottomLeft = (Offset(-halfScreenScaled.x, halfScreenScaled.y) - position).rotateVector(-angle.degreesToRadian())
-        //TODO fix problem with rotation
+        val topLeft = (-halfScreenScaled.rotateVector(-angle.degreesToRadian()) - position)
+        val bottomRight = (halfScreenScaled.rotateVector(-angle.degreesToRadian()) - position)
+        val topRight = (Offset(halfScreenScaled.x, -halfScreenScaled.y).rotateVector(-angle.degreesToRadian()) - position)
+        val bottomLeft = (Offset(-halfScreenScaled.x, halfScreenScaled.y).rotateVector(-angle.degreesToRadian()) - position)
+
         val maxHorizontal = maxOf(topLeft.x, topRight.x, bottomRight.x, bottomLeft.x)
         val minHorizontal = minOf(topLeft.x, topRight.x, bottomRight.x, bottomLeft.x)
         val maxVertical = maxOf(topLeft.y, topRight.y, bottomRight.y, bottomLeft.y)
