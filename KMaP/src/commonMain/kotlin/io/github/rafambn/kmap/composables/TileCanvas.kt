@@ -6,6 +6,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
@@ -53,41 +55,52 @@ internal fun TileCanvas(
                 top = mapState.topLeftCanvas.y
             )
         }) {
-            drawIntoCanvas {
+            drawIntoCanvas { canvas ->
                 for (tile in tileCanvasState.visibleTilesList.toList()) {
                     if (tile.zoom == mapState.zoomLevel) {
-                        it.drawImage(tile.imageBitmap, Offset(
-                            TileCanvasState.TILE_SIZE * tile.row,
-                            TileCanvasState.TILE_SIZE * tile.col
-                        ), Paint().apply {
-                            color = generateRandomColor(tile.row, tile.col)
-                            isAntiAlias = false   //TODO check performance when true
-                        })
+                        tile.imageBitmap?.let {
+                            canvas.drawImage(tile.imageBitmap, Offset(
+                                TileCanvasState.TILE_SIZE * tile.row,
+                                TileCanvasState.TILE_SIZE * tile.col
+                            ), Paint().apply {
+                                color = generateRandomColor(tile.row, tile.col)
+                                isAntiAlias = false
+                            })
+                        } ?: run {
+                            canvas.drawRect(
+                                Rect(
+                                    Offset(TileCanvasState.TILE_SIZE * tile.row, TileCanvasState.TILE_SIZE * tile.col),
+                                    Size(256F, 256F)
+                                ), Paint().apply {
+                                    color = generateRandomColor(tile.row, tile.col)
+                                    isAntiAlias = false
+                                })
+                        }
 
                         //TODO later remove this char
                         val pathString = "${
                             (tile.col + 2F.pow(mapState.zoomLevel).rem(2F.pow(mapState.zoomLevel))).toInt()
                         } - ${tile.row} - ${mapState.zoom.toInt()}"
                         var xOffset = 0f
-                        it.save()
-                        it.translate(
+                        canvas.save()
+                        canvas.translate(
                             TileCanvasState.TILE_SIZE * tile.row + 80F,
                             TileCanvasState.TILE_SIZE * tile.col + 160F
                         )
                         for (char in pathString) {
                             val path = charPath.paths[char]
                             if (path != null) {
-                                it.save()
-                                it.translate(xOffset, -25f)  // Translate the canvas
-                                it.drawPath(path, Paint().apply {
+                                canvas.save()
+                                canvas.translate(xOffset, -25f)  // Translate the canvas
+                                canvas.drawPath(path, Paint().apply {
                                     color = Color.Black
                                     isAntiAlias = false
                                 })
-                                it.restore()
+                                canvas.restore()
                                 xOffset += charWidth
                             }
                         }
-                        it.restore()
+                        canvas.restore()
                     }
                 }
             }
