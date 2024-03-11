@@ -1,6 +1,7 @@
 package io.github.rafambn.kmap.states
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
@@ -20,13 +21,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import kotlin.math.floor
 import kotlin.math.pow
+import kotlin.random.Random
 
 class TileCanvasState {
-    val visibleTilesList = mutableListOf<Tile>() //TODO make it a state
+    val visibleTilesList = mutableStateListOf<Tile>()
     private val tilesToProcessChannel = Channel<List<TileSpecs>>(capacity = Channel.UNLIMITED)
     private val screenStateChannel = Channel<ScreenState>(capacity = Channel.UNLIMITED)
     private val workerResultChannel = Channel<Tile>(capacity = Channel.UNLIMITED)
@@ -112,40 +115,36 @@ class TileCanvasState {
         tilesToProcess: ReceiveChannel<List<TileSpecs>>,
         tilesProcessResult: Channel<Tile>
     ) = launch(Dispatchers.Default) {
-        val specsBeingProcessed = mutableListOf<TileSpecs>()
+        val specsBeingProcessed = mutableSetOf<TileSpecs>()
+        val specsProcessed = mutableSetOf<TileSpecs>()
 
         while (true) {
-            select<Unit> {
+            select {
                 tilesToProcess.onReceive { tilesToProcess ->
                     for (tileSpecs in tilesToProcess) {
-                        visibleTilesList.find { it.zoom == tileSpecs.zoom && it.col == tileSpecs.col && it.row == tileSpecs.row }
-                            ?: run {
-                                specsBeingProcessed.find { it == tileSpecs } ?: run {
-                                    specsBeingProcessed.add(tileSpecs)
-                                    worker(tileSpecs, tilesProcessResult)
-                                }
-                            }
+                        if (!specsProcessed.contains(tileSpecs) && !specsBeingProcessed.contains(tileSpecs)) {
+                            specsBeingProcessed.add(tileSpecs)
+                            worker(tileSpecs, tilesProcessResult)
+                        }
                     }
                 }
                 tilesProcessResult.onReceive { tile ->
-                    tile.imageBitmap?.let {
-                        specsBeingProcessed.remove(TileSpecs(tile.zoom, tile.row, tile.col))
-                        visibleTilesList.add(tile)
-                    } ?: run {
-                        specsBeingProcessed.find { it.zoom == tile.zoom && it.col == tile.col && it.row == tile.row }?.let {
-                            if (it.numberOfTries < 2) {
-                                it.numberOfTries++
-                                worker(it, tilesProcessResult)
-                            } else {
-                                specsBeingProcessed.remove(it)
-                                visibleTilesList.add(tile)
-                            }
+                    val tileSpecs = TileSpecs(tile.zoom, tile.row, tile.col)
+                    specsBeingProcessed.remove(tileSpecs)
+                    specsProcessed.add(tileSpecs)
+                    visibleTilesList.add(tile)
+
+                    if (tile.imageBitmap == null) {
+                        tileSpecs.takeIf { it.numberOfTries < 2 }?.let {
+                            it.numberOfTries++
+                            worker(it, tilesProcessResult)
                         }
                     }
                 }
             }
         }
     }
+
 
     private fun CoroutineScope.worker(
         tileToProcess: TileSpecs,
