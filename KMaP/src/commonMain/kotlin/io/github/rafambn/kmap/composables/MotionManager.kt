@@ -27,6 +27,7 @@ import io.github.rafambn.kmap.gestures.GestureInterface
 import io.github.rafambn.kmap.gestures.GestureState
 import io.github.rafambn.kmap.gestures.detectMapGestures
 import io.github.rafambn.kmap.states.MapState
+import io.github.rafambn.kmap.toPosition
 import kotlinx.coroutines.launch
 
 @Composable
@@ -50,32 +51,32 @@ internal fun MotionManager(
         }
 
         override fun onDoubleTap(offset: Offset) {
-            mapState.scale(offset, -1 / 3F)
+            mapState.scale(offset.toPosition(), -1 / 3F)
         }
 
         override fun onTwoFingersTap(offset: Offset) {
-            mapState.scale(offset, 1 / 3F)
+            mapState.scale(offset.toPosition(), 1 / 3F)
         }
 
         override fun onLongPress(offset: Offset) {
         }
 
         override fun onTapLongPress(offset: Offset) {
-            mapState.move(offset)
+            mapState.move(offset.toPosition())
         }
 
         override fun onTapSwipe(centroid: Offset, zoom: Float) {
-            mapState.scale(centroid, zoom)
+            mapState.scale(centroid.toPosition(), zoom)
         }
 
         override fun onGesture(centroid: Offset, pan: Offset, zoom: Float, rotation: Float) {
-            mapState.rotate(centroid, rotation)
-            mapState.scale(centroid, zoom)
-            mapState.move(pan)
+            mapState.rotate(centroid.toPosition(), rotation)
+            mapState.scale(centroid.toPosition(), zoom)
+            mapState.move(pan.toPosition())
         }
 
         override fun onDrag(dragAmount: Offset) {
-            mapState.move(dragAmount)
+            mapState.move(dragAmount.toPosition())
         }
 
         override fun onGestureStart(gestureType: GestureState, offset: Offset) {
@@ -91,7 +92,7 @@ internal fun MotionManager(
                     initialVelocity = Offset(velocity.x, velocity.y),
                     animationSpec = flingSpec,
                 ) {
-                    mapState.move(value)
+                    mapState.move(value.toPosition())
                 }
             }
         }
@@ -103,7 +104,7 @@ internal fun MotionManager(
                     initialVelocity = velocity,
                     animationSpec = flingZoomSpec,
                 ) {
-                    mapState.scale(centroid, value)
+                    mapState.scale(centroid.toPosition(), value)
                 }
             }
         }
@@ -115,7 +116,7 @@ internal fun MotionManager(
                     initialVelocity = velocity,
                     animationSpec = flingRotationSpec,
                 ) {
-                    mapState.rotate(centroid, value)
+                    mapState.rotate(centroid.toPosition(), value)
                 }
             }
         }
@@ -125,7 +126,7 @@ internal fun MotionManager(
         }
 
         override fun onScroll(mouseOffset: Offset, scrollAmount: Float) {
-            mapState.scale(mouseOffset, scrollAmount)
+            mapState.scale(mouseOffset.toPosition(), scrollAmount)
         }
     }
 
@@ -155,7 +156,7 @@ internal fun MotionManager(
                 )
             }
             .onGloballyPositioned { coordinates ->
-                mapState.canvasSize = coordinates.size.toSize().toRect().bottomRight
+                mapState.canvasSize = coordinates.size.toSize().toRect().bottomRight.toPosition()
             }
     ) { measurables, constraints ->
 

@@ -6,19 +6,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Matrix
+import androidx.compose.ui.graphics.drawscope.scale
 import io.github.rafambn.kmap.degreesToRadian
 import io.github.rafambn.kmap.enums.MapBorderType
+import io.github.rafambn.kmap.model.Position
 import io.github.rafambn.kmap.rotateVector
+import io.github.rafambn.kmap.toCanvasReference
+import io.github.rafambn.kmap.toMapReference
+import io.github.rafambn.kmap.toOffset
 import kotlin.math.floor
 import kotlin.math.pow
 
 class MapState(
-    initialPosition: Offset = Offset.Zero,
+    initialPosition: Position = Position.Zero,
     initialZoom: Float = 0F,
     initialRotation: Float = 0F,
-    maxZoom: Float = 19F,
-    minZoom: Float = 0F,
+    maxZoom: Int = 19,
+    minZoom: Int = 0,
     val mapProperties: MapProperties = MapProperties()
 ) {
     private var maxZoom by mutableStateOf(maxZoom.coerceIn(mapProperties.minMapZoom, mapProperties.maxMapZoom))
@@ -26,51 +31,52 @@ class MapState(
 
     internal var zoom by mutableStateOf(initialZoom)
     internal val zoomLevel by derivedStateOf { floor(zoom).toInt() }
-    internal val magnifierScale by derivedStateOf { zoom - zoomLevel + 1F }
+    internal val magnifierScale by derivedStateOf { zoom - zoomLevel + 1.0 }
 
     internal var angleDegrees by mutableStateOf(initialRotation)
 
-    internal var canvasSize by mutableStateOf(Offset.Zero)
-    internal var mapSize =
-        Offset(TileCanvasState.TILE_SIZE * 2F.pow(mapProperties.maxMapZoom), TileCanvasState.TILE_SIZE * 2F.pow(mapProperties.maxMapZoom))
+    internal var canvasSize by mutableStateOf(Position.Zero)
+    internal var mapSize = Position(TileCanvasState.MAP_SIZE, TileCanvasState.MAP_SIZE)
 
-    internal var mapPosition by mutableStateOf(initialPosition)//TODO fix weird motion when zoomLevel is high
-    internal val topLeftCanvas by derivedStateOf { mapPosition.toCanvasReference() + canvasSize / 2F }
-
-    fun move(offset: Offset) {
-        mapPosition = (offset.toMapReference() + mapPosition).coerceInCanvas()
+    internal var mapPosition by mutableStateOf(initialPosition)
+    internal val topLeftCanvas by derivedStateOf {
+        mapPosition.toCanvasReference(magnifierScale, zoomLevel, angleDegrees) + canvasSize / 2.0
+    }
+    internal val matrix by derivedStateOf {
+        val matrix = Matrix()
+        matrix.translate(topLeftCanvas.horizontal.toFloat(), topLeftCanvas.vertical.toFloat(), 0F)
+        matrix.rotateZ(angleDegrees)
+        matrix.scale(magnifierScale.toFloat(), magnifierScale.toFloat(), 0F)
+        matrix
     }
 
-    fun scale(offset: Offset, scale: Float) {
+    fun move(position: Position) {
+        println(position.toMapReference(magnifierScale, zoomLevel, angleDegrees))
+        mapPosition = (position.toMapReference(magnifierScale, zoomLevel, angleDegrees) + mapPosition).coerceInMap()
+    }
+
+    fun scale(position: Position, scale: Float) {
         if (scale != 0F) {
             val previousMagnifierScale = magnifierScale
             val previousZoomLevel = zoomLevel
-            zoom = (scale + zoom).coerceIn(minZoom, maxZoom)
-            move((offset - canvasSize / 2F) * (1 - ((magnifierScale / previousMagnifierScale) * (2F.pow(zoomLevel - previousZoomLevel)))))
+            zoom = (scale + zoom).coerceIn(minZoom.toFloat(), maxZoom.toFloat())
+            move((position - canvasSize / 2.0) * (1 - ((magnifierScale / previousMagnifierScale) * (2.0.pow(zoomLevel - previousZoomLevel)))))
         }
     }
 
-    fun rotate(offset: Offset, angle: Float) {
-        if (offset != Offset.Zero) {
+    fun rotate(position: Position, angle: Float) {
+        if (position != Position.Zero) {
             angleDegrees += angle
-            move((offset - (canvasSize / 2F) + ((canvasSize / 2F) - offset).rotateVector(angle.degreesToRadian())))
+            move((position - (canvasSize / 2.0) + ((canvasSize / 2.0) - position).rotateVector(angle.degreesToRadian())))
         }
     }
 
-    private fun Offset.coerceInCanvas(): Offset {
-        val x = if (mapProperties.boundMap.horizontal == MapBorderType.BOUND) this.x.coerceIn(-mapSize.x, 0F)
-        else (this.x - mapSize.x).rem(mapSize.x)
-        val y = if (mapProperties.boundMap.vertical == MapBorderType.BOUND) this.y.coerceIn(-mapSize.y, 0F)
-        else (this.y - mapSize.y).rem(mapSize.y)
-        return Offset(x, y)
-    }
-
-    private fun Offset.toCanvasReference(): Offset {
-        return (this * magnifierScale / 2F.pow(maxZoom - zoomLevel)).rotateVector(angleDegrees.degreesToRadian())
-    }
-
-    private fun Offset.toMapReference(): Offset {
-        return (this * 2F.pow(maxZoom - zoomLevel) / magnifierScale).rotateVector(-angleDegrees.degreesToRadian())
+    private fun Position.coerceInMap(): Position {
+        val x = if (mapProperties.boundMap.horizontal == MapBorderType.BOUND) this.horizontal.coerceIn(-mapSize.horizontal, 0.0)
+        else (this.horizontal - mapSize.horizontal).rem(mapSize.horizontal)
+        val y = if (mapProperties.boundMap.vertical == MapBorderType.BOUND) this.vertical.coerceIn(-mapSize.vertical, 0.0)
+        else (this.horizontal - mapSize.vertical).rem(mapSize.vertical)
+        return Position(x, y)
     }
 }
 

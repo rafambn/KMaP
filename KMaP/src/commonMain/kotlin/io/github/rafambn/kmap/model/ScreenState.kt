@@ -4,12 +4,12 @@ import androidx.compose.ui.geometry.Offset
 import io.github.rafambn.kmap.states.OutsideMapTiles
 
 data class ScreenState(
-    val position: Offset,
+    val position: Position,
     val zoomLevel: Int,
-    val maxZoom: Float,
-    val magnifierScale: Float,
+    val maxZoom: Int,
+    val magnifierScale: Double,
     val angle: Float,
-    val viewSize: Offset,
-    val mapSize: Offset,
+    val viewSize: Position,
+    val mapSize: Position,
     val outsideTiles: OutsideMapTiles
 )

@@ -8,11 +8,15 @@ import androidx.compose.ui.graphics.ImageBitmap
 import io.github.rafambn.kmap.degreesToRadian
 import io.github.rafambn.kmap.enums.OutsideTilesType
 import io.github.rafambn.kmap.garbage.KtorClient
+import io.github.rafambn.kmap.model.Position
 import io.github.rafambn.kmap.model.ScreenState
 import io.github.rafambn.kmap.model.Tile
 import io.github.rafambn.kmap.model.TileSpecs
 import io.github.rafambn.kmap.rotateVector
 import io.github.rafambn.kmap.toImageBitmap
+import io.github.rafambn.kmap.toMapReference
+import io.github.rafambn.kmap.toOffset
+import io.github.rafambn.kmap.toPosition
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.readBytes
@@ -21,12 +25,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import kotlin.math.floor
 import kotlin.math.pow
-import kotlin.random.Random
 
 class TileCanvasState {
     val visibleTilesList = mutableStateListOf<Tile>()
@@ -41,16 +43,9 @@ class TileCanvasState {
     }
 
     fun onPositionChange(
-        position: Offset,
-        zoomLevel: Int,
-        maxZoom: Float,
-        magnifierScale: Float,
-        angle: Float,
-        viewSize: Offset,
-        mapSize: Offset,
-        outsideTiles: OutsideMapTiles
+        screenState: ScreenState
     ) {
-        screenStateChannel.trySend(ScreenState(position, zoomLevel, maxZoom, magnifierScale, angle, viewSize, mapSize, outsideTiles))
+        screenStateChannel.trySend(screenState)
     }
 
     private fun CoroutineScope.visibleTilesResolver(
@@ -59,32 +54,32 @@ class TileCanvasState {
     ) = launch(Dispatchers.Default) {
         while (true) {
             val screenState = screenStateChannel.receive()
-            val halfScreenScaled = (screenState.viewSize / 2F) * 2F.pow(screenState.maxZoom - screenState.zoomLevel) / screenState.magnifierScale
+            val halfScreenScaled = screenState.viewSize / 2.0
             val topLeft = (-halfScreenScaled.rotateVector(-screenState.angle.degreesToRadian()) - screenState.position)
             val bottomRight = (halfScreenScaled.rotateVector(-screenState.angle.degreesToRadian()) - screenState.position)
             val topRight =
-                (Offset(halfScreenScaled.x, -halfScreenScaled.y).rotateVector(-screenState.angle.degreesToRadian()) - screenState.position)
+                (Position(halfScreenScaled.horizontal, -halfScreenScaled.vertical).rotateVector(-screenState.angle.degreesToRadian()) - screenState.position)
             val bottomLeft =
-                (Offset(-halfScreenScaled.x, halfScreenScaled.y).rotateVector(-screenState.angle.degreesToRadian()) - screenState.position)
+                (Position(-halfScreenScaled.horizontal, halfScreenScaled.vertical).rotateVector(-screenState.angle.degreesToRadian()) - screenState.position)
 
-            val maxHorizontal = maxOf(topLeft.x, topRight.x, bottomRight.x, bottomLeft.x)
-            val minHorizontal = minOf(topLeft.x, topRight.x, bottomRight.x, bottomLeft.x)
-            val maxVertical = maxOf(topLeft.y, topRight.y, bottomRight.y, bottomLeft.y)
-            val minVertical = minOf(topLeft.y, topRight.y, bottomRight.y, bottomLeft.y)
+            val maxHorizontal = maxOf(topLeft.horizontal, topRight.horizontal, bottomRight.horizontal, bottomLeft.horizontal)
+            val minHorizontal = minOf(topLeft.horizontal, topRight.horizontal, bottomRight.horizontal, bottomLeft.horizontal)
+            val maxVertical = maxOf(topLeft.vertical, topRight.vertical, bottomRight.vertical, bottomLeft.vertical)
+            val minVertical = minOf(topLeft.vertical, topRight.vertical, bottomRight.vertical, bottomLeft.vertical)
 
             val topLeftTile = getXYTile(
-                minHorizontal.toDouble(),
-                minVertical.toDouble(),
+                minHorizontal,
+                minVertical,
                 screenState.zoomLevel,
-                screenState.mapSize.x.toDouble(),
-                screenState.mapSize.y.toDouble()
+                screenState.mapSize.horizontal,
+                screenState.mapSize.vertical
             )
             val bottomRightTile = getXYTile(
-                maxHorizontal.toDouble(),
-                maxVertical.toDouble(),
+                maxHorizontal,
+                maxVertical,
                 screenState.zoomLevel,
-                screenState.mapSize.x.toDouble(),
-                screenState.mapSize.y.toDouble()
+                screenState.mapSize.horizontal,
+                screenState.mapSize.vertical
             )
             val visibleTileSpecs = mutableListOf<TileSpecs>()
             for (x in topLeftTile.first..bottomRightTile.first)
@@ -152,9 +147,8 @@ class TileCanvasState {
     ) = launch(Dispatchers.Default) {
         val imageBitmap: ImageBitmap
         try {
-            println("${tileToProcess.zoom}/${tileToProcess.row}/${tileToProcess.col}")
             imageBitmap =
-                client.get("http://tile.openstreetmap.org/${tileToProcess.zoom}/${tileToProcess.row}/${tileToProcess.col}.png") {
+                client.get("https://tile.openstreetmap.org/${tileToProcess.zoom}/${tileToProcess.row}/${tileToProcess.col}.png") {
                     header("User-Agent", "my.app.test1")
                 }.readBytes().toImageBitmap()
             tileProcessResult.send(Tile(tileToProcess.zoom, tileToProcess.row, tileToProcess.col, imageBitmap))
@@ -173,7 +167,8 @@ class TileCanvasState {
     }
 
     companion object {
-        internal const val TILE_SIZE = 256F
+        internal const val TILE_SIZE = 256.0
+        internal const val MAP_SIZE = 1000000.0
     }
 }
 

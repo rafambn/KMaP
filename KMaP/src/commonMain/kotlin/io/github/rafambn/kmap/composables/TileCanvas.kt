@@ -9,15 +9,16 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import io.github.rafambn.kmap.garbage.CharPath
+import io.github.rafambn.kmap.model.ScreenState
 import io.github.rafambn.kmap.states.MapState
 import io.github.rafambn.kmap.states.TileCanvasState
 import io.github.rafambn.kmap.states.rememberTileCanvasState
-import kotlin.math.pow
+import io.github.rafambn.kmap.toMapReference
 
 @Composable
 internal fun TileCanvas(
@@ -28,14 +29,16 @@ internal fun TileCanvas(
 
     remember(key1 = mapState.mapPosition) {
         tileCanvasState.onPositionChange(
-            mapState.mapPosition,
-            mapState.zoomLevel,
-            mapState.mapProperties.maxMapZoom,
-            mapState.magnifierScale,
-            mapState.angleDegrees,
-            mapState.canvasSize,
-            mapState.mapSize,
-            mapState.mapProperties.outsideTiles
+            ScreenState(
+                mapState.mapPosition,
+                mapState.zoomLevel,
+                mapState.mapProperties.maxMapZoom,
+                mapState.magnifierScale,
+                mapState.angleDegrees,
+                mapState.canvasSize.toMapReference(mapState.magnifierScale, mapState.zoomLevel, mapState.angleDegrees),
+                mapState.mapSize,
+                mapState.mapProperties.outsideTiles
+            )
         )
     }
 
@@ -46,30 +49,24 @@ internal fun TileCanvas(
         modifier = modifier.fillMaxSize()
     ) {
         withTransform({
-            rotate(
-                degrees = mapState.angleDegrees, pivot = mapState.topLeftCanvas
-            )
-            scale(scale = mapState.magnifierScale, mapState.topLeftCanvas)
-            translate(
-                left = mapState.topLeftCanvas.x,
-                top = mapState.topLeftCanvas.y
-            )
+            transform(mapState.matrix)
         }) {
             drawIntoCanvas { canvas ->
                 for (tile in tileCanvasState.visibleTilesList.toList()) {
                     if (tile.zoom == mapState.zoomLevel) {
                         tile.imageBitmap?.let {
                             canvas.drawImage(tile.imageBitmap, Offset(
-                                TileCanvasState.TILE_SIZE * tile.row,
-                                TileCanvasState.TILE_SIZE * tile.col
+                                (TileCanvasState.TILE_SIZE * tile.row).toFloat(),
+                                (TileCanvasState.TILE_SIZE * tile.col).toFloat()
                             ), Paint().apply {
                                 color = generateRandomColor(tile.row, tile.col)
-                                isAntiAlias = false
+                                isAntiAlias = true
+                                filterQuality = FilterQuality.High
                             })
                         } ?: run {
                             canvas.drawRect(
                                 Rect(
-                                    Offset(TileCanvasState.TILE_SIZE * tile.row, TileCanvasState.TILE_SIZE * tile.col),
+                                    Offset((TileCanvasState.TILE_SIZE * tile.row).toFloat(), (TileCanvasState.TILE_SIZE * tile.col).toFloat()),
                                     Size(256F, 256F)
                                 ), Paint().apply {
                                     color = generateRandomColor(tile.row, tile.col)
@@ -78,14 +75,12 @@ internal fun TileCanvas(
                         }
 
                         //TODO later remove this char
-                        val pathString = "${
-                            (tile.col + 2F.pow(mapState.zoomLevel).rem(2F.pow(mapState.zoomLevel))).toInt()
-                        } - ${tile.row} - ${mapState.zoom.toInt()}"
+                        val pathString = "${mapState.zoomLevel}"
                         var xOffset = 0f
                         canvas.save()
                         canvas.translate(
-                            TileCanvasState.TILE_SIZE * tile.row + 80F,
-                            TileCanvasState.TILE_SIZE * tile.col + 160F
+                            (TileCanvasState.TILE_SIZE * tile.row + 80F).toFloat(),
+                            (TileCanvasState.TILE_SIZE * tile.col + 160F).toFloat()
                         )
                         for (char in pathString) {
                             val path = charPath.paths[char]
