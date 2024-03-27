@@ -24,10 +24,10 @@ class MapState(
     initialRotation: Float = 0F,
     maxZoom: Int = 19,
     minZoom: Int = 0,
-    val mapProperties: MapProperties = MapProperties()
+    val mapProperties: MapProperties = MapProperties(zoomLevels =  OSMZoomlevelsRange, mapCoordinatesRange =  OSMCoordinatesRange)
 ) {
-    private var maxZoom by mutableStateOf(maxZoom.coerceIn(mapProperties.minMapZoom, mapProperties.maxMapZoom))
-    private var minZoom by mutableStateOf(minZoom.coerceIn(mapProperties.minMapZoom, mapProperties.maxMapZoom))
+    private var maxZoom by mutableStateOf(maxZoom.coerceIn(mapProperties.zoomLevels.min, mapProperties.zoomLevels.max))
+    private var minZoom by mutableStateOf(minZoom.coerceIn(mapProperties.zoomLevels.min, mapProperties.zoomLevels.max))
 
     internal var zoom by mutableStateOf(initialZoom)
     internal val zoomLevel by derivedStateOf { floor(zoom).toInt() }
