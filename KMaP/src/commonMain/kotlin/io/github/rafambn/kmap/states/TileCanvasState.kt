@@ -3,20 +3,15 @@ package io.github.rafambn.kmap.states
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
-import io.github.rafambn.kmap.degreesToRadian
 import io.github.rafambn.kmap.enums.OutsideTilesType
 import io.github.rafambn.kmap.garbage.KtorClient
 import io.github.rafambn.kmap.model.Position
 import io.github.rafambn.kmap.model.ScreenState
 import io.github.rafambn.kmap.model.Tile
 import io.github.rafambn.kmap.model.TileSpecs
-import io.github.rafambn.kmap.rotateVector
+import io.github.rafambn.kmap.ranges.MapCoordinatesRange
 import io.github.rafambn.kmap.toImageBitmap
-import io.github.rafambn.kmap.toMapReference
-import io.github.rafambn.kmap.toOffset
-import io.github.rafambn.kmap.toPosition
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.readBytes
@@ -27,6 +22,7 @@ import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
+import org.jetbrains.skia.Image
 import kotlin.math.floor
 import kotlin.math.pow
 
@@ -54,52 +50,32 @@ class TileCanvasState {
     ) = launch(Dispatchers.Default) {
         while (true) {
             val screenState = screenStateChannel.receive()
-            val halfScreenScaled = screenState.viewSize / 2.0
-            val topLeft = (-halfScreenScaled.rotateVector(-screenState.angle.degreesToRadian()) - screenState.position)
-            val bottomRight = (halfScreenScaled.rotateVector(-screenState.angle.degreesToRadian()) - screenState.position)
-            val topRight =
-                (Position(halfScreenScaled.horizontal, -halfScreenScaled.vertical).rotateVector(-screenState.angle.degreesToRadian()) - screenState.position)
-            val bottomLeft =
-                (Position(-halfScreenScaled.horizontal, halfScreenScaled.vertical).rotateVector(-screenState.angle.degreesToRadian()) - screenState.position)
-
-            val maxHorizontal = maxOf(topLeft.horizontal, topRight.horizontal, bottomRight.horizontal, bottomLeft.horizontal)
-            val minHorizontal = minOf(topLeft.horizontal, topRight.horizontal, bottomRight.horizontal, bottomLeft.horizontal)
-            val maxVertical = maxOf(topLeft.vertical, topRight.vertical, bottomRight.vertical, bottomLeft.vertical)
-            val minVertical = minOf(topLeft.vertical, topRight.vertical, bottomRight.vertical, bottomLeft.vertical)
 
             val topLeftTile = getXYTile(
-                minHorizontal,
-                minVertical,
+                -screenState.viewPort.topLeft,
                 screenState.zoomLevel,
-                screenState.mapSize.horizontal,
-                screenState.mapSize.vertical
+                TILE_SIZE,
+                screenState.outsideTiles
             )
             val bottomRightTile = getXYTile(
-                maxHorizontal,
-                maxVertical,
+                -screenState.viewPort.bottomRight,
                 screenState.zoomLevel,
-                screenState.mapSize.horizontal,
-                screenState.mapSize.vertical
+                TILE_SIZE,
+                screenState.outsideTiles
             )
             val visibleTileSpecs = mutableListOf<TileSpecs>()
             for (x in topLeftTile.first..bottomRightTile.first)
                 for (y in topLeftTile.second..bottomRightTile.second) {
                     var xTile: Int
-                    if (screenState.outsideTiles.horizontal == OutsideTilesType.NONE)
-                        if (x < 0 || x > 2F.pow(screenState.zoomLevel) - 1)
-                            continue
-                        else
-                            xTile = x
+                    if (x < 0 || x > 2F.pow(screenState.zoomLevel) - 1)
+                        continue
                     else
-                        xTile = loop(x, screenState.zoomLevel)
+                        xTile = x
                     var yTile: Int
-                    if (screenState.outsideTiles.vertical == OutsideTilesType.NONE)
-                        if (y < 0 || y > 2F.pow(screenState.zoomLevel) - 1)
-                            continue
-                        else
-                            yTile = y
+                    if (y < 0 || y > 2F.pow(screenState.zoomLevel) - 1)
+                        continue
                     else
-                        yTile = loop(y, screenState.zoomLevel)
+                        yTile = y
                     visibleTileSpecs.add(TileSpecs(screenState.zoomLevel, xTile, yTile))
                 }
             tilesToProcess.send(visibleTileSpecs)
@@ -146,19 +122,25 @@ class TileCanvasState {
         tileProcessResult: SendChannel<Tile>
     ) = launch(Dispatchers.Default) {
         val imageBitmap: ImageBitmap
+        val image: Image
         try {
-            imageBitmap =
-                client.get("https://tile.openstreetmap.org/${tileToProcess.zoom}/${tileToProcess.row}/${tileToProcess.col}.png") {
-                    header("User-Agent", "my.app.test1")
-                }.readBytes().toImageBitmap()
+            val byteArray = client.get("https://tile.openstreetmap.org/${tileToProcess.zoom}/${tileToProcess.row}/${tileToProcess.col}.png") {
+                header("User-Agent", "my.app.test2")
+            }.readBytes()
+            imageBitmap = byteArray.toImageBitmap()
+            image = Image.makeFromEncoded(byteArray)
             tileProcessResult.send(Tile(tileToProcess.zoom, tileToProcess.row, tileToProcess.col, imageBitmap))
         } catch (ex: Exception) {
+            println(ex)
             tileProcessResult.send(Tile(tileToProcess.zoom, tileToProcess.row, tileToProcess.col, null))
         }
     }
 
-    private fun getXYTile(x: Double, y: Double, zoom: Int, width: Double, height: Double): Pair<Int, Int> {
-        return Pair(floor(x / width * (1 shl zoom)).toInt(), floor(y / height * (1 shl zoom)).toInt())
+    private fun getXYTile(position: Position, zoomLevel: Int, tileSize: Int, mapSize: MapCoordinatesRange): Pair<Int, Int> {
+        return Pair(
+            floor(position.horizontal / mapSize.longitute.span * (1 shl zoomLevel)).toInt(),
+            floor(position.vertical / mapSize.latitude.span * (1 shl zoomLevel)).toInt()
+        )
     }
 
     fun loop(value: Int, zoom: Int): Int {
@@ -167,8 +149,7 @@ class TileCanvasState {
     }
 
     companion object {
-        internal const val TILE_SIZE = 256.0
-        internal const val MAP_SIZE = 1000000.0
+        internal const val TILE_SIZE = 256
     }
 }
 

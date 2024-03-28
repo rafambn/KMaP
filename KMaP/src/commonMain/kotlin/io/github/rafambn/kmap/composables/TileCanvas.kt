@@ -6,19 +6,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.withTransform
-import io.github.rafambn.kmap.garbage.CharPath
 import io.github.rafambn.kmap.model.ScreenState
 import io.github.rafambn.kmap.states.MapState
 import io.github.rafambn.kmap.states.TileCanvasState
 import io.github.rafambn.kmap.states.rememberTileCanvasState
-import io.github.rafambn.kmap.toMapReference
 
 @Composable
 internal fun TileCanvas(
@@ -30,20 +25,12 @@ internal fun TileCanvas(
     remember(key1 = mapState.mapPosition) {
         tileCanvasState.onPositionChange(
             ScreenState(
-                mapState.mapPosition,
+                mapState.viewPort,
                 mapState.zoomLevel,
-                mapState.mapProperties.maxMapZoom,
-                mapState.magnifierScale,
-                mapState.angleDegrees,
-                mapState.canvasSize.toMapReference(mapState.magnifierScale, mapState.zoomLevel, mapState.angleDegrees),
-                mapState.mapSize,
-                mapState.mapProperties.outsideTiles
+                mapState.mapProperties.mapCoordinatesRange
             )
         )
     }
-
-    val charPath = CharPath()
-    val charWidth = 15f
 
     Canvas(
         modifier = modifier.fillMaxSize()
@@ -56,56 +43,16 @@ internal fun TileCanvas(
                     if (tile.zoom == mapState.zoomLevel) {
                         tile.imageBitmap?.let {
                             canvas.drawImage(tile.imageBitmap, Offset(
-                                (TileCanvasState.TILE_SIZE * tile.row).toFloat(),
-                                (TileCanvasState.TILE_SIZE * tile.col).toFloat()
+                                (TileCanvasState.TILE_SIZE * tile.row + mapState.positionOffset.horizontal).toFloat(),
+                                (TileCanvasState.TILE_SIZE * tile.col + mapState.positionOffset.vertical).toFloat()
                             ), Paint().apply {
-                                color = generateRandomColor(tile.row, tile.col)
                                 isAntiAlias = true
                                 filterQuality = FilterQuality.High
                             })
-                        } ?: run {
-                            canvas.drawRect(
-                                Rect(
-                                    Offset((TileCanvasState.TILE_SIZE * tile.row).toFloat(), (TileCanvasState.TILE_SIZE * tile.col).toFloat()),
-                                    Size(256F, 256F)
-                                ), Paint().apply {
-                                    color = generateRandomColor(tile.row, tile.col)
-                                    isAntiAlias = false
-                                })
                         }
-
-                        //TODO later remove this char
-                        val pathString = "${mapState.zoomLevel}"
-                        var xOffset = 0f
-                        canvas.save()
-                        canvas.translate(
-                            (TileCanvasState.TILE_SIZE * tile.row + 80F).toFloat(),
-                            (TileCanvasState.TILE_SIZE * tile.col + 160F).toFloat()
-                        )
-                        for (char in pathString) {
-                            val path = charPath.paths[char]
-                            if (path != null) {
-                                canvas.save()
-                                canvas.translate(xOffset, -25f)  // Translate the canvas
-                                canvas.drawPath(path, Paint().apply {
-                                    color = Color.Black
-                                    isAntiAlias = false
-                                })
-                                canvas.restore()
-                                xOffset += charWidth
-                            }
-                        }
-                        canvas.restore()
                     }
                 }
             }
         }
     }
-}
-
-fun generateRandomColor(row: Int, collumn: Int): Color {
-    return if ((row + collumn) % 2 == 0)
-        Color.Green
-    else
-        Color.Cyan
 }

@@ -156,7 +156,7 @@ internal fun MotionManager(
                 )
             }
             .onGloballyPositioned { coordinates ->
-                mapState.canvasSize = coordinates.size.toSize().toRect().bottomRight.toPosition()
+                mapState.canvasSize = coordinates.size.toSize().toRect().bottomRight
             }
     ) { measurables, constraints ->
 

@@ -3,6 +3,7 @@ package io.github.rafambn.kmap
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
 import io.github.rafambn.kmap.model.Position
+import io.github.rafambn.kmap.ranges.MapCoordinatesRange
 import io.github.rafambn.kmap.states.TileCanvasState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -39,13 +40,18 @@ fun Position.toOffset(): Offset {
     return Offset(this.horizontal.toFloat(), this.vertical.toFloat())
 }
 
-
-fun Position.toCanvasReference(magnifierScale: Double, zoomLevel: Int, angleDegrees: Float): Position {
-    return ((this * (TileCanvasState.TILE_SIZE * magnifierScale * (2.0.pow(zoomLevel)))) / TileCanvasState.MAP_SIZE).rotateVector(angleDegrees.degreesToRadian())
+fun Position.toCanvasReference(zoomLevel: Int, angleDegrees: Float, mapCoordinatesRange: MapCoordinatesRange): Position {
+    return Position(
+        this.horizontal * (TileCanvasState.TILE_SIZE * (2.0.pow(zoomLevel))) / mapCoordinatesRange.longitute.span,
+        this.vertical * (TileCanvasState.TILE_SIZE * (2.0.pow(zoomLevel))) / mapCoordinatesRange.latitude.span
+    ).rotateVector(angleDegrees.degreesToRadian())
 }
 
-fun Position.toMapReference(magnifierScale: Double, zoomLevel: Int, angleDegrees: Float): Position {
-    return (this * TileCanvasState.MAP_SIZE / (TileCanvasState.TILE_SIZE * magnifierScale * 2.0.pow(zoomLevel))).rotateVector(-angleDegrees.degreesToRadian())
+fun Position.toMapReference(magnifierScale: Float, zoomLevel: Int, angleDegrees: Float, mapCoordinatesRange: MapCoordinatesRange): Position {
+    return Position(
+        this.horizontal * mapCoordinatesRange.longitute.span / (TileCanvasState.TILE_SIZE * magnifierScale * 2.0.pow(zoomLevel)),
+        this.vertical * mapCoordinatesRange.latitude.span / (TileCanvasState.TILE_SIZE * magnifierScale * 2.0.pow(zoomLevel))
+    ).rotateVector(-angleDegrees.degreesToRadian())
 }
 
 @OptIn(InternalResourceApi::class)
