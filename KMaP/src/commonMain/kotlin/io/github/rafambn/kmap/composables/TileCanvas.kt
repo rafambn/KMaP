@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
@@ -53,6 +54,9 @@ internal fun TileCanvas(
                     }
                 }
             }
+        }
+        drawIntoCanvas {
+            drawCircle(Color.Red, radius = 4F)
         }
     }
 }

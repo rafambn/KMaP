@@ -40,7 +40,7 @@ class MapState(
     internal var canvasSize by mutableStateOf(Offset.Zero)
 
     internal val positionOffset by derivedStateOf {
-        mapPosition.toCanvasReference(zoomLevel, angleDegrees, mapProperties.mapCoordinatesRange).rotateVector(angleDegrees.degreesToRadian())
+        mapPosition.toCanvasReference(zoomLevel, mapProperties.mapCoordinatesRange)
     }
 
     internal val viewPort by derivedStateOf {
@@ -56,7 +56,7 @@ class MapState(
     internal val matrix by derivedStateOf {
         val matrix = Matrix()
         matrix.translate(canvasSize.x / 2, canvasSize.y / 2, 0F)
-        matrix.rotateZ(angleDegrees) //TODO fuck fixed stutter bug but broke rotation
+        matrix.rotateZ(angleDegrees)
         matrix.scale(magnifierScale, magnifierScale, 0F)
         matrix
     }
@@ -77,7 +77,7 @@ class MapState(
     fun rotate(position: Position, angle: Float) {
         if (position != Position.Zero) {
             angleDegrees += angle
-//            move((position - (canvasSize.toPosition() / 2.0) + ((canvasSize.toPosition() / 2.0) - position).rotateVector(angle.degreesToRadian())))
+            move((position - (canvasSize.toPosition() / 2.0) + ((canvasSize.toPosition() / 2.0) - position).rotateVector(angle.degreesToRadian())))
         }
     }
 

@@ -21,7 +21,8 @@ fun Float.degreesToRadian(): Float {
 
 fun Offset.rotateVector(angleRadians: Float): Offset {
     return Offset(
-        (this.x * cos(angleRadians) - this.y * sin(angleRadians)), (this.x * sin(angleRadians) + this.y * cos(angleRadians))
+        this.x * cos(angleRadians) - this.y * sin(angleRadians),
+        this.x * sin(angleRadians) + this.y * cos(angleRadians)
     )
 }
 
@@ -40,18 +41,22 @@ fun Position.toOffset(): Offset {
     return Offset(this.horizontal.toFloat(), this.vertical.toFloat())
 }
 
-fun Position.toCanvasReference(zoomLevel: Int, angleDegrees: Float, mapCoordinatesRange: MapCoordinatesRange): Position {
+fun Position.toCanvasReference(zoomLevel: Int, mapCoordinatesRange: MapCoordinatesRange): Position {
     return Position(
-        this.horizontal * (TileCanvasState.TILE_SIZE * (2.0.pow(zoomLevel))) / mapCoordinatesRange.longitute.span,
-        this.vertical * (TileCanvasState.TILE_SIZE * (2.0.pow(zoomLevel))) / mapCoordinatesRange.latitude.span
-    ).rotateVector(angleDegrees.degreesToRadian())
+        this.horizontal * (TileCanvasState.TILE_SIZE * (2.0.pow(zoomLevel))),
+        this.vertical * (TileCanvasState.TILE_SIZE * (2.0.pow(zoomLevel)))
+    ).scaleToMap(1 / mapCoordinatesRange.longitute.span, 1 / mapCoordinatesRange.latitude.span)
 }
 
 fun Position.toMapReference(magnifierScale: Float, zoomLevel: Int, angleDegrees: Float, mapCoordinatesRange: MapCoordinatesRange): Position {
     return Position(
-        this.horizontal * mapCoordinatesRange.longitute.span / (TileCanvasState.TILE_SIZE * magnifierScale * 2.0.pow(zoomLevel)),
-        this.vertical * mapCoordinatesRange.latitude.span / (TileCanvasState.TILE_SIZE * magnifierScale * 2.0.pow(zoomLevel))
-    ).rotateVector(-angleDegrees.degreesToRadian())
+        this.horizontal / (TileCanvasState.TILE_SIZE * magnifierScale * 2.0.pow(zoomLevel)),
+        this.vertical / (TileCanvasState.TILE_SIZE * magnifierScale * 2.0.pow(zoomLevel))
+    ).rotateVector(-angleDegrees.degreesToRadian()).scaleToMap(mapCoordinatesRange.longitute.span, mapCoordinatesRange.latitude.span)
+}
+
+fun Position.scaleToMap(horizontal: Double, vertical: Double): Position {
+    return Position(this.horizontal * horizontal, this.vertical * vertical)
 }
 
 @OptIn(InternalResourceApi::class)

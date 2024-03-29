@@ -49,7 +49,7 @@ class TileCanvasState {
         tilesToProcess: SendChannel<List<TileSpecs>>
     ) = launch(Dispatchers.Default) {
         while (true) {
-            val screenState = screenStateChannel.receive()
+            val screenState = screenStateChannel.receive() //TODO fix tile identification
 
             val topLeftTile = getXYTile(
                 -screenState.viewPort.topLeft,
@@ -125,7 +125,7 @@ class TileCanvasState {
         val image: Image
         try {
             val byteArray = client.get("https://tile.openstreetmap.org/${tileToProcess.zoom}/${tileToProcess.row}/${tileToProcess.col}.png") {
-                header("User-Agent", "my.app.test2")
+                header("User-Agent", "my.app.test3")
             }.readBytes()
             imageBitmap = byteArray.toImageBitmap()
             image = Image.makeFromEncoded(byteArray)

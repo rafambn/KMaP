@@ -44,5 +44,4 @@ class Position(val horizontal: Double, val vertical: Double) {
     operator fun div(operand: Double): Position {
         return Position(this.horizontal / operand, this.vertical / operand)
     }
-
 }
