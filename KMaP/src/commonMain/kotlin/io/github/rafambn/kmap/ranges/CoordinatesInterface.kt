@@ -7,14 +7,34 @@ interface MapCoordinatesRange {
     val longitute: Longitude
 }
 
-class Latitude(val north: Double, val south: Double) {
-    val span = abs(north - south)
-    operator fun contains(value: Double): Boolean = value in south..north
+interface CoordinatesInterface {
+    val span: Double
+
+    fun getMax(): Double
+
+    fun getMin(): Double
+
+    operator fun contains(value: Double): Boolean
 }
 
-class Longitude(val east: Double, val west: Double) {
-    val span = abs(east - west)
-    operator fun contains(value: Double): Boolean = value in west..east
+class Latitude(val north: Double, val south: Double) : CoordinatesInterface {
+    override val span = abs(north - south)
+
+    override fun getMax(): Double = maxOf(north, south)
+
+    override fun getMin(): Double = minOf(north, south)
+
+    override operator fun contains(value: Double): Boolean = value in south..north
+}
+
+class Longitude(val east: Double, val west: Double) : CoordinatesInterface {
+    override val span = abs(east - west)
+
+    override fun getMax(): Double = maxOf(east, west)
+
+    override fun getMin(): Double = minOf(east, west)
+
+    override operator fun contains(value: Double): Boolean = value in west..east
 }
 
 open class MapZoomlevelsRange(val max: Int, val min: Int) {

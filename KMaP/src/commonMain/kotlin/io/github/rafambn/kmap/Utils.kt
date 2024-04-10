@@ -3,6 +3,7 @@ package io.github.rafambn.kmap
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
 import io.github.rafambn.kmap.model.Position
+import io.github.rafambn.kmap.ranges.CoordinatesInterface
 import io.github.rafambn.kmap.ranges.MapCoordinatesRange
 import io.github.rafambn.kmap.states.TileCanvasState
 import kotlinx.coroutines.CoroutineScope
@@ -42,22 +43,39 @@ fun Position.toOffset(): Offset {
 }
 
 fun Position.toCanvasReference(zoomLevel: Int, mapCoordinatesRange: MapCoordinatesRange): Position {
-    return Position(
-        this.horizontal * (TileCanvasState.TILE_SIZE * (2.0.pow(zoomLevel))),
-        this.vertical * (TileCanvasState.TILE_SIZE * (2.0.pow(zoomLevel)))
-    ).scaleToMap(1 / mapCoordinatesRange.longitute.span, 1 / mapCoordinatesRange.latitude.span)
+    return this.moveToTrueCoordinates(mapCoordinatesRange)
+        .scaleToZoom(TileCanvasState.TILE_SIZE * (2.0.pow(zoomLevel)))
+        .scaleToMap(1 / mapCoordinatesRange.longitute.span, 1 / mapCoordinatesRange.latitude.span)
 }
 
-fun Position.toMapReference(magnifierScale: Float, zoomLevel: Int, angleDegrees: Float, mapCoordinatesRange: MapCoordinatesRange): Position {
-    return Position(
-        this.horizontal / (TileCanvasState.TILE_SIZE * magnifierScale * 2.0.pow(zoomLevel)),
-        this.vertical / (TileCanvasState.TILE_SIZE * magnifierScale * 2.0.pow(zoomLevel))
-    ).rotateVector(-angleDegrees.degreesToRadian()).scaleToMap(mapCoordinatesRange.longitute.span, mapCoordinatesRange.latitude.span)
+fun Position.scaleToZoom(zoomScale: Double): Position {
+    return Position(horizontal * zoomScale, vertical * zoomScale)
+}
+
+fun Position.moveToTrueCoordinates(mapCoordinatesRange: MapCoordinatesRange): Position {
+    return Position(horizontal - mapCoordinatesRange.longitute.span / 2, vertical - mapCoordinatesRange.latitude.span / 2)
 }
 
 fun Position.scaleToMap(horizontal: Double, vertical: Double): Position {
     return Position(this.horizontal * horizontal, this.vertical * vertical)
 }
+
+fun Position.toMapReference(magnifierScale: Float, zoomLevel: Int, angleDegrees: Float, mapCoordinatesRange: MapCoordinatesRange): Position {
+    return this.scaleToZoom(1 / (TileCanvasState.TILE_SIZE * magnifierScale * 2.0.pow(zoomLevel)))
+        .rotateVector(-angleDegrees.degreesToRadian())
+        .scaleToMap(mapCoordinatesRange.longitute.span, mapCoordinatesRange.latitude.span)
+}
+
+fun Double.loopInRange(coordinatesRange: CoordinatesInterface): Double {
+    if (coordinatesRange.contains(this)) return this
+
+    if (this > coordinatesRange.getMax() && this > coordinatesRange.getMin()){
+//TODO create function to loop
+    }else{
+
+    }
+}
+
 
 @OptIn(InternalResourceApi::class)
 inline fun imageBitmapResource(

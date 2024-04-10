@@ -9,8 +9,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Matrix
 import io.github.rafambn.kmap.degreesToRadian
+import io.github.rafambn.kmap.enums.MapBorderType
+import io.github.rafambn.kmap.loopInRange
 import io.github.rafambn.kmap.model.Position
 import io.github.rafambn.kmap.model.VeiwPort
+import io.github.rafambn.kmap.ranges.Longitude
+import io.github.rafambn.kmap.ranges.MapCoordinatesRange
 import io.github.rafambn.kmap.rotateVector
 import io.github.rafambn.kmap.toCanvasReference
 import io.github.rafambn.kmap.toMapReference
@@ -44,7 +48,8 @@ class MapState(
     }
 
     internal val viewPort by derivedStateOf {
-        val canvasScaled = canvasSize / 2F.pow(zoom + 1)
+        val canvasScaled = canvasSize / 2F.pow(zoom)
+        println(canvasScaled)
         VeiwPort(
             mapPosition + canvasScaled.toPosition(),
             mapPosition + Position(-canvasScaled.x.toDouble(), canvasScaled.y.toDouble()),
@@ -62,7 +67,12 @@ class MapState(
     }
 
     fun move(position: Position) {
-        mapPosition += position.toMapReference(magnifierScale, zoomLevel, angleDegrees, mapProperties.mapCoordinatesRange)
+        mapPosition =
+            (position.toMapReference(magnifierScale, zoomLevel, angleDegrees, mapProperties.mapCoordinatesRange) + mapPosition).coerceInMap(
+                mapProperties.boundMap,
+                mapProperties.mapCoordinatesRange
+            )
+        println(mapPosition)
     }
 
     fun scale(position: Position, scale: Float) {
@@ -81,13 +91,23 @@ class MapState(
         }
     }
 
-//    private fun Position.coerceInMap(): Position {
-//        val x = if (mapProperties.boundMap.horizontal == MapBorderType.BOUND) this.horizontal.coerceIn(-mapSize.horizontal, 0.0)
-//        else (this.horizontal - mapSize.horizontal).rem(mapSize.horizontal)
-//        val y = if (mapProperties.boundMap.vertical == MapBorderType.BOUND) this.vertical.coerceIn(-mapSize.vertical, 0.0)
-//        else (this.horizontal - mapSize.vertical).rem(mapSize.vertical)
-//        return Position(x, y)
-//    }
+    private fun Position.coerceInMap(boundMap: BoundMapBorder, mapCoordinatesRange: MapCoordinatesRange): Position {
+        val x = if (boundMap.horizontal == MapBorderType.BOUND)
+            horizontal.coerceIn(
+                mapCoordinatesRange.longitute.west,
+                mapCoordinatesRange.longitute.east
+            )
+        else
+            horizontal.loopInRange(mapCoordinatesRange.longitute)
+        val y = if (boundMap.vertical == MapBorderType.BOUND)
+            vertical.coerceIn(
+                mapCoordinatesRange.latitude.south,
+                mapCoordinatesRange.latitude.north
+            )
+        else
+            horizontal.loopInRange(mapCoordinatesRange.latitude)
+        return Position(x, y)
+    }
 }
 
 @Composable
