@@ -13,7 +13,6 @@ import io.github.rafambn.kmap.enums.MapBorderType
 import io.github.rafambn.kmap.loopInRange
 import io.github.rafambn.kmap.model.Position
 import io.github.rafambn.kmap.model.VeiwPort
-import io.github.rafambn.kmap.ranges.Longitude
 import io.github.rafambn.kmap.ranges.MapCoordinatesRange
 import io.github.rafambn.kmap.rotateVector
 import io.github.rafambn.kmap.toCanvasReference
@@ -33,15 +32,15 @@ class MapState(
     private var maxZoom by mutableStateOf(maxZoom.coerceIn(mapProperties.zoomLevels.min, mapProperties.zoomLevels.max))
     private var minZoom by mutableStateOf(minZoom.coerceIn(mapProperties.zoomLevels.min, mapProperties.zoomLevels.max))
 
-    internal var zoom by mutableStateOf(initialZoom)
-    internal var angleDegrees by mutableStateOf(initialRotation)
-    internal var mapPosition by mutableStateOf(initialPosition)
+    internal var zoom by mutableStateOf(initialZoom) //TODO make private
+    private var angleDegrees by mutableStateOf(initialRotation)
+    internal var mapPosition by mutableStateOf(initialPosition) //TODO make private
 
-    internal val zoomLevel
+    internal val zoomLevel //TODO make private
         get() = floor(zoom).toInt()
-    internal val magnifierScale
+    private val magnifierScale
         get() = zoom - zoomLevel + 1F
-    internal var canvasSize by mutableStateOf(Offset.Zero)
+    private var canvasSize by mutableStateOf(Offset.Zero)
 
     internal val positionOffset by derivedStateOf {
         mapPosition.toCanvasReference(zoomLevel, mapProperties.mapCoordinatesRange)
@@ -49,7 +48,6 @@ class MapState(
 
     internal val viewPort by derivedStateOf {
         val canvasScaled = canvasSize / 2F.pow(zoom)
-        println(canvasScaled)
         VeiwPort(
             mapPosition + canvasScaled.toPosition(),
             mapPosition + Position(-canvasScaled.x.toDouble(), canvasScaled.y.toDouble()),
@@ -105,8 +103,12 @@ class MapState(
                 mapCoordinatesRange.latitude.north
             )
         else
-            horizontal.loopInRange(mapCoordinatesRange.latitude)
+            vertical.loopInRange(mapCoordinatesRange.latitude)
         return Position(x, y)
+    }
+
+    fun updateCanvasSize(canvasSize: Offset){
+        this.canvasSize = canvasSize
     }
 }
 

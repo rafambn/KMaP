@@ -143,11 +143,6 @@ class TileCanvasState {
         )
     }
 
-    fun loop(value: Int, zoom: Int): Int {
-        val zoomFactor = 1 shl zoom
-        return (value + zoomFactor) % zoomFactor
-    }
-
     companion object {
         internal const val TILE_SIZE = 256
     }
