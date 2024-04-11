@@ -33,7 +33,7 @@ class MapState(
     private var minZoom by mutableStateOf(minZoom.coerceIn(mapProperties.zoomLevels.min, mapProperties.zoomLevels.max))
 
     internal var zoom by mutableStateOf(initialZoom) //TODO make private
-    private var angleDegrees by mutableStateOf(initialRotation)
+    internal var angleDegrees by mutableStateOf(initialRotation)
     internal var mapPosition by mutableStateOf(initialPosition) //TODO make private
 
     internal val zoomLevel //TODO make private
@@ -47,13 +47,17 @@ class MapState(
     }
 
     internal val viewPort by derivedStateOf {
-        val canvasScaled = canvasSize / 2F.pow(zoom)
-        VeiwPort(
-            mapPosition + canvasScaled.toPosition(),
-            mapPosition + Position(-canvasScaled.x.toDouble(), canvasScaled.y.toDouble()),
-            mapPosition - canvasScaled.toPosition(),
-            mapPosition + Position(canvasScaled.x.toDouble(), -canvasScaled.y.toDouble())
+        val canvasScaled = (canvasSize / 2F.pow(zoom+1))
+            .toPosition()
+            .toMapReference(magnifierScale, zoomLevel, angleDegrees, mapProperties.mapCoordinatesRange)
+        val vp = VeiwPort(
+            mapPosition + canvasScaled,
+            mapPosition + Position(-canvasScaled.horizontal, canvasScaled.vertical),
+            mapPosition - canvasScaled,
+            mapPosition + Position(canvasScaled.horizontal, -canvasScaled.vertical)
         )
+        println("${vp.topLeft} // ${vp.bottomRight}")
+        vp
     }
 
     internal val matrix by derivedStateOf {
@@ -70,7 +74,6 @@ class MapState(
                 mapProperties.boundMap,
                 mapProperties.mapCoordinatesRange
             )
-        println(mapPosition)
     }
 
     fun scale(position: Position, scale: Float) {
@@ -85,7 +88,7 @@ class MapState(
     fun rotate(position: Position, angle: Float) {
         if (position != Position.Zero) {
             angleDegrees += angle
-            move((position - (canvasSize.toPosition() / 2.0) + ((canvasSize.toPosition() / 2.0) - position).rotateVector(angle.degreesToRadian())))
+//            move((position - (canvasSize.toPosition() / 2.0) + ((canvasSize.toPosition() / 2.0) - position).rotateVector(angle.degreesToRadian())))
         }
     }
 
@@ -107,7 +110,7 @@ class MapState(
         return Position(x, y)
     }
 
-    fun updateCanvasSize(canvasSize: Offset){
+    fun updateCanvasSize(canvasSize: Offset) {
         this.canvasSize = canvasSize
     }
 }

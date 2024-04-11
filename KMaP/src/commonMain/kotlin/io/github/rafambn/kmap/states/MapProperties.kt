@@ -8,7 +8,7 @@ import io.github.rafambn.kmap.ranges.MapCoordinatesRange
 import io.github.rafambn.kmap.ranges.MapZoomlevelsRange
 
 class MapProperties(
-    val boundMap: BoundMapBorder = BoundMapBorder(MapBorderType.LOOP, MapBorderType.LOOP),
+    val boundMap: BoundMapBorder = BoundMapBorder(MapBorderType.BOUND, MapBorderType.BOUND),
     val outsideTiles: OutsideMapTiles = OutsideMapTiles(OutsideTilesType.NONE, OutsideTilesType.NONE),
     val zoomLevels: MapZoomlevelsRange,
     val mapCoordinatesRange: MapCoordinatesRange

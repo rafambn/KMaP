@@ -23,8 +23,8 @@ internal fun TileCanvas(
 ) {
     val tileCanvasState = rememberTileCanvasState()
 
-    remember(key1 = mapState.mapPosition) {
-        tileCanvasState.onPositionChange(
+    remember(key1 = mapState.mapPosition, key2 = mapState.zoom, key3 = mapState.angleDegrees) {
+        tileCanvasState.onStateChange(
             ScreenState(
                 mapState.viewPort,
                 mapState.zoomLevel,

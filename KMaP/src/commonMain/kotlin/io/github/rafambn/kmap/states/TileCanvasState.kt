@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.ImageBitmap
-import io.github.rafambn.kmap.enums.OutsideTilesType
 import io.github.rafambn.kmap.garbage.KtorClient
 import io.github.rafambn.kmap.model.Position
 import io.github.rafambn.kmap.model.ScreenState
@@ -28,6 +27,7 @@ import kotlin.math.pow
 
 class TileCanvasState {
     val visibleTilesList = mutableStateListOf<Tile>()
+    val renderedTiles = mutableListOf<Tile>()
     private val tilesToProcessChannel = Channel<List<TileSpecs>>(capacity = Channel.UNLIMITED)
     private val screenStateChannel = Channel<ScreenState>(capacity = Channel.UNLIMITED)
     private val workerResultChannel = Channel<Tile>(capacity = Channel.UNLIMITED)
@@ -38,7 +38,7 @@ class TileCanvasState {
         CoroutineScope(Dispatchers.Default).visibleTilesResolver(screenStateChannel, tilesToProcessChannel)
     }
 
-    fun onPositionChange(
+    fun onStateChange(
         screenState: ScreenState
     ) {
         screenStateChannel.trySend(screenState)
@@ -49,19 +49,17 @@ class TileCanvasState {
         tilesToProcess: SendChannel<List<TileSpecs>>
     ) = launch(Dispatchers.Default) {
         while (true) {
-            val screenState = screenStateChannel.receive() //TODO fix tile identification
+            val screenState = screenStateChannel.receive()
 
             val topLeftTile = getXYTile(
                 -screenState.viewPort.topLeft,
                 screenState.zoomLevel,
-                TILE_SIZE,
-                screenState.outsideTiles
+                screenState.coordinatesRange
             )
             val bottomRightTile = getXYTile(
                 -screenState.viewPort.bottomRight,
                 screenState.zoomLevel,
-                TILE_SIZE,
-                screenState.outsideTiles
+                screenState.coordinatesRange
             )
             val visibleTileSpecs = mutableListOf<TileSpecs>()
             for (x in topLeftTile.first..bottomRightTile.first)
@@ -136,7 +134,7 @@ class TileCanvasState {
         }
     }
 
-    private fun getXYTile(position: Position, zoomLevel: Int, tileSize: Int, mapSize: MapCoordinatesRange): Pair<Int, Int> {
+    private fun getXYTile(position: Position, zoomLevel: Int, mapSize: MapCoordinatesRange): Pair<Int, Int> {
         return Pair(
             floor(position.horizontal / mapSize.longitute.span * (1 shl zoomLevel)).toInt(),
             floor(position.vertical / mapSize.latitude.span * (1 shl zoomLevel)).toInt()
