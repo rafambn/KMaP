@@ -73,6 +73,10 @@ fun Double.loopInRange(coordinatesRange: CoordinatesInterface): Double {
     return (this - coordinatesRange.getMin()).mod(coordinatesRange.span) + coordinatesRange.getMin()
 }
 
+fun Int.loopInRange(intRange: IntRange): Int {
+    return (this - intRange.first).mod(intRange.last - intRange.first) + intRange.first
+}
+
 fun Position.invertPosition(): Position {
     return Position(-horizontal, vertical)
 }

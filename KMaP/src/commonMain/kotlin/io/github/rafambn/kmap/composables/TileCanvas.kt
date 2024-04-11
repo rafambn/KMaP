@@ -28,7 +28,8 @@ internal fun TileCanvas(
             ScreenState(
                 mapState.viewPort,
                 mapState.zoomLevel,
-                mapState.mapProperties.mapCoordinatesRange
+                mapState.mapProperties.mapCoordinatesRange,
+                mapState.mapProperties.outsideTiles
             )
         )
     }
@@ -41,17 +42,13 @@ internal fun TileCanvas(
         }) {
             drawIntoCanvas { canvas ->
                 for (tile in tileCanvasState.visibleTilesList.toList()) {
-                    if (tile.zoom == mapState.zoomLevel) {
-                        tile.imageBitmap?.let {
-                            canvas.drawImage(tile.imageBitmap, Offset(
-                                (TileCanvasState.TILE_SIZE * tile.row + mapState.positionOffset.horizontal).toFloat(),
-                                (TileCanvasState.TILE_SIZE * tile.col + mapState.positionOffset.vertical).toFloat()
-                            ), Paint().apply {
-                                isAntiAlias = true
-                                filterQuality = FilterQuality.High
-                            })
-                        }
-                    }
+                    canvas.drawImage(tile.imageBitmap, Offset(
+                        (TileCanvasState.TILE_SIZE * tile.row + mapState.positionOffset.horizontal).toFloat(),
+                        (TileCanvasState.TILE_SIZE * tile.col + mapState.positionOffset.vertical).toFloat()
+                    ), Paint().apply {
+                        isAntiAlias = true
+                        filterQuality = FilterQuality.High
+                    })
                 }
             }
         }

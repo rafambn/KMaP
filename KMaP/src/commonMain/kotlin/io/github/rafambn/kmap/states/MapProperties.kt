@@ -9,14 +9,12 @@ import io.github.rafambn.kmap.ranges.MapZoomlevelsRange
 
 class MapProperties(
     val boundMap: BoundMapBorder = BoundMapBorder(MapBorderType.BOUND, MapBorderType.BOUND),
-    val outsideTiles: OutsideMapTiles = OutsideMapTiles(OutsideTilesType.NONE, OutsideTilesType.NONE),
+    val outsideTiles: OutsideTilesType = OutsideTilesType.NONE,
     val zoomLevels: MapZoomlevelsRange,
     val mapCoordinatesRange: MapCoordinatesRange
 )
 
 data class BoundMapBorder(val horizontal: MapBorderType, val vertical: MapBorderType)
-data class OutsideMapTiles(val horizontal: OutsideTilesType, val vertical: OutsideTilesType)
-
 
 object OSMCoordinatesRange : MapCoordinatesRange {
     override val latitude: Latitude
