@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import io.github.rafambn.kmap.enums.OutsideTilesType
 import io.github.rafambn.kmap.garbage.KtorClient
 import io.github.rafambn.kmap.loopInRange
+import io.github.rafambn.kmap.loopInZoom
 import io.github.rafambn.kmap.model.Position
 import io.github.rafambn.kmap.model.ScreenState
 import io.github.rafambn.kmap.model.Tile
@@ -24,12 +25,15 @@ import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.jetbrains.skia.Image
 import kotlin.math.floor
 import kotlin.math.pow
 
 class TileCanvasState {
-    val visibleTilesList = mutableStateListOf<Tile>()
+    private val mutex = Mutex()
+    var visibleTilesList = mutableStateListOf<Tile>()
     private val renderedTiles = mutableListOf<Tile>()
     private val tilesToProcessChannel = Channel<List<TileSpecs>>(capacity = Channel.UNLIMITED)
     private val screenStateChannel = Channel<ScreenState>(capacity = Channel.UNLIMITED)
@@ -56,15 +60,16 @@ class TileCanvasState {
             val screenState = screenStateChannel.receive()
 
             val topLeftTile = getXYTile(
-                -screenState.viewPort.topLeft,
+                screenState.viewPort.topLeft,
                 screenState.zoomLevel,
                 screenState.coordinatesRange
             )
             val bottomRightTile = getXYTile(
-                -screenState.viewPort.bottomRight,
+                screenState.viewPort.bottomRight,
                 screenState.zoomLevel,
                 screenState.coordinatesRange
             )
+            println("$topLeftTile -- $bottomRightTile")
             val horizontalTileIntRange =
                 IntRange(minOf(topLeftTile.first, bottomRightTile.first), maxOf(topLeftTile.first, bottomRightTile.first))
             val verticalTileIntRange =
@@ -105,11 +110,13 @@ class TileCanvasState {
         while (true) {
             select {
                 tilesToProcess.onReceive { tilesToProcess ->
-                    visibleTilesList.clear()
+                    visibleTilesList = mutableStateListOf()
                     tilesToProcess.forEach { tileSpecs ->
-                        renderedTiles.find { it.equals(tileSpecs) }?.let {
-                            visibleTilesList.add(it)
-                            return@forEach
+                        mutex.withLock {
+                            renderedTiles.find { it.equals(tileSpecs) }?.let {
+                                visibleTilesList.add(it)
+                                return@forEach
+                            }
                         }
                         if (!specsBeingProcessed.contains(tileSpecs)) {
                             specsBeingProcessed.add(tileSpecs)
@@ -119,9 +126,11 @@ class TileCanvasState {
                 }
                 tilesProcessSuccessResult.onReceive { tile ->
                     specsBeingProcessed.remove(tile as TileCore)
-                    renderedTiles.add(tile)
-                    if (renderedTiles.size > 100)
-                        renderedTiles.removeAt(0)
+                    mutex.withLock {
+                        renderedTiles.add(tile)
+                        if (renderedTiles.size > 100)
+                            renderedTiles.removeAt(0)
+                    }
                     visibleTilesList.add(tile)
                 }
                 tilesProcessFailedResult.onReceive { tileSpecs ->
@@ -134,7 +143,6 @@ class TileCanvasState {
         }
     }
 
-
     private fun CoroutineScope.worker(
         tileToProcess: TileSpecs,
         tilesProcessSuccessResult: SendChannel<Tile>,
@@ -144,9 +152,7 @@ class TileCanvasState {
         val image: Image
         try {
             val byteArray = client.get(
-                "https://tile.openstreetmap.org/${tileToProcess.zoom}/${(tileToProcess.row).loopInRange(0..tileToProcess.zoom)}/${
-                    (tileToProcess.col).loopInRange(0..tileToProcess.zoom)
-                }.png"
+                "https://tile.openstreetmap.org/${tileToProcess.zoom}/${(tileToProcess.row).loopInZoom(tileToProcess.zoom)}/${(tileToProcess.col).loopInZoom(tileToProcess.zoom)}.png"
             ) {
                 header("User-Agent", "my.app.test3")
             }.readBytes()
@@ -161,8 +167,8 @@ class TileCanvasState {
 
     private fun getXYTile(position: Position, zoomLevel: Int, mapSize: MapCoordinatesRange): Pair<Int, Int> {
         return Pair(
-            floor(position.horizontal / mapSize.longitute.span * (1 shl zoomLevel)).toInt(),
-            floor(position.vertical / mapSize.latitude.span * (1 shl zoomLevel)).toInt()
+            floor((position.horizontal - mapSize.longitute.getMin()) / mapSize.longitute.span * (1 shl zoomLevel)).toInt(),
+            floor((-position.vertical + mapSize.latitude.getMax()) / mapSize.latitude.span * (1 shl zoomLevel)).toInt()
         )
     }
 

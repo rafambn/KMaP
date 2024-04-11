@@ -16,6 +16,8 @@ import io.github.rafambn.kmap.model.Position
 import io.github.rafambn.kmap.model.VeiwPort
 import io.github.rafambn.kmap.ranges.MapCoordinatesRange
 import io.github.rafambn.kmap.rotateVector
+import io.github.rafambn.kmap.scaleToMap
+import io.github.rafambn.kmap.scaleToZoom
 import io.github.rafambn.kmap.toCanvasReference
 import io.github.rafambn.kmap.toMapReference
 import io.github.rafambn.kmap.toPosition
@@ -33,11 +35,11 @@ class MapState(
     private var maxZoom by mutableStateOf(maxZoom.coerceIn(mapProperties.zoomLevels.min, mapProperties.zoomLevels.max))
     private var minZoom by mutableStateOf(minZoom.coerceIn(mapProperties.zoomLevels.min, mapProperties.zoomLevels.max))
 
-    internal var zoom by mutableStateOf(initialZoom) //TODO make private
+    internal var zoom by mutableStateOf(initialZoom)
     internal var angleDegrees by mutableStateOf(initialRotation)
-    internal var mapPosition by mutableStateOf(initialPosition) //TODO make private
+    internal var mapPosition by mutableStateOf(initialPosition)
 
-    internal val zoomLevel //TODO make private
+    internal val zoomLevel
         get() = floor(zoom).toInt()
     private val magnifierScale
         get() = zoom - zoomLevel + 1F
@@ -50,15 +52,16 @@ class MapState(
     internal val viewPort by derivedStateOf {
         val canvasScaled = (canvasSize / 2F.pow(zoom + 1))
             .toPosition()
-            .toMapReference(magnifierScale, zoomLevel, angleDegrees, mapProperties.mapCoordinatesRange)
-        val vp = VeiwPort(
+            .scaleToZoom((1 / (TileCanvasState.TILE_SIZE * magnifierScale)).toDouble()) //TODO fix zoom issue
+            .rotateVector(-angleDegrees.degreesToRadian())
+            .scaleToMap(mapProperties.mapCoordinatesRange.longitute.span, mapProperties.mapCoordinatesRange.latitude.span)
+            .invertPosition()
+        VeiwPort(
             mapPosition + canvasScaled,
             mapPosition + Position(-canvasScaled.horizontal, canvasScaled.vertical),
             mapPosition - canvasScaled,
             mapPosition + Position(canvasScaled.horizontal, -canvasScaled.vertical)
         )
-        println("${vp.topLeft} // ${vp.bottomRight}")
-        vp
     }
 
     internal val matrix by derivedStateOf {

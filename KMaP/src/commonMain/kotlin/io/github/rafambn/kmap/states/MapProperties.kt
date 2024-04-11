@@ -9,7 +9,7 @@ import io.github.rafambn.kmap.ranges.MapZoomlevelsRange
 
 class MapProperties(
     val boundMap: BoundMapBorder = BoundMapBorder(MapBorderType.BOUND, MapBorderType.BOUND),
-    val outsideTiles: OutsideTilesType = OutsideTilesType.NONE,
+    val outsideTiles: OutsideTilesType = OutsideTilesType.LOOP,
     val zoomLevels: MapZoomlevelsRange,
     val mapCoordinatesRange: MapCoordinatesRange
 )
