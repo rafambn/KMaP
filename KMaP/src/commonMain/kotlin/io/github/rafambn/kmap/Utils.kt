@@ -62,10 +62,11 @@ fun Position.scaleToMap(horizontal: Double, vertical: Double): Position {
 }
 
 fun Position.toMapReference(magnifierScale: Float, zoomLevel: Int, angleDegrees: Float, mapCoordinatesRange: MapCoordinatesRange): Position {
-    return this.invertPosition()
+    return this
         .scaleToZoom(1 / (TileCanvasState.TILE_SIZE * magnifierScale * 2.0.pow(zoomLevel)))
         .rotateVector(-angleDegrees.degreesToRadian())
         .scaleToMap(mapCoordinatesRange.longitute.span, mapCoordinatesRange.latitude.span)
+        .invertPosition()
 }
 
 fun Double.loopInRange(coordinatesRange: CoordinatesInterface): Double {

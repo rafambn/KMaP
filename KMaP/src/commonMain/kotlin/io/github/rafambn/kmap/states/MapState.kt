@@ -10,6 +10,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Matrix
 import io.github.rafambn.kmap.degreesToRadian
 import io.github.rafambn.kmap.enums.MapBorderType
+import io.github.rafambn.kmap.invertPosition
 import io.github.rafambn.kmap.loopInRange
 import io.github.rafambn.kmap.model.Position
 import io.github.rafambn.kmap.model.VeiwPort
@@ -47,7 +48,7 @@ class MapState(
     }
 
     internal val viewPort by derivedStateOf {
-        val canvasScaled = (canvasSize / 2F.pow(zoom+1))
+        val canvasScaled = (canvasSize / 2F.pow(zoom + 1))
             .toPosition()
             .toMapReference(magnifierScale, zoomLevel, angleDegrees, mapProperties.mapCoordinatesRange)
         val vp = VeiwPort(
@@ -88,7 +89,7 @@ class MapState(
     fun rotate(position: Position, angle: Float) {
         if (position != Position.Zero) {
             angleDegrees += angle
-//            move((position - (canvasSize.toPosition() / 2.0) + ((canvasSize.toPosition() / 2.0) - position).rotateVector(angle.degreesToRadian())))
+            move(position - (canvasSize.toPosition() / 2.0) + ((canvasSize.toPosition() / 2.0) - position).rotateVector(angle.degreesToRadian()))
         }
     }
 
