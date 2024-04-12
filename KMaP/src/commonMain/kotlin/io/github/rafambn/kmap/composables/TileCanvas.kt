@@ -46,7 +46,7 @@ internal fun TileCanvas(
                         (TileCanvasState.TILE_SIZE * tile.row + mapState.positionOffset.horizontal).toFloat(),
                         (TileCanvasState.TILE_SIZE * tile.col + mapState.positionOffset.vertical).toFloat()
                     ), Paint().apply {
-                        isAntiAlias = true
+                        isAntiAlias = false
                         filterQuality = FilterQuality.High
                     })
                 }

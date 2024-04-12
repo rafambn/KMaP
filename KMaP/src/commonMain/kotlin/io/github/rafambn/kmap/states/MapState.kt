@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Matrix
 import io.github.rafambn.kmap.degreesToRadian
 import io.github.rafambn.kmap.enums.MapBorderType
 import io.github.rafambn.kmap.invertPosition
+import io.github.rafambn.kmap.invertPosition2
 import io.github.rafambn.kmap.loopInRange
 import io.github.rafambn.kmap.model.Position
 import io.github.rafambn.kmap.model.VeiwPort
@@ -50,17 +51,24 @@ class MapState(
     }
 
     internal val viewPort by derivedStateOf {
-        val canvasScaled = (canvasSize / 2F.pow(zoom + 1))
+        val canvasScaled1 = canvasSize //TODO fix this reference
             .toPosition()
-            .scaleToZoom((1 / (TileCanvasState.TILE_SIZE * magnifierScale)).toDouble()) //TODO fix zoom issue
+            .scaleToZoom((1 / (TileCanvasState.TILE_SIZE * magnifierScale * (1 shl (zoomLevel + 1)))).toDouble())
+            .rotateVector(-angleDegrees.degreesToRadian())
+            .scaleToMap(mapProperties.mapCoordinatesRange.longitute.span, mapProperties.mapCoordinatesRange.latitude.span)
+            .invertPosition()
+        val canvasScaled2 = canvasSize
+            .toPosition()
+            .invertPosition2()
+            .scaleToZoom((1 / (TileCanvasState.TILE_SIZE * magnifierScale * (1 shl (zoomLevel + 1)))).toDouble())
             .rotateVector(-angleDegrees.degreesToRadian())
             .scaleToMap(mapProperties.mapCoordinatesRange.longitute.span, mapProperties.mapCoordinatesRange.latitude.span)
             .invertPosition()
         VeiwPort(
-            mapPosition + canvasScaled,
-            mapPosition + Position(-canvasScaled.horizontal, canvasScaled.vertical),
-            mapPosition - canvasScaled,
-            mapPosition + Position(canvasScaled.horizontal, -canvasScaled.vertical)
+            mapPosition + canvasScaled1,
+            mapPosition + Position(-canvasScaled2.horizontal, -canvasScaled2.vertical),
+            mapPosition - canvasScaled1,
+            mapPosition + Position(canvasScaled2.horizontal, -canvasScaled2.vertical)
         )
     }
 

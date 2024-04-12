@@ -64,16 +64,31 @@ class TileCanvasState {
                 screenState.zoomLevel,
                 screenState.coordinatesRange
             )
+            val topRightTile = getXYTile(
+                screenState.viewPort.topRight,
+                screenState.zoomLevel,
+                screenState.coordinatesRange
+            )
             val bottomRightTile = getXYTile(
                 screenState.viewPort.bottomRight,
                 screenState.zoomLevel,
                 screenState.coordinatesRange
             )
-            println("$topLeftTile -- $bottomRightTile")
+            val bottomLeftTile = getXYTile(
+                screenState.viewPort.bottomLeft,
+                screenState.zoomLevel,
+                screenState.coordinatesRange
+            )
             val horizontalTileIntRange =
-                IntRange(minOf(topLeftTile.first, bottomRightTile.first), maxOf(topLeftTile.first, bottomRightTile.first))
+                IntRange(
+                    minOf(topLeftTile.first, bottomRightTile.first, topRightTile.first, bottomLeftTile.first),
+                    maxOf(topLeftTile.first, bottomRightTile.first, topRightTile.first, bottomLeftTile.first)
+                )
             val verticalTileIntRange =
-                IntRange(minOf(topLeftTile.second, bottomRightTile.second), maxOf(topLeftTile.second, bottomRightTile.second))
+                IntRange(
+                    minOf(topLeftTile.second, bottomRightTile.second, topRightTile.second, bottomLeftTile.second),
+                    maxOf(topLeftTile.second, bottomRightTile.second, topRightTile.second, bottomLeftTile.second)
+                )
 
             val visibleTileSpecs = mutableListOf<TileSpecs>()
             if (screenState.outsideTiles == OutsideTilesType.NONE) {
@@ -152,7 +167,11 @@ class TileCanvasState {
         val image: Image
         try {
             val byteArray = client.get(
-                "https://tile.openstreetmap.org/${tileToProcess.zoom}/${(tileToProcess.row).loopInZoom(tileToProcess.zoom)}/${(tileToProcess.col).loopInZoom(tileToProcess.zoom)}.png"
+                "https://tile.openstreetmap.org/${tileToProcess.zoom}/${(tileToProcess.row).loopInZoom(tileToProcess.zoom)}/${
+                    (tileToProcess.col).loopInZoom(
+                        tileToProcess.zoom
+                    )
+                }.png"
             ) {
                 header("User-Agent", "my.app.test3")
             }.readBytes()

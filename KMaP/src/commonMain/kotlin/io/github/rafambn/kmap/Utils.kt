@@ -45,7 +45,7 @@ fun Position.toOffset(): Offset {
 fun Position.toCanvasReference(zoomLevel: Int, mapCoordinatesRange: MapCoordinatesRange): Position {
     return this.invertPosition()
         .moveToTrueCoordinates(mapCoordinatesRange)
-        .scaleToZoom(TileCanvasState.TILE_SIZE * (2.0.pow(zoomLevel)))
+        .scaleToZoom((TileCanvasState.TILE_SIZE * (1 shl zoomLevel)).toDouble())
         .scaleToMap(1 / mapCoordinatesRange.longitute.span, 1 / mapCoordinatesRange.latitude.span)
 }
 
@@ -79,6 +79,9 @@ fun Int.loopInZoom(zoomLevel: Int): Int {
 
 fun Position.invertPosition(): Position {
     return Position(-horizontal, vertical)
+}
+fun Position.invertPosition2(): Position {
+    return Position(horizontal, -vertical)
 }
 
 @OptIn(InternalResourceApi::class)
