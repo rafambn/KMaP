@@ -27,7 +27,7 @@ import io.github.rafambn.kmap.gestures.GestureInterface
 import io.github.rafambn.kmap.gestures.GestureState
 import io.github.rafambn.kmap.gestures.detectMapGestures
 import io.github.rafambn.kmap.states.MapState
-import io.github.rafambn.kmap.toPosition
+import io.github.rafambn.kmap.utils.toPosition
 import kotlinx.coroutines.launch
 
 @Composable

@@ -1,5 +1,6 @@
 package io.github.rafambn.kmap.ranges
 
+import androidx.compose.foundation.gestures.Orientation
 import kotlin.math.abs
 
 interface MapCoordinatesRange {
@@ -10,6 +11,8 @@ interface MapCoordinatesRange {
 interface CoordinatesInterface {
     val span: Double
 
+    val orientation: Int
+
     fun getMax(): Double
 
     fun getMin(): Double
@@ -17,7 +20,7 @@ interface CoordinatesInterface {
     operator fun contains(value: Double): Boolean
 }
 
-class Latitude(val north: Double, val south: Double) : CoordinatesInterface {
+class Latitude(val north: Double, val south: Double, override val orientation: Int) : CoordinatesInterface {
     override val span = abs(north - south)
 
     override fun getMax(): Double = maxOf(north, south)
@@ -27,7 +30,7 @@ class Latitude(val north: Double, val south: Double) : CoordinatesInterface {
     override operator fun contains(value: Double): Boolean = value in south..north
 }
 
-class Longitude(val east: Double, val west: Double) : CoordinatesInterface {
+class Longitude(val east: Double, val west: Double, override val orientation: Int) : CoordinatesInterface {
     override val span = abs(east - west)
 
     override fun getMax(): Double = maxOf(east, west)

@@ -1,4 +1,4 @@
-package io.github.rafambn.kmap
+package io.github.rafambn.kmap.utils
 
 import android.graphics.BitmapFactory
 import androidx.compose.ui.graphics.ImageBitmap

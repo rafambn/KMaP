@@ -8,20 +8,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Matrix
-import io.github.rafambn.kmap.degreesToRadian
 import io.github.rafambn.kmap.enums.MapBorderType
-import io.github.rafambn.kmap.invertPosition
-import io.github.rafambn.kmap.invertPosition2
-import io.github.rafambn.kmap.loopInRange
+import io.github.rafambn.kmap.utils.invertFisrt
+import io.github.rafambn.kmap.utils.invertSecond
+import io.github.rafambn.kmap.utils.loopInRange
 import io.github.rafambn.kmap.model.Position
 import io.github.rafambn.kmap.model.VeiwPort
 import io.github.rafambn.kmap.ranges.MapCoordinatesRange
-import io.github.rafambn.kmap.rotateVector
-import io.github.rafambn.kmap.scaleToMap
-import io.github.rafambn.kmap.scaleToZoom
-import io.github.rafambn.kmap.toCanvasReference
-import io.github.rafambn.kmap.toMapReference
-import io.github.rafambn.kmap.toPosition
+import io.github.rafambn.kmap.utils.rotate
+import io.github.rafambn.kmap.utils.toCanvasReference
+import io.github.rafambn.kmap.utils.toMapReference
+import io.github.rafambn.kmap.utils.toPosition
+import io.github.rafambn.kmap.utils.toRadians
+import io.github.rafambn.kmap.utils.toViewportReference
 import kotlin.math.floor
 import kotlin.math.pow
 
@@ -51,25 +50,7 @@ class MapState(
     }
 
     internal val viewPort by derivedStateOf {
-        val canvasScaled1 = canvasSize //TODO fix this reference
-            .toPosition()
-            .scaleToZoom((1 / (TileCanvasState.TILE_SIZE * magnifierScale * (1 shl (zoomLevel + 1)))).toDouble())
-            .rotateVector(-angleDegrees.degreesToRadian())
-            .scaleToMap(mapProperties.mapCoordinatesRange.longitute.span, mapProperties.mapCoordinatesRange.latitude.span)
-            .invertPosition()
-        val canvasScaled2 = canvasSize
-            .toPosition()
-            .invertPosition2()
-            .scaleToZoom((1 / (TileCanvasState.TILE_SIZE * magnifierScale * (1 shl (zoomLevel + 1)))).toDouble())
-            .rotateVector(-angleDegrees.degreesToRadian())
-            .scaleToMap(mapProperties.mapCoordinatesRange.longitute.span, mapProperties.mapCoordinatesRange.latitude.span)
-            .invertPosition()
-        VeiwPort(
-            mapPosition + canvasScaled1,
-            mapPosition + Position(-canvasScaled2.horizontal, -canvasScaled2.vertical),
-            mapPosition - canvasScaled1,
-            mapPosition + Position(canvasScaled2.horizontal, -canvasScaled2.vertical)
-        )
+        canvasSize.toPosition().toViewportReference(magnifierScale, zoomLevel, angleDegrees.toDouble(), OSMCoordinatesRange, mapPosition)
     }
 
     internal val matrix by derivedStateOf {
@@ -82,10 +63,7 @@ class MapState(
 
     fun move(position: Position) {
         mapPosition =
-            (position.toMapReference(magnifierScale, zoomLevel, angleDegrees, mapProperties.mapCoordinatesRange) + mapPosition).coerceInMap(
-                mapProperties.boundMap,
-                mapProperties.mapCoordinatesRange
-            )
+            (position.toMapReference(magnifierScale, zoomLevel, angleDegrees.toDouble(), mapProperties.mapCoordinatesRange) + mapPosition)
     }
 
     fun scale(position: Position, scale: Float) {
@@ -100,7 +78,7 @@ class MapState(
     fun rotate(position: Position, angle: Float) {
         if (position != Position.Zero) {
             angleDegrees += angle
-            move(position - (canvasSize.toPosition() / 2.0) + ((canvasSize.toPosition() / 2.0) - position).rotateVector(angle.degreesToRadian()))
+            move(position - (canvasSize.toPosition() / 2.0) + ((canvasSize.toPosition() / 2.0) - position).rotate(angle.toDouble().toRadians()))
         }
     }
 

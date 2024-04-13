@@ -6,15 +6,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.ImageBitmap
 import io.github.rafambn.kmap.enums.OutsideTilesType
 import io.github.rafambn.kmap.garbage.KtorClient
-import io.github.rafambn.kmap.loopInRange
-import io.github.rafambn.kmap.loopInZoom
+import io.github.rafambn.kmap.utils.loopInZoom
 import io.github.rafambn.kmap.model.Position
 import io.github.rafambn.kmap.model.ScreenState
 import io.github.rafambn.kmap.model.Tile
 import io.github.rafambn.kmap.model.TileCore
 import io.github.rafambn.kmap.model.TileSpecs
 import io.github.rafambn.kmap.ranges.MapCoordinatesRange
-import io.github.rafambn.kmap.toImageBitmap
+import io.github.rafambn.kmap.utils.toImageBitmap
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.readBytes
@@ -173,7 +172,7 @@ class TileCanvasState {
                     )
                 }.png"
             ) {
-                header("User-Agent", "my.app.test3")
+                header("User-Agent", "my.app.test4")
             }.readBytes()
             imageBitmap = byteArray.toImageBitmap()
             image = Image.makeFromEncoded(byteArray)
