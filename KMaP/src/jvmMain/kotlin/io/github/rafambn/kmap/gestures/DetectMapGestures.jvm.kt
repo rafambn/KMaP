@@ -63,15 +63,15 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
         val rotationVelocityTracker = VelocityTracker1D(isDataDifferential = true)
 
         val flingVelocityThreshold = 100.dp.toPx().pow(2)
-        val flingVelocityMaxRange = -300F..300F
+        val flingVelocityMaxRange = -300F..300F //TODO improve Range
         val flingVelocityScale = 10F
 
         val flingZoomThreshold = 0.1.dp.toPx()
-        val flingZoomMaxRange = -0.5F..0.5F
+        val flingZoomMaxRange = -0.5F..0.5F //TODO improve Range
         val flingZoomScale = 50F
 
         val flingRotationThreshold = 2F
-        val flingRotationMaxRange = -7.5F..7.5F
+        val flingRotationMaxRange = -7.5F..7.5F //TODO improve Range
         val flingRotationScale = 100F
 
         val tapSwipeScale = 100F

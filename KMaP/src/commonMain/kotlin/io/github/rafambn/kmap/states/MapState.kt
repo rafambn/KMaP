@@ -61,9 +61,9 @@ class MapState(
         matrix
     }
 
-    fun move(position: Position) {
+    fun move(position: Position) { //TODO add user interface
         mapPosition =
-            (position.toMapReference(magnifierScale, zoomLevel, angleDegrees.toDouble(), mapProperties.mapCoordinatesRange) + mapPosition)
+            (position.toMapReference(magnifierScale, zoomLevel, angleDegrees.toDouble(), mapProperties.mapCoordinatesRange) + mapPosition).coerceInMap()
     }
 
     fun scale(position: Position, scale: Float) {
@@ -82,21 +82,21 @@ class MapState(
         }
     }
 
-    private fun Position.coerceInMap(boundMap: BoundMapBorder, mapCoordinatesRange: MapCoordinatesRange): Position {
-        val x = if (boundMap.horizontal == MapBorderType.BOUND)
+    private fun Position.coerceInMap(): Position {
+        val x = if (mapProperties.boundMap.horizontal == MapBorderType.BOUND)
             horizontal.coerceIn(
-                mapCoordinatesRange.longitute.west,
-                mapCoordinatesRange.longitute.east
+                mapProperties.mapCoordinatesRange.longitute.west,
+                mapProperties.mapCoordinatesRange.longitute.east
             )
         else
-            horizontal.loopInRange(mapCoordinatesRange.longitute)
-        val y = if (boundMap.vertical == MapBorderType.BOUND)
+            horizontal.loopInRange(mapProperties.mapCoordinatesRange.longitute)
+        val y = if (mapProperties.boundMap.vertical == MapBorderType.BOUND)
             vertical.coerceIn(
-                mapCoordinatesRange.latitude.south,
-                mapCoordinatesRange.latitude.north
+                mapProperties.mapCoordinatesRange.latitude.south,
+                mapProperties.mapCoordinatesRange.latitude.north
             )
         else
-            vertical.loopInRange(mapCoordinatesRange.latitude)
+            vertical.loopInRange(mapProperties.mapCoordinatesRange.latitude)
         return Position(x, y)
     }
 
