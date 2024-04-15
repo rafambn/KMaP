@@ -1,6 +1,5 @@
-package io.github.rafambn.kmap.ranges
+package io.github.rafambn.kmap
 
-import androidx.compose.foundation.gestures.Orientation
 import kotlin.math.abs
 
 interface MapCoordinatesRange {

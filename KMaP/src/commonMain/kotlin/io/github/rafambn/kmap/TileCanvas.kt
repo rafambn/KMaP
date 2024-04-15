@@ -1,4 +1,4 @@
-package io.github.rafambn.kmap.composables
+package io.github.rafambn.kmap
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,10 +11,6 @@ import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.withTransform
-import io.github.rafambn.kmap.model.ScreenState
-import io.github.rafambn.kmap.states.MapState
-import io.github.rafambn.kmap.states.TileCanvasState
-import io.github.rafambn.kmap.states.rememberTileCanvasState
 
 @Composable
 internal fun TileCanvas(

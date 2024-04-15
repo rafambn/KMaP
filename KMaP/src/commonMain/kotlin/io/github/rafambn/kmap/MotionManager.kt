@@ -1,15 +1,8 @@
-package io.github.rafambn.kmap.composables
+package io.github.rafambn.kmap
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.AnimationVector2D
-import androidx.compose.animation.core.FloatExponentialDecaySpec
-import androidx.compose.animation.core.VectorConverter
-import androidx.compose.animation.core.generateDecayAnimationSpec
-import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
@@ -22,11 +15,9 @@ import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.toSize
-import io.github.rafambn.kmap.enums.MapComponentType
 import io.github.rafambn.kmap.gestures.GestureInterface
 import io.github.rafambn.kmap.gestures.GestureState
 import io.github.rafambn.kmap.gestures.detectMapGestures
-import io.github.rafambn.kmap.states.MapState
 import io.github.rafambn.kmap.utils.toPosition
 import kotlinx.coroutines.launch
 
@@ -36,47 +27,38 @@ internal fun MotionManager(
     mapState: MapState,
     content: @Composable () -> Unit
 ) {
-    val coroutineScope = rememberCoroutineScope()
-
-    val flingAnimatable: Animatable<Offset, AnimationVector2D> = Animatable(Offset.Zero, Offset.VectorConverter) //TODO move this to mapState
-    val flingZoomAnimatable = Animatable(0f)
-    val flingRotationAnimatable = Animatable(0f)
-
-    val flingSpec = rememberSplineBasedDecay<Offset>()
-    val flingZoomSpec = FloatExponentialDecaySpec().generateDecayAnimationSpec<Float>()
-    val flingRotationSpec = FloatExponentialDecaySpec().generateDecayAnimationSpec<Float>()
 
     val gestureListener = object : GestureInterface {
         override fun onTap(offset: Offset) {
         }
 
-        override fun onDoubleTap(offset: Offset) {
-            mapState.scale(offset.toPosition(), -1 / 3F)
+        override fun onDoubleTap(offset: Offset) { //TODO change to centroid
+            mapState.zoomBy(-1 / 3F, mapState.screenOffsetToMapReference(offset))
         }
 
-        override fun onTwoFingersTap(offset: Offset) {
-            mapState.scale(offset.toPosition(), 1 / 3F)
+        override fun onTwoFingersTap(offset: Offset) {//TODO change to centroid
+            mapState.zoomBy(1 / 3F, mapState.screenOffsetToMapReference(offset))
         }
 
         override fun onLongPress(offset: Offset) {
         }
 
         override fun onTapLongPress(offset: Offset) {
-            mapState.move(offset.toPosition())
+            mapState.moveBy(mapState.offsetToMapReference(offset))
         }
 
-        override fun onTapSwipe(centroid: Offset, zoom: Float) {
-            mapState.scale(centroid.toPosition(), zoom)
+        override fun onTapSwipe(centroid: Offset, zoom: Float) {//TODO change to offset change
+            mapState.zoomBy(zoom, mapState.offsetToMapReference(centroid))
         }
 
         override fun onGesture(centroid: Offset, pan: Offset, zoom: Float, rotation: Float) {
-            mapState.rotate(centroid.toPosition(), rotation)
-            mapState.scale(centroid.toPosition(), zoom)
-            mapState.move(pan.toPosition())
+            mapState.rotateBy(rotation.toDouble(), mapState.offsetToMapReference(centroid))
+            mapState.zoomBy(zoom, mapState.offsetToMapReference(centroid))
+            mapState.moveBy(mapState.offsetToMapReference(centroid))
         }
 
-        override fun onDrag(dragAmount: Offset) {
-            mapState.move(dragAmount.toPosition())
+        override fun onDrag(dragAmount: Offset) { //TODO change to offset change
+            mapState.moveBy(mapState.offsetToMapReference(dragAmount))
         }
 
         override fun onGestureStart(gestureType: GestureState, offset: Offset) {
@@ -86,39 +68,40 @@ internal fun MotionManager(
         }
 
         override fun onFling(velocity: Velocity) {
-            coroutineScope.launch {
-                flingAnimatable.snapTo(Offset.Zero)
-                flingAnimatable.animateDecay(
-                    initialVelocity = Offset(velocity.x, velocity.y),
-                    animationSpec = flingSpec,
-                ) {
-                    mapState.move(value.toPosition())
-                }
-            }
+//            mapState.animatePositionTo()
+//            coroutineScope.launch {
+//                flingAnimatable.snapTo(Offset.Zero)
+//                flingAnimatable.animateDecay(
+//                    initialVelocity = Offset(velocity.x, velocity.y),
+//                    animationSpec = flingSpec,
+//                ) {
+//                    mapState.move(value.toPosition())
+//                }
+//            }
         }
 
         override fun onFlingZoom(centroid: Offset, velocity: Float) {
-            coroutineScope.launch {
-                flingZoomAnimatable.snapTo(0F)
-                flingZoomAnimatable.animateDecay(
-                    initialVelocity = velocity,
-                    animationSpec = flingZoomSpec,
-                ) {
-                    mapState.scale(centroid.toPosition(), value)
-                }
-            }
+//            coroutineScope.launch {
+//                flingZoomAnimatable.snapTo(0F)
+//                flingZoomAnimatable.animateDecay(
+//                    initialVelocity = velocity,
+//                    animationSpec = flingZoomSpec,
+//                ) {
+//                    mapState.scale(centroid.toPosition(), value)
+//                }
+//            }
         }
 
         override fun onFlingRotation(centroid: Offset, velocity: Float) {
-            coroutineScope.launch {
-                flingRotationAnimatable.snapTo(0F)
-                flingRotationAnimatable.animateDecay(
-                    initialVelocity = velocity,
-                    animationSpec = flingRotationSpec,
-                ) {
-                    mapState.rotate(centroid.toPosition(), value)
-                }
-            }
+//            coroutineScope.launch {
+//                flingRotationAnimatable.snapTo(0F)
+//                flingRotationAnimatable.animateDecay(
+//                    initialVelocity = velocity,
+//                    animationSpec = flingRotationSpec,
+//                ) {
+//                    mapState.rotate(centroid.toPosition(), value)
+//                }
+//            }
         }
 
         override fun onHover(offset: Offset) {
@@ -126,7 +109,7 @@ internal fun MotionManager(
         }
 
         override fun onScroll(mouseOffset: Offset, scrollAmount: Float) {
-            mapState.scale(mouseOffset.toPosition(), scrollAmount)
+            mapState.zoomBy(scrollAmount, mapState.screenOffsetToMapReference(mouseOffset))
         }
     }
 
@@ -156,7 +139,7 @@ internal fun MotionManager(
                 )
             }
             .onGloballyPositioned { coordinates ->
-                mapState.updateCanvasSize(coordinates.size.toSize().toRect().bottomRight)
+                mapState.onCanvasSizeChanged(coordinates.size.toSize().toRect().bottomRight)
             }
     ) { measurables, constraints ->
 

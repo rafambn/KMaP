@@ -1,4 +1,4 @@
-package io.github.rafambn.kmap.model
+package io.github.rafambn.kmap
 
 import androidx.compose.ui.graphics.ImageBitmap
 

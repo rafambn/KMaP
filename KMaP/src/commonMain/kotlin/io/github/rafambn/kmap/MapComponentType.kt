@@ -1,4 +1,4 @@
-package io.github.rafambn.kmap.enums
+package io.github.rafambn.kmap
 
 enum class MapComponentType {
     CANVAS,

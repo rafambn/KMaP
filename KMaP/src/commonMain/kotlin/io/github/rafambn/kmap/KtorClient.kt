@@ -1,4 +1,4 @@
-package io.github.rafambn.kmap.garbage
+package io.github.rafambn.kmap
 
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -12,7 +12,6 @@ object KtorClient {
                 json(
                     Json {
                         prettyPrint = true
-                        isLenient = true
                     }
                 )
             }

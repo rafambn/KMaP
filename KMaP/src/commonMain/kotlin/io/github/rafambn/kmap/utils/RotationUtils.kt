@@ -1,7 +1,7 @@
 package io.github.rafambn.kmap.utils
 
 import androidx.compose.ui.geometry.Offset
-import io.github.rafambn.kmap.model.Position
+import io.github.rafambn.kmap.Position
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin

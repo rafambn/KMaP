@@ -1,11 +1,4 @@
-package io.github.rafambn.kmap.states
-
-import io.github.rafambn.kmap.enums.MapBorderType
-import io.github.rafambn.kmap.enums.OutsideTilesType
-import io.github.rafambn.kmap.ranges.Latitude
-import io.github.rafambn.kmap.ranges.Longitude
-import io.github.rafambn.kmap.ranges.MapCoordinatesRange
-import io.github.rafambn.kmap.ranges.MapZoomlevelsRange
+package io.github.rafambn.kmap
 
 class MapProperties(
     val boundMap: BoundMapBorder = BoundMapBorder(MapBorderType.BOUND, MapBorderType.BOUND),

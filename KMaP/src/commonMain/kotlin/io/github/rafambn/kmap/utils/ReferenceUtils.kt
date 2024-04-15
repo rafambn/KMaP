@@ -1,12 +1,12 @@
 package io.github.rafambn.kmap.utils
 
 import androidx.compose.ui.geometry.Offset
-import io.github.rafambn.kmap.model.Position
-import io.github.rafambn.kmap.model.VeiwPort
-import io.github.rafambn.kmap.ranges.CoordinatesInterface
-import io.github.rafambn.kmap.ranges.MapCoordinatesRange
-import io.github.rafambn.kmap.states.OSMCoordinatesRange
-import io.github.rafambn.kmap.states.TileCanvasState
+import io.github.rafambn.kmap.Position
+import io.github.rafambn.kmap.BoundingBox
+import io.github.rafambn.kmap.CoordinatesInterface
+import io.github.rafambn.kmap.MapCoordinatesRange
+import io.github.rafambn.kmap.TileCanvasState
+
 //TODO ugly class
 fun Offset.toPosition(): Position {
     return Position(this.x.toDouble(), this.y.toDouble())
@@ -56,8 +56,8 @@ fun Position.toViewportReference(
     angle: Degrees,
     mapCoordinatesRange: MapCoordinatesRange,
     mapPosition: Position
-): VeiwPort {
-    return VeiwPort(
+): BoundingBox {
+    return BoundingBox(
         mapPosition + this.transform(magnifierScale, zoomLevel, angle, mapCoordinatesRange),
         mapPosition + this.transform(magnifierScale, zoomLevel, angle, mapCoordinatesRange, invertFirst = true),
         mapPosition + this.transform(magnifierScale, zoomLevel, angle, mapCoordinatesRange, invertFirst = true, invertSecond = true),
@@ -96,4 +96,12 @@ fun Double.loopInRange(coordinatesRange: CoordinatesInterface): Double {
 
 fun Int.loopInZoom(zoomLevel: Int): Int {
     return this.mod(1 shl zoomLevel)
+}
+
+fun lerp(start: Double, end: Double, value: Double): Double {
+    return start + (end - start) * value
+}
+
+fun lerp(start: Position, end: Position, value: Double): Position {
+    return Position(lerp(start.horizontal, end.horizontal, value), lerp(start.vertical, end.vertical, value))
 }

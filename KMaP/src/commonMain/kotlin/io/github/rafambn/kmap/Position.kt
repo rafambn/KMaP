@@ -1,4 +1,4 @@
-package io.github.rafambn.kmap.model
+package io.github.rafambn.kmap
 
 class Position(val horizontal: Double, val vertical: Double) {
 
