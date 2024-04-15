@@ -43,7 +43,8 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
     onFlingZoom: (centroid: Offset, velocity: Float) -> Unit,
     onFlingRotation: (centroid: Offset, velocity: Float) -> Unit,
     onHover: (Offset) -> Unit,
-    onScroll: (mouseOffset: Offset, scrollAmount: Float) -> Unit
+    onScroll: (mouseOffset: Offset, scrollAmount: Float) -> Unit,
+    onCtrlGesture: (centroid: Offset, rotation: Float) -> Unit
 ) = coroutineScope {
 
     awaitMapGesture {
@@ -269,7 +270,7 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                 //Finally, here are the gestures
                 if (gestureState == GestureState.CTRL) {
                     handleGestureWithCtrl(event, previousEvent, firstCtrlEvent!!, touchSlop) { rotationChange, centroid ->
-                        onGesture.invoke(centroid, Offset.Zero, 0F, rotationChange)
+                        onCtrlGesture.invoke(centroid, rotationChange)
                         rotationVelocityTracker.addDataPoint(event.changes[0].uptimeMillis, rotationChange)
                     }
                     event.changes.forEach { it.consume() }

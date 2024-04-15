@@ -5,15 +5,17 @@ import androidx.compose.ui.unit.Velocity
 
 interface GestureInterface {
     fun onTap(offset: Offset)
-    fun onDoubleTap(offset: Offset)
-    fun onTwoFingersTap(offset: Offset)
+    fun onDoubleTap(centroid: Offset)
+    fun onTwoFingersTap(centroid: Offset)
     fun onLongPress(offset: Offset)
     fun onTapLongPress(offset: Offset)
     fun onTapSwipe(centroid: Offset, zoom: Float)
 
     fun onGesture(centroid: Offset, pan: Offset, zoom: Float, rotation: Float)
 
-    fun onDrag(dragAmount: Offset)
+    fun onCtrlGesture(centroid: Offset, rotation: Float)
+
+    fun onDrag(offset: Offset)
     fun onGestureStart(gestureType: GestureState, offset: Offset)
     fun onGestureEnd(gestureType: GestureState)
 

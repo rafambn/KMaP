@@ -7,7 +7,6 @@ import io.github.rafambn.kmap.CoordinatesInterface
 import io.github.rafambn.kmap.MapCoordinatesRange
 import io.github.rafambn.kmap.TileCanvasState
 
-//TODO ugly class
 fun Offset.toPosition(): Position {
     return Position(this.x.toDouble(), this.y.toDouble())
 }

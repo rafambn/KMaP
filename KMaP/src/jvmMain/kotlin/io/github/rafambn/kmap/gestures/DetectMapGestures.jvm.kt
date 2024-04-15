@@ -2,7 +2,6 @@ package io.github.rafambn.kmap.gestures
 
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.calculatePan
-import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
@@ -44,7 +43,8 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
     onFlingZoom: (centroid: Offset, velocity: Float) -> Unit,
     onFlingRotation: (centroid: Offset, velocity: Float) -> Unit,
     onHover: (Offset) -> Unit,
-    onScroll: (mouseOffset: Offset, scrollAmount: Float) -> Unit
+    onScroll: (mouseOffset: Offset, scrollAmount: Float) -> Unit,
+    onCtrlGesture: (centroid: Offset, rotation: Float) -> Unit
 ) = coroutineScope {
     awaitMapGesture {
         var previousEvent = awaitPointerEvent()
@@ -269,7 +269,7 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                 //Finally, here are the gestures
                 if (gestureState == GestureState.CTRL) {
                     handleGestureWithCtrl(event, previousEvent, firstCtrlEvent!!, touchSlop) { rotationChange, centroid ->
-                        onGesture.invoke(centroid, Offset.Zero, 0F, rotationChange)
+                        onCtrlGesture.invoke(centroid, rotationChange)
                         rotationVelocityTracker.addDataPoint(event.changes[0].uptimeMillis, rotationChange)
                     }
                     event.changes.forEach { it.consume() }

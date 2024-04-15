@@ -67,15 +67,6 @@ class MapState(
     private val flingZoomAnimatable = Animatable(0f)
     private val flingRotationAnimatable = Animatable(0f)
 
-    init {
-        val ff = mapPosition
-        coroutineScope.launch {
-            for (i in 1..180) {
-//                println("$i --  ${ff.rotateCentered(Position(180.0, 0.0), i.toDouble().toRadians())}")
-            }
-        }
-    }
-
     fun offsetToMapReference(offset: Offset): Position {
         return offset.toPosition().toMapReference(
             magnifierScale,
@@ -93,13 +84,6 @@ class MapState(
             mapProperties.mapCoordinatesRange
         )
     }
-
-//    fun rotate(position: Position, angle: Float) {
-//        if (position != Position.Zero) {
-//            angleDegrees += angle
-//            move(position - (canvasSize.toPosition() / 2.0) + ((canvasSize.toPosition() / 2.0) - position).rotate(angle.toDouble().toRadians()))
-//        }
-//    }
 
     private fun Position.coerceInMap(): Position {
         val x = if (mapProperties.boundMap.horizontal == MapBorderType.BOUND)
@@ -170,11 +154,7 @@ class MapState(
 
     override fun rotateBy(angle: Degrees, position: Position?) {
         angleDegrees += angle.toFloat()
-//        println(position)
-//        position?.let {
-//            moveBy(mapPosition.rotateCentered(position, -angle.toRadians()))
-//        }
-//        moveBy(position - (canvasSize.toPosition() / 2.0) + ((canvasSize.toPosition() / 2.0) - position).rotate(angle.toDouble().toRadians()))
+//        moveBy(position - (canvasSize.toPosition() / 2.0) + ((canvasSize.toPosition() / 2.0) - position).rotate(angle.toDouble().toRadians())) //TODO add rotation on position
     }
 
     override fun animateRotationTo(angle: Degrees, stiffness: Float, position: Position?) {
@@ -183,10 +163,6 @@ class MapState(
             flingRotationAnimatable.snapTo(0F)
             flingRotationAnimatable.animateTo(1F, SpringSpec(stiffness = stiffness)) {
                 angleDegrees = lerp(startRotation, angle.toFloat(), value)
-//        if (position != Position.Zero) {
-//            angleDegrees += angle
-//            move(position - (canvasSize.toPosition() / 2.0) + ((canvasSize.toPosition() / 2.0) - position).rotate(angle.toDouble().toRadians()))
-//        }
             }
         }
     }

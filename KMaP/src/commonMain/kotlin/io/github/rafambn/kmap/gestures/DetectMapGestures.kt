@@ -16,12 +16,12 @@ import kotlin.math.atan2
  * [detectMapGestures] detects all kinds of gestures needed for KMaP
  */
 internal expect suspend fun PointerInputScope.detectMapGestures(
-    onTap: ((Offset) -> Unit),
-    onDoubleTap: ((Offset) -> Unit),
-    onTwoFingersTap: ((Offset) -> Unit),
-    onLongPress: ((Offset) -> Unit),
-    onTapLongPress: ((Offset) -> Unit),
-    onTapSwipe: ((centroid: Offset, zoom: Float) -> Unit),
+    onTap: (Offset) -> Unit,
+    onDoubleTap: (Offset) -> Unit,
+    onTwoFingersTap: (Offset) -> Unit,
+    onLongPress: (Offset) -> Unit,
+    onTapLongPress: (Offset) -> Unit,
+    onTapSwipe: (centroid: Offset, zoom: Float) -> Unit,
 
     onGesture: (centroid: Offset, pan: Offset, zoom: Float, rotation: Float) -> Unit,
 
@@ -29,12 +29,13 @@ internal expect suspend fun PointerInputScope.detectMapGestures(
     onGestureStart: (gestureType: GestureState, offset: Offset) -> Unit = { _, _ -> },
     onGestureEnd: (gestureType: GestureState) -> Unit = { },
 
-    onFling: ((velocity: Velocity) -> Unit) = {},
-    onFlingZoom: ((centroid: Offset, velocity: Float) -> Unit) = { _, _ -> },
-    onFlingRotation: ((centroid: Offset, velocity: Float) -> Unit) = { _, _ -> },
+    onFling: (velocity: Velocity) -> Unit = {},
+    onFlingZoom: (centroid: Offset, velocity: Float) -> Unit = { _, _ -> },
+    onFlingRotation: (centroid: Offset, velocity: Float) -> Unit = { _, _ -> },
 
-    onHover: ((Offset) -> Unit),
-    onScroll: ((mouseOffset: Offset, scrollAmount: Float) -> Unit)
+    onHover: (Offset) -> Unit,
+    onScroll: (mouseOffset: Offset, scrollAmount: Float) -> Unit,
+    onCtrlGesture: (centroid: Offset, rotation: Float) -> Unit
 )
 
 /**

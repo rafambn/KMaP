@@ -1,23 +1,19 @@
 package io.github.rafambn.kmap.gestures
 
 import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.calculateCentroid
 import androidx.compose.foundation.gestures.calculatePan
 import androidx.compose.foundation.gestures.calculateRotation
 import androidx.compose.foundation.gestures.calculateZoom
-import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventTimeoutCancellationException
 import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.changedToDown
 import androidx.compose.ui.input.pointer.changedToDownIgnoreConsumed
-import androidx.compose.ui.input.pointer.isCtrlPressed
 import androidx.compose.ui.input.pointer.isOutOfBounds
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.input.pointer.util.VelocityTracker1D
@@ -48,7 +44,8 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
     onFlingZoom: (centroid: Offset, velocity: Float) -> Unit,
     onFlingRotation: (centroid: Offset, velocity: Float) -> Unit,
     onHover: (Offset) -> Unit, //There isn't a call for this method in Mobile
-    onScroll: (mouseOffset: Offset, scrollAmount: Float) -> Unit //There isn't a call for this method in Mobile
+    onScroll: (mouseOffset: Offset, scrollAmount: Float) -> Unit, //There isn't a call for this method in Mobile
+    onCtrlGesture: (centroid: Offset, rotation: Float) -> Unit
 ) = coroutineScope {
 
     awaitMapGesture {

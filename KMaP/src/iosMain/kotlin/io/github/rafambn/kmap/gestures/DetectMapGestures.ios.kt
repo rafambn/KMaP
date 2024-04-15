@@ -44,7 +44,8 @@ internal actual suspend fun PointerInputScope.detectMapGestures(  //Not tested
     onFlingZoom: (centroid: Offset, velocity: Float) -> Unit,
     onFlingRotation: (centroid: Offset, velocity: Float) -> Unit,
     onHover: (Offset) -> Unit,
-    onScroll: (mouseOffset: Offset, scrollAmount: Float) -> Unit
+    onScroll: (mouseOffset: Offset, scrollAmount: Float) -> Unit,
+    onCtrlGesture: (centroid: Offset, rotation: Float) -> Unit
 ) = coroutineScope {
 
     awaitMapGesture {
