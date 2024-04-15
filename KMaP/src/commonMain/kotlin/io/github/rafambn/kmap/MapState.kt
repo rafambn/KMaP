@@ -1,9 +1,7 @@
 package io.github.rafambn.kmap
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FloatExponentialDecaySpec
 import androidx.compose.animation.core.SpringSpec
-import androidx.compose.animation.core.generateDecayAnimationSpec
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -14,14 +12,13 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.util.lerp
 import io.github.rafambn.kmap.utils.Degrees
-import io.github.rafambn.kmap.utils.invertFisrt
-import io.github.rafambn.kmap.utils.invertSecond
 import io.github.rafambn.kmap.utils.lerp
 import io.github.rafambn.kmap.utils.loopInRange
-import io.github.rafambn.kmap.utils.rotate
+import io.github.rafambn.kmap.utils.rotateCentered
 import io.github.rafambn.kmap.utils.toCanvasReference
 import io.github.rafambn.kmap.utils.toMapReference
 import io.github.rafambn.kmap.utils.toPosition
+import io.github.rafambn.kmap.utils.toRadians
 import io.github.rafambn.kmap.utils.toViewportReference
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -70,6 +67,15 @@ class MapState(
     private val flingZoomAnimatable = Animatable(0f)
     private val flingRotationAnimatable = Animatable(0f)
 
+    init {
+        val ff = mapPosition
+        coroutineScope.launch {
+            for (i in 1..180) {
+//                println("$i --  ${ff.rotateCentered(Position(180.0, 0.0), i.toDouble().toRadians())}")
+            }
+        }
+    }
+
     fun offsetToMapReference(offset: Offset): Position {
         return offset.toPosition().toMapReference(
             magnifierScale,
@@ -88,25 +94,6 @@ class MapState(
         )
     }
 
-//    fun move(position: Position) {
-//        mapPosition =
-//            (position.toMapReference(
-//                magnifierScale,
-//                zoomLevel,
-//                angleDegrees.toDouble(),
-//                mapProperties.mapCoordinatesRange
-//            ) + mapPosition).coerceInMap()
-//    }
-
-//    fun scale(position: Position, scale: Float) {
-//        if (scale != 0F) {
-//            val previousMagnifierScale = magnifierScale
-//            val previousZoomLevel = zoomLevel
-//            zoom = (scale + zoom).coerceZoom()
-//            move((position - canvasSize.toPosition() / 2.0) * (1 - ((magnifierScale / previousMagnifierScale) * (2.0.pow(zoomLevel - previousZoomLevel)))))
-//        }
-//    }
-//
 //    fun rotate(position: Position, angle: Float) {
 //        if (position != Position.Zero) {
 //            angleDegrees += angle
@@ -142,7 +129,6 @@ class MapState(
 
     override fun moveBy(position: Position) {
         mapPosition = (mapPosition + position).coerceInMap()
-        println(mapPosition)
     }
 
     override fun animatePositionTo(position: Position, stiffness: Float) {
@@ -184,10 +170,11 @@ class MapState(
 
     override fun rotateBy(angle: Degrees, position: Position?) {
         angleDegrees += angle.toFloat()
-//        if (position != Position.Zero) {
-//            angleDegrees += angle
-//            move(position - (canvasSize.toPosition() / 2.0) + ((canvasSize.toPosition() / 2.0) - position).rotate(angle.toDouble().toRadians()))
+//        println(position)
+//        position?.let {
+//            moveBy(mapPosition.rotateCentered(position, -angle.toRadians()))
 //        }
+//        moveBy(position - (canvasSize.toPosition() / 2.0) + ((canvasSize.toPosition() / 2.0) - position).rotate(angle.toDouble().toRadians()))
     }
 
     override fun animateRotationTo(angle: Degrees, stiffness: Float, position: Position?) {

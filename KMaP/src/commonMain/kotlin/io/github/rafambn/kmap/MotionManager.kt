@@ -53,8 +53,8 @@ internal fun MotionManager(
 
         override fun onGesture(centroid: Offset, pan: Offset, zoom: Float, rotation: Float) {
             mapState.rotateBy(rotation.toDouble(), mapState.offsetToMapReference(centroid))
-            mapState.zoomBy(zoom, mapState.offsetToMapReference(centroid))
-            mapState.moveBy(mapState.offsetToMapReference(centroid))
+//            mapState.zoomBy(zoom, mapState.offsetToMapReference(centroid))
+//            mapState.moveBy(mapState.offsetToMapReference(centroid)) //TODO difer ctrl gesture from mobile gestures
         }
 
         override fun onDrag(dragAmount: Offset) { //TODO change to offset change
