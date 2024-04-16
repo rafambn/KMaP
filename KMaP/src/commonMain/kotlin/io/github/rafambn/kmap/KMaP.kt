@@ -12,7 +12,14 @@ fun KMaP(
     MotionManager(modifier, mapState) {
         TileCanvas(
             Modifier.layoutId(MapComponentType.CANVAS),
-            mapState
+            mapState.state,
+            mapState.boundingBox,
+            mapState.zoomLevel,
+            mapState.mapProperties.mapCoordinatesRange,
+            mapState.mapProperties.outsideTiles,
+            mapState.matrix,
+            mapState.positionOffset,
+            mapState.updateState()
         )
     }
 }

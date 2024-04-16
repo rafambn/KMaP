@@ -1,7 +1,6 @@
 package io.github.rafambn.kmap
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.ImageBitmap
 import io.github.rafambn.kmap.utils.loopInZoom
@@ -16,15 +15,14 @@ import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import org.jetbrains.skia.Image
 import kotlin.math.floor
 import kotlin.math.pow
 
-class TileCanvasState {
-    private val mutex = Mutex()
-    var visibleTilesList = mutableStateListOf<Tile>()
+class TileCanvasState(
+   private val updateState: Unit
+) {
+    var visibleTilesList = mutableListOf<Tile>()
     private val renderedTiles = mutableListOf<Tile>()
     private val tilesToProcessChannel = Channel<List<TileSpecs>>(capacity = Channel.UNLIMITED)
     private val screenStateChannel = Channel<ScreenState>(capacity = Channel.UNLIMITED)
@@ -116,28 +114,26 @@ class TileCanvasState {
         while (true) {
             select {
                 tilesToProcess.onReceive { tilesToProcess ->
-                    visibleTilesList = mutableStateListOf()
+                    visibleTilesList = mutableListOf()
                     tilesToProcess.forEach { tileSpecs ->
-                        mutex.withLock {
-                            renderedTiles.find { it.equals(tileSpecs) }?.let {
-                                visibleTilesList.add(it)
-                                return@forEach
-                            }
+                        renderedTiles.find { it.equals(tileSpecs) }?.let {
+                            visibleTilesList.add(it)
+                            return@forEach
                         }
                         if (!specsBeingProcessed.contains(tileSpecs)) {
                             specsBeingProcessed.add(tileSpecs)
                             worker(tileSpecs, tilesProcessSuccessResult, tilesProcessFailedResult)
                         }
                     }
+                    updateState
                 }
                 tilesProcessSuccessResult.onReceive { tile ->
                     specsBeingProcessed.remove(tile as TileCore)
-                    mutex.withLock {
-                        renderedTiles.add(tile)
-                        if (renderedTiles.size > 100)
-                            renderedTiles.removeAt(0)
-                    }
+                    renderedTiles.add(tile)
+                    if (renderedTiles.size > 100)
+                        renderedTiles.removeAt(0)
                     visibleTilesList.add(tile)
+                    updateState
                 }
                 tilesProcessFailedResult.onReceive { tileSpecs ->
                     tileSpecs.takeIf { it.numberOfTries < 2 }?.let {
@@ -156,6 +152,7 @@ class TileCanvasState {
     ) = launch(Dispatchers.Default) {
         val imageBitmap: ImageBitmap
         val image: Image
+        println("${tileToProcess.zoom} -- ${tileToProcess.col} -- ${tileToProcess.row}")
         try {
             val byteArray = client.get(
                 "https://tile.openstreetmap.org/${tileToProcess.zoom}/${(tileToProcess.row).loopInZoom(tileToProcess.zoom)}/${
@@ -189,7 +186,8 @@ class TileCanvasState {
 
 @Composable
 inline fun rememberTileCanvasState(
+    updateState: Unit,
     crossinline init: TileCanvasState.() -> Unit = {}
 ): TileCanvasState = remember {
-    TileCanvasState().apply(init)
+    TileCanvasState(updateState).apply(init)
 }
