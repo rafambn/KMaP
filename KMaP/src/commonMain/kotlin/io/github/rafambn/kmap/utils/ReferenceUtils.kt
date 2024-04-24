@@ -1,6 +1,7 @@
 package io.github.rafambn.kmap.utils
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.Density
 import io.github.rafambn.kmap.Position
 import io.github.rafambn.kmap.BoundingBox
 import io.github.rafambn.kmap.CoordinatesInterface
@@ -22,8 +23,14 @@ fun Position.toCanvasReference(zoomLevel: Int, mapCoordinatesRange: MapCoordinat
         .scaleToMap(1 / mapCoordinatesRange.longitute.span, 1 / mapCoordinatesRange.latitude.span)
 }
 
-fun Position.toMapReference(magnifierScale: Float, zoomLevel: Int, angle: Degrees, mapCoordinatesRange: MapCoordinatesRange): Position {
-    return this
+fun Position.toMapReference(
+    magnifierScale: Float,
+    zoomLevel: Int,
+    angle: Degrees,
+    mapCoordinatesRange: MapCoordinatesRange,
+    density: Density
+): Position {
+    return (this / density.density.toDouble())
         .scaleToZoom((1 / (TileCanvasState.TILE_SIZE * magnifierScale * (1 shl zoomLevel))).toDouble())
         .rotate(-angle.toRadians())
         .scaleToMap(mapCoordinatesRange.longitute.span, mapCoordinatesRange.latitude.span)

@@ -9,6 +9,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Matrix
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.util.lerp
 import io.github.rafambn.kmap.utils.Degrees
 import io.github.rafambn.kmap.utils.lerp
@@ -29,17 +31,25 @@ class MapState(
     initialRotation: Float = 0F,
     maxZoom: Int = 19,
     minZoom: Int = 0,
-    val mapProperties: MapProperties = MapProperties(zoomLevels = OSMZoomlevelsRange, mapCoordinatesRange = OSMCoordinatesRange)
+    val mapProperties: MapProperties = MapProperties(zoomLevels = OSMZoomlevelsRange, mapCoordinatesRange = OSMCoordinatesRange),
+    private val density: Density
 ) : MotionInterface, CanvasSizeChangeListener {
+
+    val tileCanvasState = TileCanvasState(::updateState)
+
     //User define min/max zoom
     private var maxZoom = maxZoom.coerceIn(mapProperties.zoomLevels.min, mapProperties.zoomLevels.max)
     private var minZoom = minZoom.coerceIn(mapProperties.zoomLevels.min, mapProperties.zoomLevels.max)
 
     //Control variables
-    private var zoom = initialZoom
-    var angleDegrees = initialRotation //TODO make it private
-    private var mapPosition = initialPosition
-    var canvasSize = Offset.Zero //TODO make it private
+    var zoom = initialZoom
+        private set
+    var angleDegrees = initialRotation
+        private set
+    var mapPosition = initialPosition
+        private set
+    var canvasSize = Offset.Zero
+        private set
 
     //Derivative variables
     val zoomLevel
@@ -60,8 +70,14 @@ class MapState(
     //Map state variable for recomposition
     internal var state by mutableStateOf(false)
 
-    fun updateState() {
+    private fun updateState() {
         state = !state
+        tileCanvasState.onStateChange(ScreenState(
+            boundingBox,
+            zoomLevel,
+            mapProperties.mapCoordinatesRange,
+            mapProperties.outsideTiles
+        ))
     }
 
     //TODO maybe add this variable locale
@@ -160,7 +176,8 @@ class MapState(
             magnifierScale,
             zoomLevel,
             angleDegrees.toDouble(),
-            mapProperties.mapCoordinatesRange
+            mapProperties.mapCoordinatesRange,
+            density
         )
     }
 
@@ -169,7 +186,8 @@ class MapState(
             magnifierScale,
             zoomLevel,
             angleDegrees.toDouble(),
-            mapProperties.mapCoordinatesRange
+            mapProperties.mapCoordinatesRange,
+            density
         )
     }
 
@@ -197,9 +215,10 @@ class MapState(
 }
 
 @Composable
-inline fun rememberCameraState(
+inline fun rememberMapState(
     coroutineScope: CoroutineScope,
+    density: Density = LocalDensity.current,
     crossinline init: MapState.() -> Unit = {}
 ): MapState = remember {
-    MapState(coroutineScope).apply(init)
+    MapState(coroutineScope, density = density).apply(init)
 }

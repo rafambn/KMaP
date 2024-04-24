@@ -1,7 +1,5 @@
 package io.github.rafambn.kmap
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.ImageBitmap
 import io.github.rafambn.kmap.utils.loopInZoom
 import io.github.rafambn.kmap.utils.toImageBitmap
@@ -35,7 +33,7 @@ class TileCanvasState(
         CoroutineScope(Dispatchers.Default).visibleTilesResolver(screenStateChannel, tilesToProcessChannel)
     }
 
-    fun onStateChange(
+    internal fun onStateChange(
         screenState: ScreenState
     ) {
         screenStateChannel.trySend(screenState)
@@ -185,12 +183,4 @@ class TileCanvasState(
     companion object {
         internal const val TILE_SIZE = 256
     }
-}
-
-@Composable
-inline fun rememberTileCanvasState(
-    updateState: KFunction0<Unit>,
-    crossinline init: TileCanvasState.() -> Unit = {}
-): TileCanvasState = remember {
-    TileCanvasState(updateState).apply(init)
 }
