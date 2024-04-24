@@ -18,9 +18,10 @@ import kotlinx.coroutines.selects.select
 import org.jetbrains.skia.Image
 import kotlin.math.floor
 import kotlin.math.pow
+import kotlin.reflect.KFunction0
 
 class TileCanvasState(
-   private val updateState: Unit
+    private val updateState: KFunction0<Unit>
 ) {
     var visibleTilesList = mutableListOf<Tile>()
     private val renderedTiles = mutableListOf<Tile>()
@@ -114,10 +115,10 @@ class TileCanvasState(
         while (true) {
             select {
                 tilesToProcess.onReceive { tilesToProcess ->
-                    visibleTilesList = mutableListOf()
+                    val newTilesList = mutableListOf<Tile>()
                     tilesToProcess.forEach { tileSpecs ->
                         renderedTiles.find { it.equals(tileSpecs) }?.let {
-                            visibleTilesList.add(it)
+                            newTilesList.add(it)
                             return@forEach
                         }
                         if (!specsBeingProcessed.contains(tileSpecs)) {
@@ -125,15 +126,20 @@ class TileCanvasState(
                             worker(tileSpecs, tilesProcessSuccessResult, tilesProcessFailedResult)
                         }
                     }
-                    updateState
+                    if (newTilesList != visibleTilesList) {
+                        visibleTilesList = newTilesList
+                        updateState.invoke()
+                    }
                 }
                 tilesProcessSuccessResult.onReceive { tile ->
-                    specsBeingProcessed.remove(tile as TileCore)
+                    specsBeingProcessed.find { it.equals(tile) }?.let {
+                        specsBeingProcessed.remove(it)
+                    }
                     renderedTiles.add(tile)
                     if (renderedTiles.size > 100)
                         renderedTiles.removeAt(0)
                     visibleTilesList.add(tile)
-                    updateState
+                    updateState.invoke()
                 }
                 tilesProcessFailedResult.onReceive { tileSpecs ->
                     tileSpecs.takeIf { it.numberOfTries < 2 }?.let {
@@ -186,7 +192,7 @@ class TileCanvasState(
 
 @Composable
 inline fun rememberTileCanvasState(
-    updateState: Unit,
+    updateState: KFunction0<Unit>,
     crossinline init: TileCanvasState.() -> Unit = {}
 ): TileCanvasState = remember {
     TileCanvasState(updateState).apply(init)

@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.withTransform
+import kotlin.reflect.KFunction0
 
 @Composable
 internal fun TileCanvas(
@@ -23,7 +24,7 @@ internal fun TileCanvas(
     outsideTiles: OutsideTilesType,
     matrix: Matrix,
     positionOffset: Position,
-    updateState: Unit
+    updateState: KFunction0<Unit>
 ) {
     val tileCanvasState = rememberTileCanvasState(updateState)
 

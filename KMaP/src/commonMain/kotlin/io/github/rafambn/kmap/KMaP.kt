@@ -19,7 +19,7 @@ fun KMaP(
             mapState.mapProperties.outsideTiles,
             mapState.matrix,
             mapState.positionOffset,
-            mapState.updateState()
+            mapState::updateState
         )
     }
 }
