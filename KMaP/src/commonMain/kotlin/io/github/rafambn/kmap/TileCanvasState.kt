@@ -15,7 +15,6 @@ import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
-import org.jetbrains.skia.Image
 import kotlin.math.floor
 import kotlin.math.pow
 import kotlin.reflect.KFunction0
@@ -157,7 +156,6 @@ class TileCanvasState(
         tilesProcessFailedResult: SendChannel<TileSpecs>
     ) = launch(Dispatchers.Default) {
         val imageBitmap: ImageBitmap
-        val image: Image
         println("${tileToProcess.zoom} -- ${tileToProcess.col} -- ${tileToProcess.row}")
         try {
             val byteArray = client.get(
@@ -170,7 +168,6 @@ class TileCanvasState(
                 header("User-Agent", "my.app.test4")
             }.readBytes()
             imageBitmap = byteArray.toImageBitmap()
-            image = Image.makeFromEncoded(byteArray)
             tilesProcessSuccessResult.send(Tile(tileToProcess.zoom, tileToProcess.row, tileToProcess.col, imageBitmap))
         } catch (ex: Exception) {
             println(ex)

@@ -17,7 +17,7 @@ fun KMaP(
             mapState.zoomLevel,
             mapState.mapProperties.mapCoordinatesRange,
             mapState.mapProperties.outsideTiles,
-            mapState.matrix,
+            mapState,
             mapState.positionOffset,
             mapState::updateState
         )

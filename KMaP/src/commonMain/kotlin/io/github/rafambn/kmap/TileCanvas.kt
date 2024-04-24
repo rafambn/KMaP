@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import kotlin.reflect.KFunction0
 
@@ -22,7 +23,7 @@ internal fun TileCanvas(
     zoomLevel: Int,
     coordinatesRange: MapCoordinatesRange,
     outsideTiles: OutsideTilesType,
-    matrix: Matrix,
+    ff: MapState,
     positionOffset: Position,
     updateState: KFunction0<Unit>
 ) {
@@ -43,7 +44,9 @@ internal fun TileCanvas(
         modifier = modifier.fillMaxSize()
     ) {
         withTransform({
-            transform(matrix)
+            translate(ff.canvasSize.x / 2, ff.canvasSize.y / 2)
+            rotate(ff.angleDegrees)
+            scale(ff.magnifierScale)
         }) {
             drawIntoCanvas { canvas ->
                 for (tile in tileCanvasState.visibleTilesList.toList()) {

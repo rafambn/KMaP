@@ -37,9 +37,9 @@ class MapState(
 
     //Control variables
     private var zoom = initialZoom
-    private var angleDegrees = initialRotation
+    var angleDegrees = initialRotation //TODO make it private
     private var mapPosition = initialPosition
-    private var canvasSize = Offset.Zero
+    var canvasSize = Offset.Zero //TODO make it private
 
     //Derivative variables
     val zoomLevel
