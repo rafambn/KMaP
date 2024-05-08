@@ -4,7 +4,7 @@ package io.github.rafambn.kmap.gestures
 /**
  * [GestureChangeState] is use to indicate what type of change happened from the last input to the new.
  */
-enum class GestureChangeState { //TODO Verify if its possible to use only the parameters of PointerEvent to represent this states
+enum class GestureChangeState {
     PRESS,
     RELEASE,
     TWO_PRESS,
@@ -27,5 +27,7 @@ enum class GestureState {
     WAITING_UP_AFTER_TAP,
     WAITING_UP_AFTER_TWO_PRESS,
     WAITING_UP_AFTER_TWO_RELEASE,
-    WAITING_DOWN
+    WAITING_UP_AFTER_MOBILE_RELEASE,
+    WAITING_DOWN,
+    FINISH_GESTURE
 }

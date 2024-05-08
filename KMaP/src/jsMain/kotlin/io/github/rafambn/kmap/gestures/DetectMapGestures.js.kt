@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.abs
 import kotlin.math.pow
@@ -28,7 +29,7 @@ import kotlin.math.pow
 /**
  * [detectMapGestures] detects all kinds of gestures needed for KMaP
  */
-internal actual suspend fun PointerInputScope.detectMapGestures( //TODO refactor just as jvm
+internal actual suspend fun PointerInputScope.detectMapGestures(
     onTap: (Offset) -> Unit,
     onDoubleTap: (Offset) -> Unit,
     onTwoFingersTap: (Offset) -> Unit, //There isn't a call for this method in Js
@@ -46,293 +47,294 @@ internal actual suspend fun PointerInputScope.detectMapGestures( //TODO refactor
     onScroll: (mouseOffset: Offset, scrollAmount: Float) -> Unit,
     onCtrlGesture: (rotation: Float) -> Unit
 ) = coroutineScope {
-
-    awaitMapGesture {
-        var previousEvent = awaitPointerEvent()
-        var event = previousEvent
-        var gestureState = GestureState.HOVER
-
-        var firstCtrlEvent: PointerEvent? = null
-        var firstTapEvent: PointerEvent? = null
-        val longPressTimeout = viewConfiguration.longPressTimeoutMillis
-        val doubleTapTimeout = viewConfiguration.doubleTapTimeoutMillis
-        val touchSlop = viewConfiguration.touchSlop
-        var timeoutCount = 0L
-        var panSlop = Offset.Zero
-        val panVelocityTracker = VelocityTracker()
-        val zoomVelocityTracker = VelocityTracker1D(isDataDifferential = false)
-        val rotationVelocityTracker = VelocityTracker1D(isDataDifferential = true)
-
-        val flingVelocityThreshold = 100.dp.toPx().pow(2)
-        val flingVelocityMaxRange = -300F..300F
-        val flingVelocityScale = 10F
-
-        val flingZoomThreshold = 0.1.dp.toPx()
-        val flingZoomMaxRange = -0.5F..0.5F
-        val flingZoomScale = 50F
-
-        val flingRotationThreshold = 2F
-        val flingRotationMaxRange = -7.5F..7.5F
-        val flingRotationScale = 100F
-
-        val tapSwipeScale = 100F
-
-        onGestureStart.invoke(GestureState.HOVER, event.changes[0].position)
-        do {
-            //Awaits for a pointer event
-            try {
-                previousEvent = event
-
-                event = withTimeout(10L) {
-                    awaitPointerEvent()
-                }
-
+    launch {
+        awaitMapGesture {
+            do {
+                val event = awaitPointerEvent()
                 if (event.type == PointerEventType.Scroll) {
                     event.changes.forEach { it.consume() }
                     onScroll.invoke(event.changes[0].position, event.changes[0].scrollDelta.y / 300)
                     continue
                 }
+            } while (this@coroutineScope.isActive && !event.changes.any { it.customIsOutOfBounds(size, extendedTouchPadding) })
+        }
+    }
+    awaitMapGesture {
+        //Parameters
+        val longPressTimeout = viewConfiguration.longPressTimeoutMillis
+        val doubleTapTimeout = viewConfiguration.doubleTapTimeoutMillis
+        val touchSlop = viewConfiguration.touchSlop
+        var panSlop: Offset
 
-                //If doesn't timeout them checks if there is any changes in the state
-                val eventChanges = getGestureStateChanges(event, previousEvent)
+        val panVelocityTracker = VelocityTracker()
+        val zoomVelocityTracker = VelocityTracker1D(isDataDifferential = false)
+        val rotationVelocityTracker = VelocityTracker1D(isDataDifferential = true)
 
-                //Here are the cases that leads to an gesture
+        val flingVelocityMaxRange = 500F
+        val flingVelocityScale = 2F
 
-                if (eventChanges.any { it == GestureChangeState.PRESS } && !event.keyboardModifiers.isCtrlPressed && gestureState == GestureState.HOVER) {
-                    onGestureEnd.invoke(gestureState)
-                    event.changes.forEach { it.consume() }
-                    gestureState = GestureState.WAITING_UP
-                    timeoutCount = longPressTimeout
-                    continue
+        val flingZoomMaxRange = 2F
+        val flingZoomScale = 10F
+
+        val flingRotationMaxRange = 1800F
+        val flingRotationScale = 10F
+
+        val tapSwipeScale = 100F
+
+        //Gets first event
+        var previousEvent = awaitPointerEvent()
+        var event = previousEvent
+        var gestureState = GestureState.HOVER
+        var firstGestureEvent: PointerEvent? = null
+
+        onGestureStart.invoke(GestureState.HOVER, event.changes[0].position)
+        onHover(event.changes[0].position)
+        do {
+            when (gestureState) {
+                GestureState.HOVER -> {
+                    while (this@coroutineScope.isActive && !event.changes.any { it.customIsOutOfBounds(size, extendedTouchPadding) }) {
+                        previousEvent = event
+                        event = awaitPointerEvent()
+                        event.changes.forEach { it.consume() }
+                        val eventChanges = getGestureStateChanges(event, previousEvent)
+
+                        if (eventChanges.contains(GestureChangeState.PRESS) && !event.keyboardModifiers.isCtrlPressed) {
+                            onGestureEnd.invoke(gestureState)
+                            gestureState = GestureState.WAITING_UP
+                            break
+                        }
+                        if (eventChanges.any { it == GestureChangeState.PRESS } && event.keyboardModifiers.isCtrlPressed) {
+                            onGestureEnd.invoke(gestureState)
+                            gestureState = GestureState.CTRL
+                            onGestureStart.invoke(gestureState, event.changes[0].position)
+                            break
+                        }
+                        onHover.invoke(event.changes[0].position)
+                    }
                 }
 
-                if (gestureState == GestureState.WAITING_UP) {
-                    if (eventChanges.any { it == GestureChangeState.RELEASE }) {
-                        event.changes.forEach { it.consume() }
-                        gestureState = GestureState.WAITING_DOWN
-                        timeoutCount = doubleTapTimeout
-                        continue
-                    }
-                    if (event.type == PointerEventType.Move) {
-                        panSlop += event.calculatePan()
-                        if (panSlop.getDistance() > touchSlop) {
+                GestureState.WAITING_UP -> {
+                    var timePassed = 0L
+                    panSlop = Offset.Zero
+                    while (this@coroutineScope.isActive && !event.changes.any { it.customIsOutOfBounds(size, extendedTouchPadding) }) {
+                        try {
+                            previousEvent = event
+                            event = withTimeout(longPressTimeout - timePassed) {
+                                awaitPointerEvent()
+                            }
+                            timePassed += event.changes[0].uptimeMillis - previousEvent.changes[0].uptimeMillis
                             event.changes.forEach { it.consume() }
+
+                            if (event.type == PointerEventType.Move) {
+                                panSlop += event.calculatePan()
+                                if (panSlop.getDistance() > touchSlop) {
+                                    gestureState = GestureState.DRAG
+                                    onGestureStart.invoke(gestureState, event.changes[0].position)
+                                    break
+                                }
+                            }
+                            if (getGestureStateChanges(event, previousEvent).any { it == GestureChangeState.RELEASE }) {
+                                gestureState = GestureState.WAITING_DOWN
+                                break
+                            }
+                        } catch (_: PointerEventTimeoutCancellationException) {
+                            onLongPress.invoke(event.changes[0].position)
+                            gestureState = GestureState.HOVER
+                            onGestureStart.invoke(gestureState, event.changes[0].position)
+                            break
+                        }
+                    }
+                }
+
+                GestureState.WAITING_DOWN -> {
+                    var timePassed = 0L
+                    panSlop = Offset.Zero
+                    while (this@coroutineScope.isActive && !event.changes.any { it.customIsOutOfBounds(size, extendedTouchPadding) }) {
+                        try {
+                            previousEvent = event
+                            event = withTimeout(doubleTapTimeout - timePassed) {
+                                awaitPointerEvent()
+                            }
+                            timePassed += event.changes[0].uptimeMillis - previousEvent.changes[0].uptimeMillis
+                            event.changes.forEach { it.consume() }
+
+                            if (event.type == PointerEventType.Move) {
+                                panSlop += event.calculatePan()
+                                if (panSlop.getDistance() > touchSlop) {
+                                    onTap.invoke(event.changes[0].position)
+                                    gestureState = GestureState.HOVER
+                                    onGestureStart.invoke(gestureState, event.changes[0].position)
+                                    break
+                                }
+                            }
+                            if (getGestureStateChanges(event, previousEvent).any { it == GestureChangeState.PRESS }) {
+                                gestureState = GestureState.WAITING_UP_AFTER_TAP
+                                break
+                            }
+                        } catch (_: PointerEventTimeoutCancellationException) {
+                            onTap.invoke(event.changes[0].position)
+                            gestureState = GestureState.HOVER
+                            onGestureStart.invoke(gestureState, event.changes[0].position)
+                            break
+                        }
+                    }
+                }
+
+                GestureState.WAITING_UP_AFTER_TAP -> {
+                    var timePassed = 0L
+                    panSlop = Offset.Zero
+                    while (this@coroutineScope.isActive && !event.changes.any { it.customIsOutOfBounds(size, extendedTouchPadding) }) {
+                        try {
+                            previousEvent = event
+                            event = withTimeout(doubleTapTimeout - timePassed) {
+                                awaitPointerEvent()
+                            }
+                            timePassed += event.changes[0].uptimeMillis - previousEvent.changes[0].uptimeMillis
+                            event.changes.forEach { it.consume() }
+
+                            if (event.type == PointerEventType.Move) {
+                                panSlop += event.calculatePan()
+                                if (panSlop.getDistance() > touchSlop) {
+                                    gestureState = GestureState.TAP_SWIPE
+                                    firstGestureEvent = event
+                                    onGestureStart.invoke(gestureState, event.changes[0].position)
+                                    break
+                                }
+                            }
+                            if (getGestureStateChanges(event, previousEvent).any { it == GestureChangeState.RELEASE }) {
+                                onDoubleTap.invoke(event.changes[0].position)
+                                gestureState = GestureState.HOVER
+                                onGestureStart.invoke(gestureState, event.changes[0].position)
+                                break
+                            }
+                        } catch (_: PointerEventTimeoutCancellationException) {
+                            gestureState = GestureState.TAP_LONG_PRESS
+                            onGestureStart.invoke(gestureState, event.changes[0].position)
+                            break
+                        }
+                    }
+                }
+
+                GestureState.DRAG -> {
+                    panVelocityTracker.resetTracking()
+                    while (this@coroutineScope.isActive && !event.changes.any { it.customIsOutOfBounds(size, extendedTouchPadding) }) {
+                        previousEvent = event
+                        event = awaitPointerEvent()
+                        event.changes.forEach { it.consume() }
+                        val eventChanges = getGestureStateChanges(event, previousEvent)
+
+                        if (eventChanges.any { it == GestureChangeState.CTRL_PRESS }) {
+                            onGestureEnd.invoke(gestureState)
+                            gestureState = GestureState.CTRL
+                            onGestureStart.invoke(gestureState, event.changes[0].position)
+                            break
+                        }
+
+                        if (eventChanges.any { it == GestureChangeState.RELEASE }) {
+                            onGestureEnd.invoke(gestureState)
+                            panVelocityTracker.addPosition(event.changes[0].uptimeMillis, event.changes[0].position)
+                            onFling(
+                                panVelocityTracker.calculateVelocity(
+                                    Velocity(
+                                        flingVelocityMaxRange,
+                                        flingVelocityMaxRange
+                                    )
+                                ) / flingVelocityScale
+                            )
+                            gestureState = GestureState.HOVER
+                            onGestureStart.invoke(gestureState, event.changes[0].position)
+                            break
+                        }
+
+                        onDrag.invoke(event.changes[0].position - previousEvent.changes[0].position)
+                        panVelocityTracker.addPosition(event.changes[0].uptimeMillis, event.changes[0].position)
+                    }
+                }
+
+                GestureState.CTRL -> {
+                    panVelocityTracker.resetTracking()
+                    while (this@coroutineScope.isActive && !event.changes.any { it.customIsOutOfBounds(size, extendedTouchPadding) }) {
+                        previousEvent = event
+                        event = awaitPointerEvent()
+                        event.changes.forEach { it.consume() }
+                        val eventChanges = getGestureStateChanges(event, previousEvent)
+
+                        if (eventChanges.any { it == GestureChangeState.CTRL_RELEASE }) {
+                            onGestureEnd.invoke(gestureState)
+                            firstGestureEvent = event
                             gestureState = GestureState.DRAG
                             onGestureStart.invoke(gestureState, event.changes[0].position)
-                            panSlop = Offset.Zero
-                            continue
+                            break
                         }
-                    }
-                    timeoutCount -= event.changes[0].uptimeMillis - previousEvent.changes[0].uptimeMillis
-                    if (timeoutCount < 0) {
-                        onGestureEnd.invoke(gestureState)
-                        onLongPress.invoke(event.changes[0].position)
-                        event.changes.forEach { it.consume() }
-                        gestureState = GestureState.HOVER
-                        onGestureStart.invoke(gestureState, event.changes[0].position)
-                        continue
-                    }
-                    continue
-                }
 
-                if (gestureState == GestureState.WAITING_DOWN) {
-                    if (eventChanges.any { it == GestureChangeState.PRESS }) {
-                        event.changes.forEach { it.consume() }
-                        gestureState = GestureState.WAITING_UP_AFTER_TAP
-                        timeoutCount = longPressTimeout
-                        continue
-                    }
-                    timeoutCount -= event.changes[0].uptimeMillis - previousEvent.changes[0].uptimeMillis
-                    if (timeoutCount < 0) {
-                        onGestureEnd.invoke(gestureState)
-                        onTap.invoke(event.changes[0].position)
-                        event.changes.forEach { it.consume() }
-                        gestureState = GestureState.HOVER
-                        onGestureStart.invoke(gestureState, event.changes[0].position)
-                        continue
-                    }
-                    continue
-                }
-
-                if (gestureState == GestureState.WAITING_UP_AFTER_TAP) {
-                    if (eventChanges.any { it == GestureChangeState.RELEASE }) {
-                        onDoubleTap.invoke(event.changes[0].position)
-                        event.changes.forEach { it.consume() }
-                        gestureState = GestureState.HOVER
-                        onGestureStart.invoke(gestureState, event.changes[0].position)
-                        continue
-                    }
-                    if (event.type == PointerEventType.Move) {
-                        panSlop += event.calculatePan()
-                        if (panSlop.getDistance() > touchSlop) {
-                            firstTapEvent = event
-                            event.changes.forEach { it.consume() }
-                            gestureState = GestureState.TAP_SWIPE
+                        if (eventChanges.any { it == GestureChangeState.RELEASE }) {
+                            onGestureEnd.invoke(gestureState)
+                            onFlingRotation(
+                                null,
+                                rotationVelocityTracker.calculateVelocity(flingRotationMaxRange) / flingRotationScale
+                            )
+                            gestureState = GestureState.HOVER
                             onGestureStart.invoke(gestureState, event.changes[0].position)
-                            panSlop = Offset.Zero
-                            continue
+                            break
+                        }
+                        handleGestureWithCtrl(event, previousEvent, size / 2) { rotationChange ->
+                            onCtrlGesture.invoke(rotationChange)
+                            rotationVelocityTracker.addDataPoint(event.changes[0].uptimeMillis, rotationChange)
                         }
                     }
-                    timeoutCount -= event.changes[0].uptimeMillis - previousEvent.changes[0].uptimeMillis
-                    if (timeoutCount < 0) {
+                }
+
+                GestureState.TAP_LONG_PRESS -> {
+                    panVelocityTracker.resetTracking()
+                    while (this@coroutineScope.isActive && !event.changes.any { it.customIsOutOfBounds(size, extendedTouchPadding) }) {
+                        previousEvent = event
+                        event = awaitPointerEvent()
                         event.changes.forEach { it.consume() }
-                        gestureState = GestureState.TAP_LONG_PRESS
-                        onGestureStart.invoke(gestureState, event.changes[0].position)
-                        continue
+                        val eventChanges = getGestureStateChanges(event, previousEvent)
+
+                        if (eventChanges.any { it == GestureChangeState.RELEASE }) {
+                            onGestureEnd.invoke(gestureState)
+                            gestureState = GestureState.HOVER
+                            onGestureStart.invoke(gestureState, event.changes[0].position)
+                            break
+                        }
+
+                        onTapLongPress.invoke(event.changes[0].position - previousEvent.changes[0].position)
                     }
-                    continue
-                }
 
-                if (eventChanges.any { it == GestureChangeState.PRESS } && event.keyboardModifiers.isCtrlPressed && gestureState == GestureState.HOVER) {
-                    onGestureEnd.invoke(gestureState)
-                    firstCtrlEvent = event
-                    event.changes.forEach { it.consume() }
-                    gestureState = GestureState.CTRL
-                    onGestureStart.invoke(gestureState, event.changes[0].position)
-                    continue
-                }
-
-                if (eventChanges.any { it == GestureChangeState.CTRL_PRESS } && gestureState == GestureState.DRAG) {
-                    onGestureEnd.invoke(gestureState)
-                    firstCtrlEvent = event
-                    event.changes.forEach { it.consume() }
-                    gestureState = GestureState.CTRL
-                    onGestureStart.invoke(gestureState, event.changes[0].position)
-                    continue
-                }
-
-                //Here are the cases that exits of an gesture to another
-                if (eventChanges.any { it == GestureChangeState.CTRL_RELEASE } && gestureState == GestureState.CTRL) {
-                    onGestureEnd.invoke(gestureState)
-                    event.changes.forEach { it.consume() }
-                    gestureState = GestureState.DRAG
-                    onGestureStart.invoke(gestureState, event.changes[0].position)
-                    continue
-                }
-
-                if (eventChanges.any { it == GestureChangeState.RELEASE } && gestureState == GestureState.CTRL) {
-                    onGestureEnd.invoke(gestureState)
-                    val velocity = runCatching {
-                        rotationVelocityTracker.calculateVelocity()
-                    }.getOrDefault(0F)
-                    val rotationCapped = (velocity / flingRotationScale).coerceIn(flingRotationMaxRange)
-                    if (abs(rotationCapped) > flingRotationThreshold) {
-                        onFlingRotation(firstCtrlEvent!!.changes[0].position, rotationCapped)
-                    }
-                    event.changes.forEach { it.consume() }
-                    gestureState = GestureState.HOVER
-                    onGestureStart.invoke(gestureState, event.changes[0].position)
-                    continue
-                }
-
-                if (gestureState == GestureState.TAP_LONG_PRESS && eventChanges.any { it == GestureChangeState.RELEASE }) {
-                    onGestureEnd.invoke(gestureState)
-                    event.changes.forEach { it.consume() }
-                    gestureState = GestureState.HOVER
-                    onGestureStart.invoke(gestureState, event.changes[0].position)
-                    continue
-                }
-
-                if (gestureState == GestureState.TAP_SWIPE && event.changes.all { !it.pressed }) {
-                    onGestureEnd.invoke(gestureState)
-                    val velocity = runCatching {
-                        zoomVelocityTracker.calculateVelocity()
-                    }.getOrDefault(0F)
-                    val zoomCapped = (velocity / (flingZoomScale * tapSwipeScale)).coerceIn(flingZoomMaxRange)
-                    if (abs(zoomCapped) > flingZoomThreshold) {
-                        onFlingZoom(event.changes[0].position, zoomCapped)
-                    }
-                    event.changes.forEach { it.consume() }
-                    gestureState = GestureState.HOVER
-                    onGestureStart.invoke(gestureState, event.changes[0].position)
-                    continue
-                }
-
-                if (gestureState == GestureState.DRAG && eventChanges.any { it == GestureChangeState.RELEASE }) {
-                    onGestureEnd.invoke(gestureState)
-                    val velocity = runCatching {
-                        panVelocityTracker.calculateVelocity()
-                    }.getOrDefault(Velocity.Zero)
-                    val velocityCapped = Velocity(
-                        (velocity.x / flingVelocityScale).coerceIn(flingVelocityMaxRange),
-                        (velocity.y / flingVelocityScale).coerceIn(flingVelocityMaxRange)
-                    )
-                    val velocitySquared = velocityCapped.x.pow(2) + velocityCapped.y.pow(2)
-                    if (velocitySquared > flingVelocityThreshold) {
-                        onFling(velocityCapped)
-                    }
-                    event.changes.forEach { it.consume() }
-                    gestureState = GestureState.HOVER
-                    onGestureStart.invoke(gestureState, event.changes[0].position)
-                    continue
-                }
-
-                //Finally, here are the gestures
-                if (gestureState == GestureState.CTRL) {
-                    handleGestureWithCtrl(event, previousEvent, size /2) { rotationChange ->
-                        onCtrlGesture.invoke(rotationChange)
-                        rotationVelocityTracker.addDataPoint(event.changes[0].uptimeMillis, rotationChange)
-                    }
-                    event.changes.forEach { it.consume() }
-                    continue
-                }
-
-                if (gestureState == GestureState.DRAG) {
-                    onDrag.invoke(event.changes[0].position - previousEvent.changes[0].position)
-                    panVelocityTracker.addPosition(event.changes[0].uptimeMillis, event.changes[0].position)
-                    event.changes.forEach { it.consume() }
-                    continue
-                }
-
-                if (gestureState == GestureState.TAP_LONG_PRESS) {
                     onTapLongPress.invoke(event.changes[0].position - previousEvent.changes[0].position)
-                    event.changes.forEach { it.consume() }
-                    continue
                 }
 
-                if (gestureState == GestureState.TAP_SWIPE) {
-                    onTapSwipe.invoke(firstTapEvent!!.changes[0].position, (event.changes[0].position.y - previousEvent.changes[0].position.y) / tapSwipeScale)
-                    zoomVelocityTracker.addDataPoint(event.changes[0].uptimeMillis, event.changes[0].position.y)
-                    event.changes.forEach { it.consume() }
-                    continue
+                GestureState.TAP_SWIPE -> {
+                    zoomVelocityTracker.resetTracking()
+                    while (this@coroutineScope.isActive && !event.changes.any { it.customIsOutOfBounds(size, extendedTouchPadding) }) {
+                        previousEvent = event
+                        event = awaitPointerEvent()
+                        event.changes.forEach { it.consume() }
+                        val eventChanges = getGestureStateChanges(event, previousEvent)
+
+                        if (eventChanges.any { it == GestureChangeState.RELEASE }) {
+                            onGestureEnd.invoke(gestureState)
+                            zoomVelocityTracker.addDataPoint(event.changes[0].uptimeMillis, event.changes[0].position.y)
+                            onFlingZoom(
+                                firstGestureEvent!!.changes[0].position,
+                                zoomVelocityTracker.calculateVelocity() / (flingZoomScale * tapSwipeScale)
+                            )
+                            gestureState = GestureState.HOVER
+                            onGestureStart.invoke(gestureState, event.changes[0].position)
+                            break
+                        }
+                        onTapSwipe.invoke(
+                            firstGestureEvent!!.changes[0].position,
+                            (event.changes[0].position.y - previousEvent.changes[0].position.y) / tapSwipeScale
+                        )
+                        zoomVelocityTracker.addDataPoint(event.changes[0].uptimeMillis, event.changes[0].position.y)
+                    }
                 }
 
-                if (gestureState == GestureState.HOVER) {
-                    onHover.invoke(event.changes[0].position)
-                }
-
-            } catch (_: PointerEventTimeoutCancellationException) {
-                //It case of a timeout them just check the case where timeout is necessary
-                timeoutCount -= 10L
-                if (gestureState == GestureState.WAITING_UP) {
-                    if (timeoutCount < 0) {
-                        onLongPress.invoke(event.changes[0].position)
-                        event.changes.forEach { it.consume() }
-                        gestureState = GestureState.HOVER
-                        onGestureStart.invoke(gestureState, event.changes[0].position)
-                        continue
-                    }
-                }
-                if (gestureState == GestureState.WAITING_DOWN) {
-                    if (timeoutCount < 0) {
-                        onTap.invoke(event.changes[0].position)
-                        event.changes.forEach { it.consume() }
-                        gestureState = GestureState.HOVER
-                        onGestureStart.invoke(gestureState, event.changes[0].position)
-                        continue
-                    }
-                }
-                if (gestureState == GestureState.WAITING_UP_AFTER_TAP) {
-                    if (timeoutCount < 0) {
-                        event.changes.forEach { it.consume() }
-                        gestureState = GestureState.TAP_LONG_PRESS
-                        onGestureStart.invoke(gestureState, event.changes[0].position)
-                        continue
-                    }
-                }
+                else -> continue
             }
         } while (this@coroutineScope.isActive && !event.changes.any { it.customIsOutOfBounds(size, extendedTouchPadding) })
-
         onGestureEnd.invoke(gestureState)
     }
 }

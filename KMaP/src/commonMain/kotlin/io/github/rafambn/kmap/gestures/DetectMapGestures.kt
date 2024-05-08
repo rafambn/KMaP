@@ -60,10 +60,15 @@ fun getGestureStateChanges(
     if (previousEvent.changes.size == 1 && currentEvent.changes.size == 2)
         gestureChangeStates.add(GestureChangeState.TWO_PRESS)
 
-
-    //Goes from two click to one clicks
-    if (previousEvent.changes.size == 2 && currentEvent.changes.size == 1)
-        gestureChangeStates.add(GestureChangeState.TWO_RELEASE)
+    //Goes from two click to one clicks or no click
+    if (previousEvent.changes.size == 2 && currentEvent.changes.size == 1) {
+        if (currentEvent.changes.all { it.pressed })
+            gestureChangeStates.add(GestureChangeState.TWO_RELEASE)
+        else {
+            gestureChangeStates.add(GestureChangeState.TWO_RELEASE)
+            gestureChangeStates.add(GestureChangeState.RELEASE)
+        }
+    }
 
     //Goes from ctrl pressed to ctrl not pressed
     if (previousEvent.keyboardModifiers.isCtrlPressed && !currentEvent.keyboardModifiers.isCtrlPressed)
