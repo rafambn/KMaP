@@ -1,26 +1,32 @@
 package io.github.rafambn.kmap
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.SpringSpec
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.util.lerp
 import io.github.rafambn.kmap.utils.Degrees
+import io.github.rafambn.kmap.utils.applyOrientation
 import io.github.rafambn.kmap.utils.lerp
 import io.github.rafambn.kmap.utils.loopInRange
+import io.github.rafambn.kmap.utils.rotate
+import io.github.rafambn.kmap.utils.scaleToMap
+import io.github.rafambn.kmap.utils.scaleToZoom
 import io.github.rafambn.kmap.utils.toCanvasReference
 import io.github.rafambn.kmap.utils.toMapReference
+import io.github.rafambn.kmap.utils.toOffset
 import io.github.rafambn.kmap.utils.toPosition
+import io.github.rafambn.kmap.utils.toRadians
 import io.github.rafambn.kmap.utils.toViewportReference
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.exp
 import kotlin.math.floor
 import kotlin.math.pow
 
@@ -60,94 +66,111 @@ class MapState(
         get() = canvasSize.toPosition().toViewportReference(magnifierScale, zoomLevel, angleDegrees.toDouble(), OSMCoordinatesRange, mapPosition)
     internal val positionOffset
         get() = mapPosition.toCanvasReference(zoomLevel, mapProperties.mapCoordinatesRange)
-    internal val matrix: Matrix
-        get() = Matrix().apply {
-            translate(canvasSize.x / 2, canvasSize.y / 2, 0F)
-            rotateZ(angleDegrees)
-            scale(magnifierScale, magnifierScale, 0F)
-        }
 
     //Map state variable for recomposition
     internal var state by mutableStateOf(false)
 
     private fun updateState() {
         state = !state
-        tileCanvasState.onStateChange(ScreenState(
-            boundingBox,
-            zoomLevel,
-            mapProperties.mapCoordinatesRange,
-            mapProperties.outsideTiles
-        ))
+        tileCanvasState.onStateChange(
+            ScreenState(
+                boundingBox,
+                zoomLevel,
+                mapProperties.mapCoordinatesRange,
+                mapProperties.outsideTiles
+            )
+        )
     }
 
-    //TODO maybe add this variable locale
-    private val flingPositionAnimatable = Animatable(0F)
-    private val flingZoomAnimatable = Animatable(0f)
-    private val flingRotationAnimatable = Animatable(0f)
+    //Fling variable
+    private var flingPositionJob: Job? = null
+    private var flingZoomJob: Job? = null
+    private var flingRotationJob: Job? = null //TODO coordinate job to reduce flickering
 
     //Interface functions
     override fun setCenter(position: Position) {
+        flingPositionJob?.cancel()
+        flingZoomJob?.cancel()
+        flingRotationJob?.cancel()
         mapPosition = position.coerceInMap()
         updateState()
     }
 
     override fun moveBy(position: Position) {
+        flingPositionJob?.cancel()
+        flingZoomJob?.cancel()
+        flingRotationJob?.cancel()
         mapPosition = (mapPosition + position).coerceInMap()
         updateState()
     }
 
-    override fun animatePositionTo(position: Position, stiffness: Float) {
-        coroutineScope.launch {
-            val startPosition = mapPosition
-            flingPositionAnimatable.snapTo(0F)
-            flingPositionAnimatable.animateTo(1F, SpringSpec(stiffness = stiffness)) {
-                mapPosition = lerp(startPosition, position, value.toDouble()).coerceInMap()
-                updateState()
-            }
+    override fun animatePositionTo(position: Position, decayRate: Double) {
+        val startPosition = mapPosition
+        flingPositionJob?.cancel()
+        flingPositionJob = decayValue(coroutineScope, decayRate) {
+            mapPosition = lerp(position, startPosition, it).coerceInMap()
+            updateState()
         }
     }
 
     override fun setZoom(zoom: Float) {
+        flingZoomJob?.cancel()
         this.zoom = zoom.coerceZoom()
         updateState()
     }
 
     override fun zoomBy(zoom: Float, position: Position?) {
-        val previousZoomLevel = zoomLevel
-        val previousMagnifierScale = magnifierScale
-        this.zoom = (zoom + this.zoom).coerceZoom()
+        flingZoomJob?.cancel()
         position?.let {
-            moveBy(position * (1 - ((previousMagnifierScale / magnifierScale) * (2.0.pow(previousZoomLevel - zoomLevel)))))
+            val previousOffset = positionToCanvasOffset(it)
+            this.zoom = (zoom + this.zoom).coerceZoom()
+            centerPositionAtOffset(it, previousOffset)
+        } ?: run {
+            this.zoom = (zoom + this.zoom).coerceZoom()
+            updateState()
         }
     }
 
-    override fun animateZoomTo(zoom: Float, stiffness: Float, position: Position?) {
-        coroutineScope.launch {
-            val startZoom = this@MapState.zoom
-            flingZoomAnimatable.snapTo(0F)
-            flingZoomAnimatable.animateTo(1F, SpringSpec(stiffness = stiffness)) {
-                zoomBy(lerp(startZoom, zoom, value) - startZoom, position)
+    override fun animateZoomTo(zoom: Float, decayRate: Double, position: Position?) {
+        flingZoomJob?.cancel()
+        val startZoom = this.zoom
+        val previousOffset = position?.let { positionToCanvasOffset(it) } ?: Offset.Zero
+        flingZoomJob = decayValue(coroutineScope, decayRate) { decayValue ->
+            this.zoom = lerp(zoom, startZoom, decayValue.toFloat()).coerceZoom() //TODO this is backwards
+            position?.let {
+                centerPositionAtOffset(it, previousOffset)
+            } ?: run {
+                updateState()
             }
         }
     }
 
     override fun setRotation(angle: Degrees) {
+        flingRotationJob?.cancel()
         angleDegrees = angle.toFloat()
         updateState()
     }
 
     override fun rotateBy(angle: Degrees, position: Position?) {
+        flingRotationJob?.cancel()
+        val previousOffset = position?.let { positionToCanvasOffset(it) } ?: Offset.Zero
         angleDegrees += angle.toFloat()
-        updateState()
-//        moveBy(position - (canvasSize.toPosition() / 2.0) + ((canvasSize.toPosition() / 2.0) - position).rotate(angle.toDouble().toRadians())) //TODO add rotation on position
+        position?.let {
+            centerPositionAtOffset(it, previousOffset)
+        } ?: run {
+            updateState()
+        }
     }
 
-    override fun animateRotationTo(angle: Degrees, stiffness: Float, position: Position?) {
-        coroutineScope.launch {
-            val startRotation = angleDegrees
-            flingRotationAnimatable.snapTo(0F)
-            flingRotationAnimatable.animateTo(1F, SpringSpec(stiffness = stiffness)) {
-                angleDegrees = lerp(startRotation, angle.toFloat(), value)
+    override fun animateRotationTo(angle: Degrees, decayRate: Double, position: Position?) {
+        flingRotationJob?.cancel()
+        val startRotation = angleDegrees
+        val previousOffset = position?.let { positionToCanvasOffset(it) } ?: Offset.Zero
+        flingRotationJob = decayValue(coroutineScope, decayRate) { decayValue ->
+            angleDegrees = lerp(angle.toFloat(), startRotation, decayValue.toFloat())
+            position?.let {
+                centerPositionAtOffset(it, previousOffset)
+            } ?: run {
                 updateState()
             }
         }
@@ -159,10 +182,10 @@ class MapState(
         setRotation(angle)
     }
 
-    override fun animatePosZoomRotate(position: Position, zoom: Float, angle: Degrees, stiffness: Float) {
-        animatePositionTo(position, stiffness)
-        animateZoomTo(zoom, stiffness)
-        animateRotationTo(angle, stiffness)
+    override fun animatePosZoomRotate(position: Position, zoom: Float, angle: Degrees, decayRate: Double) {
+        animatePositionTo(position, decayRate)
+        animateZoomTo(zoom, decayRate)
+        animateRotationTo(angle, decayRate)
     }
 
     override fun onCanvasSizeChanged(size: Offset) {
@@ -171,7 +194,7 @@ class MapState(
     }
 
     //Utility functions
-    fun offsetToMapReference(offset: Offset): Position {
+    fun differentialOffsetToMapReference(offset: Offset): Position {
         return offset.toPosition().toMapReference(
             magnifierScale,
             zoomLevel,
@@ -181,7 +204,7 @@ class MapState(
         )
     }
 
-    fun screenOffsetToMapReference(offset: Offset): Position {
+    fun differentialOffsetFromScreenCenterToMapReference(offset: Offset): Position {
         return (canvasSize / 2F - offset).toPosition().toMapReference(
             magnifierScale,
             zoomLevel,
@@ -189,6 +212,21 @@ class MapState(
             mapProperties.mapCoordinatesRange,
             density
         )
+    }
+
+    fun offsetToMapReference(offset: Offset): Position {
+        return differentialOffsetFromScreenCenterToMapReference(offset) + mapPosition
+    }
+
+    private fun positionToCanvasOffset(position: Position): Offset {
+        return -(position - mapPosition)
+            .applyOrientation(mapProperties.mapCoordinatesRange)
+            .scaleToMap(1 / mapProperties.mapCoordinatesRange.longitute.span, 1 / mapProperties.mapCoordinatesRange.latitude.span)
+            .rotate(angleDegrees.toDouble().toRadians())
+            .scaleToZoom((TileCanvasState.TILE_SIZE * magnifierScale * (1 shl zoomLevel)).toDouble())
+            .times(density.density.toDouble())
+            .minus(Position(canvasSize.x / 2.0, canvasSize.y / 2.0))
+            .toOffset()
     }
 
     private fun Position.coerceInMap(): Position {
@@ -211,6 +249,21 @@ class MapState(
 
     private fun Float.coerceZoom(): Float {
         return this.coerceIn(minZoom.toFloat(), maxZoom.toFloat())
+    }
+
+    private fun decayValue(coroutineScope: CoroutineScope, decayRate: Double, function: (value: Double) -> Unit) = coroutineScope.launch {
+        val steps = 200
+        val timeStep = 5L
+        for (i in 0 until steps) {
+            val x = i.toDouble() / steps
+            function((1 - exp(decayRate * (x - 1.0))) / (1 - exp(-decayRate)))
+            delay(timeStep)
+        }
+    }
+
+    private fun centerPositionAtOffset(position: Position, offset: Offset) {
+        mapPosition = (mapPosition + position - offsetToMapReference(offset)).coerceInMap()
+        updateState()
     }
 }
 

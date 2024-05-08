@@ -28,7 +28,7 @@ import kotlin.math.pow
 /**
  * [detectMapGestures] detects all kinds of gestures needed for KMaP
  */
-internal actual suspend fun PointerInputScope.detectMapGestures(
+internal actual suspend fun PointerInputScope.detectMapGestures( //TODO refactor just as jvm
     onTap: (Offset) -> Unit,
     onDoubleTap: (Offset) -> Unit,
     onTwoFingersTap: (Offset) -> Unit, //There isn't a call for this method in Js
@@ -41,10 +41,10 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
     onGestureEnd: (gestureType: GestureState) -> Unit,
     onFling: (velocity: Velocity) -> Unit,
     onFlingZoom: (centroid: Offset, velocity: Float) -> Unit,
-    onFlingRotation: (centroid: Offset, velocity: Float) -> Unit,
+    onFlingRotation: (centroid: Offset?, velocity: Float) -> Unit,
     onHover: (Offset) -> Unit,
     onScroll: (mouseOffset: Offset, scrollAmount: Float) -> Unit,
-    onCtrlGesture: (centroid: Offset, rotation: Float) -> Unit
+    onCtrlGesture: (rotation: Float) -> Unit
 ) = coroutineScope {
 
     awaitMapGesture {
@@ -269,8 +269,8 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
 
                 //Finally, here are the gestures
                 if (gestureState == GestureState.CTRL) {
-                    handleGestureWithCtrl(event, previousEvent, firstCtrlEvent!!, touchSlop) { rotationChange, centroid ->
-                        onCtrlGesture.invoke(centroid, rotationChange)
+                    handleGestureWithCtrl(event, previousEvent, size /2) { rotationChange ->
+                        onCtrlGesture.invoke(rotationChange)
                         rotationVelocityTracker.addDataPoint(event.changes[0].uptimeMillis, rotationChange)
                     }
                     event.changes.forEach { it.consume() }

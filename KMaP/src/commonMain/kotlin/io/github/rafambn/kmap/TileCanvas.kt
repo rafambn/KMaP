@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import kotlin.math.floor
 
 @Composable
 internal fun TileCanvas(
@@ -39,8 +40,8 @@ internal fun TileCanvas(
                 for (tile in visibleTilesList) {
                     canvas.drawImageRect(image = tile.imageBitmap,
                         dstOffset = IntOffset(
-                            (TileCanvasState.TILE_SIZE * tile.row + positionOffset.horizontal).dp.toPx().toInt(),
-                            (TileCanvasState.TILE_SIZE * tile.col + positionOffset.vertical).dp.toPx().toInt()
+                            floor((TileCanvasState.TILE_SIZE * tile.row + positionOffset.horizontal).dp.toPx()).toInt(),
+                            floor((TileCanvasState.TILE_SIZE * tile.col + positionOffset.vertical).dp.toPx()).toInt()
                         ),
                         dstSize = IntSize(
                             TileCanvasState.TILE_SIZE.dp.toPx().toInt(),

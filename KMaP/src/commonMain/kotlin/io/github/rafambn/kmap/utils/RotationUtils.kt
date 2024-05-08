@@ -11,7 +11,7 @@ typealias Radians = Double
 
 fun Degrees.toRadians(): Radians = this * PI / 180
 
-fun Degrees.toDegrees(): Degrees = this * 180 / PI
+fun Radians.toDegrees(): Degrees = this * 180 / PI
 
 fun Degrees.modulo(): Degrees = this.mod(180.0)
 

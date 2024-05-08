@@ -26,23 +26,23 @@ internal fun MotionManager(
     content: @Composable () -> Unit
 ) {
 
-    val gestureListener = object : GestureInterface {
+    val gestureListener = object : GestureInterface { //TODO remove this object from here
         override fun onTap(offset: Offset) {
         }
 
         override fun onDoubleTap(centroid: Offset) {
-            mapState.zoomBy(-1 / 3F, mapState.screenOffsetToMapReference(centroid))
+            mapState.zoomBy(-1 / 3F, mapState.offsetToMapReference(centroid))
         }
 
         override fun onTwoFingersTap(centroid: Offset) {
-            mapState.zoomBy(1 / 3F, mapState.screenOffsetToMapReference(centroid))
+            mapState.zoomBy(1 / 3F, mapState.offsetToMapReference(centroid))
         }
 
         override fun onLongPress(offset: Offset) {
         }
 
         override fun onTapLongPress(offset: Offset) {
-            mapState.moveBy(mapState.offsetToMapReference(offset))
+            mapState.moveBy(mapState.differentialOffsetToMapReference(offset))
         }
 
         override fun onTapSwipe(centroid: Offset, zoom: Float) {
@@ -50,17 +50,17 @@ internal fun MotionManager(
         }
 
         override fun onGesture(centroid: Offset, pan: Offset, zoom: Float, rotation: Float) {
-            mapState.rotateBy(rotation.toDouble(), mapState.offsetToMapReference(centroid))
+            mapState.rotateBy(rotation.toDouble(), mapState.differentialOffsetToMapReference(centroid))
             mapState.zoomBy(zoom, mapState.offsetToMapReference(centroid))
-            mapState.moveBy(mapState.offsetToMapReference(centroid))
+            mapState.moveBy(mapState.differentialOffsetToMapReference(centroid))
         }
 
-        override fun onCtrlGesture(centroid: Offset, rotation: Float) {
-            mapState.rotateBy(rotation.toDouble(), mapState.offsetToMapReference(centroid))
+        override fun onCtrlGesture(rotation: Float) {
+            mapState.rotateBy(rotation.toDouble())
         }
 
         override fun onDrag(offset: Offset) {
-            mapState.moveBy(mapState.offsetToMapReference(offset))
+            mapState.moveBy(mapState.differentialOffsetToMapReference(offset))
         }
 
         override fun onGestureStart(gestureType: GestureState, offset: Offset) {
@@ -69,13 +69,18 @@ internal fun MotionManager(
         override fun onGestureEnd(gestureType: GestureState) {
         }
 
-        override fun onFling(velocity: Velocity) { //TODO add fling back again
+        override fun onFling(velocity: Velocity) {
+            mapState.animatePositionTo(mapState.differentialOffsetToMapReference(Offset(velocity.x, velocity.y)) + mapState.mapPosition)
         }
 
         override fun onFlingZoom(centroid: Offset, velocity: Float) {
+            mapState.animateZoomTo(velocity + mapState.zoom, position = mapState.offsetToMapReference(centroid))
         }
 
-        override fun onFlingRotation(centroid: Offset, velocity: Float) {
+        override fun onFlingRotation(centroid: Offset?, velocity: Float) {
+            mapState.animateRotationTo(
+                (velocity + mapState.angleDegrees).toDouble(),
+                position = centroid?.let { mapState.offsetToMapReference(centroid) })
         }
 
         override fun onHover(offset: Offset) {
@@ -83,7 +88,7 @@ internal fun MotionManager(
         }
 
         override fun onScroll(mouseOffset: Offset, scrollAmount: Float) {
-            mapState.zoomBy(scrollAmount, mapState.screenOffsetToMapReference(mouseOffset))
+            mapState.zoomBy(scrollAmount, mapState.offsetToMapReference(mouseOffset))
         }
     }
 
@@ -110,7 +115,7 @@ internal fun MotionManager(
                     onFlingRotation = { centroid, targetRotation -> gestureListener.onFlingRotation(centroid, targetRotation) },
                     onHover = { offset -> gestureListener.onHover(offset) },
                     onScroll = { mouseOffset, scrollAmount -> gestureListener.onScroll(mouseOffset, scrollAmount) },
-                    onCtrlGesture = {centroid, rotation -> gestureListener.onCtrlGesture(centroid, rotation)}
+                    onCtrlGesture = { rotation -> gestureListener.onCtrlGesture(rotation) }
                 )
             }
             .onGloballyPositioned { coordinates ->

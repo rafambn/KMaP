@@ -29,7 +29,7 @@ import kotlin.math.pow
 /**
  * [detectMapGestures] detects all kinds of gestures needed for KMaP
  */
-internal actual suspend fun PointerInputScope.detectMapGestures(
+internal actual suspend fun PointerInputScope.detectMapGestures( //TODO refactor just as jvm
     onTap: (Offset) -> Unit,
     onDoubleTap: (Offset) -> Unit,
     onTwoFingersTap: (Offset) -> Unit,
@@ -42,10 +42,10 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
     onGestureEnd: (gestureType: GestureState) -> Unit,
     onFling: (velocity: Velocity) -> Unit,
     onFlingZoom: (centroid: Offset, velocity: Float) -> Unit,
-    onFlingRotation: (centroid: Offset, velocity: Float) -> Unit,
+    onFlingRotation: (centroid: Offset?, velocity: Float) -> Unit,
     onHover: (Offset) -> Unit, //There isn't a call for this method in Mobile
     onScroll: (mouseOffset: Offset, scrollAmount: Float) -> Unit, //There isn't a call for this method in Mobile
-    onCtrlGesture: (centroid: Offset, rotation: Float) -> Unit
+    onCtrlGesture: (rotation: Float) -> Unit
 ) = coroutineScope {
 
     awaitMapGesture {
