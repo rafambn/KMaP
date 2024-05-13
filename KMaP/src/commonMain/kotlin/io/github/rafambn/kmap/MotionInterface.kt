@@ -1,6 +1,5 @@
 package io.github.rafambn.kmap
 
-import androidx.compose.animation.core.Spring
 import io.github.rafambn.kmap.utils.Degrees
 
 interface MotionInterface {
