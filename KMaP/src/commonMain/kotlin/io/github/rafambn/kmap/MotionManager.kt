@@ -18,8 +18,6 @@ import androidx.compose.ui.unit.toSize
 import io.github.rafambn.kmap.gestures.GestureInterface
 import io.github.rafambn.kmap.gestures.GestureState
 import io.github.rafambn.kmap.gestures.detectMapGestures
-import io.github.rafambn.kmap.utils.differentialOffsetToMapReference
-import io.github.rafambn.kmap.utils.offsetToMapReference
 
 @Composable
 internal fun MotionManager(
@@ -27,104 +25,34 @@ internal fun MotionManager(
     mapState: MapState,
     content: @Composable () -> Unit
 ) {
+
     val gestureListener = object : GestureInterface { //TODO remove this object from here
         override fun onTap(offset: Offset) {
         }
 
         override fun onDoubleTap(centroid: Offset) {
-            mapState.zoomBy(
-                -1 / 3F,
-                centroid.offsetToMapReference(
-                    mapState.positionOffset,
-                    mapState.canvasSize,
-                    mapState.magnifierScale,
-                    mapState.zoomLevel,
-                    mapState.angleDegrees.toDouble(),
-                    mapState.mapProperties.mapCoordinatesRange,
-                    mapState.density
-                )
-            )
+            mapState.zoomBy(-1 / 3F, mapState.offsetToMapReference(centroid))
         }
 
         override fun onTwoFingersTap(centroid: Offset) {
-            mapState.zoomBy(
-                1 / 3F,
-                centroid.offsetToMapReference(
-                    mapState.positionOffset,
-                    mapState.canvasSize,
-                    mapState.magnifierScale,
-                    mapState.zoomLevel,
-                    mapState.angleDegrees.toDouble(),
-                    mapState.mapProperties.mapCoordinatesRange,
-                    mapState.density
-                )
-            )
+            mapState.zoomBy(1 / 3F, mapState.offsetToMapReference(centroid))
         }
 
         override fun onLongPress(offset: Offset) {
         }
 
         override fun onTapLongPress(offset: Offset) {
-            mapState.moveBy(
-                offset.differentialOffsetToMapReference(
-                    mapState.magnifierScale,
-                    mapState.zoomLevel,
-                    mapState.angleDegrees.toDouble(),
-                    mapState.mapProperties.mapCoordinatesRange,
-                    mapState.density
-                )
-            )
+            mapState.moveBy(mapState.differentialOffsetToMapReference(offset))
         }
 
         override fun onTapSwipe(centroid: Offset, zoom: Float) {
-            mapState.zoomBy(
-                zoom,
-                centroid.offsetToMapReference(
-                    mapState.positionOffset,
-                    mapState.canvasSize,
-                    mapState.magnifierScale,
-                    mapState.zoomLevel,
-                    mapState.angleDegrees.toDouble(),
-                    mapState.mapProperties.mapCoordinatesRange,
-                    mapState.density
-                )
-            )
+            mapState.zoomBy(zoom, mapState.offsetToMapReference(centroid))
         }
 
         override fun onGesture(centroid: Offset, pan: Offset, zoom: Float, rotation: Float) {
-            mapState.rotateBy(
-                rotation.toDouble(),
-                centroid.offsetToMapReference(
-                    mapState.positionOffset,
-                    mapState.canvasSize,
-                    mapState.magnifierScale,
-                    mapState.zoomLevel,
-                    mapState.angleDegrees.toDouble(),
-                    mapState.mapProperties.mapCoordinatesRange,
-                    mapState.density
-                )
-            )
-            mapState.zoomBy(
-                zoom,
-                centroid.offsetToMapReference(
-                    mapState.positionOffset,
-                    mapState.canvasSize,
-                    mapState.magnifierScale,
-                    mapState.zoomLevel,
-                    mapState.angleDegrees.toDouble(),
-                    mapState.mapProperties.mapCoordinatesRange,
-                    mapState.density
-                )
-            )
-            mapState.moveBy(
-                pan.differentialOffsetToMapReference(
-                    mapState.magnifierScale,
-                    mapState.zoomLevel,
-                    mapState.angleDegrees.toDouble(),
-                    mapState.mapProperties.mapCoordinatesRange,
-                    mapState.density
-                )
-            )
+            mapState.rotateBy(rotation.toDouble(), mapState.offsetToMapReference(centroid))
+            mapState.zoomBy(zoom, mapState.offsetToMapReference(centroid))
+            mapState.moveBy(mapState.differentialOffsetToMapReference(pan))
         }
 
         override fun onCtrlGesture(rotation: Float) {
@@ -132,15 +60,7 @@ internal fun MotionManager(
         }
 
         override fun onDrag(offset: Offset) {
-            mapState.moveBy(
-                offset.differentialOffsetToMapReference(
-                    mapState.magnifierScale,
-                    mapState.zoomLevel,
-                    mapState.angleDegrees.toDouble(),
-                    mapState.mapProperties.mapCoordinatesRange,
-                    mapState.density
-                )
-            )
+            mapState.moveBy(mapState.differentialOffsetToMapReference(offset))
         }
 
         override fun onGestureStart(gestureType: GestureState, offset: Offset) {
@@ -150,45 +70,17 @@ internal fun MotionManager(
         }
 
         override fun onFling(velocity: Velocity) {
-            mapState.animatePositionTo(
-                Offset(velocity.x, velocity.y).differentialOffsetToMapReference(
-                    mapState.magnifierScale,
-                    mapState.zoomLevel,
-                    mapState.angleDegrees.toDouble(),
-                    mapState.mapProperties.mapCoordinatesRange,
-                    mapState.density
-                ) + mapState.mapPosition
-            )
+            mapState.animatePositionTo(mapState.differentialOffsetToMapReference(Offset(velocity.x, velocity.y)) + mapState.mapPosition)
         }
 
         override fun onFlingZoom(centroid: Offset, velocity: Float) {
-            mapState.animateZoomTo(
-                velocity + mapState.zoom, position =
-                centroid.offsetToMapReference(
-                    mapState.positionOffset,
-                    mapState.canvasSize,
-                    mapState.magnifierScale,
-                    mapState.zoomLevel,
-                    mapState.angleDegrees.toDouble(),
-                    mapState.mapProperties.mapCoordinatesRange,
-                    mapState.density
-                )
-            )
+            mapState.animateZoomTo(velocity + mapState.zoom, position = mapState.offsetToMapReference(centroid))
         }
 
         override fun onFlingRotation(centroid: Offset?, velocity: Float) {
             mapState.animateRotationTo(
                 (velocity + mapState.angleDegrees).toDouble(),
-                position = centroid?.offsetToMapReference(
-                    mapState.positionOffset,
-                    mapState.canvasSize,
-                    mapState.magnifierScale,
-                    mapState.zoomLevel,
-                    mapState.angleDegrees.toDouble(),
-                    mapState.mapProperties.mapCoordinatesRange,
-                    mapState.density
-                )
-            )
+                position = centroid?.let { mapState.offsetToMapReference(centroid) })
         }
 
         override fun onHover(offset: Offset) {
@@ -196,18 +88,7 @@ internal fun MotionManager(
         }
 
         override fun onScroll(mouseOffset: Offset, scrollAmount: Float) {
-            mapState.zoomBy(
-                scrollAmount,
-                mouseOffset.offsetToMapReference(
-                    mapState.positionOffset,
-                    mapState.canvasSize,
-                    mapState.magnifierScale,
-                    mapState.zoomLevel,
-                    mapState.angleDegrees.toDouble(),
-                    mapState.mapProperties.mapCoordinatesRange,
-                    mapState.density
-                )
-            )
+            mapState.zoomBy(scrollAmount, mapState.offsetToMapReference(mouseOffset))
         }
     }
 
