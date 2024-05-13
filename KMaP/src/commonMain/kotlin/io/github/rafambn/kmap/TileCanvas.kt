@@ -12,9 +12,13 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import io.github.rafambn.kmap.gestures.GestureInterface
+import io.github.rafambn.kmap.gestures.detectMapGestures
 import kotlin.math.floor
 
 @Composable
@@ -25,11 +29,32 @@ internal fun TileCanvas(
     magnifierScale: Float,
     visibleTilesList: List<Tile>,
     positionOffset: Position,
-    mapState: Boolean
+    mapState: Boolean,
+    gestureListener: GestureInterface
 ) {
     remember { mapState }
     Canvas(
         modifier = modifier.fillMaxSize()
+            .pointerInput(PointerEventPass.Main) {
+                detectMapGestures(
+                    onTap = { offset -> gestureListener.onTap(offset) },
+                    onDoubleTap = { offset -> gestureListener.onDoubleTap(offset) },
+                    onTwoFingersTap = { offset -> gestureListener.onTwoFingersTap(offset) },
+                    onLongPress = { offset -> gestureListener.onLongPress(offset) },
+                    onTapLongPress = { offset -> gestureListener.onTapLongPress(offset) },
+                    onTapSwipe = { centroid, zoom -> gestureListener.onTapSwipe(centroid, zoom) },
+                    onGesture = { centroid, pan, zoom, rotation -> gestureListener.onGesture(centroid, pan, zoom, rotation) },
+                    onDrag = { dragAmount -> gestureListener.onDrag(dragAmount) },
+                    onGestureStart = { gestureType, offset -> gestureListener.onGestureStart(gestureType, offset) },
+                    onGestureEnd = { gestureType -> gestureListener.onGestureEnd(gestureType) },
+                    onFling = { targetLocation -> gestureListener.onFling(targetLocation) },
+                    onFlingZoom = { centroid, targetZoom -> gestureListener.onFlingZoom(centroid, targetZoom) },
+                    onFlingRotation = { centroid, targetRotation -> gestureListener.onFlingRotation(centroid, targetRotation) },
+                    onHover = { offset -> gestureListener.onHover(offset) },
+                    onScroll = { mouseOffset, scrollAmount -> gestureListener.onScroll(mouseOffset, scrollAmount) },
+                    onCtrlGesture = { rotation -> gestureListener.onCtrlGesture(rotation) }
+                )
+            }
     ) {
         withTransform({
             scale(magnifierScale)
