@@ -18,13 +18,10 @@ import androidx.compose.ui.input.pointer.isOutOfBounds
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.input.pointer.util.VelocityTracker1D
 import androidx.compose.ui.unit.Velocity
-import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
 import kotlin.coroutines.cancellation.CancellationException
-import kotlin.math.abs
-import kotlin.math.pow
 
 /**
  * [detectMapGestures] detects all kinds of gestures needed for KMaP
@@ -348,7 +345,7 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                             gestureState = GestureState.WAITING_UP_AFTER_MOBILE_RELEASE
                             break
                         }
-                        val zoomChange = event.calculateZoom()
+                        val zoomChange = event.calculateZoom()//TODO fix jenky zoom
                         val rotationChange = event.calculateRotation()
                         val panChange = event.calculatePan()
                         val centroid = event.calculateCentroid()
@@ -383,8 +380,8 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                                 )
                                 onFlingZoom(
                                     event.changes[0].position,
-                                    -zoomVelocityTracker.calculateVelocity(flingZoomMaxRange) / flingZoomScale
-                                ) //TODO fling zoom is jenky
+                                    zoomVelocityTracker.calculateVelocity(flingZoomMaxRange) / flingZoomScale
+                                )
                                 onFlingRotation(
                                     event.changes[0].position,
                                     rotationVelocityTracker.calculateVelocity(flingRotationMaxRange) / flingRotationScale

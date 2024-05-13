@@ -345,7 +345,7 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                             gestureState = GestureState.WAITING_UP_AFTER_MOBILE_RELEASE
                             break
                         }
-                        val zoomChange = event.calculateZoom()
+                        val zoomChange = event.calculateZoom()//TODO fix jenky zoom
                         val rotationChange = event.calculateRotation()
                         val panChange = event.calculatePan()
                         val centroid = event.calculateCentroid()
@@ -378,10 +378,11 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                                         )
                                     ) / flingVelocityScale
                                 )
+                                println(zoomVelocityTracker)
                                 onFlingZoom(
                                     event.changes[0].position,
-                                    -zoomVelocityTracker.calculateVelocity(flingZoomMaxRange) / flingZoomScale
-                                ) //TODO fling zoom is jenky
+                                    zoomVelocityTracker.calculateVelocity(flingZoomMaxRange) / flingZoomScale
+                                )
                                 onFlingRotation(
                                     event.changes[0].position,
                                     rotationVelocityTracker.calculateVelocity(flingRotationMaxRange) / flingRotationScale

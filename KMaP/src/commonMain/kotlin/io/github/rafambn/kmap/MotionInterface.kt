@@ -12,17 +12,21 @@ interface MotionInterface {
 
     fun setZoom(zoom: Float)
 
-    fun zoomBy(zoom: Float, position: Position? = null)
+    fun zoomBy(zoom: Float)
 
-    fun animateZoomTo(zoom: Float, decayRate: Double = -5.0, position: Position? = null)
+    fun zoomBy(zoom: Float, position: Position)
+
+    fun animateZoomTo(zoom: Float, decayRate: Double = -5.0)
+
+    fun animateZoomTo(zoom: Float, decayRate: Double = -5.0, position: Position)
 
     fun setRotation(angle: Degrees)
 
-    fun rotateBy(angle: Degrees, position: Position? = null)
+    fun rotateBy(angle: Degrees)
 
-    fun animateRotationTo(angle: Degrees, decayRate: Double = -5.0, position: Position? = null)
+    fun rotateBy(angle: Degrees, position: Position)
 
-    fun setPosZoomRotate(position: Position, zoom: Float, angle: Degrees)
+    fun animateRotationTo(angle: Degrees, decayRate: Double = -5.0)
 
-    fun animatePosZoomRotate(position: Position, zoom: Float, angle: Degrees, decayRate: Double = -5.0)
+    fun animateRotationTo(angle: Degrees, decayRate: Double = -5.0, position: Position)
 }

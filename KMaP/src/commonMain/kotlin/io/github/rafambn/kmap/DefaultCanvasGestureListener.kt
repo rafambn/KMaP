@@ -5,7 +5,7 @@ import androidx.compose.ui.unit.Velocity
 import io.github.rafambn.kmap.gestures.GestureInterface
 import io.github.rafambn.kmap.gestures.GestureState
 
-open class DefaultCanvasGestureListener(private val mapState: MapState): GestureInterface {
+open class DefaultCanvasGestureListener(private val mapState: MapState) : GestureInterface {
     override fun onTap(offset: Offset) {
     }
 
@@ -57,9 +57,11 @@ open class DefaultCanvasGestureListener(private val mapState: MapState): Gesture
     }
 
     override fun onFlingRotation(centroid: Offset?, velocity: Float) {
-        mapState.animateRotationTo(
-            (velocity + mapState.angleDegrees).toDouble(),
-            position = centroid?.let { mapState.offsetToMapReference(centroid) })
+        centroid?.let {
+            mapState.animateRotationTo((velocity + mapState.angleDegrees).toDouble(), position = mapState.offsetToMapReference(it))
+        } ?: run {
+            mapState.animateRotationTo((velocity + mapState.angleDegrees).toDouble())
+        }
     }
 
     override fun onHover(offset: Offset) {

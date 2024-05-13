@@ -28,7 +28,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.exp
 import kotlin.math.floor
-import kotlin.math.pow
 
 class MapState(
     private val coroutineScope: CoroutineScope,
@@ -85,107 +84,128 @@ class MapState(
     //Fling variable
     private var flingPositionJob: Job? = null
     private var flingZoomJob: Job? = null
-    private var flingRotationJob: Job? = null //TODO coordinate job to reduce flickering
+    private var flingZoomAtPositionJob: Job? = null
+    private var flingRotationJob: Job? = null
+    private var flingRotationAtPositionJob: Job? = null
 
     //Interface functions
     override fun setCenter(position: Position) {
         flingPositionJob?.cancel()
-        flingZoomJob?.cancel()
-        flingRotationJob?.cancel()
+        flingZoomAtPositionJob?.cancel()
+        flingRotationAtPositionJob?.cancel()
         mapPosition = position.coerceInMap()
         updateState()
     }
 
     override fun moveBy(position: Position) {
         flingPositionJob?.cancel()
-        flingZoomJob?.cancel()
-        flingRotationJob?.cancel()
+        flingZoomAtPositionJob?.cancel()
+        flingRotationAtPositionJob?.cancel()
         mapPosition = (mapPosition + position).coerceInMap()
         updateState()
     }
 
     override fun animatePositionTo(position: Position, decayRate: Double) {
-        val startPosition = mapPosition
         flingPositionJob?.cancel()
+        flingZoomAtPositionJob?.cancel()
+        flingRotationAtPositionJob?.cancel()
+        val startPosition = mapPosition
         flingPositionJob = decayValue(coroutineScope, decayRate) {
-            mapPosition = lerp(position, startPosition, it).coerceInMap()
+            mapPosition = lerp(startPosition, position, it).coerceInMap()
             updateState()
         }
     }
 
     override fun setZoom(zoom: Float) {
         flingZoomJob?.cancel()
+        flingZoomAtPositionJob?.cancel()
         this.zoom = zoom.coerceZoom()
         updateState()
     }
 
-    override fun zoomBy(zoom: Float, position: Position?) {
+    override fun zoomBy(zoom: Float) {
         flingZoomJob?.cancel()
-        position?.let {
-            val previousOffset = positionToCanvasOffset(it)
-            this.zoom = (zoom + this.zoom).coerceZoom()
-            centerPositionAtOffset(it, previousOffset)
-        } ?: run {
-            this.zoom = (zoom + this.zoom).coerceZoom()
+        flingZoomAtPositionJob?.cancel()
+        this.zoom = (zoom + this.zoom).coerceZoom()
+        updateState()
+    }
+
+    override fun zoomBy(zoom: Float, position: Position) {
+        flingZoomJob?.cancel()
+        flingZoomAtPositionJob?.cancel()
+        val previousOffset = positionToCanvasOffset(position)
+        this.zoom = (zoom + this.zoom).coerceZoom()
+        centerPositionAtOffset(position, previousOffset)
+        updateState()
+    }
+
+    override fun animateZoomTo(zoom: Float, decayRate: Double) {
+        flingZoomJob?.cancel()
+        flingZoomAtPositionJob?.cancel()
+        val startZoom = this.zoom
+        flingZoomJob = decayValue(coroutineScope, decayRate) { decayValue ->
+            this.zoom = lerp(startZoom, zoom, decayValue.toFloat()).coerceZoom()
             updateState()
         }
     }
 
-    override fun animateZoomTo(zoom: Float, decayRate: Double, position: Position?) {
+    override fun animateZoomTo(zoom: Float, decayRate: Double, position: Position) {
+        flingPositionJob?.cancel()
         flingZoomJob?.cancel()
+        flingZoomAtPositionJob?.cancel()
         val startZoom = this.zoom
-        val previousOffset = position?.let { positionToCanvasOffset(it) } ?: Offset.Zero
-        flingZoomJob = decayValue(coroutineScope, decayRate) { decayValue ->
-            this.zoom = lerp(zoom, startZoom, decayValue.toFloat()).coerceZoom() //TODO this is backwards
-            position?.let {
-                centerPositionAtOffset(it, previousOffset)
-            } ?: run {
-                updateState()
-            }
+        val previousOffset = positionToCanvasOffset(position)
+        flingZoomAtPositionJob = decayValue(coroutineScope, decayRate) { decayValue ->
+            this.zoom = lerp(startZoom, zoom, decayValue.toFloat()).coerceZoom()
+            centerPositionAtOffset(position, previousOffset)
+            updateState()
         }
     }
 
     override fun setRotation(angle: Degrees) {
         flingRotationJob?.cancel()
+        flingRotationAtPositionJob?.cancel()
         angleDegrees = angle.toFloat()
         updateState()
     }
 
-    override fun rotateBy(angle: Degrees, position: Position?) {
+    override fun rotateBy(angle: Degrees) {
         flingRotationJob?.cancel()
-        val previousOffset = position?.let { positionToCanvasOffset(it) } ?: Offset.Zero
+        flingRotationAtPositionJob?.cancel()
         angleDegrees += angle.toFloat()
-        position?.let {
-            centerPositionAtOffset(it, previousOffset)
-        } ?: run {
+        updateState()
+    }
+
+    override fun rotateBy(angle: Degrees, position: Position) {
+        flingRotationJob?.cancel()
+        flingRotationAtPositionJob?.cancel()
+        val previousOffset = positionToCanvasOffset(position)
+        angleDegrees += angle.toFloat()
+        centerPositionAtOffset(position, previousOffset)
+        updateState()
+    }
+
+    override fun animateRotationTo(angle: Degrees, decayRate: Double) {
+        flingRotationJob?.cancel()
+        flingRotationAtPositionJob?.cancel()
+        val startRotation = angleDegrees
+        flingRotationJob = decayValue(coroutineScope, decayRate) { decayValue ->
+            angleDegrees = lerp(startRotation, angle.toFloat(), decayValue.toFloat())
             updateState()
         }
     }
 
-    override fun animateRotationTo(angle: Degrees, decayRate: Double, position: Position?) {
+    override fun animateRotationTo(angle: Degrees, decayRate: Double, position: Position) {
+        flingPositionJob?.cancel()
         flingRotationJob?.cancel()
+        flingRotationAtPositionJob?.cancel()
         val startRotation = angleDegrees
-        val previousOffset = position?.let { positionToCanvasOffset(it) } ?: Offset.Zero
-        flingRotationJob = decayValue(coroutineScope, decayRate) { decayValue ->
-            angleDegrees = lerp(angle.toFloat(), startRotation, decayValue.toFloat())
-            position?.let {
-                centerPositionAtOffset(it, previousOffset)
-            } ?: run {
-                updateState()
-            }
+        val previousOffset = positionToCanvasOffset(position)
+        flingRotationAtPositionJob = decayValue(coroutineScope, decayRate) { decayValue ->
+            angleDegrees = lerp(startRotation, angle.toFloat(), decayValue.toFloat())
+            centerPositionAtOffset(position, previousOffset)
+            updateState()
         }
-    }
-
-    override fun setPosZoomRotate(position: Position, zoom: Float, angle: Degrees) {
-        setCenter(position)
-        setZoom(zoom)
-        setRotation(angle)
-    }
-
-    override fun animatePosZoomRotate(position: Position, zoom: Float, angle: Degrees, decayRate: Double) {
-        animatePositionTo(position, decayRate)
-        animateZoomTo(zoom, decayRate)
-        animateRotationTo(angle, decayRate)
     }
 
     override fun onCanvasSizeChanged(size: Offset) {
@@ -252,18 +272,17 @@ class MapState(
     }
 
     private fun decayValue(coroutineScope: CoroutineScope, decayRate: Double, function: (value: Double) -> Unit) = coroutineScope.launch {
-        val steps = 200
-        val timeStep = 5L
+        val steps = 100
+        val timeStep = 10L
         for (i in 0 until steps) {
             val x = i.toDouble() / steps
-            function((1 - exp(decayRate * (x - 1.0))) / (1 - exp(-decayRate)))
+            function((1 - exp(decayRate * x)) / (1 - exp(decayRate)))
             delay(timeStep)
         }
     }
 
     private fun centerPositionAtOffset(position: Position, offset: Offset) {
         mapPosition = (mapPosition + position - offsetToMapReference(offset)).coerceInMap()
-        updateState()
     }
 }
 
