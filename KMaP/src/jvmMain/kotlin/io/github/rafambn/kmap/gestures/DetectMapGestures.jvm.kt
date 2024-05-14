@@ -64,19 +64,19 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
         var panSlop: Offset
 
         val panVelocityTracker = VelocityTracker()
-        val zoomVelocityTracker = VelocityTracker1D(isDataDifferential = false)
+        val zoomVelocityTracker = VelocityTracker1D(isDataDifferential = true)
         val rotationVelocityTracker = VelocityTracker1D(isDataDifferential = true)
 
         val flingVelocityMaxRange = 500F
         val flingVelocityScale = 2F
 
-        val flingZoomMaxRange = 2F
+        val flingZoomMaxRange = 3000F
         val flingZoomScale = 10F
+        val zoomScale = 100F
 
         val flingRotationMaxRange = 1800F
         val flingRotationScale = 10F
 
-        val tapSwipeScale = 100F
 
         //Gets first event
         var previousEvent = awaitPointerEvent()
@@ -312,10 +312,13 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
 
                         if (eventChanges.any { it == GestureChangeState.RELEASE }) {
                             onGestureEnd.invoke(gestureState)
-                            zoomVelocityTracker.addDataPoint(event.changes[0].uptimeMillis, event.changes[0].position.y)
+                            zoomVelocityTracker.addDataPoint(
+                                event.changes[0].uptimeMillis,
+                                event.changes[0].position.y - previousEvent.changes[0].position.y
+                            )
                             onFlingZoom(
                                 firstGestureEvent!!.changes[0].position,
-                                zoomVelocityTracker.calculateVelocity() / (flingZoomScale * tapSwipeScale)
+                                zoomVelocityTracker.calculateVelocity(flingZoomMaxRange) / (flingZoomScale * zoomScale)
                             )
                             gestureState = GestureState.HOVER
                             onGestureStart.invoke(gestureState, event.changes[0].position)
@@ -323,9 +326,12 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                         }
                         onTapSwipe.invoke(
                             firstGestureEvent!!.changes[0].position,
-                            (event.changes[0].position.y - previousEvent.changes[0].position.y) / tapSwipeScale
+                            (event.changes[0].position.y - previousEvent.changes[0].position.y) / zoomScale
                         )
-                        zoomVelocityTracker.addDataPoint(event.changes[0].uptimeMillis, event.changes[0].position.y)
+                        zoomVelocityTracker.addDataPoint(
+                            event.changes[0].uptimeMillis,
+                            event.changes[0].position.y - previousEvent.changes[0].position.y
+                        )
                     }
                 }
 

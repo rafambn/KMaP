@@ -163,7 +163,7 @@ class TileCanvasState(
                     )
                 }.png"
             ) {
-                header("User-Agent", "my.app.test4")
+                header("User-Agent", "my.app.test5")
             }.readBytes()
             imageBitmap = byteArray.toImageBitmap()
             tilesProcessSuccessResult.send(Tile(tileToProcess.zoom, tileToProcess.row, tileToProcess.col, imageBitmap))

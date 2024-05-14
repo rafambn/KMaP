@@ -61,7 +61,7 @@ fun getGestureStateChanges(
         gestureChangeStates.add(GestureChangeState.TWO_PRESS)
 
     //Goes from two click to one clicks or no click
-    if (previousEvent.changes.size == 2 && currentEvent.changes.size == 1) {
+    if (currentEvent.changes.size == 2 && currentEvent.changes.any { !it.pressed && it.previousPressed }) {
         if (currentEvent.changes.all { it.pressed })
             gestureChangeStates.add(GestureChangeState.TWO_RELEASE)
         else {

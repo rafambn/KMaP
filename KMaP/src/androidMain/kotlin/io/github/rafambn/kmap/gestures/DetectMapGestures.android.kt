@@ -2,9 +2,9 @@ package io.github.rafambn.kmap.gestures
 
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.calculateCentroid
+import androidx.compose.foundation.gestures.calculateCentroidSize
 import androidx.compose.foundation.gestures.calculatePan
 import androidx.compose.foundation.gestures.calculateRotation
-import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
 import androidx.compose.ui.input.pointer.PointerEvent
@@ -52,19 +52,19 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
         var panSlop: Offset
 
         val panVelocityTracker = VelocityTracker()
-        val zoomVelocityTracker = VelocityTracker1D(isDataDifferential = false)
+        val zoomVelocityTracker = VelocityTracker1D(isDataDifferential = true)
         val rotationVelocityTracker = VelocityTracker1D(isDataDifferential = true)
 
         val flingVelocityMaxRange = 500F
         val flingVelocityScale = 2F
 
-        val flingZoomMaxRange = 20F
-        val flingZoomScale = 20F
+        val flingZoomMaxRange = 3000F
+        val flingZoomScale = 5F
+        val zoomScale = 300F
 
         val flingRotationMaxRange = 1800F
         val flingRotationScale = 10F
 
-        val tapSwipeScale = 400F
 
         //Gets first event
         var previousEvent = awaitFirstEvent()
@@ -308,10 +308,13 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
 
                         if (eventChanges.any { it == GestureChangeState.RELEASE }) {
                             onGestureEnd.invoke(gestureState)
-                            zoomVelocityTracker.addDataPoint(event.changes[0].uptimeMillis, event.changes[0].position.y)
+                            zoomVelocityTracker.addDataPoint(
+                                event.changes[0].uptimeMillis,
+                                event.changes[0].position.y - previousEvent.changes[0].position.y
+                            )
                             onFlingZoom(
                                 firstGestureEvent!!.changes[0].position,
-                                zoomVelocityTracker.calculateVelocity() / (flingZoomScale * tapSwipeScale)
+                                zoomVelocityTracker.calculateVelocity(flingZoomMaxRange) / (flingZoomScale * zoomScale)
                             )
                             gestureState = GestureState.FINISH_GESTURE
                             break
@@ -326,9 +329,12 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
 
                         onTapSwipe.invoke(
                             firstGestureEvent!!.changes[0].position,
-                            (event.changes[0].position.y - previousEvent.changes[0].position.y) / tapSwipeScale
+                            (event.changes[0].position.y - previousEvent.changes[0].position.y) / zoomScale
                         )
-                        zoomVelocityTracker.addDataPoint(event.changes[0].uptimeMillis, event.changes[0].position.y)
+                        zoomVelocityTracker.addDataPoint(
+                            event.changes[0].uptimeMillis,
+                            event.changes[0].position.y - previousEvent.changes[0].position.y
+                        )
                     }
                 }
 
@@ -345,15 +351,21 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                             gestureState = GestureState.WAITING_UP_AFTER_MOBILE_RELEASE
                             break
                         }
-                        val zoomChange = event.calculateZoom()//TODO fix jenky zoom
+                        val eventZoomCentroid = event.calculateCentroidSize()
+                        val previousEventZoomCentroid = previousEvent.calculateCentroidSize()
+                        var zoomChange = eventZoomCentroid - previousEventZoomCentroid
+                        if (eventZoomCentroid == 0f || previousEventZoomCentroid == 0f)
+                            zoomChange = 0.0F
+
                         val rotationChange = event.calculateRotation()
+
                         val panChange = event.calculatePan()
                         val centroid = event.calculateCentroid()
                         panVelocityTracker.addPosition(event.changes[0].uptimeMillis, event.changes[0].position)
                         zoomVelocityTracker.addDataPoint(event.changes[0].uptimeMillis, zoomChange)
                         rotationVelocityTracker.addDataPoint(event.changes[0].uptimeMillis, rotationChange)
                         if (centroid != Offset.Unspecified)
-                            onGesture(centroid, panChange, zoomChange - 1, rotationChange)
+                            onGesture(centroid, panChange, zoomChange / zoomScale, rotationChange)
                     }
                 }
 
@@ -378,10 +390,10 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                                         )
                                     ) / flingVelocityScale
                                 )
-                                println(zoomVelocityTracker)
+                                println(zoomVelocityTracker.calculateVelocity())
                                 onFlingZoom(
                                     event.changes[0].position,
-                                    zoomVelocityTracker.calculateVelocity(flingZoomMaxRange) / flingZoomScale
+                                    zoomVelocityTracker.calculateVelocity(flingZoomMaxRange) / (flingZoomScale * zoomScale)
                                 )
                                 onFlingRotation(
                                     event.changes[0].position,
