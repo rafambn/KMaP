@@ -2,12 +2,12 @@
 
 kotlin = "2.0.0-Beta4"
 compose = "1.6.2"
-agp = "8.2.2"
+agp = "8.3.2"
 androidx-appcompat = "1.6.1"
 androidx-activityCompose = "1.9.0"
-compose-uitooling = "1.6.6"
-coroutines-core = "1.8.0"
-ktorVersion = "2.3.8"
+compose-uitooling = "1.6.7"
+coroutines-core = "1.8.1"
+ktorVersion = "2.3.11"
 
 [libraries]
 
