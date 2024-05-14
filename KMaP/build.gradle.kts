@@ -45,11 +45,11 @@ kotlin {
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.material3)
-            implementation(compose.materialIconsExtended)
             implementation(compose.components.resources)
             implementation(libs.kotlinx.coroutines.core)
 
             implementation(libs.ktor.client.core)
+            implementation(libs.logback.classic)
         }
 
         androidMain.dependencies {

@@ -8,6 +8,7 @@ androidx-activityCompose = "1.9.0"
 compose-uitooling = "1.6.7"
 coroutines-core = "1.8.1"
 ktorVersion = "2.3.11"
+logback = "1.2.3"
 
 [libraries]
 
@@ -19,6 +20,7 @@ ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktorVer
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktorVersion" }
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktorVersion" }
 ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktorVersion" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 
 [plugins]
 

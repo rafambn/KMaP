@@ -3,6 +3,7 @@ package io.github.rafambn.kmap
 import androidx.compose.ui.graphics.ImageBitmap
 import io.github.rafambn.kmap.utils.loopInZoom
 import io.github.rafambn.kmap.utils.toImageBitmap
+import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.readBytes
@@ -26,7 +27,7 @@ class TileCanvasState(
     private val screenStateChannel = Channel<ScreenState>(capacity = Channel.UNLIMITED)
     private val workerResultSuccessChannel = Channel<Tile>(capacity = Channel.UNLIMITED)
     private val workerResultFailedChannel = Channel<TileSpecs>(capacity = Channel.UNLIMITED)
-    private val client = KtorClient.provideHttpClient()
+    private val client = HttpClient()
 
     init {
         CoroutineScope(Dispatchers.Default).tilesKernel(tilesToProcessChannel, workerResultSuccessChannel, workerResultFailedChannel)
