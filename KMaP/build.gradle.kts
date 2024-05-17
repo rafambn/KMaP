@@ -47,9 +47,7 @@ kotlin {
             implementation(compose.material3)
             implementation(compose.components.resources)
             implementation(libs.kotlinx.coroutines.core)
-
             implementation(libs.ktor.client.core)
-            implementation(libs.logback.classic)
         }
 
         androidMain.dependencies {
@@ -57,6 +55,7 @@ kotlin {
         }
         jvmMain.dependencies {
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.logback.classic)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
