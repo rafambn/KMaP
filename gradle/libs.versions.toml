@@ -1,7 +1,7 @@
 [versions]
 
-kotlin = "2.0.0-RC2"
-compose = "1.6.10-rc02"
+kotlin = "2.0.0"
+compose = "1.6.10"
 agp = "8.3.2"
 androidx-appcompat = "1.6.1"
 androidx-activityCompose = "1.9.0"
