@@ -4,5 +4,7 @@ data class ScreenState(
     val viewPort: BoundingBox,
     val zoomLevel: Int,
     val coordinatesRange: MapCoordinatesRange,
-    val outsideTiles: OutsideTilesType
+    val outsideTiles: OutsideTilesType,
+    val maxZoom: Int,
+    val minZoom: Int,
 )

@@ -76,7 +76,9 @@ class MapState(
                 boundingBox,
                 zoomLevel,
                 mapProperties.mapCoordinatesRange,
-                mapProperties.outsideTiles
+                mapProperties.outsideTiles,
+                maxZoom,
+                minZoom
             )
         )
     }
