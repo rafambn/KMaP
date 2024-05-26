@@ -12,24 +12,25 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import kotlin.math.floor
 import kotlin.math.pow
+import kotlin.random.Random
 import kotlin.reflect.KFunction0
 
 class TileCanvasState(
     private val updateState: KFunction0<Unit>
 ) {
-
     companion object {
-        internal const val TILE_SIZE = 256
+        internal const val TILE_SIZE = 256 //TODO move to mapProperties
         private const val MAX_RENDERED_TILES = 100
         private const val MAX_TRIES = 2
     }
 
-    var visibleTilesList = mutableListOf<Tile>()
+    var tileLayers = TileLayers()
     private val renderedTiles = mutableListOf<Tile>()
     private val tilesToProcessChannel = Channel<List<TileSpecs>>(capacity = Channel.UNLIMITED)
     private val workerResultSuccessChannel = Channel<Tile>(capacity = Channel.UNLIMITED)
@@ -49,7 +50,6 @@ class TileCanvasState(
             screenState.outsideTiles,
             screenState.coordinatesRange
         )
-        println(dd.size)
         tilesToProcessChannel.trySend(dd)
     }
 
@@ -74,9 +74,21 @@ class TileCanvasState(
                             worker(tileSpecs, tilesProcessSuccessResult, tilesProcessFailedResult)
                         }
                     }
-                    if (newTilesList != visibleTilesList) {
-                        visibleTilesList = newTilesList
-                        updateState.invoke()
+                    if (tilesToProcess[0].zoom == tileLayers.frontLayerLevel) {
+                        if (newTilesList != tileLayers.frontLayer) {
+                            tileLayers.frontLayer = newTilesList
+                            updateState.invoke()
+                        }
+                    } else {
+                        tileLayers.changeLayer()
+                        tileLayers.frontLayer = newTilesList
+                        tileLayers.frontLayerLevel = tilesToProcess[0].zoom
+                        if (tilesToProcess[0].zoom - 1 < 0) {
+                            tileLayers.backLayerEnable = false
+                        } else {
+                            tileLayers.backLayerEnable = true
+                            tileLayers.backLayerLevel = tilesToProcess[0].zoom - 1
+                        }
                     }
                 }
                 tilesProcessSuccessResult.onReceive { tile ->
@@ -86,8 +98,8 @@ class TileCanvasState(
                     renderedTiles.add(tile)
                     if (renderedTiles.size > MAX_RENDERED_TILES)
                         renderedTiles.removeAt(0)
-                    if (visibleTilesList.isEmpty() || tile.zoom == visibleTilesList[0].zoom) {
-                        visibleTilesList.add(tile)
+                    if (tile.zoom == tileLayers.frontLayerLevel) {
+                        tileLayers.frontLayer.add(tile)
                         updateState.invoke()
                     }
                 }

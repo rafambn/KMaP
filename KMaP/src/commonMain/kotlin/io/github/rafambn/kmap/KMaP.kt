@@ -14,11 +14,14 @@ fun KMaP(
     Placer(modifier, { mapState.onCanvasSizeChanged(it) }) {
         TileCanvas(
             Modifier.layoutId(MapComponentType.CANVAS),
-            mapState.canvasSize / 2F,
-            mapState.angleDegrees,
-            mapState.magnifierScale,
-            mapState.tileCanvasState.visibleTilesList.toList(),
-            mapState.positionOffset,
+            TileCanvasStateModel(
+                mapState.canvasSize / 2F,
+                mapState.angleDegrees,
+                mapState.magnifierScale,
+                mapState.tileCanvasState.tileLayers,
+                mapState.positionOffset,
+                mapState.zoomLevel,
+            ),
             mapState.state,
             canvasGestureListener
         )

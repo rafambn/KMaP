@@ -20,19 +20,15 @@ import androidx.compose.ui.unit.dp
 import io.github.rafambn.kmap.gestures.GestureInterface
 import io.github.rafambn.kmap.gestures.detectMapGestures
 import kotlin.math.floor
+import kotlin.math.pow
 
 @Composable
 internal fun TileCanvas(
     modifier: Modifier,
-    translation: Offset,
-    rotation: Float,
-    magnifierScale: Float,
-    visibleTilesList: List<Tile>,
-    positionOffset: Position,
+    tileCanvasStateModel: TileCanvasStateModel,
     mapState: Boolean,
     gestureListener: GestureInterface
 ) {
-    remember { mapState }
     Canvas(
         modifier = modifier.fillMaxSize()
             .pointerInput(PointerEventPass.Main) {
@@ -57,26 +53,44 @@ internal fun TileCanvas(
             }
     ) {
         withTransform({
-            scale(magnifierScale)
-            rotate(rotation)
-            translate(translation.x, translation.y)
+            scale(tileCanvasStateModel.magnifierScale)
+            rotate(tileCanvasStateModel.rotation)
+            translate(tileCanvasStateModel.translation.x, tileCanvasStateModel.translation.y)
         }) {
             drawIntoCanvas { canvas ->
-                for (tile in visibleTilesList) {
-                    canvas.drawImageRect(image = tile.imageBitmap,
-                        dstOffset = IntOffset(
-                            floor((TileCanvasState.TILE_SIZE * tile.row + positionOffset.horizontal).dp.toPx()).toInt(),
-                            floor((TileCanvasState.TILE_SIZE * tile.col + positionOffset.vertical).dp.toPx()).toInt()
-                        ),
-                        dstSize = IntSize(
-                            TileCanvasState.TILE_SIZE.dp.toPx().toInt(),
-                            TileCanvasState.TILE_SIZE.dp.toPx().toInt()
-                        ),
-                        paint = Paint().apply {
-                            isAntiAlias = false
-                            filterQuality = FilterQuality.High
-                        }
-                    )
+                for (tile in tileCanvasStateModel.visibleTilesList.backLayer.toList()) {
+                    if (tileCanvasStateModel.zoomLevel - 1 == tileCanvasStateModel.visibleTilesList.backLayerLevel)
+                        canvas.drawImageRect(image = tile.imageBitmap,
+                            dstOffset = IntOffset(
+                                floor((TileCanvasState.TILE_SIZE * tile.row * 2 + tileCanvasStateModel.positionOffset.horizontal).dp.toPx()).toInt(),
+                                floor((TileCanvasState.TILE_SIZE * tile.col * 2 + tileCanvasStateModel.positionOffset.vertical).dp.toPx()).toInt()
+                            ),
+                            dstSize = IntSize(
+                                (TileCanvasState.TILE_SIZE.dp.toPx() * 2).toInt(),
+                                (TileCanvasState.TILE_SIZE.dp.toPx() * 2).toInt()
+                            ),
+                            paint = Paint().apply {
+                                isAntiAlias = false
+                                filterQuality = FilterQuality.High
+                            }
+                        )
+                }
+                for (tile in tileCanvasStateModel.visibleTilesList.frontLayer.toList()) {
+                    if (tileCanvasStateModel.zoomLevel == tileCanvasStateModel.visibleTilesList.frontLayerLevel)
+                        canvas.drawImageRect(image = tile.imageBitmap,
+                            dstOffset = IntOffset(
+                                floor((TileCanvasState.TILE_SIZE * tile.row + tileCanvasStateModel.positionOffset.horizontal).dp.toPx()).toInt(),
+                                floor((TileCanvasState.TILE_SIZE * tile.col + tileCanvasStateModel.positionOffset.vertical).dp.toPx()).toInt()
+                            ),
+                            dstSize = IntSize(
+                                (TileCanvasState.TILE_SIZE.dp.toPx()).toInt(),
+                                (TileCanvasState.TILE_SIZE.dp.toPx()).toInt()
+                            ),
+                            paint = Paint().apply {
+                                isAntiAlias = false
+                                filterQuality = FilterQuality.High
+                            }
+                        )
                 }
             }
         }
