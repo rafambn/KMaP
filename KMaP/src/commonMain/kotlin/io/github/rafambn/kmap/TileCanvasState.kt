@@ -21,10 +21,15 @@ import kotlin.reflect.KFunction0
 class TileCanvasState(
     private val updateState: KFunction0<Unit>
 ) {
+
+    companion object {
+        internal const val TILE_SIZE = 256
+        private const val MAX_RENDERED_TILES = 100
+        private const val MAX_TRIES = 2
+    }
     var visibleTilesList = mutableListOf<Tile>()
     private val renderedTiles = mutableListOf<Tile>()
     private val tilesToProcessChannel = Channel<List<TileSpecs>>(capacity = Channel.UNLIMITED)
-    private val screenStateChannel = Channel<ScreenState>(capacity = Channel.UNLIMITED)
     private val workerResultSuccessChannel = Channel<Tile>(capacity = Channel.UNLIMITED)
     private val workerResultFailedChannel = Channel<TileSpecs>(capacity = Channel.UNLIMITED)
     private val client = HttpClient()
@@ -36,14 +41,88 @@ class TileCanvasState(
     internal fun onStateChange(
         screenState: ScreenState
     ) {
-        tilesToProcessChannel.trySend(
-            getVisibleTilesForLevel(
-                screenState.viewPort,
-                screenState.zoomLevel,
-                screenState.outsideTiles,
-                screenState.coordinatesRange
-            )
+        val dd = getVisibleTilesForLevel(
+            screenState.viewPort,
+            screenState.zoomLevel,
+            screenState.outsideTiles,
+            screenState.coordinatesRange
         )
+        println(dd.size)
+        tilesToProcessChannel.trySend(dd)
+    }
+
+    private fun CoroutineScope.tilesKernel(
+        tilesToProcess: ReceiveChannel<List<TileSpecs>>,
+        tilesProcessSuccessResult: Channel<Tile>,
+        tilesProcessFailedResult: Channel<TileSpecs>
+    ) = launch(Dispatchers.Default) {
+        val specsBeingProcessed = mutableSetOf<TileSpecs>()
+
+        while (true) {
+            select {
+                tilesToProcess.onReceive { tilesToProcess ->
+                    val newTilesList = mutableListOf<Tile>()
+                    tilesToProcess.forEach { tileSpecs ->
+                        renderedTiles.find { it.equals(tileSpecs) }?.let {
+                            newTilesList.add(it)
+                            return@forEach
+                        }
+                        if (!specsBeingProcessed.contains(tileSpecs)) {
+                            specsBeingProcessed.add(tileSpecs)
+                            worker(tileSpecs, tilesProcessSuccessResult, tilesProcessFailedResult)
+                        }
+                    }
+                    if (newTilesList != visibleTilesList) {
+                        visibleTilesList = newTilesList
+                        updateState.invoke()
+                    }
+                }
+                tilesProcessSuccessResult.onReceive { tile ->
+                    specsBeingProcessed.find { it.equals(tile) }?.let {
+                        specsBeingProcessed.remove(it)
+                    }
+                    renderedTiles.add(tile)
+                    if (renderedTiles.size > MAX_RENDERED_TILES)
+                        renderedTiles.removeAt(0)
+                    visibleTilesList.add(tile)
+                    updateState.invoke()
+                }
+                tilesProcessFailedResult.onReceive { tileSpecs ->
+                    tileSpecs.takeIf { it.numberOfTries < 2 }?.let {
+                        it.numberOfTries++
+                        worker(it, tilesProcessSuccessResult, tilesProcessFailedResult)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun CoroutineScope.worker(
+        tileToProcess: TileSpecs,
+        tilesProcessSuccessResult: SendChannel<Tile>,
+        tilesProcessFailedResult: SendChannel<TileSpecs>
+    ) = launch(Dispatchers.Default) {
+        val imageBitmap: ImageBitmap
+//        println("${tileToProcess.zoom} -- ${tileToProcess.col} -- ${tileToProcess.row}")
+        try {
+            val byteArray = client.get(
+                "https://tile.openstreetmap.org/${tileToProcess.zoom}/${(tileToProcess.row).loopInZoom(tileToProcess.zoom)}/${
+                    (tileToProcess.col).loopInZoom(
+                        tileToProcess.zoom
+                    )
+                }.png"
+            ) {
+                header("User-Agent", "my.app.test5")
+            }.readBytes()
+            imageBitmap = byteArray.toImageBitmap()
+            tilesProcessSuccessResult.send(Tile(tileToProcess.zoom, tileToProcess.row, tileToProcess.col, imageBitmap))
+        } catch (ex: Exception) {
+            if (tileToProcess.numberOfTries < MAX_TRIES) {
+                tileToProcess.numberOfTries++
+                tilesProcessFailedResult.send(tileToProcess)
+            } else {
+                println("Failed to process tile after $MAX_TRIES attempts: $ex")
+            }}
     }
 
     private fun getVisibleTilesForLevel(
@@ -72,6 +151,7 @@ class TileCanvasState(
             zoomLevel,
             coordinatesRange
         )
+        println("${viewPort.topLeft} - ${viewPort.topRight} - ${viewPort.bottomRight} - ${viewPort.bottomLeft}")
         val horizontalTileIntRange =
             IntRange(
                 minOf(topLeftTile.first, bottomRightTile.first, topRightTile.first, bottomLeftTile.first),
@@ -107,85 +187,10 @@ class TileCanvasState(
         return visibleTileSpecs
     }
 
-    private fun CoroutineScope.tilesKernel(
-        tilesToProcess: ReceiveChannel<List<TileSpecs>>,
-        tilesProcessSuccessResult: Channel<Tile>,
-        tilesProcessFailedResult: Channel<TileSpecs>
-    ) = launch(Dispatchers.Default) {
-        val specsBeingProcessed = mutableSetOf<TileSpecs>()
-
-        while (true) {
-            select {
-                tilesToProcess.onReceive { tilesToProcess ->
-                    val newTilesList = mutableListOf<Tile>()
-                    tilesToProcess.forEach { tileSpecs ->
-                        renderedTiles.find { it.equals(tileSpecs) }?.let {
-                            newTilesList.add(it)
-                            return@forEach
-                        }
-                        if (!specsBeingProcessed.contains(tileSpecs)) {
-                            specsBeingProcessed.add(tileSpecs)
-                            worker(tileSpecs, tilesProcessSuccessResult, tilesProcessFailedResult)
-                        }
-                    }
-                    if (newTilesList != visibleTilesList) {
-                        visibleTilesList = newTilesList
-                        updateState.invoke()
-                    }
-                }
-                tilesProcessSuccessResult.onReceive { tile ->
-                    specsBeingProcessed.find { it.equals(tile) }?.let {
-                        specsBeingProcessed.remove(it)
-                    }
-                    renderedTiles.add(tile)
-                    if (renderedTiles.size > 100)
-                        renderedTiles.removeAt(0)
-                    visibleTilesList.add(tile)
-                    updateState.invoke()
-                }
-                tilesProcessFailedResult.onReceive { tileSpecs ->
-                    tileSpecs.takeIf { it.numberOfTries < 2 }?.let {
-                        it.numberOfTries++
-                        worker(it, tilesProcessSuccessResult, tilesProcessFailedResult)
-                    }
-                }
-            }
-        }
-    }
-
-    private fun CoroutineScope.worker(
-        tileToProcess: TileSpecs,
-        tilesProcessSuccessResult: SendChannel<Tile>,
-        tilesProcessFailedResult: SendChannel<TileSpecs>
-    ) = launch(Dispatchers.Default) {
-        val imageBitmap: ImageBitmap
-//        println("${tileToProcess.zoom} -- ${tileToProcess.col} -- ${tileToProcess.row}")
-        try {
-            val byteArray = client.get(
-                "https://tile.openstreetmap.org/${tileToProcess.zoom}/${(tileToProcess.row).loopInZoom(tileToProcess.zoom)}/${
-                    (tileToProcess.col).loopInZoom(
-                        tileToProcess.zoom
-                    )
-                }.png"
-            ) {
-                header("User-Agent", "my.app.test5")
-            }.readBytes()
-            imageBitmap = byteArray.toImageBitmap()
-            tilesProcessSuccessResult.send(Tile(tileToProcess.zoom, tileToProcess.row, tileToProcess.col, imageBitmap))
-        } catch (ex: Exception) {
-            println(ex)
-            tilesProcessFailedResult.send(TileSpecs(tileToProcess.zoom, tileToProcess.row, tileToProcess.col, tileToProcess.numberOfTries++))
-        }
-    }
-
     private fun getXYTile(position: Position, zoomLevel: Int, mapSize: MapCoordinatesRange): Pair<Int, Int> {
         return Pair(
             floor((position.horizontal - mapSize.longitute.getMin()) / mapSize.longitute.span * (1 shl zoomLevel)).toInt(),
             floor((-position.vertical + mapSize.latitude.getMax()) / mapSize.latitude.span * (1 shl zoomLevel)).toInt()
         )
-    }
-
-    companion object {
-        internal const val TILE_SIZE = 256
     }
 }

@@ -21,7 +21,6 @@ import io.github.rafambn.kmap.utils.toMapReference
 import io.github.rafambn.kmap.utils.toOffset
 import io.github.rafambn.kmap.utils.toPosition
 import io.github.rafambn.kmap.utils.toRadians
-import io.github.rafambn.kmap.utils.toViewportReference
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -61,8 +60,6 @@ class MapState(
         get() = floor(zoom).toInt()
     val magnifierScale
         get() = zoom - zoomLevel + 1F
-    val boundingBox
-        get() = canvasSize.toPosition().toViewportReference(magnifierScale, zoomLevel, angleDegrees.toDouble(), OSMCoordinatesRange, mapPosition)
     internal val positionOffset
         get() = mapPosition.toCanvasReference(zoomLevel, mapProperties.mapCoordinatesRange)
 
@@ -73,7 +70,7 @@ class MapState(
         state = !state
         tileCanvasState.onStateChange(
             ScreenState(
-                boundingBox,
+                getBoundingBox(),
                 zoomLevel,
                 mapProperties.mapCoordinatesRange,
                 mapProperties.outsideTiles,
@@ -249,6 +246,15 @@ class MapState(
             .times(density.density.toDouble())
             .minus(Position(canvasSize.x / 2.0, canvasSize.y / 2.0))
             .toOffset()
+    }
+
+    private fun getBoundingBox(): BoundingBox {
+        return BoundingBox(
+            offsetToMapReference(Offset.Zero),
+            offsetToMapReference(Offset(canvasSize.x, 0F)),
+            offsetToMapReference(Offset(0F, canvasSize.y)),
+            offsetToMapReference(canvasSize),
+        )
     }
 
     private fun Position.coerceInMap(): Position {

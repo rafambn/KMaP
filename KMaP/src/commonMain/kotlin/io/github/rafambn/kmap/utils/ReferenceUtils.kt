@@ -56,21 +56,6 @@ fun Position.transform(
         .scaleToMap(mapCoordinatesRange.longitute.span, mapCoordinatesRange.latitude.span)
 }
 
-fun Position.toViewportReference(
-    magnifierScale: Float,
-    zoomLevel: Int,
-    angle: Degrees,
-    mapCoordinatesRange: MapCoordinatesRange,
-    mapPosition: Position
-): BoundingBox {
-    return BoundingBox(
-        mapPosition + this.transform(magnifierScale, zoomLevel, angle, mapCoordinatesRange),
-        mapPosition + this.transform(magnifierScale, zoomLevel, angle, mapCoordinatesRange, invertFirst = true),
-        mapPosition + this.transform(magnifierScale, zoomLevel, angle, mapCoordinatesRange, invertFirst = true, invertSecond = true),
-        mapPosition + this.transform(magnifierScale, zoomLevel, angle, mapCoordinatesRange, invertSecond = true)
-    )
-}
-
 fun Position.invertFisrt(): Position {
     return Position(-horizontal, vertical)
 }
