@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import kotlin.math.floor
@@ -27,6 +28,7 @@ class TileCanvasState(
         private const val MAX_RENDERED_TILES = 100
         private const val MAX_TRIES = 2
     }
+
     var visibleTilesList = mutableListOf<Tile>()
     private val renderedTiles = mutableListOf<Tile>()
     private val tilesToProcessChannel = Channel<List<TileSpecs>>(capacity = Channel.UNLIMITED)
@@ -58,7 +60,7 @@ class TileCanvasState(
     ) = launch(Dispatchers.Default) {
         val specsBeingProcessed = mutableSetOf<TileSpecs>()
 
-        while (true) {
+        while (isActive) {
             select {
                 tilesToProcess.onReceive { tilesToProcess ->
                     val newTilesList = mutableListOf<Tile>()
@@ -84,11 +86,13 @@ class TileCanvasState(
                     renderedTiles.add(tile)
                     if (renderedTiles.size > MAX_RENDERED_TILES)
                         renderedTiles.removeAt(0)
-                    visibleTilesList.add(tile)
-                    updateState.invoke()
+                    if (visibleTilesList.isEmpty() || tile.zoom == visibleTilesList[0].zoom) {
+                        visibleTilesList.add(tile)
+                        updateState.invoke()
+                    }
                 }
                 tilesProcessFailedResult.onReceive { tileSpecs ->
-                    tileSpecs.takeIf { it.numberOfTries < 2 }?.let {
+                    tileSpecs.takeIf { it.numberOfTries < MAX_TRIES }?.let {
                         it.numberOfTries++
                         worker(it, tilesProcessSuccessResult, tilesProcessFailedResult)
                     }
@@ -117,12 +121,11 @@ class TileCanvasState(
             imageBitmap = byteArray.toImageBitmap()
             tilesProcessSuccessResult.send(Tile(tileToProcess.zoom, tileToProcess.row, tileToProcess.col, imageBitmap))
         } catch (ex: Exception) {
-            if (tileToProcess.numberOfTries < MAX_TRIES) {
-                tileToProcess.numberOfTries++
+            if (tileToProcess.numberOfTries < MAX_TRIES)
                 tilesProcessFailedResult.send(tileToProcess)
-            } else {
+            else
                 println("Failed to process tile after $MAX_TRIES attempts: $ex")
-            }}
+        }
     }
 
     private fun getVisibleTilesForLevel(
