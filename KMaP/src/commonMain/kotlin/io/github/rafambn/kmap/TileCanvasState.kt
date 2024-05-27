@@ -12,17 +12,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
+import kotlin.concurrent.Volatile
 import kotlin.math.floor
 import kotlin.math.pow
-import kotlin.random.Random
 import kotlin.reflect.KFunction0
 
 class TileCanvasState(
-    private val updateState: KFunction0<Unit>
+    private val updateState: KFunction0<Unit>,
+    startZoom: Int
 ) {
     companion object {
         internal const val TILE_SIZE = 256 //TODO move to mapProperties
@@ -30,7 +30,8 @@ class TileCanvasState(
         private const val MAX_TRIES = 2
     }
 
-    var tileLayers = TileLayers()
+    @Volatile
+    var tileLayers = TileLayers(startZoom)
     private val renderedTiles = mutableListOf<Tile>()
     private val tilesToProcessChannel = Channel<List<TileSpecs>>(capacity = Channel.UNLIMITED)
     private val workerResultSuccessChannel = Channel<Tile>(capacity = Channel.UNLIMITED)
@@ -44,13 +45,26 @@ class TileCanvasState(
     internal fun onStateChange(
         screenState: ScreenState
     ) {
-        val dd = getVisibleTilesForLevel(
+        val nextVisibleTiles = getVisibleTilesForLevel(
             screenState.viewPort,
             screenState.zoomLevel,
             screenState.outsideTiles,
             screenState.coordinatesRange
         )
-        tilesToProcessChannel.trySend(dd)
+        val tilesToRender = mutableListOf<TileSpecs>()
+        val newFrontLayer = nextVisibleTiles.map { tile ->
+            renderedTiles.toList().find { tile == it } ?: run {
+                tilesToRender.add(tile.toTileSpecs())
+                tile
+            }
+        }
+        if (screenState.zoomLevel == tileLayers.frontLayerLevel) {
+            tileLayers.frontLayer = newFrontLayer
+        } else {
+            tileLayers.changeLayer(screenState.zoomLevel)
+            tileLayers.frontLayer = newFrontLayer
+        }
+        tilesToProcessChannel.trySend(tilesToRender)
     }
 
     private fun CoroutineScope.tilesKernel(
@@ -63,43 +77,24 @@ class TileCanvasState(
         while (isActive) {
             select {
                 tilesToProcess.onReceive { tilesToProcess ->
-                    val newTilesList = mutableListOf<Tile>()
                     tilesToProcess.forEach { tileSpecs ->
-                        renderedTiles.find { it.equals(tileSpecs) }?.let {
-                            newTilesList.add(it)
-                            return@forEach
-                        }
                         if (!specsBeingProcessed.contains(tileSpecs)) {
                             specsBeingProcessed.add(tileSpecs)
                             worker(tileSpecs, tilesProcessSuccessResult, tilesProcessFailedResult)
                         }
                     }
-                    if (tilesToProcess[0].zoom == tileLayers.frontLayerLevel) {
-                        if (newTilesList != tileLayers.frontLayer) {
-                            tileLayers.frontLayer = newTilesList
-                            updateState.invoke()
-                        }
-                    } else {
-                        tileLayers.changeLayer()
-                        tileLayers.frontLayer = newTilesList
-                        tileLayers.frontLayerLevel = tilesToProcess[0].zoom
-                        if (tilesToProcess[0].zoom - 1 < 0) {
-                            tileLayers.backLayerEnable = false
-                        } else {
-                            tileLayers.backLayerEnable = true
-                            tileLayers.backLayerLevel = tilesToProcess[0].zoom - 1
-                        }
-                    }
                 }
                 tilesProcessSuccessResult.onReceive { tile ->
-                    specsBeingProcessed.find { it.equals(tile) }?.let {
-                        specsBeingProcessed.remove(it)
-                    }
+                    specsBeingProcessed.remove(tile.toTileSpecs())
                     renderedTiles.add(tile)
                     if (renderedTiles.size > MAX_RENDERED_TILES)
                         renderedTiles.removeAt(0)
                     if (tile.zoom == tileLayers.frontLayerLevel) {
-                        tileLayers.frontLayer.add(tile)
+                        tileLayers.frontLayer.find { it == tile }?.let { it.imageBitmap = tile.imageBitmap }
+                        updateState.invoke()
+                    }
+                    if (tile.zoom == tileLayers.backLayerLevel){
+                        tileLayers.backLayer.find { it == tile }?.let { it.imageBitmap = tile.imageBitmap }
                         updateState.invoke()
                     }
                 }
@@ -145,7 +140,7 @@ class TileCanvasState(
         zoomLevel: Int,
         outsideTilesType: OutsideTilesType,
         coordinatesRange: MapCoordinatesRange
-    ): List<TileSpecs> {
+    ): List<Tile> {
         val topLeftTile = getXYTile(
             viewPort.topLeft,
             zoomLevel,
@@ -166,7 +161,6 @@ class TileCanvasState(
             zoomLevel,
             coordinatesRange
         )
-        println("${viewPort.topLeft} - ${viewPort.topRight} - ${viewPort.bottomRight} - ${viewPort.bottomLeft}")
         val horizontalTileIntRange =
             IntRange(
                 minOf(topLeftTile.first, bottomRightTile.first, topRightTile.first, bottomLeftTile.first),
@@ -178,7 +172,7 @@ class TileCanvasState(
                 maxOf(topLeftTile.second, bottomRightTile.second, topRightTile.second, bottomLeftTile.second)
             )
 
-        val visibleTileSpecs = mutableListOf<TileSpecs>()
+        val visibleTileSpecs = mutableListOf<Tile>()
         if (outsideTilesType == OutsideTilesType.NONE) {
             for (x in horizontalTileIntRange)
                 for (y in verticalTileIntRange) {
@@ -192,12 +186,12 @@ class TileCanvasState(
                         continue
                     else
                         yTile = y
-                    visibleTileSpecs.add(TileSpecs(zoomLevel, xTile, yTile))
+                    visibleTileSpecs.add(Tile(zoomLevel, xTile, yTile, null))
                 }
         } else {
             for (x in horizontalTileIntRange)
                 for (y in verticalTileIntRange)
-                    visibleTileSpecs.add(TileSpecs(zoomLevel, x, y))
+                    visibleTileSpecs.add(Tile(zoomLevel, x, y, null))
         }
         return visibleTileSpecs
     }

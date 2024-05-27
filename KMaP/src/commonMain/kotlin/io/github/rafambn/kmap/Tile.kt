@@ -46,7 +46,7 @@ class Tile(
     override val zoom: Int,
     override val row: Int,
     override val col: Int,
-    val imageBitmap: ImageBitmap
+    var imageBitmap: ImageBitmap?
 ) : TileCore {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -70,4 +70,6 @@ class Tile(
     override fun toString(): String {
         return "Tile(zoom=$zoom, row=$row, col=$col, imageBitmap=$imageBitmap)"
     }
+
+    fun toTileSpecs(): TileSpecs = TileSpecs(zoom,row,col,0)
 }

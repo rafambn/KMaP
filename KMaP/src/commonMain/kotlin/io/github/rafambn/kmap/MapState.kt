@@ -39,8 +39,6 @@ class MapState(
     private val density: Density
 ) : MotionInterface, CanvasSizeChangeListener {
 
-    val tileCanvasState = TileCanvasState(::updateState)
-
     //User define min/max zoom
     private var maxZoom = maxZoom.coerceIn(mapProperties.zoomLevels.min, mapProperties.zoomLevels.max)
     private var minZoom = minZoom.coerceIn(mapProperties.zoomLevels.min, mapProperties.zoomLevels.max)
@@ -65,9 +63,9 @@ class MapState(
 
     //Map state variable for recomposition
     internal var state by mutableStateOf(false)
+    val tileCanvasState = TileCanvasState(::redraw, zoomLevel)
 
     private fun updateState() {
-        state = !state
         tileCanvasState.onStateChange(
             ScreenState(
                 getBoundingBox(),
@@ -78,6 +76,11 @@ class MapState(
                 minZoom
             )
         )
+        redraw()
+    }
+
+    private fun redraw(){
+        state = !state
     }
 
     //Fling variable

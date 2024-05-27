@@ -389,7 +389,6 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                                         )
                                     ) / flingVelocityScale
                                 )
-                                println(zoomVelocityTracker.calculateVelocity())
                                 onFlingZoom(
                                     event.changes[0].position,
                                     zoomVelocityTracker.calculateVelocity(flingZoomMaxRange) / (flingZoomScale * zoomScale)

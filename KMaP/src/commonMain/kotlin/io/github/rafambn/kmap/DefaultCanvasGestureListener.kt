@@ -47,21 +47,21 @@ open class DefaultCanvasGestureListener(private val mapState: MapState) : Gestur
 
     override fun onGestureEnd(gestureType: GestureState) {
     }
-
+    //TODO fix flings
     override fun onFling(velocity: Velocity) {
-//        mapState.animatePositionTo(mapState.differentialOffsetToMapReference(Offset(velocity.x, velocity.y)) + mapState.mapPosition)
+        mapState.animatePositionTo(mapState.differentialOffsetToMapReference(Offset(velocity.x, velocity.y)) + mapState.mapPosition)
     }
 
     override fun onFlingZoom(centroid: Offset, velocity: Float) {
-//        mapState.animateZoomTo(velocity + mapState.zoom, position = mapState.offsetToMapReference(centroid))
+        mapState.animateZoomTo(velocity + mapState.zoom, position = mapState.offsetToMapReference(centroid))
     }
 
     override fun onFlingRotation(centroid: Offset?, velocity: Float) {
-//        centroid?.let {
-//            mapState.animateRotationTo((velocity + mapState.angleDegrees).toDouble(), position = mapState.offsetToMapReference(it))
-//        } ?: run {
-//            mapState.animateRotationTo((velocity + mapState.angleDegrees).toDouble())
-//        }
+        centroid?.let {
+            mapState.animateRotationTo((velocity + mapState.angleDegrees).toDouble(), position = mapState.offsetToMapReference(it))
+        } ?: run {
+            mapState.animateRotationTo((velocity + mapState.angleDegrees).toDouble())
+        }
     }
 
     override fun onHover(offset: Offset) {

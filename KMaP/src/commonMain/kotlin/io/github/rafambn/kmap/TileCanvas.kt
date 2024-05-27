@@ -58,39 +58,43 @@ internal fun TileCanvas(
             translate(tileCanvasStateModel.translation.x, tileCanvasStateModel.translation.y)
         }) {
             drawIntoCanvas { canvas ->
+                val adjustedTileSize =
+                    2F.pow(tileCanvasStateModel.visibleTilesList.frontLayerLevel - tileCanvasStateModel.visibleTilesList.backLayerLevel)
                 for (tile in tileCanvasStateModel.visibleTilesList.backLayer.toList()) {
-                    if (tileCanvasStateModel.zoomLevel - 1 == tileCanvasStateModel.visibleTilesList.backLayerLevel)
-                        canvas.drawImageRect(image = tile.imageBitmap,
+                    tile.imageBitmap?.let {
+                        canvas.drawImageRect(image = it,
                             dstOffset = IntOffset(
-                                floor((TileCanvasState.TILE_SIZE * tile.row * 2 + tileCanvasStateModel.positionOffset.horizontal).dp.toPx()).toInt(),
-                                floor((TileCanvasState.TILE_SIZE * tile.col * 2 + tileCanvasStateModel.positionOffset.vertical).dp.toPx()).toInt()
+                                floor((TileCanvasState.TILE_SIZE * tile.row * adjustedTileSize + tileCanvasStateModel.positionOffset.horizontal).dp.toPx()).toInt(),
+                                floor((TileCanvasState.TILE_SIZE * tile.col * adjustedTileSize + tileCanvasStateModel.positionOffset.vertical).dp.toPx()).toInt()
                             ),
                             dstSize = IntSize(
-                                (TileCanvasState.TILE_SIZE.dp.toPx() * 2).toInt(),
-                                (TileCanvasState.TILE_SIZE.dp.toPx() * 2).toInt()
+                                (TileCanvasState.TILE_SIZE.dp.toPx() * adjustedTileSize).toInt(),
+                                (TileCanvasState.TILE_SIZE.dp.toPx() * adjustedTileSize).toInt()
                             ),
                             paint = Paint().apply {
                                 isAntiAlias = false
                                 filterQuality = FilterQuality.High
                             }
                         )
+                    }
                 }
                 for (tile in tileCanvasStateModel.visibleTilesList.frontLayer.toList()) {
-                    if (tileCanvasStateModel.zoomLevel == tileCanvasStateModel.visibleTilesList.frontLayerLevel)
-                        canvas.drawImageRect(image = tile.imageBitmap,
+                    tile.imageBitmap?.let {
+                        canvas.drawImageRect(image = it,
                             dstOffset = IntOffset(
                                 floor((TileCanvasState.TILE_SIZE * tile.row + tileCanvasStateModel.positionOffset.horizontal).dp.toPx()).toInt(),
                                 floor((TileCanvasState.TILE_SIZE * tile.col + tileCanvasStateModel.positionOffset.vertical).dp.toPx()).toInt()
                             ),
                             dstSize = IntSize(
-                                (TileCanvasState.TILE_SIZE.dp.toPx()).toInt(),
-                                (TileCanvasState.TILE_SIZE.dp.toPx()).toInt()
+                                TileCanvasState.TILE_SIZE.dp.toPx().toInt(),
+                                TileCanvasState.TILE_SIZE.dp.toPx().toInt()
                             ),
                             paint = Paint().apply {
                                 isAntiAlias = false
                                 filterQuality = FilterQuality.High
                             }
                         )
+                    }
                 }
             }
         }
