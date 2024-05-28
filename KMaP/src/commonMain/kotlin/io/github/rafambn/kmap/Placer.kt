@@ -8,6 +8,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -33,9 +34,16 @@ internal fun Placer(
         val canvasPlaceable = measurables.first {
             it.layoutId == MapComponentType.CANVAS
         }.measure(constraints)
+        val markersPlaceable = measurables.filter { it.layoutId == MapComponentType.MARKER }.map { it.measure(constraints) }
+
+        val pathsPlaceable = measurables.filter { it.layoutId == MapComponentType.PATH }.map { it.measure(constraints) }
 
         layout(constraints.maxWidth, constraints.maxHeight) {
             canvasPlaceable.placeRelativeWithLayer(x = 0, y = 0, zIndex = 0F)
+
+            markersPlaceable.forEach {
+                it.placeRelativeWithLayer(0, 0)
+            }
         }
     }
 }

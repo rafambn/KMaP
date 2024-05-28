@@ -8,7 +8,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.github.rafambn.kmap.DrawPosition
 import io.github.rafambn.kmap.KMaP
+import io.github.rafambn.kmap.MarkerPlacer
+import io.github.rafambn.kmap.Position
 import io.github.rafambn.kmap.rememberMapState
 import io.github.rafambn.templateapp.theme.AppTheme
 import kotlinx.coroutines.CoroutineScope
@@ -22,7 +25,10 @@ internal fun App() = AppTheme {
             KMaP(
                 modifier = Modifier.align(Alignment.Center).size(300.dp, 600.dp),
                 mapState = mapState
-            )
+            ) {
+                markers(listOf(MarkerPlacer(Position.Zero, DrawPosition(), 0, 0, false))) {
+                }
+            }
         }
     }
 }
