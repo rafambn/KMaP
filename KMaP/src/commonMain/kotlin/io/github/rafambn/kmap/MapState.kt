@@ -240,7 +240,7 @@ class MapState(
         return differentialOffsetFromScreenCenterToMapReference(offset) + mapPosition
     }
 
-    private fun positionToCanvasOffset(position: Position): Offset {
+    fun positionToCanvasOffset(position: Position): Offset {
         return -(position - mapPosition)
             .applyOrientation(mapProperties.mapCoordinatesRange)
             .scaleToMap(1 / mapProperties.mapCoordinatesRange.longitute.span, 1 / mapProperties.mapCoordinatesRange.latitude.span)

@@ -5,3 +5,10 @@ enum class MapComponentType {
     MARKER,
     PATH
 }
+
+data class MapComponent(
+    val position: Position,
+    val zIndex: Float,
+    val drawPosition: DrawPosition,
+    val mapComponentType: MapComponentType
+)

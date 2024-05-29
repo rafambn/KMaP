@@ -100,8 +100,5 @@ internal fun TileCanvas(
                 }
             }
         }
-        drawIntoCanvas { //TODO remove later
-            drawCircle(Color.Red, radius = 4F)
-        }
     }
 }
