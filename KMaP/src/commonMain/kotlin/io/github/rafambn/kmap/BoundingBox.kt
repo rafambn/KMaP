@@ -1,3 +1,5 @@
 package io.github.rafambn.kmap
 
-data class BoundingBox(val topLeft: Position, val topRight: Position, val bottomRight: Position, val bottomLeft: Position)
+import io.github.rafambn.kmap.utils.CanvasPosition
+
+data class BoundingBox(val topLeft: CanvasPosition, val topRight: CanvasPosition, val bottomRight: CanvasPosition, val bottomLeft: CanvasPosition)

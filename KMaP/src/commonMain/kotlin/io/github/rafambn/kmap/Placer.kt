@@ -49,8 +49,8 @@ internal fun Placer(
 
         layout(constraints.maxWidth, constraints.maxHeight) {
             canvasPlaceable.placeRelativeWithLayer(
-                x = canvasData.position.horizontal.toInt(),
-                y = canvasData.position.vertical.toInt(),
+                x = canvasData.position.x.toInt(),
+                y = canvasData.position.y.toInt(),
                 zIndex = canvasData.zIndex
             )
 

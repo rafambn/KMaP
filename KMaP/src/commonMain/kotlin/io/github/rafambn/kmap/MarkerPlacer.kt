@@ -1,8 +1,10 @@
 package io.github.rafambn.kmap
 
+import io.github.rafambn.kmap.utils.CanvasPosition
+
 
 interface DefaultPlacer {
-    val coordinates: Position
+    var coordinates: CanvasPosition
     val drawPosition: DrawPosition
     val groupId: Int
     val zIndex: Float
@@ -11,7 +13,7 @@ interface DefaultPlacer {
 }
 
 class MarkerPlacer(
-    override val coordinates: Position,
+    override var coordinates: CanvasPosition,
     override val drawPosition: DrawPosition,
     override val groupId: Int,
     override val zIndex: Float,
@@ -20,7 +22,7 @@ class MarkerPlacer(
 ) : DefaultPlacer
 
 class PathPlacer(
-    override val coordinates: Position,
+    override var coordinates: CanvasPosition,
     override val drawPosition: DrawPosition,
     override val groupId: Int,
     override val zIndex: Float,

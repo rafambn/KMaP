@@ -11,9 +11,9 @@ data class BoundMapBorder(val horizontal: MapBorderType, val vertical: MapBorder
 
 object OSMCoordinatesRange : MapCoordinatesRange {
     override val latitude: Latitude
-        get() = Latitude(north = 85.0511, south = -85.0511, orientation = 1)
+        get() = Latitude(north = 85.05113F, south = -85.05113F, orientation = 1)
     override val longitute: Longitude
-        get() = Longitude(east = 180.0, west = -180.0, orientation = -1)
+        get() = Longitude(east = 180.0F, west = -180.0F, orientation = -1)
 
 }
 

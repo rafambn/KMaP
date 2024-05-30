@@ -2,13 +2,8 @@ package io.github.rafambn.kmap
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
@@ -66,8 +61,8 @@ internal fun TileCanvas(
                     tile.imageBitmap?.let {
                         canvas.drawImageRect(image = it,
                             dstOffset = IntOffset(
-                                floor((TileCanvasState.TILE_SIZE * tile.row * adjustedTileSize + tileCanvasStateModel.positionOffset.horizontal).dp.toPx()).toInt(),
-                                floor((TileCanvasState.TILE_SIZE * tile.col * adjustedTileSize + tileCanvasStateModel.positionOffset.vertical).dp.toPx()).toInt()
+                                floor((TileCanvasState.TILE_SIZE * tile.row * adjustedTileSize + tileCanvasStateModel.positionOffset.x).dp.toPx()).toInt(),
+                                floor((TileCanvasState.TILE_SIZE * tile.col * adjustedTileSize + tileCanvasStateModel.positionOffset.y).dp.toPx()).toInt()
                             ),
                             dstSize = IntSize(
                                 (TileCanvasState.TILE_SIZE.dp.toPx() * adjustedTileSize).toInt(),
@@ -84,8 +79,8 @@ internal fun TileCanvas(
                     tile.imageBitmap?.let {
                         canvas.drawImageRect(image = it,
                             dstOffset = IntOffset(
-                                floor((TileCanvasState.TILE_SIZE * tile.row + tileCanvasStateModel.positionOffset.horizontal).dp.toPx()).toInt(),
-                                floor((TileCanvasState.TILE_SIZE * tile.col + tileCanvasStateModel.positionOffset.vertical).dp.toPx()).toInt()
+                                floor((TileCanvasState.TILE_SIZE * tile.row + tileCanvasStateModel.positionOffset.x).dp.toPx()).toInt(),
+                                floor((TileCanvasState.TILE_SIZE * tile.col + tileCanvasStateModel.positionOffset.y).dp.toPx()).toInt()
                             ),
                             dstSize = IntSize(
                                 TileCanvasState.TILE_SIZE.dp.toPx().toInt(),

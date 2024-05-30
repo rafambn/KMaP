@@ -1,6 +1,7 @@
 package io.github.rafambn.kmap
 
 import androidx.compose.ui.graphics.ImageBitmap
+import io.github.rafambn.kmap.utils.CanvasPosition
 import io.github.rafambn.kmap.utils.loopInZoom
 import io.github.rafambn.kmap.utils.toImageBitmap
 import io.ktor.client.HttpClient
@@ -196,10 +197,10 @@ class TileCanvasState(
         return visibleTileSpecs
     }
 
-    private fun getXYTile(position: Position, zoomLevel: Int, mapSize: MapCoordinatesRange): Pair<Int, Int> {
+    private fun getXYTile(position: CanvasPosition, zoomLevel: Int, mapSize: MapCoordinatesRange): Pair<Int, Int> {
         return Pair(
-            floor((position.horizontal - mapSize.longitute.getMin()) / mapSize.longitute.span * (1 shl zoomLevel)).toInt(),
-            floor((-position.vertical + mapSize.latitude.getMax()) / mapSize.latitude.span * (1 shl zoomLevel)).toInt()
+            floor((position.x - mapSize.longitute.getMin()) / mapSize.longitute.span * (1 shl zoomLevel)).toInt(),
+            floor((-position.y + mapSize.latitude.getMax()) / mapSize.latitude.span * (1 shl zoomLevel)).toInt()
         )
     }
 }
