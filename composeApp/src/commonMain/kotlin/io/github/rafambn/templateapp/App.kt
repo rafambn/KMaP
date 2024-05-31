@@ -34,8 +34,9 @@ internal fun App() = AppTheme {
                 markers(
                     listOf(
                         MarkerPlacer(
+                            mapState,
                             Offset(-45.949303F, -21.424608F).toCanvasPosition(),
-                            DrawPosition.RIGHT_BOTTOM,
+                            DrawPosition.CENTER,
                             0,
                             1F,
                             false

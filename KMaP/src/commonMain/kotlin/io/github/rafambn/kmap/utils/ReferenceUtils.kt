@@ -12,7 +12,7 @@ import kotlin.math.tan
 typealias ScreenOffset = Offset
 typealias DifferentialScreenOffset = Offset
 typealias CanvasPosition = Offset
-typealias ProjectedCoordinates = Offset
+typealias ProjectedCoordinates = Offset //TODO Go back to using double due to precision problems
 
 fun ProjectedCoordinates.toCanvasPosition(): CanvasPosition{
     return Offset(
