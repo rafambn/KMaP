@@ -6,12 +6,16 @@ import io.github.rafambn.kmap.utils.toScreenOffset
 
 interface DefaultPlacer {
     var coordinates: CanvasPosition
-    val drawPosition: DrawPosition
+    val drawPosition: DrawPosition //Functionality Implemented
     val groupId: Int
-    val zIndex: Float
+    val zIndex: Float //Functionality Implemented
     val isGrouping: Boolean
-    val placerType: MapComponentType
-    val angle: Double
+    val placerType: MapComponentType //Functionality Implemented
+    val angle: Double //Functionality Implemented
+    val rotateWithMap: Boolean //Functionality Implemented
+    val zoomToFix: Float //Functionality Implemented
+    val scaleWithMap: Boolean
+    val zoom: Float
 }
 
 class MarkerPlacer(
@@ -21,8 +25,11 @@ class MarkerPlacer(
     override val groupId: Int,
     override val zIndex: Float,
     override val isGrouping: Boolean,
-    override val placerType: MapComponentType = MapComponentType.MARKER,
+    override val rotateWithMap: Boolean,
+    override val scaleWithMap: Boolean,
+    override val zoomToFix: Float,
 ) : DefaultPlacer {
+    override val placerType: MapComponentType = MapComponentType.MARKER
     override var coordinates: CanvasPosition = coordinates.toScreenOffset(
         mapState.mapPosition,
         mapState.canvasSize,
@@ -33,6 +40,7 @@ class MarkerPlacer(
         mapState.density
     )
     override val angle: Double = mapState.angleDegrees
+    override val zoom: Float = mapState.zoom
 }
 
 class PathPlacer(
@@ -42,8 +50,11 @@ class PathPlacer(
     override val groupId: Int,
     override val zIndex: Float,
     override val isGrouping: Boolean,
+    override val rotateWithMap: Boolean,
+    override val scaleWithMap: Boolean,
+    override val zoomToFix: Float,
+) : DefaultPlacer {
     override val placerType: MapComponentType = MapComponentType.PATH
-) : DefaultPlacer{
     override var coordinates: CanvasPosition = coordinates.toScreenOffset( //TODO weird placement
         mapState.mapPosition,
         mapState.canvasSize,
@@ -54,6 +65,7 @@ class PathPlacer(
         mapState.density
     )
     override val angle: Double = mapState.angleDegrees
+    override val zoom: Float = mapState.zoom
 }
 
 class DrawPosition(x: Float, y: Float) {

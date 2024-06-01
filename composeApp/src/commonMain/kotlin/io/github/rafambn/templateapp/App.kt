@@ -1,6 +1,7 @@
 package io.github.rafambn.templateapp
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
@@ -9,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import io.github.rafambn.kmap.DrawPosition
 import io.github.rafambn.kmap.KMaP
@@ -36,14 +38,17 @@ internal fun App() = AppTheme {
                         MarkerPlacer(
                             mapState,
                             Offset(-45.949303F, -21.424608F).toCanvasPosition(),
-                            DrawPosition.CENTER,
+                            DrawPosition.RIGHT_BOTTOM,
                             0,
                             1F,
-                            false
+                            false,
+                            true,
+                            true,
+                            19F
                         ),
                     )
                 ) {
-                    Image(painterResource(Res.drawable.teste), "fd", Modifier.size(20F.dp))
+                    Image(painterResource(Res.drawable.teste), "fd", Modifier.background(Color.Black).size(32.dp))
                 }
             }
         }

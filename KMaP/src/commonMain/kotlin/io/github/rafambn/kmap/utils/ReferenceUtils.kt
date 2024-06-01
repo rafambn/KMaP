@@ -14,10 +14,10 @@ typealias DifferentialScreenOffset = Offset
 typealias CanvasPosition = Offset
 typealias ProjectedCoordinates = Offset //TODO Go back to using double due to precision problems
 
-fun ProjectedCoordinates.toCanvasPosition(): CanvasPosition{
+fun ProjectedCoordinates.toCanvasPosition(): CanvasPosition { //TODO improve function naming
     return Offset(
         this.x,
-        (ln(tan(PI / 4 + (PI * this.y) / 360)) / (PI/85.051129)).toFloat()
+        (ln(tan(PI / 4 + (PI * this.y) / 360)) / (PI / 85.051129)).toFloat()
     )
 }
 

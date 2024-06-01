@@ -22,6 +22,11 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.toSize
 import io.github.rafambn.kmap.utils.CanvasPosition
 import io.github.rafambn.kmap.utils.Degrees
+import io.github.rafambn.kmap.utils.rotate
+import io.github.rafambn.kmap.utils.rotateCentered
+import io.github.rafambn.kmap.utils.toRadians
+import kotlin.math.PI
+import kotlin.math.pow
 
 @Composable
 fun KMaP(
@@ -51,7 +56,7 @@ fun KMaP(
         modifier
             .background(Color.Gray)
             .clipToBounds()
-            .fillMaxSize()
+            .wrapContentSize()
             .onGloballyPositioned { coordinates ->
                 mapState.onCanvasSizeChanged(coordinates.size.toSize().toRect().bottomRight)
             }
@@ -82,17 +87,17 @@ fun KMaP(
             )
 
             markersPlaceable.forEachIndexed { index, placeable ->
-                placeable.placeRelative(
-                    x = (markersData[index].position.x - markersData[index].drawPosition.x * placeable.measuredWidth).toInt(),
-                    y = (markersData[index].position.y - markersData[index].drawPosition.y * placeable.height).toInt(),
+                placeable.place(
+                    x = markersData[index].position.x.toInt(),
+                    y = markersData[index].position.y.toInt(),
                     zIndex = markersData[index].zIndex
                 )
             }
 
             pathsPlaceable.forEachIndexed { index, placeable ->
                 placeable.placeRelativeWithLayer(
-                    x = 0,
-                    y = 0,
+                    x = markersData[index].position.x.toInt(),
+                    y = markersData[index].position.y.toInt(),
                     zIndex = pathsData[index].zIndex
                 )
             }
@@ -152,17 +157,29 @@ interface KMaPScope {
         Layout(
             content = { markerContent(item) },
             modifier = Modifier
-                .componentData(MapComponentData(item.coordinates, item.zIndex, item.drawPosition, item.angle, MapComponentType.MARKER))
-                .wrapContentSize(),
+                .componentData(MapComponentData(item.coordinates, item.zIndex, item.drawPosition, item.angle, MapComponentType.MARKER)),
             measurePolicy = { measurables, constraints ->
-                val placeableList = measurables.map { it.measure(constraints) }
-                layout(constraints.minWidth, constraints.minHeight) {
-                    placeableList.forEach {
-                        it.place(
-                            x = 0,
-                            y = 0,
-                            zIndex = item.zIndex
-                        )
+                val placeable = measurables.first().measure(constraints)
+                layout(constraints.minWidth, constraints.minHeight) {//TODO improve this math
+                    placeable.placeWithLayer(
+                        x = (-item.drawPosition.x * placeable.width + (1 - 1 / 2F.pow(item.zoom - item.zoomToFix)) * placeable.width / 2).toInt(),
+                        y = (-item.drawPosition.y * placeable.height + (1 - 1 / 2F.pow(item.zoom - item.zoomToFix)) * placeable.height / 2).toInt(),
+                        zIndex = item.zIndex
+                    ) {
+                        if (item.scaleWithMap) {
+                            scaleX = 2F.pow(item.zoom - item.zoomToFix)
+                            scaleY = 2F.pow(item.zoom - item.zoomToFix)
+                        }
+                        if (item.rotateWithMap) {
+                            val center = Offset(
+                                -(placeable.width * 1F) / 2,
+                                -(placeable.height * 1F) / 2
+                            )
+                            val place = Offset.Zero.rotateCentered(center, item.angle.toRadians())
+                            translationX = place.x
+                            translationY = place.y
+                            rotationZ = item.angle.toFloat()
+                        }
                     }
                 }
             }
@@ -177,14 +194,27 @@ interface KMaPScope {
                 .wrapContentSize()
                 .componentData(MapComponentData(item.coordinates, item.zIndex, item.drawPosition, item.angle, MapComponentType.MARKER)),
             measurePolicy = { measurables, constraints ->
-                val placeableList = measurables.map { it.measure(constraints) }
+                val placeable = measurables.first().measure(constraints)
                 layout(constraints.minWidth, constraints.minHeight) {
-                    placeableList.forEach {
-                        it.place(
-                            x = 0,
-                            y = 0,
-                            zIndex = item.zIndex
-                        )
+                    placeable.placeWithLayer(
+                        x = (-item.drawPosition.x * placeable.width + (1 - 1 / 2F.pow(item.zoom - item.zoomToFix)) * placeable.width / 2).toInt(),
+                        y = (-item.drawPosition.y * placeable.height + (1 - 1 / 2F.pow(item.zoom - item.zoomToFix)) * placeable.height / 2).toInt(),
+                        zIndex = item.zIndex
+                    ) {
+                        if (item.scaleWithMap) {
+                            scaleX = 2F.pow(item.zoom - item.zoomToFix)
+                            scaleY = 2F.pow(item.zoom - item.zoomToFix)
+                        }
+                        if (item.rotateWithMap) {
+                            val center = Offset(
+                                -(placeable.width * 1F) / 2,
+                                -(placeable.height * 1F) / 2
+                            )
+                            val place = Offset.Zero.rotateCentered(center, item.angle.toRadians())
+                            translationX = place.x
+                            translationY = place.y
+                            rotationZ = item.angle.toFloat()
+                        }
                     }
                 }
             }

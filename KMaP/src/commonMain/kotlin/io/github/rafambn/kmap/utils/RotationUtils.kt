@@ -24,6 +24,6 @@ fun Offset.rotate(radians: Radians): Offset {
 fun Offset.rotateCentered(centerOffset: Offset, radians: Radians): Offset {
     return Offset(
         (centerOffset.x + (x - centerOffset.x) * cos(radians) - (y - centerOffset.y) * sin(radians)).toFloat(),
-        (centerOffset.y + (x - centerOffset.x) * sin(radians) + (-centerOffset.y) * cos(radians)).toFloat()
+        (centerOffset.y + (x - centerOffset.x) * sin(radians) + (y - centerOffset.y) * cos(radians)).toFloat()
     )
 }
