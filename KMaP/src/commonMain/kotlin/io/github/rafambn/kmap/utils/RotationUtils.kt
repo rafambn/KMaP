@@ -1,6 +1,5 @@
 package io.github.rafambn.kmap.utils
 
-import androidx.compose.ui.geometry.Offset
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -14,16 +13,12 @@ fun Radians.toDegrees(): Degrees = this * 180 / PI
 
 fun Degrees.modulo(): Degrees = this.mod(180.0)
 
-fun Offset.rotate(radians: Radians): Offset {
-    return Offset(
-        (this.x * cos(radians) - this.y * sin(radians)).toFloat(),
-        (this.x * sin(radians) + this.y * cos(radians)).toFloat()
-    )
-}
+fun Position.rotate(radians: Radians): Position = Position(
+    this.horizontal * cos(radians) - this.vertical * sin(radians),
+    this.horizontal * sin(radians) + this.vertical * cos(radians)
+)
 
-fun Offset.rotateCentered(centerOffset: Offset, radians: Radians): Offset {
-    return Offset(
-        (centerOffset.x + (x - centerOffset.x) * cos(radians) - (y - centerOffset.y) * sin(radians)).toFloat(),
-        (centerOffset.y + (x - centerOffset.x) * sin(radians) + (y - centerOffset.y) * cos(radians)).toFloat()
-    )
-}
+fun Position.rotateCentered(centerOffset: Position, radians: Radians): Position = Position(
+    centerOffset.horizontal + (horizontal - centerOffset.horizontal) * cos(radians) - (vertical - centerOffset.vertical) * sin(radians),
+    centerOffset.vertical + (horizontal - centerOffset.horizontal) * sin(radians) + (vertical - centerOffset.vertical) * cos(radians)
+)

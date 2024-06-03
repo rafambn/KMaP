@@ -11,22 +11,22 @@ import kotlin.math.tan
 
 typealias ScreenOffset = Offset
 typealias DifferentialScreenOffset = Offset
-typealias CanvasPosition = Offset
-typealias ProjectedCoordinates = Offset //TODO Go back to using double due to precision problems
+typealias CanvasPosition = Position
+typealias ProjectedCoordinates = Position
 
-fun ProjectedCoordinates.toCanvasPosition(): CanvasPosition { //TODO improve function naming
-    return Offset(
-        this.x,
-        (ln(tan(PI / 4 + (PI * this.y) / 360)) / (PI / 85.051129)).toFloat()
-    )
-}
+fun Offset.toPosition(): Position = Position(this.x.toDouble(), this.y.toDouble())
 
-fun CanvasPosition.toCanvasReference(zoomLevel: Int, mapCoordinatesRange: MapCoordinatesRange): ScreenOffset {
-    return this.applyOrientation(mapCoordinatesRange)
+
+fun CanvasPosition.toCanvasDrawReference(zoomLevel: Int, mapCoordinatesRange: MapCoordinatesRange, tileSize: Int): ScreenOffset =
+    this.applyOrientation(mapCoordinatesRange)
         .moveToTrueCoordinates(mapCoordinatesRange)
-        .scaleToZoom((TileCanvasState.TILE_SIZE * (1 shl zoomLevel)).toFloat())
-        .scaleToMap(1 / mapCoordinatesRange.longitute.span, 1 / mapCoordinatesRange.latitude.span)
-}
+        .scaleToZoom((tileSize * (1 shl zoomLevel)).toFloat())
+        .scaleToMap(1 / mapCoordinatesRange.longitute.span, 1 / mapCoordinatesRange.latitude.span).toOffset()
+
+fun ProjectedCoordinates.toCanvasPosition(): CanvasPosition = CanvasPosition( //TODO move this to mapProperties
+    this.horizontal,
+    ln(tan(PI / 4 + (PI * this.vertical) / 360)) / (PI / 85.051129)
+)
 
 fun CanvasPosition.toScreenOffset(
     mapPosition: CanvasPosition,
@@ -35,30 +35,15 @@ fun CanvasPosition.toScreenOffset(
     zoomLevel: Int,
     angle: Degrees,
     mapCoordinatesRange: MapCoordinatesRange,
-    density: Density
-): ScreenOffset {
-    return -(this - mapPosition)
-        .applyOrientation(mapCoordinatesRange)
-        .scaleToMap(1 / mapCoordinatesRange.longitute.span, 1 / mapCoordinatesRange.latitude.span)
-        .rotate(angle.toRadians())
-        .scaleToZoom(TileCanvasState.TILE_SIZE * magnifierScale * (1 shl zoomLevel))
-        .times(density.density)
-        .minus(Offset(canvasSize.x / 2F, canvasSize.y / 2F))
-}
-
-fun DifferentialScreenOffset.toCanvasPosition(
-    magnifierScale: Float,
-    zoomLevel: Int,
-    angle: Degrees,
-    mapCoordinatesRange: MapCoordinatesRange,
-    density: Density
-): CanvasPosition {
-    return (this / density.density)
-        .scaleToZoom(1 / (TileCanvasState.TILE_SIZE * magnifierScale * (1 shl zoomLevel)))
-        .rotate(-angle.toRadians())
-        .scaleToMap(mapCoordinatesRange.longitute.span, mapCoordinatesRange.latitude.span)
-        .applyOrientation(mapCoordinatesRange)
-}
+    density: Density,
+    tileSize: Int
+): ScreenOffset = -(this - mapPosition)
+    .applyOrientation(mapCoordinatesRange)
+    .scaleToMap(1 / mapCoordinatesRange.longitute.span, 1 / mapCoordinatesRange.latitude.span)
+    .rotate(angle.toRadians())
+    .scaleToZoom(tileSize * magnifierScale * (1 shl zoomLevel))
+    .times(density.density.toDouble()).toOffset()
+    .minus(canvasSize / 2F)
 
 fun ScreenOffset.toCanvasPosition(
     mapPosition: CanvasPosition,
@@ -67,7 +52,8 @@ fun ScreenOffset.toCanvasPosition(
     zoomLevel: Int,
     angle: Degrees,
     mapCoordinatesRange: MapCoordinatesRange,
-    density: Density
+    density: Density,
+    tileSize: Int
 ): CanvasPosition {
     return this.toCanvasPositionFromScreenCenter(
         canvasSize,
@@ -75,7 +61,8 @@ fun ScreenOffset.toCanvasPosition(
         zoomLevel,
         angle,
         mapCoordinatesRange,
-        density
+        density,
+        tileSize
     ) + mapPosition
 }
 
@@ -85,36 +72,52 @@ fun DifferentialScreenOffset.toCanvasPositionFromScreenCenter(
     zoomLevel: Int,
     angle: Degrees,
     mapCoordinatesRange: MapCoordinatesRange,
-    density: Density
+    density: Density,
+    tileSize: Int
 ): CanvasPosition {
     return (canvasSize / 2F - this).toCanvasPosition(
         magnifierScale,
         zoomLevel,
         angle,
         mapCoordinatesRange,
-        density
+        density,
+        tileSize
     )
 }
 
+fun DifferentialScreenOffset.toCanvasPosition(
+    magnifierScale: Float,
+    zoomLevel: Int,
+    angle: Degrees,
+    mapCoordinatesRange: MapCoordinatesRange,
+    density: Density,
+    tileSize: Int
+): CanvasPosition = (this.toPosition() / density.density.toDouble())
+    .scaleToZoom(1 / (tileSize * magnifierScale * (1 shl zoomLevel)))
+    .rotate(-angle.toRadians())
+    .scaleToMap(mapCoordinatesRange.longitute.span, mapCoordinatesRange.latitude.span)
+    .applyOrientation(mapCoordinatesRange)
+
+
 //Transformation functions
-fun Offset.scaleToZoom(zoomScale: Float): Offset {
-    return Offset(x * zoomScale, y * zoomScale)
+fun Position.scaleToZoom(zoomScale: Float): Position {
+    return Position(horizontal * zoomScale, vertical * zoomScale)
 }
 
-fun Offset.moveToTrueCoordinates(mapCoordinatesRange: MapCoordinatesRange): Offset {
-    return Offset(x - mapCoordinatesRange.longitute.span / 2, y - mapCoordinatesRange.latitude.span / 2)
+fun Position.moveToTrueCoordinates(mapCoordinatesRange: MapCoordinatesRange): Position {
+    return Position(horizontal - mapCoordinatesRange.longitute.span / 2, vertical - mapCoordinatesRange.latitude.span / 2)
 }
 
-fun Offset.scaleToMap(horizontal: Float, vertical: Float): Offset {
-    return Offset(this.x * horizontal, this.y * vertical)
+fun Position.scaleToMap(horizontal: Double, vertical: Double): Position {
+    return Position(this.horizontal * horizontal, this.vertical * vertical)
 }
 
-fun Offset.applyOrientation(mapCoordinatesRange: MapCoordinatesRange): Offset {
-    return Offset(x * mapCoordinatesRange.longitute.orientation, y * mapCoordinatesRange.latitude.orientation)
+fun Position.applyOrientation(mapCoordinatesRange: MapCoordinatesRange): Position {
+    return Position(horizontal * mapCoordinatesRange.longitute.orientation, vertical * mapCoordinatesRange.latitude.orientation)
 }
 //Other Functions
 
-fun Float.loopInRange(coordinatesRange: CoordinatesInterface): Float {
+fun Double.loopInRange(coordinatesRange: CoordinatesInterface): Double {
     return (this - coordinatesRange.getMin()).mod(coordinatesRange.span) + coordinatesRange.getMin()
 }
 
@@ -132,4 +135,7 @@ fun lerp(start: Double, end: Double, value: Double): Double {
 
 fun lerp(start: Offset, end: Offset, value: Double): Offset {
     return Offset(lerp(start.x, end.x, value), lerp(start.y, end.y, value))
+}
+fun lerp(start: Position, end: Position, value: Double): Position {
+    return Position(lerp(start.horizontal, end.horizontal, value), lerp(start.vertical, end.vertical, value))
 }

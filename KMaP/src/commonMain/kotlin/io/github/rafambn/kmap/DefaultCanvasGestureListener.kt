@@ -21,7 +21,8 @@ open class DefaultCanvasGestureListener(private val mapState: MapState) : Gestur
                 mapState.zoomLevel,
                 mapState.angleDegrees,
                 mapState.mapProperties.mapCoordinatesRange,
-                mapState.density
+                mapState.density,
+                mapState.mapProperties.tileSize
             )
         )
     }
@@ -35,7 +36,8 @@ open class DefaultCanvasGestureListener(private val mapState: MapState) : Gestur
                 mapState.zoomLevel,
                 mapState.angleDegrees,
                 mapState.mapProperties.mapCoordinatesRange,
-                mapState.density
+                mapState.density,
+                mapState.mapProperties.tileSize
             )
         )
     }
@@ -50,7 +52,8 @@ open class DefaultCanvasGestureListener(private val mapState: MapState) : Gestur
                 mapState.zoomLevel,
                 mapState.angleDegrees,
                 mapState.mapProperties.mapCoordinatesRange,
-                mapState.density
+                mapState.density,
+                mapState.mapProperties.tileSize
             )
         )
     }
@@ -64,7 +67,8 @@ open class DefaultCanvasGestureListener(private val mapState: MapState) : Gestur
                 mapState.zoomLevel,
                 mapState.angleDegrees,
                 mapState.mapProperties.mapCoordinatesRange,
-                mapState.density
+                mapState.density,
+                mapState.mapProperties.tileSize
             )
         )
     }
@@ -78,7 +82,8 @@ open class DefaultCanvasGestureListener(private val mapState: MapState) : Gestur
                 mapState.zoomLevel,
                 mapState.angleDegrees,
                 mapState.mapProperties.mapCoordinatesRange,
-                mapState.density
+                mapState.density,
+                mapState.mapProperties.tileSize
             )
         )
         mapState.zoomBy(
@@ -89,7 +94,8 @@ open class DefaultCanvasGestureListener(private val mapState: MapState) : Gestur
                 mapState.zoomLevel,
                 mapState.angleDegrees,
                 mapState.mapProperties.mapCoordinatesRange,
-                mapState.density
+                mapState.density,
+                mapState.mapProperties.tileSize
             )
         )
         mapState.moveBy(
@@ -98,7 +104,8 @@ open class DefaultCanvasGestureListener(private val mapState: MapState) : Gestur
                 mapState.zoomLevel,
                 mapState.angleDegrees,
                 mapState.mapProperties.mapCoordinatesRange,
-                mapState.density
+                mapState.density,
+                mapState.mapProperties.tileSize
             )
         )
     }
@@ -114,7 +121,8 @@ open class DefaultCanvasGestureListener(private val mapState: MapState) : Gestur
                 mapState.zoomLevel,
                 mapState.angleDegrees,
                 mapState.mapProperties.mapCoordinatesRange,
-                mapState.density
+                mapState.density,
+                mapState.mapProperties.tileSize
             )
         )
     }
@@ -133,7 +141,8 @@ open class DefaultCanvasGestureListener(private val mapState: MapState) : Gestur
                 mapState.zoomLevel,
                 mapState.angleDegrees,
                 mapState.mapProperties.mapCoordinatesRange,
-                mapState.density
+                mapState.density,
+                mapState.mapProperties.tileSize
             ) + mapState.mapPosition
         )
     }
@@ -147,7 +156,8 @@ open class DefaultCanvasGestureListener(private val mapState: MapState) : Gestur
                 mapState.zoomLevel,
                 mapState.angleDegrees,
                 mapState.mapProperties.mapCoordinatesRange,
-                mapState.density
+                mapState.density,
+                mapState.mapProperties.tileSize
             )
         )
     }
@@ -162,7 +172,8 @@ open class DefaultCanvasGestureListener(private val mapState: MapState) : Gestur
                     mapState.zoomLevel,
                     mapState.angleDegrees,
                     mapState.mapProperties.mapCoordinatesRange,
-                    mapState.density
+                    mapState.density,
+                    mapState.mapProperties.tileSize
                 )
             )
         } ?: run {
@@ -182,7 +193,8 @@ open class DefaultCanvasGestureListener(private val mapState: MapState) : Gestur
                 mapState.zoomLevel,
                 mapState.angleDegrees,
                 mapState.mapProperties.mapCoordinatesRange,
-                mapState.density
+                mapState.density,
+                mapState.mapProperties.tileSize
             )
         )
     }

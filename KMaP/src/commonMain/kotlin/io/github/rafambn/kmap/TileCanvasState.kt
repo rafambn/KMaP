@@ -26,7 +26,6 @@ class TileCanvasState(
     startZoom: Int
 ) {
     companion object {
-        internal const val TILE_SIZE = 256 //TODO move to mapProperties
         private const val MAX_RENDERED_TILES = 100
         private const val MAX_TRIES = 2
     }
@@ -199,8 +198,8 @@ class TileCanvasState(
 
     private fun getXYTile(position: CanvasPosition, zoomLevel: Int, mapSize: MapCoordinatesRange): Pair<Int, Int> {
         return Pair(
-            floor((position.x - mapSize.longitute.getMin()) / mapSize.longitute.span * (1 shl zoomLevel)).toInt(),
-            floor((-position.y + mapSize.latitude.getMax()) / mapSize.latitude.span * (1 shl zoomLevel)).toInt()
+            floor((position.horizontal - mapSize.longitute.getMin()) / mapSize.longitute.span * (1 shl zoomLevel)).toInt(),
+            floor((-position.vertical + mapSize.latitude.getMax()) / mapSize.latitude.span * (1 shl zoomLevel)).toInt()
         )
     }
 }

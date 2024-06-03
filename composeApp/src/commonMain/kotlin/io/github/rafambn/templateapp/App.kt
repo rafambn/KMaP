@@ -9,13 +9,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import io.github.rafambn.kmap.DrawPosition
 import io.github.rafambn.kmap.KMaP
 import io.github.rafambn.kmap.MarkerPlacer
 import io.github.rafambn.kmap.rememberMapState
+import io.github.rafambn.kmap.utils.Position
 import io.github.rafambn.kmap.utils.toCanvasPosition
 import io.github.rafambn.templateapp.theme.AppTheme
 import kmap_library_with_app.composeapp.generated.resources.Res
@@ -33,17 +33,17 @@ internal fun App() = AppTheme {
                 modifier = Modifier.align(Alignment.Center).size(300.dp, 600.dp),
                 mapState = mapState
             ) {
-                markers(
+                placers(
                     listOf(
                         MarkerPlacer(
                             mapState,
-                            Offset(-45.949303F, -21.424608F).toCanvasPosition(),
-                            DrawPosition.RIGHT_BOTTOM,
+                            Position(-45.949303, -21.424608).toCanvasPosition(),
+                            DrawPosition.LEFT_TOP,
                             0,
                             1F,
                             false,
                             true,
-                            true,
+                            false,
                             19F
                         ),
                     )

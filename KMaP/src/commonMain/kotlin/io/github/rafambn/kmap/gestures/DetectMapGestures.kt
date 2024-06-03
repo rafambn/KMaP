@@ -30,8 +30,8 @@ internal expect suspend fun PointerInputScope.detectMapGestures(
     onGestureStart: (gestureType: GestureState, offset: Offset) -> Unit = { _, _ -> },
     onGestureEnd: (gestureType: GestureState) -> Unit = { },
 
-    onFling: (velocity: Velocity) -> Unit = {},
-    onFlingZoom: (centroid: Offset, velocity: Float) -> Unit = { _, _ -> },
+    onFling: (velocity: Velocity) -> Unit = {}, //TODO declare only used variables on actual
+    onFlingZoom: (centroid: Offset, velocity: Float) -> Unit = { _, _ -> }, //TODO fix fling
     onFlingRotation: (centroid: Offset?, velocity: Float) -> Unit = { _, _ -> },
 
     onHover: (Offset) -> Unit,

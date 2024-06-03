@@ -61,12 +61,12 @@ internal fun TileCanvas(
                     tile.imageBitmap?.let {
                         canvas.drawImageRect(image = it,
                             dstOffset = IntOffset(
-                                floor((TileCanvasState.TILE_SIZE * tile.row * adjustedTileSize + tileCanvasStateModel.positionOffset.x).dp.toPx()).toInt(),
-                                floor((TileCanvasState.TILE_SIZE * tile.col * adjustedTileSize + tileCanvasStateModel.positionOffset.y).dp.toPx()).toInt()
+                                floor((tileCanvasStateModel.tileSize * tile.row * adjustedTileSize + tileCanvasStateModel.positionOffset.x).dp.toPx()).toInt(),
+                                floor((tileCanvasStateModel.tileSize * tile.col * adjustedTileSize + tileCanvasStateModel.positionOffset.y).dp.toPx()).toInt()
                             ),
                             dstSize = IntSize(
-                                (TileCanvasState.TILE_SIZE.dp.toPx() * adjustedTileSize).toInt(),
-                                (TileCanvasState.TILE_SIZE.dp.toPx() * adjustedTileSize).toInt()
+                                (tileCanvasStateModel.tileSize.dp.toPx() * adjustedTileSize).toInt(),
+                                (tileCanvasStateModel.tileSize.dp.toPx() * adjustedTileSize).toInt()
                             ),
                             paint = Paint().apply {
                                 isAntiAlias = false
@@ -79,12 +79,12 @@ internal fun TileCanvas(
                     tile.imageBitmap?.let {
                         canvas.drawImageRect(image = it,
                             dstOffset = IntOffset(
-                                floor((TileCanvasState.TILE_SIZE * tile.row + tileCanvasStateModel.positionOffset.x).dp.toPx()).toInt(),
-                                floor((TileCanvasState.TILE_SIZE * tile.col + tileCanvasStateModel.positionOffset.y).dp.toPx()).toInt()
+                                floor((tileCanvasStateModel.tileSize * tile.row + tileCanvasStateModel.positionOffset.x).dp.toPx()).toInt(),
+                                floor((tileCanvasStateModel.tileSize * tile.col + tileCanvasStateModel.positionOffset.y).dp.toPx()).toInt()
                             ),
                             dstSize = IntSize(
-                                TileCanvasState.TILE_SIZE.dp.toPx().toInt(),
-                                TileCanvasState.TILE_SIZE.dp.toPx().toInt()
+                                tileCanvasStateModel.tileSize.dp.toPx().toInt(),
+                                tileCanvasStateModel.tileSize.dp.toPx().toInt()
                             ),
                             paint = Paint().apply {
                                 isAntiAlias = false
