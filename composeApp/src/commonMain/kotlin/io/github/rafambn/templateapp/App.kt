@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import io.github.rafambn.kmap.DrawPosition
 import io.github.rafambn.kmap.KMaP
-import io.github.rafambn.kmap.MarkerPlacer
+import io.github.rafambn.kmap.Placer
 import io.github.rafambn.kmap.rememberMapState
 import io.github.rafambn.kmap.utils.Position
 import io.github.rafambn.kmap.utils.toCanvasPosition
@@ -35,20 +35,20 @@ internal fun App() = AppTheme {
             ) {
                 placers(
                     listOf(
-                        MarkerPlacer(
+                        Placer(
                             mapState,
-                            Position(-45.949303, -21.424608).toCanvasPosition(),
-                            DrawPosition.LEFT_TOP,
-                            0,
-                            1F,
-                            false,
-                            true,
-                            false,
-                            19F
+                            Position(-45.949303, -21.424608),
+                            DrawPosition.TOP_LEFT,
                         ),
                     )
                 ) {
-                    Image(painterResource(Res.drawable.teste), "fd", Modifier.background(Color.Black).size(32.dp))
+                    Image(
+                        painterResource(Res.drawable.teste),
+                        "fd",
+                        Modifier
+                            .background(Color.Black)
+                            .size(32.dp)
+                    )
                 }
             }
         }

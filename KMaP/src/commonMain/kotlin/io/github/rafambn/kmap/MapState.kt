@@ -42,7 +42,7 @@ class MapState(
     private var minZoom = minZoom.coerceIn(mapProperties.mapSource.zoomLevels.min, mapProperties.mapSource.zoomLevels.max)
 
     //Control variables
-    var zoom = initialZoom //TODO use field
+    var zoom = initialZoom
         private set
     var angleDegrees = initialRotation
         private set

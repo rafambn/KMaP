@@ -22,11 +22,6 @@ fun CanvasPosition.toCanvasDrawReference(zoomLevel: Int, mapSource: MapSource): 
         .scaleToZoom((mapSource.tileSize * (1 shl zoomLevel)).toFloat())
         .scaleToMap(1 / mapSource.mapCoordinatesRange.longitute.span, 1 / mapSource.mapCoordinatesRange.latitude.span)
 
-fun ProjectedCoordinates.toCanvasPosition(): CanvasPosition = CanvasPosition( //TODO move this to mapProperties
-    this.horizontal,
-    ln(tan(PI / 4 + (PI * this.vertical) / 360)) / (PI / 85.051129)
-)
-
 fun CanvasPosition.toScreenOffset(
     mapPosition: CanvasPosition,
     canvasSize: Offset,

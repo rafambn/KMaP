@@ -36,7 +36,7 @@ fun KMaP(
         content = {
             TileCanvas(
                 Modifier
-                    .componentData(MapComponentData(Position.Zero, 0F, DrawPosition.LEFT_TOP, 0.0)),
+                    .componentData(MapComponentData(Position.Zero, 0F, DrawPosition.TOP_LEFT, 0.0)),
                 TileCanvasStateModel(
                     mapState.canvasSize / 2F,
                     mapState.angleDegrees.toFloat(),
@@ -123,7 +123,7 @@ data class MapComponentData(
 
 interface KMaPScope {
     @Composable
-    fun placers(items: List<Placer>, markerContent: @Composable (Placer) -> Unit) = items.forEach { item -> //TODO add gesture input to this
+    fun placers(items: List<Placer>, markerContent: @Composable (Placer) -> Unit) = items.forEach { item ->
         Layout(
             content = { markerContent(item) },
             modifier = Modifier
