@@ -1,13 +1,12 @@
 package io.github.rafambn.kmap.core.state
 
 import androidx.compose.ui.graphics.ImageBitmap
-import io.github.rafambn.kmap.core.TileLayers
-import io.github.rafambn.kmap.model.BoundingBox
-import io.github.rafambn.kmap.model.ScreenState
-import io.github.rafambn.kmap.model.Tile
-import io.github.rafambn.kmap.model.TileSpecs
 import io.github.rafambn.kmap.config.border.OutsideTilesType
 import io.github.rafambn.kmap.config.characteristics.MapCoordinatesRange
+import io.github.rafambn.kmap.core.TileLayers
+import io.github.rafambn.kmap.model.BoundingBox
+import io.github.rafambn.kmap.model.Tile
+import io.github.rafambn.kmap.model.TileSpecs
 import io.github.rafambn.kmap.utils.loopInZoom
 import io.github.rafambn.kmap.utils.offsets.CanvasPosition
 import io.github.rafambn.kmap.utils.toImageBitmap
@@ -46,18 +45,20 @@ class TileCanvasState(
     private val client = HttpClient()
 
     init {
-        println("teste")
         CoroutineScope(Dispatchers.Default).tilesKernel(tilesToProcessChannel, workerResultSuccessChannel, workerResultFailedChannel)
     }
 
     internal fun onStateChange(
-        screenState: ScreenState
+        viewPort: BoundingBox,
+        zoomLevel: Int,
+        coordinatesRange: MapCoordinatesRange,
+        outsideTiles: OutsideTilesType,
     ) {
         val nextVisibleTiles = getVisibleTilesForLevel(
-            screenState.viewPort,
-            screenState.zoomLevel,
-            screenState.outsideTiles,
-            screenState.coordinatesRange
+            viewPort,
+            zoomLevel,
+            outsideTiles,
+            coordinatesRange
         )
         val tilesToRender = mutableListOf<TileSpecs>()
         val newFrontLayer = nextVisibleTiles.map { tile ->
@@ -66,10 +67,10 @@ class TileCanvasState(
                 tile
             }
         }
-        if (screenState.zoomLevel == tileLayers.frontLayerLevel) {
+        if (zoomLevel == tileLayers.frontLayerLevel) {
             tileLayers.frontLayer = newFrontLayer
         } else {
-            tileLayers.changeLayer(screenState.zoomLevel)
+            tileLayers.changeLayer(zoomLevel)
             tileLayers.frontLayer = newFrontLayer
         }
         tilesToProcessChannel.trySend(tilesToRender)

@@ -14,7 +14,6 @@ import io.github.rafambn.kmap.config.border.MapBorderType
 import io.github.rafambn.kmap.core.CanvasSizeChangeListener
 import io.github.rafambn.kmap.core.MotionInterface
 import io.github.rafambn.kmap.model.BoundingBox
-import io.github.rafambn.kmap.model.ScreenState
 import io.github.rafambn.kmap.utils.Degrees
 import io.github.rafambn.kmap.utils.lerp
 import io.github.rafambn.kmap.utils.loopInRange
@@ -49,7 +48,7 @@ class MapState(
         private set
     var angleDegrees = initialRotation
         private set
-    var mapPosition = mapProperties.mapSource.toCanvasPosition(initialPosition)
+    var mapPosition = mapProperties.mapSource.toCanvasPosition(initialPosition) //TODO make if projection
         private set
     var canvasSize = Offset.Zero
         private set
@@ -68,14 +67,10 @@ class MapState(
 
     private fun updateState() {
         tileCanvasState.onStateChange(
-            ScreenState(
-                getBoundingBox(),
-                zoomLevel,
-                mapProperties.mapSource.mapCoordinatesRange,
-                mapProperties.outsideTiles,
-                maxZoom,
-                minZoom
-            )
+            getBoundingBox(),
+            zoomLevel,
+            mapProperties.mapSource.mapCoordinatesRange,
+            mapProperties.outsideTiles
         )
         redraw()
     }

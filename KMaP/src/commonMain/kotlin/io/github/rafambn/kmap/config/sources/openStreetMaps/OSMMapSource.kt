@@ -8,7 +8,7 @@ import kotlin.math.ln
 import kotlin.math.tan
 
 object OSMMapSource : MapSource {
-    override val zoomLevels = OSMZoomlevelsRange
+    override val zoomLevels = OSMZoomLevelsRange
     override val mapCoordinatesRange = OSMCoordinatesRange
     override val tileSize = 256
 

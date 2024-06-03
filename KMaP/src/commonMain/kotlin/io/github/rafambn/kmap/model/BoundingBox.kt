@@ -7,4 +7,4 @@ data class BoundingBox(
     val topRight: CanvasPosition,
     val bottomRight: CanvasPosition,
     val bottomLeft: CanvasPosition
-)
+) //TODO add methods to it
