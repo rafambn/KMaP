@@ -17,11 +17,11 @@ typealias ProjectedCoordinates = Position
 fun Offset.toPosition(): Position = Position(this.x.toDouble(), this.y.toDouble())
 
 
-fun CanvasPosition.toCanvasDrawReference(zoomLevel: Int, mapCoordinatesRange: MapCoordinatesRange, tileSize: Int): ScreenOffset =
+fun CanvasPosition.toCanvasDrawReference(zoomLevel: Int, mapCoordinatesRange: MapCoordinatesRange, tileSize: Int): Position =
     this.applyOrientation(mapCoordinatesRange)
         .moveToTrueCoordinates(mapCoordinatesRange)
         .scaleToZoom((tileSize * (1 shl zoomLevel)).toFloat())
-        .scaleToMap(1 / mapCoordinatesRange.longitute.span, 1 / mapCoordinatesRange.latitude.span).toOffset()
+        .scaleToMap(1 / mapCoordinatesRange.longitute.span, 1 / mapCoordinatesRange.latitude.span)
 
 fun ProjectedCoordinates.toCanvasPosition(): CanvasPosition = CanvasPosition( //TODO move this to mapProperties
     this.horizontal,

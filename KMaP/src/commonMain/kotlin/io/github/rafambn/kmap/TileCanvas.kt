@@ -61,8 +61,8 @@ internal fun TileCanvas(
                     tile.imageBitmap?.let {
                         canvas.drawImageRect(image = it,
                             dstOffset = IntOffset(
-                                floor((tileCanvasStateModel.tileSize * tile.row * adjustedTileSize + tileCanvasStateModel.positionOffset.x).dp.toPx()).toInt(),
-                                floor((tileCanvasStateModel.tileSize * tile.col * adjustedTileSize + tileCanvasStateModel.positionOffset.y).dp.toPx()).toInt()
+                                floor((tileCanvasStateModel.tileSize * tile.row * adjustedTileSize + tileCanvasStateModel.positionOffset.horizontal).dp.toPx()).toInt(),
+                                floor((tileCanvasStateModel.tileSize * tile.col * adjustedTileSize + tileCanvasStateModel.positionOffset.vertical).dp.toPx()).toInt()
                             ),
                             dstSize = IntSize(
                                 (tileCanvasStateModel.tileSize.dp.toPx() * adjustedTileSize).toInt(),
@@ -79,8 +79,8 @@ internal fun TileCanvas(
                     tile.imageBitmap?.let {
                         canvas.drawImageRect(image = it,
                             dstOffset = IntOffset(
-                                floor((tileCanvasStateModel.tileSize * tile.row + tileCanvasStateModel.positionOffset.x).dp.toPx()).toInt(),
-                                floor((tileCanvasStateModel.tileSize * tile.col + tileCanvasStateModel.positionOffset.y).dp.toPx()).toInt()
+                                floor((tileCanvasStateModel.tileSize * tile.row + tileCanvasStateModel.positionOffset.horizontal).dp.toPx()).toInt(),
+                                floor((tileCanvasStateModel.tileSize * tile.col + tileCanvasStateModel.positionOffset.vertical).dp.toPx()).toInt()
                             ),
                             dstSize = IntSize(
                                 tileCanvasStateModel.tileSize.dp.toPx().toInt(),
