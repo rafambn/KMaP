@@ -1,16 +1,15 @@
-package io.github.rafambn.kmap
+package io.github.rafambn.kmap.model
 
 import androidx.compose.ui.geometry.Offset
-import io.github.rafambn.kmap.utils.CanvasPosition
-import io.github.rafambn.kmap.utils.Position
-import io.github.rafambn.kmap.utils.ScreenOffset
+import io.github.rafambn.kmap.core.TileLayers
+import io.github.rafambn.kmap.utils.offsets.CanvasDrawReference
 
 data class TileCanvasStateModel(
     val translation: Offset,
     val rotation: Float,
     val magnifierScale: Float,
     val visibleTilesList: TileLayers,
-    val positionOffset: Position,
+    val positionOffset: CanvasDrawReference,
     val zoomLevel: Int,
     val tileSize: Int
 )

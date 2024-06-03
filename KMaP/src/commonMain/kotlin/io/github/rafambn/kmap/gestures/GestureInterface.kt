@@ -1,9 +1,8 @@
 package io.github.rafambn.kmap.gestures
 
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Velocity
-import io.github.rafambn.kmap.utils.DifferentialScreenOffset
-import io.github.rafambn.kmap.utils.ScreenOffset
+import io.github.rafambn.kmap.utils.offsets.DifferentialScreenOffset
+import io.github.rafambn.kmap.utils.offsets.ScreenOffset
 
 interface GestureInterface {
     fun onTap(screenOffset: ScreenOffset)

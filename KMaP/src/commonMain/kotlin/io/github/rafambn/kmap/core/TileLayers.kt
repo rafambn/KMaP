@@ -1,5 +1,6 @@
-package io.github.rafambn.kmap
+package io.github.rafambn.kmap.core
 
+import io.github.rafambn.kmap.model.Tile
 import kotlin.concurrent.Volatile
 
 class TileLayers(startZoom: Int) {

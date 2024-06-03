@@ -11,12 +11,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import io.github.rafambn.kmap.DrawPosition
+import io.github.rafambn.kmap.core.DrawPosition
 import io.github.rafambn.kmap.KMaP
-import io.github.rafambn.kmap.Placer
-import io.github.rafambn.kmap.rememberMapState
-import io.github.rafambn.kmap.utils.Position
-import io.github.rafambn.kmap.utils.toCanvasPosition
+import io.github.rafambn.kmap.core.Placer
+import io.github.rafambn.kmap.core.state.rememberMapState
+import io.github.rafambn.kmap.utils.offsets.ProjectedCoordinates
 import io.github.rafambn.templateapp.theme.AppTheme
 import kmap_library_with_app.composeapp.generated.resources.Res
 import kmap_library_with_app.composeapp.generated.resources.teste
@@ -37,7 +36,7 @@ internal fun App() = AppTheme {
                     listOf(
                         Placer(
                             mapState,
-                            Position(-45.949303, -21.424608),
+                            ProjectedCoordinates(-45.949303, -21.424608),
                             DrawPosition.TOP_LEFT,
                         ),
                     )

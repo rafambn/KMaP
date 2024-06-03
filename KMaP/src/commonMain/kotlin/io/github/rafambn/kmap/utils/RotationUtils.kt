@@ -1,5 +1,6 @@
 package io.github.rafambn.kmap.utils
 
+import io.github.rafambn.kmap.utils.offsets.CanvasPosition
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -13,12 +14,12 @@ fun Radians.toDegrees(): Degrees = this * 180 / PI
 
 fun Degrees.modulo(): Degrees = this.mod(180.0)
 
-fun Position.rotate(radians: Radians): Position = Position(
+fun CanvasPosition.rotate(radians: Radians): CanvasPosition = CanvasPosition(
     this.horizontal * cos(radians) - this.vertical * sin(radians),
     this.horizontal * sin(radians) + this.vertical * cos(radians)
 )
 
-fun Position.rotateCentered(centerOffset: Position, radians: Radians): Position = Position(
+fun CanvasPosition.rotateCentered(centerOffset: CanvasPosition, radians: Radians): CanvasPosition = CanvasPosition(
     centerOffset.horizontal + (horizontal - centerOffset.horizontal) * cos(radians) - (vertical - centerOffset.vertical) * sin(radians),
     centerOffset.vertical + (horizontal - centerOffset.horizontal) * sin(radians) + (vertical - centerOffset.vertical) * cos(radians)
 )

@@ -1,4 +1,7 @@
-package io.github.rafambn.kmap
+package io.github.rafambn.kmap.model
+
+import io.github.rafambn.kmap.config.characteristics.MapCoordinatesRange
+import io.github.rafambn.kmap.config.border.OutsideTilesType
 
 data class ScreenState(
     val viewPort: BoundingBox,

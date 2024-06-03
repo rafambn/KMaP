@@ -1,4 +1,4 @@
-package io.github.rafambn.kmap
+package io.github.rafambn.kmap.core.state
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -9,16 +9,19 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.util.lerp
-import io.github.rafambn.kmap.utils.CanvasPosition
+import io.github.rafambn.kmap.config.MapProperties
+import io.github.rafambn.kmap.config.border.MapBorderType
+import io.github.rafambn.kmap.core.CanvasSizeChangeListener
+import io.github.rafambn.kmap.core.MotionInterface
+import io.github.rafambn.kmap.model.BoundingBox
+import io.github.rafambn.kmap.model.ScreenState
 import io.github.rafambn.kmap.utils.Degrees
-import io.github.rafambn.kmap.utils.Position
-import io.github.rafambn.kmap.utils.ProjectedCoordinates
-import io.github.rafambn.kmap.utils.ScreenOffset
 import io.github.rafambn.kmap.utils.lerp
 import io.github.rafambn.kmap.utils.loopInRange
-import io.github.rafambn.kmap.utils.toCanvasDrawReference
-import io.github.rafambn.kmap.utils.toScreenOffset
-import io.github.rafambn.kmap.utils.toCanvasPosition
+import io.github.rafambn.kmap.utils.offsets.CanvasPosition
+import io.github.rafambn.kmap.utils.offsets.ProjectedCoordinates
+import io.github.rafambn.kmap.utils.offsets.ScreenOffset
+import io.github.rafambn.kmap.utils.offsets.toCanvasPosition
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -28,7 +31,7 @@ import kotlin.math.floor
 
 class MapState(
     private val coroutineScope: CoroutineScope,
-    initialPosition: ProjectedCoordinates = Position.Zero,
+    initialPosition: ProjectedCoordinates = ProjectedCoordinates.Zero,
     initialZoom: Float = 0F,
     initialRotation: Degrees = 0.0,
     maxZoom: Int = 19,
@@ -46,7 +49,7 @@ class MapState(
         private set
     var angleDegrees = initialRotation
         private set
-    var mapPosition = initialPosition
+    var mapPosition = mapProperties.mapSource.toCanvasPosition(initialPosition)
         private set
     var canvasSize = Offset.Zero
         private set
@@ -218,7 +221,6 @@ class MapState(
     }
 
     //Utility functions
-
     private fun getBoundingBox(): BoundingBox {
         return BoundingBox(
             Offset.Zero.toCanvasPosition(
@@ -260,7 +262,7 @@ class MapState(
         )
     }
 
-    private fun Position.coerceInMap(): Position {
+    private fun CanvasPosition.coerceInMap(): CanvasPosition {
         val x = if (mapProperties.boundMap.horizontal == MapBorderType.BOUND)
             horizontal.coerceIn(
                 mapProperties.mapSource.mapCoordinatesRange.longitute.west,
@@ -275,7 +277,7 @@ class MapState(
             )
         else
             vertical.loopInRange(mapProperties.mapSource.mapCoordinatesRange.latitude)
-        return Position(x, y)
+        return CanvasPosition(x, y)
     }
 
     private fun Float.coerceZoom(): Float {

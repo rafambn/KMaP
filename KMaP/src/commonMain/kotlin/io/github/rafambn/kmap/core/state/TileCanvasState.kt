@@ -1,8 +1,15 @@
-package io.github.rafambn.kmap
+package io.github.rafambn.kmap.core.state
 
 import androidx.compose.ui.graphics.ImageBitmap
-import io.github.rafambn.kmap.utils.CanvasPosition
+import io.github.rafambn.kmap.core.TileLayers
+import io.github.rafambn.kmap.model.BoundingBox
+import io.github.rafambn.kmap.model.ScreenState
+import io.github.rafambn.kmap.model.Tile
+import io.github.rafambn.kmap.model.TileSpecs
+import io.github.rafambn.kmap.config.border.OutsideTilesType
+import io.github.rafambn.kmap.config.characteristics.MapCoordinatesRange
 import io.github.rafambn.kmap.utils.loopInZoom
+import io.github.rafambn.kmap.utils.offsets.CanvasPosition
 import io.github.rafambn.kmap.utils.toImageBitmap
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
@@ -39,6 +46,7 @@ class TileCanvasState(
     private val client = HttpClient()
 
     init {
+        println("teste")
         CoroutineScope(Dispatchers.Default).tilesKernel(tilesToProcessChannel, workerResultSuccessChannel, workerResultFailedChannel)
     }
 
@@ -93,7 +101,7 @@ class TileCanvasState(
                         tileLayers.frontLayer.find { it == tile }?.let { it.imageBitmap = tile.imageBitmap }
                         updateState.invoke()
                     }
-                    if (tile.zoom == tileLayers.backLayerLevel){
+                    if (tile.zoom == tileLayers.backLayerLevel) {
                         tileLayers.backLayer.find { it == tile }?.let { it.imageBitmap = tile.imageBitmap }
                         updateState.invoke()
                     }
@@ -114,7 +122,7 @@ class TileCanvasState(
         tilesProcessFailedResult: SendChannel<TileSpecs>
     ) = launch(Dispatchers.Default) {
         val imageBitmap: ImageBitmap
-//        println("${tileToProcess.zoom} -- ${tileToProcess.col} -- ${tileToProcess.row}")
+        println("${tileToProcess.zoom} -- ${tileToProcess.col} -- ${tileToProcess.row}")
         try {
             val byteArray = client.get(
                 "https://tile.openstreetmap.org/${tileToProcess.zoom}/${(tileToProcess.row).loopInZoom(tileToProcess.zoom)}/${

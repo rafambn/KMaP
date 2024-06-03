@@ -1,12 +1,11 @@
-package io.github.rafambn.kmap
+package io.github.rafambn.kmap.gestures
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Velocity
-import io.github.rafambn.kmap.gestures.GestureInterface
-import io.github.rafambn.kmap.gestures.GestureState
-import io.github.rafambn.kmap.utils.DifferentialScreenOffset
-import io.github.rafambn.kmap.utils.ScreenOffset
-import io.github.rafambn.kmap.utils.toCanvasPosition
+import io.github.rafambn.kmap.core.state.MapState
+import io.github.rafambn.kmap.utils.offsets.DifferentialScreenOffset
+import io.github.rafambn.kmap.utils.offsets.ScreenOffset
+import io.github.rafambn.kmap.utils.offsets.toCanvasPosition
 
 open class DefaultCanvasGestureListener(private val mapState: MapState) : GestureInterface {
     override fun onTap(screenOffset: ScreenOffset) {

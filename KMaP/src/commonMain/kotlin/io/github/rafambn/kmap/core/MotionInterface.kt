@@ -1,7 +1,7 @@
-package io.github.rafambn.kmap
+package io.github.rafambn.kmap.core
 
-import io.github.rafambn.kmap.utils.CanvasPosition
 import io.github.rafambn.kmap.utils.Degrees
+import io.github.rafambn.kmap.utils.offsets.CanvasPosition
 
 interface MotionInterface {
 

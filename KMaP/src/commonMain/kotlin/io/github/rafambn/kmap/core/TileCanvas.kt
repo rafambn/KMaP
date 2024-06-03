@@ -1,4 +1,4 @@
-package io.github.rafambn.kmap
+package io.github.rafambn.kmap.core
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import io.github.rafambn.kmap.gestures.GestureInterface
 import io.github.rafambn.kmap.gestures.detectMapGestures
+import io.github.rafambn.kmap.model.TileCanvasStateModel
 import kotlin.math.floor
 import kotlin.math.pow
 

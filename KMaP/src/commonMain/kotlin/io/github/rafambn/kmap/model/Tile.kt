@@ -1,4 +1,4 @@
-package io.github.rafambn.kmap
+package io.github.rafambn.kmap.model
 
 import androidx.compose.ui.graphics.ImageBitmap
 
@@ -71,5 +71,5 @@ class Tile(
         return "Tile(zoom=$zoom, row=$row, col=$col, imageBitmap=$imageBitmap)"
     }
 
-    fun toTileSpecs(): TileSpecs = TileSpecs(zoom,row,col,0)
+    fun toTileSpecs(): TileSpecs = TileSpecs(zoom, row, col, 0)
 }
