@@ -44,7 +44,7 @@ fun KMaP(
                     mapState.tileCanvasState.tileLayers,
                     mapState.positionOffset,
                     mapState.zoomLevel,
-                    mapState.mapProperties.tileSize
+                    mapState.mapProperties.mapSource.tileSize
                 ),
                 mapState.state,
                 canvasGestureListener
@@ -63,7 +63,6 @@ fun KMaP(
         val placersPlaceable = measurables
             .also { measurablePlacers -> placersData = measurablePlacers.map { it.componentData } }
             .map { it.measure(constraints) }
-
 
         layout(constraints.maxWidth, constraints.maxHeight) {
             placersPlaceable.forEachIndexed { index, placeable ->
@@ -124,17 +123,17 @@ data class MapComponentData(
 
 interface KMaPScope {
     @Composable
-    fun placers(items: List<MarkerPlacer>, markerContent: @Composable (MarkerPlacer) -> Unit) = items.forEach { item -> //TODO add gesture input to this
+    fun placers(items: List<Placer>, markerContent: @Composable (Placer) -> Unit) = items.forEach { item -> //TODO add gesture input to this
         Layout(
             content = { markerContent(item) },
             modifier = Modifier
                 .componentData(MapComponentData(item.coordinates.toPosition(), item.zIndex, item.drawPosition, item.angle)),
             measurePolicy = { measurables, constraints ->
                 val placeable = measurables.first().measure(constraints)
-                layout(constraints.minWidth, constraints.minHeight) {//TODO improve this math
+                layout(constraints.minWidth, constraints.minHeight) {//TODO fix wierd small off placement
                     placeable.placeWithLayer(
-                        x = (-item.drawPosition.x * placeable.width + (1 - 1 / 2F.pow(item.zoom - item.zoomToFix)) * placeable.width / 2).toInt(),
-                        y = (-item.drawPosition.y * placeable.height + (1 - 1 / 2F.pow(item.zoom - item.zoomToFix)) * placeable.height / 2).toInt(),
+                        x = (-item.drawPosition.x * placeable.width + if(item.scaleWithMap) (1 - 1 / 2F.pow(item.zoom - item.zoomToFix)) * placeable.width / 2 else 0F).toInt(),
+                        y = (-item.drawPosition.y * placeable.height + if(item.scaleWithMap)(1 - 1 / 2F.pow(item.zoom - item.zoomToFix)) * placeable.height / 2 else 0F).toInt(),
                         zIndex = item.zIndex
                     ) {
                         if (item.scaleWithMap) {

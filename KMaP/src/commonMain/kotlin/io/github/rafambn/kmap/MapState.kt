@@ -33,13 +33,13 @@ class MapState(
     initialRotation: Degrees = 0.0,
     maxZoom: Int = 19,
     minZoom: Int = 0,
-    val mapProperties: MapProperties = MapProperties(zoomLevels = OSMZoomlevelsRange, mapCoordinatesRange = OSMCoordinatesRange, tileSize = 256),
+    val mapProperties: MapProperties = MapProperties(),
     val density: Density
 ) : MotionInterface, CanvasSizeChangeListener {
 
     //User define min/max zoom
-    private var maxZoom = maxZoom.coerceIn(mapProperties.zoomLevels.min, mapProperties.zoomLevels.max)
-    private var minZoom = minZoom.coerceIn(mapProperties.zoomLevels.min, mapProperties.zoomLevels.max)
+    private var maxZoom = maxZoom.coerceIn(mapProperties.mapSource.zoomLevels.min, mapProperties.mapSource.zoomLevels.max)
+    private var minZoom = minZoom.coerceIn(mapProperties.mapSource.zoomLevels.min, mapProperties.mapSource.zoomLevels.max)
 
     //Control variables
     var zoom = initialZoom //TODO use field
@@ -57,7 +57,7 @@ class MapState(
     val magnifierScale
         get() = zoom - zoomLevel + 1F
     internal val positionOffset
-        get() = mapPosition.toCanvasDrawReference(zoomLevel, mapProperties.mapCoordinatesRange, mapProperties.tileSize)
+        get() = mapPosition.toCanvasDrawReference(zoomLevel, mapProperties.mapSource)
 
     //Map state variable for recomposition
     internal var state by mutableStateOf(false)
@@ -68,7 +68,7 @@ class MapState(
             ScreenState(
                 getBoundingBox(),
                 zoomLevel,
-                mapProperties.mapCoordinatesRange,
+                mapProperties.mapSource.mapCoordinatesRange,
                 mapProperties.outsideTiles,
                 maxZoom,
                 minZoom
@@ -134,8 +134,7 @@ class MapState(
         flingZoomJob?.cancel()
         flingZoomAtPositionJob?.cancel()
         val previousOffset =
-            position.toScreenOffset(mapPosition, canvasSize, magnifierScale, zoomLevel, angleDegrees, mapProperties.mapCoordinatesRange, density,
-                mapProperties.tileSize)
+            position.toScreenOffset(mapPosition, canvasSize, magnifierScale, zoomLevel, angleDegrees, density, mapProperties.mapSource)
         this.zoom = (zoom + this.zoom).coerceZoom()
         centerPositionAtOffset(position, previousOffset)
         updateState()
@@ -157,8 +156,7 @@ class MapState(
         flingZoomAtPositionJob?.cancel()
         val startZoom = this.zoom
         val previousOffset =
-            position.toScreenOffset(mapPosition, canvasSize, magnifierScale, zoomLevel, angleDegrees, mapProperties.mapCoordinatesRange, density,
-                mapProperties.tileSize)
+            position.toScreenOffset(mapPosition, canvasSize, magnifierScale, zoomLevel, angleDegrees, density, mapProperties.mapSource)
         flingZoomAtPositionJob = decayValue(coroutineScope, decayRate) { decayValue ->
             this.zoom = lerp(startZoom, zoom, decayValue.toFloat()).coerceZoom()
             centerPositionAtOffset(position, previousOffset)
@@ -184,8 +182,7 @@ class MapState(
         flingRotationJob?.cancel()
         flingRotationAtPositionJob?.cancel()
         val previousOffset =
-            position.toScreenOffset(mapPosition, canvasSize, magnifierScale, zoomLevel, angleDegrees, mapProperties.mapCoordinatesRange, density,
-                mapProperties.tileSize)
+            position.toScreenOffset(mapPosition, canvasSize, magnifierScale, zoomLevel, angleDegrees, density, mapProperties.mapSource)
         angleDegrees += angle.toFloat()
         centerPositionAtOffset(position, previousOffset)
         updateState()
@@ -207,8 +204,7 @@ class MapState(
         flingRotationAtPositionJob?.cancel()
         val startRotation = angleDegrees
         val previousOffset =
-            position.toScreenOffset(mapPosition, canvasSize, magnifierScale, zoomLevel, angleDegrees, mapProperties.mapCoordinatesRange, density,
-                mapProperties.tileSize)
+            position.toScreenOffset(mapPosition, canvasSize, magnifierScale, zoomLevel, angleDegrees, density, mapProperties.mapSource)
         flingRotationAtPositionJob = decayValue(coroutineScope, decayRate) { decayValue ->
             angleDegrees = lerp(startRotation, angle, decayValue)
             centerPositionAtOffset(position, previousOffset)
@@ -231,9 +227,8 @@ class MapState(
                 magnifierScale,
                 zoomLevel,
                 angleDegrees,
-                mapProperties.mapCoordinatesRange,
                 density,
-                mapProperties.tileSize
+                mapProperties.mapSource
             ),
             Offset(canvasSize.x, 0F).toCanvasPosition(
                 mapPosition,
@@ -241,9 +236,8 @@ class MapState(
                 magnifierScale,
                 zoomLevel,
                 angleDegrees,
-                mapProperties.mapCoordinatesRange,
                 density,
-                mapProperties.tileSize
+                mapProperties.mapSource
             ),
             Offset(0F, canvasSize.y).toCanvasPosition(
                 mapPosition,
@@ -251,9 +245,8 @@ class MapState(
                 magnifierScale,
                 zoomLevel,
                 angleDegrees,
-                mapProperties.mapCoordinatesRange,
                 density,
-                mapProperties.tileSize
+                mapProperties.mapSource
             ),
             canvasSize.toCanvasPosition(
                 mapPosition,
@@ -261,9 +254,8 @@ class MapState(
                 magnifierScale,
                 zoomLevel,
                 angleDegrees,
-                mapProperties.mapCoordinatesRange,
                 density,
-                mapProperties.tileSize
+                mapProperties.mapSource
             ),
         )
     }
@@ -271,18 +263,18 @@ class MapState(
     private fun Position.coerceInMap(): Position {
         val x = if (mapProperties.boundMap.horizontal == MapBorderType.BOUND)
             horizontal.coerceIn(
-                mapProperties.mapCoordinatesRange.longitute.west,
-                mapProperties.mapCoordinatesRange.longitute.east
+                mapProperties.mapSource.mapCoordinatesRange.longitute.west,
+                mapProperties.mapSource.mapCoordinatesRange.longitute.east
             )
         else
-            horizontal.loopInRange(mapProperties.mapCoordinatesRange.longitute)
+            horizontal.loopInRange(mapProperties.mapSource.mapCoordinatesRange.longitute)
         val y = if (mapProperties.boundMap.vertical == MapBorderType.BOUND)
             vertical.coerceIn(
-                mapProperties.mapCoordinatesRange.latitude.south,
-                mapProperties.mapCoordinatesRange.latitude.north
+                mapProperties.mapSource.mapCoordinatesRange.latitude.south,
+                mapProperties.mapSource.mapCoordinatesRange.latitude.north
             )
         else
-            vertical.loopInRange(mapProperties.mapCoordinatesRange.latitude)
+            vertical.loopInRange(mapProperties.mapSource.mapCoordinatesRange.latitude)
         return Position(x, y)
     }
 
@@ -307,9 +299,8 @@ class MapState(
             magnifierScale,
             zoomLevel,
             angleDegrees,
-            mapProperties.mapCoordinatesRange,
             density,
-            mapProperties.tileSize
+            mapProperties.mapSource
         )).coerceInMap()
     }
 }

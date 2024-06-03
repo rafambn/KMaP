@@ -4,7 +4,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Density
 import io.github.rafambn.kmap.CoordinatesInterface
 import io.github.rafambn.kmap.MapCoordinatesRange
-import io.github.rafambn.kmap.TileCanvasState
+import io.github.rafambn.kmap.MapSource
 import kotlin.math.PI
 import kotlin.math.ln
 import kotlin.math.tan
@@ -16,12 +16,11 @@ typealias ProjectedCoordinates = Position
 
 fun Offset.toPosition(): Position = Position(this.x.toDouble(), this.y.toDouble())
 
-
-fun CanvasPosition.toCanvasDrawReference(zoomLevel: Int, mapCoordinatesRange: MapCoordinatesRange, tileSize: Int): Position =
-    this.applyOrientation(mapCoordinatesRange)
-        .moveToTrueCoordinates(mapCoordinatesRange)
-        .scaleToZoom((tileSize * (1 shl zoomLevel)).toFloat())
-        .scaleToMap(1 / mapCoordinatesRange.longitute.span, 1 / mapCoordinatesRange.latitude.span)
+fun CanvasPosition.toCanvasDrawReference(zoomLevel: Int, mapSource: MapSource): Position =
+    this.applyOrientation(mapSource.mapCoordinatesRange)
+        .moveToTrueCoordinates(mapSource.mapCoordinatesRange)
+        .scaleToZoom((mapSource.tileSize * (1 shl zoomLevel)).toFloat())
+        .scaleToMap(1 / mapSource.mapCoordinatesRange.longitute.span, 1 / mapSource.mapCoordinatesRange.latitude.span)
 
 fun ProjectedCoordinates.toCanvasPosition(): CanvasPosition = CanvasPosition( //TODO move this to mapProperties
     this.horizontal,
@@ -34,14 +33,13 @@ fun CanvasPosition.toScreenOffset(
     magnifierScale: Float,
     zoomLevel: Int,
     angle: Degrees,
-    mapCoordinatesRange: MapCoordinatesRange,
     density: Density,
-    tileSize: Int
+    mapSource: MapSource
 ): ScreenOffset = -(this - mapPosition)
-    .applyOrientation(mapCoordinatesRange)
-    .scaleToMap(1 / mapCoordinatesRange.longitute.span, 1 / mapCoordinatesRange.latitude.span)
+    .applyOrientation(mapSource.mapCoordinatesRange)
+    .scaleToMap(1 / mapSource.mapCoordinatesRange.longitute.span, 1 / mapSource.mapCoordinatesRange.latitude.span)
     .rotate(angle.toRadians())
-    .scaleToZoom(tileSize * magnifierScale * (1 shl zoomLevel))
+    .scaleToZoom(mapSource.tileSize * magnifierScale * (1 shl zoomLevel))
     .times(density.density.toDouble()).toOffset()
     .minus(canvasSize / 2F)
 
@@ -51,18 +49,16 @@ fun ScreenOffset.toCanvasPosition(
     magnifierScale: Float,
     zoomLevel: Int,
     angle: Degrees,
-    mapCoordinatesRange: MapCoordinatesRange,
     density: Density,
-    tileSize: Int
+    mapSource: MapSource
 ): CanvasPosition {
     return this.toCanvasPositionFromScreenCenter(
         canvasSize,
         magnifierScale,
         zoomLevel,
         angle,
-        mapCoordinatesRange,
         density,
-        tileSize
+        mapSource
     ) + mapPosition
 }
 
@@ -71,17 +67,15 @@ fun DifferentialScreenOffset.toCanvasPositionFromScreenCenter(
     magnifierScale: Float,
     zoomLevel: Int,
     angle: Degrees,
-    mapCoordinatesRange: MapCoordinatesRange,
     density: Density,
-    tileSize: Int
+    mapSource: MapSource
 ): CanvasPosition {
     return (canvasSize / 2F - this).toCanvasPosition(
         magnifierScale,
         zoomLevel,
         angle,
-        mapCoordinatesRange,
         density,
-        tileSize
+        mapSource
     )
 }
 
@@ -89,14 +83,13 @@ fun DifferentialScreenOffset.toCanvasPosition(
     magnifierScale: Float,
     zoomLevel: Int,
     angle: Degrees,
-    mapCoordinatesRange: MapCoordinatesRange,
     density: Density,
-    tileSize: Int
+    mapSource: MapSource
 ): CanvasPosition = (this.toPosition() / density.density.toDouble())
-    .scaleToZoom(1 / (tileSize * magnifierScale * (1 shl zoomLevel)))
+    .scaleToZoom(1 / (mapSource.tileSize * magnifierScale * (1 shl zoomLevel)))
     .rotate(-angle.toRadians())
-    .scaleToMap(mapCoordinatesRange.longitute.span, mapCoordinatesRange.latitude.span)
-    .applyOrientation(mapCoordinatesRange)
+    .scaleToMap(mapSource.mapCoordinatesRange.longitute.span, mapSource.mapCoordinatesRange.latitude.span)
+    .applyOrientation(mapSource.mapCoordinatesRange)
 
 
 //Transformation functions
