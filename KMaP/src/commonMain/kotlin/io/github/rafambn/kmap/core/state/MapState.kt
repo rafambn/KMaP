@@ -21,12 +21,12 @@ import io.github.rafambn.kmap.utils.offsets.CanvasPosition
 import io.github.rafambn.kmap.utils.offsets.ProjectedCoordinates
 import io.github.rafambn.kmap.utils.offsets.ScreenOffset
 import io.github.rafambn.kmap.utils.offsets.toCanvasPosition
+import io.github.rafambn.kmap.utils.toIntFloor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.exp
-import kotlin.math.floor
 
 class MapState(
     private val coroutineScope: CoroutineScope,
@@ -55,7 +55,7 @@ class MapState(
 
     //Derivative variables
     val zoomLevel
-        get() = floor(zoom).toInt()
+        get() = zoom.toIntFloor()
     val magnifierScale
         get() = zoom - zoomLevel + 1F
     internal val positionOffset
@@ -309,4 +309,4 @@ inline fun rememberMapState(
     crossinline init: MapState.() -> Unit = {}
 ): MapState = remember {
     MapState(coroutineScope, density = density).apply(init)
-}
+} //TODO improve this function

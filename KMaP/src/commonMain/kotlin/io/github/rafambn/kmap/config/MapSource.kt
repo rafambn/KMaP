@@ -11,4 +11,6 @@ interface MapSource {
     val tileSize: Int
 
     fun toCanvasPosition(projectedCoordinates: ProjectedCoordinates): CanvasPosition
+
+    fun toProjectedCoordinates(canvasPosition: CanvasPosition): ProjectedCoordinates
 }

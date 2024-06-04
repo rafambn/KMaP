@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import io.github.rafambn.kmap.gestures.GestureInterface
 import io.github.rafambn.kmap.gestures.detectMapGestures
 import io.github.rafambn.kmap.model.TileCanvasStateModel
-import kotlin.math.floor
+import io.github.rafambn.kmap.utils.toIntFloor
 import kotlin.math.pow
 
 @Composable
@@ -62,12 +62,12 @@ internal fun TileCanvas(
                     tile.imageBitmap?.let {
                         canvas.drawImageRect(image = it,
                             dstOffset = IntOffset(
-                                floor((tileCanvasStateModel.tileSize * tile.row * adjustedTileSize + tileCanvasStateModel.positionOffset.horizontal).dp.toPx()).toInt(),
-                                floor((tileCanvasStateModel.tileSize * tile.col * adjustedTileSize + tileCanvasStateModel.positionOffset.vertical).dp.toPx()).toInt()
+                                (tileCanvasStateModel.tileSize * tile.row * adjustedTileSize + tileCanvasStateModel.positionOffset.horizontal).dp.toPx().toIntFloor(),
+                                (tileCanvasStateModel.tileSize * tile.col * adjustedTileSize + tileCanvasStateModel.positionOffset.vertical).dp.toPx().toIntFloor()
                             ),
                             dstSize = IntSize(
-                                (tileCanvasStateModel.tileSize.dp.toPx() * adjustedTileSize).toInt(),
-                                (tileCanvasStateModel.tileSize.dp.toPx() * adjustedTileSize).toInt()
+                                (tileCanvasStateModel.tileSize.dp.toPx() * adjustedTileSize).toIntFloor(),
+                                (tileCanvasStateModel.tileSize.dp.toPx() * adjustedTileSize).toIntFloor()
                             ),
                             paint = Paint().apply {
                                 isAntiAlias = false
@@ -80,12 +80,12 @@ internal fun TileCanvas(
                     tile.imageBitmap?.let {
                         canvas.drawImageRect(image = it,
                             dstOffset = IntOffset(
-                                floor((tileCanvasStateModel.tileSize * tile.row + tileCanvasStateModel.positionOffset.horizontal).dp.toPx()).toInt(),
-                                floor((tileCanvasStateModel.tileSize * tile.col + tileCanvasStateModel.positionOffset.vertical).dp.toPx()).toInt()
+                                (tileCanvasStateModel.tileSize * tile.row + tileCanvasStateModel.positionOffset.horizontal).dp.toPx().toIntFloor(),
+                                (tileCanvasStateModel.tileSize * tile.col + tileCanvasStateModel.positionOffset.vertical).dp.toPx().toIntFloor()
                             ),
                             dstSize = IntSize(
-                                tileCanvasStateModel.tileSize.dp.toPx().toInt(),
-                                tileCanvasStateModel.tileSize.dp.toPx().toInt()
+                                tileCanvasStateModel.tileSize.dp.toPx().toIntFloor(),
+                                tileCanvasStateModel.tileSize.dp.toPx().toIntFloor()
                             ),
                             paint = Paint().apply {
                                 isAntiAlias = false

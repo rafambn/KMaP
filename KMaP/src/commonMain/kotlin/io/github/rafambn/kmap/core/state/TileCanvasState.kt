@@ -10,6 +10,7 @@ import io.github.rafambn.kmap.model.TileSpecs
 import io.github.rafambn.kmap.utils.loopInZoom
 import io.github.rafambn.kmap.utils.offsets.CanvasPosition
 import io.github.rafambn.kmap.utils.toImageBitmap
+import io.github.rafambn.kmap.utils.toIntFloor
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -23,7 +24,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 import kotlin.concurrent.Volatile
-import kotlin.math.floor
 import kotlin.math.pow
 import kotlin.reflect.KFunction0
 
@@ -207,8 +207,8 @@ class TileCanvasState(
 
     private fun getXYTile(position: CanvasPosition, zoomLevel: Int, mapSize: MapCoordinatesRange): Pair<Int, Int> {
         return Pair(
-            floor((position.horizontal - mapSize.longitute.getMin()) / mapSize.longitute.span * (1 shl zoomLevel)).toInt(),
-            floor((-position.vertical + mapSize.latitude.getMax()) / mapSize.latitude.span * (1 shl zoomLevel)).toInt()
+            ((position.horizontal - mapSize.longitute.getMin()) / mapSize.longitute.span * (1 shl zoomLevel)).toIntFloor(),
+            ((-position.vertical + mapSize.latitude.getMax()) / mapSize.latitude.span * (1 shl zoomLevel)).toIntFloor()
         )
     }
 }
