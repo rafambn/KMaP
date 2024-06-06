@@ -15,6 +15,7 @@ import io.github.rafambn.kmap.KMaP
 import io.github.rafambn.kmap.core.DrawPosition
 import io.github.rafambn.kmap.core.Placer
 import io.github.rafambn.kmap.core.state.rememberMapState
+import io.github.rafambn.kmap.gestures.DefaultCanvasGestureListener
 import io.github.rafambn.kmap.utils.offsets.ProjectedCoordinates
 import io.github.rafambn.templateapp.theme.AppTheme
 import kmap_library_with_app.composeapp.generated.resources.Res
@@ -30,7 +31,11 @@ internal fun App() = AppTheme {
             val mapState = rememberMapState(CoroutineScope(Dispatchers.Default))
             KMaP(
                 modifier = Modifier.align(Alignment.Center).size(300.dp, 600.dp),
-                mapState = mapState
+                mapState = mapState,
+                canvasGestureListener = DefaultCanvasGestureListener(mapState.motionController),
+                onCanvasChangeSize = {
+                    mapState.onCanvasSizeChanged(it)
+                }
             ) {
                 placers(
                     listOf(

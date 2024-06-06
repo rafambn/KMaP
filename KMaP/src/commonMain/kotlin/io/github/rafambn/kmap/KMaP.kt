@@ -16,7 +16,6 @@ import io.github.rafambn.kmap.core.MapComponentData
 import io.github.rafambn.kmap.core.TileCanvas
 import io.github.rafambn.kmap.core.componentData
 import io.github.rafambn.kmap.core.state.MapState
-import io.github.rafambn.kmap.gestures.DefaultCanvasGestureListener
 import io.github.rafambn.kmap.gestures.GestureInterface
 import io.github.rafambn.kmap.model.TileCanvasStateModel
 
@@ -24,7 +23,8 @@ import io.github.rafambn.kmap.model.TileCanvasStateModel
 fun KMaP(
     modifier: Modifier = Modifier,
     mapState: MapState,
-    canvasGestureListener: GestureInterface = DefaultCanvasGestureListener(mapState),
+    canvasGestureListener: GestureInterface,
+    onCanvasChangeSize: (Offset) -> Unit,
     content: @Composable KMaPScope.() -> Unit = {}
 ) {
     Layout(
@@ -50,7 +50,7 @@ fun KMaP(
             .clipToBounds()
             .wrapContentSize()
             .onGloballyPositioned { coordinates ->
-                mapState.onCanvasSizeChanged(coordinates.size.toSize().toRect().bottomRight)
+                onCanvasChangeSize(coordinates.size.toSize().toRect().bottomRight)
             }
     ) { measurables, constraints ->
         val placersData: List<MapComponentData>

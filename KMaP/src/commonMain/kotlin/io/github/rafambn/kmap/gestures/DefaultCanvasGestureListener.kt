@@ -1,121 +1,59 @@
 package io.github.rafambn.kmap.gestures
 
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Velocity
-import io.github.rafambn.kmap.core.state.MapState
+import io.github.rafambn.kmap.core.state.MotionController
 import io.github.rafambn.kmap.utils.offsets.DifferentialScreenOffset
 import io.github.rafambn.kmap.utils.offsets.ScreenOffset
-import io.github.rafambn.kmap.utils.offsets.toCanvasPosition
 
-open class DefaultCanvasGestureListener(private val mapState: MapState) : GestureInterface {
+open class DefaultCanvasGestureListener(private val motionController: MotionController) : GestureInterface {
     override fun onTap(screenOffset: ScreenOffset) {
     }
 
     override fun onDoubleTap(screenOffset: ScreenOffset) {
-        mapState.zoomBy(
-            -1 / 3F, screenOffset.toCanvasPosition(
-                mapState.mapPosition,
-                mapState.canvasSize,
-                mapState.magnifierScale,
-                mapState.zoomLevel,
-                mapState.angleDegrees,
-                mapState.density,
-                mapState.mapProperties.mapSource
-            )
-        )
+        with(motionController) {
+            motionController.zoomBy(-1 / 3F, screenOffset.fromScreenOffsetToCanvasPosition())
+        }
     }
 
     override fun onTwoFingersTap(screenOffset: ScreenOffset) {
-        mapState.zoomBy(
-            1 / 3F, screenOffset.toCanvasPosition(
-                mapState.mapPosition,
-                mapState.canvasSize,
-                mapState.magnifierScale,
-                mapState.zoomLevel,
-                mapState.angleDegrees,
-                mapState.density,
-                mapState.mapProperties.mapSource
-            )
-        )
+        with(motionController) {
+            motionController.zoomBy(1 / 3F, screenOffset.fromScreenOffsetToCanvasPosition())
+        }
     }
 
     override fun onLongPress(screenOffset: ScreenOffset) {
     }
 
     override fun onTapLongPress(differentialScreenOffset: DifferentialScreenOffset) {
-        mapState.moveBy(
-            differentialScreenOffset.toCanvasPosition(
-                mapState.magnifierScale,
-                mapState.zoomLevel,
-                mapState.angleDegrees,
-                mapState.density,
-                mapState.mapProperties.mapSource
-            )
-        )
+        with(motionController) {
+            motionController.moveBy(differentialScreenOffset.fromDifferentialScreenOffsetToCanvasPosition())
+        }
     }
 
     override fun onTapSwipe(screenOffset: ScreenOffset, zoom: Float) {
-        mapState.zoomBy(
-            zoom, screenOffset.toCanvasPosition(
-                mapState.mapPosition,
-                mapState.canvasSize,
-                mapState.magnifierScale,
-                mapState.zoomLevel,
-                mapState.angleDegrees,
-                mapState.density,
-                mapState.mapProperties.mapSource
-            )
-        )
+        with(motionController) {
+            motionController.zoomBy(zoom, screenOffset.fromDifferentialScreenOffsetToCanvasPosition())
+        }
     }
 
     override fun onGesture(screenOffset: ScreenOffset, differentialScreenOffset: DifferentialScreenOffset, zoom: Float, rotation: Float) {
-        mapState.rotateBy(
-            rotation.toDouble(), screenOffset.toCanvasPosition(
-                mapState.mapPosition,
-                mapState.canvasSize,
-                mapState.magnifierScale,
-                mapState.zoomLevel,
-                mapState.angleDegrees,
-                mapState.density,
-                mapState.mapProperties.mapSource
-            )
-        )
-        mapState.zoomBy(
-            zoom, screenOffset.toCanvasPosition(
-                mapState.mapPosition,
-                mapState.canvasSize,
-                mapState.magnifierScale,
-                mapState.zoomLevel,
-                mapState.angleDegrees,
-                mapState.density,
-                mapState.mapProperties.mapSource
-            )
-        )
-        mapState.moveBy(
-            differentialScreenOffset.toCanvasPosition(
-                mapState.magnifierScale,
-                mapState.zoomLevel,
-                mapState.angleDegrees,
-                mapState.density,
-                mapState.mapProperties.mapSource
-            )
-        )
+        with(motionController) {
+            motionController.rotateBy(rotation.toDouble(), screenOffset.fromScreenOffsetToCanvasPosition())
+            motionController.zoomBy(zoom, screenOffset.fromScreenOffsetToCanvasPosition())
+            motionController.moveBy(differentialScreenOffset.fromScreenOffsetToCanvasPosition())
+        }
     }
 
     override fun onCtrlGesture(rotation: Float) {
-        mapState.rotateBy(rotation.toDouble())
+        with(motionController) {
+            motionController.rotateBy(rotation.toDouble())
+        }
     }
 
     override fun onDrag(differentialScreenOffset: DifferentialScreenOffset) {
-        mapState.moveBy(
-            differentialScreenOffset.toCanvasPosition(
-                mapState.magnifierScale,
-                mapState.zoomLevel,
-                mapState.angleDegrees,
-                mapState.density,
-                mapState.mapProperties.mapSource
-            )
-        )
+        with(motionController) {
+            motionController.moveBy(differentialScreenOffset.fromDifferentialScreenOffsetToCanvasPosition())
+        }
     }
 
     override fun onGestureStart(gestureType: GestureState, screenOffset: ScreenOffset) {
@@ -126,63 +64,33 @@ open class DefaultCanvasGestureListener(private val mapState: MapState) : Gestur
 
     //TODO fix flings
     override fun onFling(velocity: Velocity) {
-        mapState.animatePositionTo(
-            Offset(velocity.x, velocity.y).toCanvasPosition(
-                mapState.magnifierScale,
-                mapState.zoomLevel,
-                mapState.angleDegrees,
-                mapState.density,
-                mapState.mapProperties.mapSource
-            ) + mapState.mapPosition
-        )
+//        with(motionController) {
+//            motionController.animatePositionTo(Offset(velocity.x, velocity.y).fromScreenOffsetToCanvasPosition() + mapState.mapPosition)
+//        }
     }
 
     override fun onFlingZoom(screenOffset: ScreenOffset, velocity: Float) {
-        mapState.animateZoomTo(
-            velocity + mapState.zoom, position = screenOffset.toCanvasPosition(
-                mapState.mapPosition,
-                mapState.canvasSize,
-                mapState.magnifierScale,
-                mapState.zoomLevel,
-                mapState.angleDegrees,
-                mapState.density,
-                mapState.mapProperties.mapSource
-            )
-        )
+//        with(motionController) {
+//            motionController.animateZoomTo(velocity + mapState.zoom, position = screenOffset.fromScreenOffsetToCanvasPosition())
+//        }
     }
 
     override fun onFlingRotation(screenOffset: ScreenOffset?, velocity: Float) {
-        screenOffset?.let {
-            mapState.animateRotationTo(
-                velocity + mapState.angleDegrees, position = screenOffset.toCanvasPosition(
-                    mapState.mapPosition,
-                    mapState.canvasSize,
-                    mapState.magnifierScale,
-                    mapState.zoomLevel,
-                    mapState.angleDegrees,
-                    mapState.density,
-                    mapState.mapProperties.mapSource
-                )
-            )
-        } ?: run {
-            mapState.animateRotationTo((velocity + mapState.angleDegrees).toDouble())
-        }
+//        with(motionController) {
+//            screenOffset?.let {
+//                motionController.animateRotationTo(velocity + mapState.angleDegrees, position = screenOffset.fromScreenOffsetToCanvasPosition())
+//            } ?: run {
+//                motionController.animateRotationTo((velocity + mapState.angleDegrees).toDouble())
+//            }
+//        }
     }
 
     override fun onHover(screenOffset: ScreenOffset) {
     }
 
     override fun onScroll(screenOffset: ScreenOffset, scrollAmount: Float) {
-        mapState.zoomBy(
-            scrollAmount, screenOffset.toCanvasPosition(
-                mapState.mapPosition,
-                mapState.canvasSize,
-                mapState.magnifierScale,
-                mapState.zoomLevel,
-                mapState.angleDegrees,
-                mapState.density,
-                mapState.mapProperties.mapSource
-            )
-        )
+        with(motionController) {
+            motionController.zoomBy(scrollAmount, screenOffset.fromScreenOffsetToCanvasPosition())
+        }
     }
 }
