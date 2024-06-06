@@ -10,6 +10,5 @@ data class TileCanvasStateModel(
     val magnifierScale: Float,
     val visibleTilesList: TileLayers,
     val positionOffset: CanvasDrawReference,
-    val zoomLevel: Int,
     val tileSize: Int
 )

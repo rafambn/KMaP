@@ -38,7 +38,6 @@ fun KMaP(
                     mapState.magnifierScale,
                     mapState.tileCanvasState.tileLayers,
                     mapState.positionOffset,
-                    mapState.zoomLevel,
                     mapState.mapProperties.mapSource.tileSize
                 ),
                 mapState.state,
