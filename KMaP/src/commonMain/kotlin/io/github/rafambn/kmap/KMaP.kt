@@ -32,7 +32,7 @@ fun KMaP(
             TileCanvas(
                 Modifier
                     .componentData(MapComponentData(Offset.Zero, 0F, DrawPosition.TOP_LEFT, 0.0)),
-                TileCanvasStateModel(
+                TileCanvasStateModel( //TODO make it a flow
                     mapState.canvasSize / 2F,
                     mapState.angleDegrees.toFloat(),
                     mapState.magnifierScale,

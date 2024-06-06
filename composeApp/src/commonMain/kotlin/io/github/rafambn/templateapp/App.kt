@@ -11,8 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import io.github.rafambn.kmap.core.DrawPosition
 import io.github.rafambn.kmap.KMaP
+import io.github.rafambn.kmap.core.DrawPosition
 import io.github.rafambn.kmap.core.Placer
 import io.github.rafambn.kmap.core.state.rememberMapState
 import io.github.rafambn.kmap.utils.offsets.ProjectedCoordinates

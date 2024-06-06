@@ -30,18 +30,22 @@ import kotlin.math.exp
 
 class MapState(
     private val coroutineScope: CoroutineScope,
-    initialPosition: ProjectedCoordinates = ProjectedCoordinates.Zero,
-    initialZoom: Float = 0F,
-    initialRotation: Degrees = 0.0,
-    maxZoom: Int = 19,
-    minZoom: Int = 0,
+    initialPosition: ProjectedCoordinates,
+    initialZoom: Float,
+    initialRotation: Degrees,
+    val density: Density,
     val mapProperties: MapProperties = MapProperties(),
-    val density: Density
 ) : MotionInterface, CanvasSizeChangeListener {
 
     //User define min/max zoom
-    private var maxZoom = maxZoom.coerceIn(mapProperties.mapSource.zoomLevels.min, mapProperties.mapSource.zoomLevels.max)
-    private var minZoom = minZoom.coerceIn(mapProperties.mapSource.zoomLevels.min, mapProperties.mapSource.zoomLevels.max)
+    var maxZoom = mapProperties.mapSource.zoomLevels.max
+        set(value) {
+            field = value.coerceIn(mapProperties.mapSource.zoomLevels.min, mapProperties.mapSource.zoomLevels.max)
+        }
+    var minZoom = mapProperties.mapSource.zoomLevels.min
+        set(value) {
+            field = value.coerceIn(mapProperties.mapSource.zoomLevels.min, mapProperties.mapSource.zoomLevels.max)
+        }
 
     //Control variables
     var zoom = initialZoom
@@ -305,8 +309,16 @@ class MapState(
 @Composable
 inline fun rememberMapState(
     coroutineScope: CoroutineScope,
+    initialPosition: ProjectedCoordinates = ProjectedCoordinates.Zero,
+    initialZoom: Float = 0F,
+    initialRotation: Degrees = 0.0,
     density: Density = LocalDensity.current,
-    crossinline init: MapState.() -> Unit = {}
 ): MapState = remember {
-    MapState(coroutineScope, density = density).apply(init)
-} //TODO improve this function
+    MapState(
+        coroutineScope,
+        initialPosition = initialPosition,
+        initialZoom = initialZoom,
+        initialRotation = initialRotation,
+        density = density
+    )
+}
