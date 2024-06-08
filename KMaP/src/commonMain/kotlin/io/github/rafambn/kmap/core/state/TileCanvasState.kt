@@ -123,7 +123,7 @@ class TileCanvasState(
         tilesProcessFailedResult: SendChannel<TileSpecs>
     ) = launch(Dispatchers.Default) {
         val imageBitmap: ImageBitmap
-        println("${tileToProcess.zoom} -- ${tileToProcess.col} -- ${tileToProcess.row}")
+//        println("${tileToProcess.zoom} -- ${tileToProcess.col} -- ${tileToProcess.row}")
         try {
             val byteArray = client.get(
                 "https://tile.openstreetmap.org/${tileToProcess.zoom}/${(tileToProcess.row).loopInZoom(tileToProcess.zoom)}/${

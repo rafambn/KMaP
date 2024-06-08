@@ -51,7 +51,7 @@ fun KMaP(
             .map { it.measure(constraints) }
 
         layout(constraints.maxWidth, constraints.maxHeight) {
-            placersPlaceable.forEachIndexed { index, placeable -> //TODO fix placers having 0 width and height
+            placersPlaceable.forEachIndexed { index, placeable ->
                 placeable.place(
                     x = placersData[index].position.x.toInt(),
                     y = placersData[index].position.y.toInt(),

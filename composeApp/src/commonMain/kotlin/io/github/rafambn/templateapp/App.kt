@@ -2,6 +2,7 @@ package io.github.rafambn.templateapp
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
@@ -54,6 +55,9 @@ internal fun App() = AppTheme {
                         Modifier
                             .background(Color.Black)
                             .size(32.dp)
+                            .clickable {
+                                println("Clicked")
+                            }
                     )
                 }
             }
