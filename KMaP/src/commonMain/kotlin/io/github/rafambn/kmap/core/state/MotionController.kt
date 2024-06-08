@@ -174,7 +174,7 @@ class MotionController(
     }
 
     private fun Float.coerceZoom(): Float {
-        return this.coerceIn(mapState.minZoom.toFloat(), mapState.maxZoom.toFloat())
+        return this.coerceIn(mapState.minZoomPreference.toFloat(), mapState.maxZoomPreference.toFloat())
     }
 
     private fun decayValue(coroutineScope: CoroutineScope, decayRate: Double, function: (value: Double) -> Unit) = coroutineScope.launch {

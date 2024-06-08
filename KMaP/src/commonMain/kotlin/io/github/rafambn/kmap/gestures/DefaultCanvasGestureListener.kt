@@ -62,7 +62,6 @@ open class DefaultCanvasGestureListener(private val motionController: MotionCont
     override fun onGestureEnd(gestureType: GestureState) {
     }
 
-    //TODO fix flings
     override fun onFling(velocity: Velocity) {
 //        with(motionController) {
 //            motionController.animatePositionTo(Offset(velocity.x, velocity.y).fromScreenOffsetToCanvasPosition() + mapState.mapPosition)

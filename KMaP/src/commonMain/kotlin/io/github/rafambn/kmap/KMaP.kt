@@ -29,7 +29,7 @@ fun KMaP(
 ) {
     Layout(
         content = {
-            TileCanvas(
+            TileCanvas( //TODO make it a placer and receive a tileProvider
                 Modifier
                     .componentData(MapComponentData(Offset.Zero, 0F, DrawPosition.TOP_LEFT, 0.0)),
                 tileCanvasStateModel.value,
@@ -51,7 +51,7 @@ fun KMaP(
             .map { it.measure(constraints) }
 
         layout(constraints.maxWidth, constraints.maxHeight) {
-            placersPlaceable.forEachIndexed { index, placeable ->
+            placersPlaceable.forEachIndexed { index, placeable -> //TODO fix placers having 0 width and height
                 placeable.place(
                     x = placersData[index].position.x.toInt(),
                     y = placersData[index].position.y.toInt(),

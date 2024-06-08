@@ -20,7 +20,7 @@ interface KMaPScope {
                 .componentData(MapComponentData(item.coordinates, item.zIndex, item.drawPosition, item.angle)),
             measurePolicy = { measurables, constraints ->
                 val placeable = measurables.first().measure(constraints)
-                layout(constraints.minWidth, constraints.minHeight) {//TODO fix wierd small off placement
+                layout(constraints.minWidth, constraints.minHeight) {
                     placeable.placeWithLayer(
                         x = (-item.drawPosition.x * placeable.width + if (item.scaleWithMap) (1 - 1 / 2F.pow(item.zoom - item.zoomToFix)) * placeable.width / 2 else 0F).toInt(),
                         y = (-item.drawPosition.y * placeable.height + if (item.scaleWithMap) (1 - 1 / 2F.pow(item.zoom - item.zoomToFix)) * placeable.height / 2 else 0F).toInt(),

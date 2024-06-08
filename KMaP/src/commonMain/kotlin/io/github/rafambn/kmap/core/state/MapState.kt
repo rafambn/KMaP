@@ -27,11 +27,11 @@ class MapState(
 ) : CanvasSizeChangeListener {
 
     //User define min/max zoom
-    var maxZoom = mapProperties.mapSource.zoomLevels.max
+    var maxZoomPreference = mapProperties.mapSource.zoomLevels.max
         set(value) {
             field = value.coerceIn(mapProperties.mapSource.zoomLevels.min, mapProperties.mapSource.zoomLevels.max)
         }
-    var minZoom = mapProperties.mapSource.zoomLevels.min
+    var minZoomPreference = mapProperties.mapSource.zoomLevels.min
         set(value) {
             field = value.coerceIn(mapProperties.mapSource.zoomLevels.min, mapProperties.mapSource.zoomLevels.max)
         }

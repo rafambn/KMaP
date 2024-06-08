@@ -4,13 +4,11 @@ import io.github.rafambn.kmap.core.state.MapState
 import io.github.rafambn.kmap.utils.offsets.ProjectedCoordinates
 import io.github.rafambn.kmap.utils.offsets.ScreenOffset
 
-class Placer(
+class Placer( //TODO add grouping, alpha, tag/description, specific rotation,
     mapState: MapState,
     coordinates: ProjectedCoordinates,
     val drawPosition: DrawPosition = DrawPosition.TOP_LEFT, //Functionality Implemented
-    val groupId: Int = -1, //TODO add grouping
     val zIndex: Float = 1F, //Functionality Implemented
-    val isGrouping: Boolean = false, //TODO add grouping
     val scaleWithMap: Boolean = false, //Functionality Implemented
     val rotateWithMap: Boolean = false,//Functionality Implemented
     val zoomToFix: Float = 0F, //Functionality Implemented
