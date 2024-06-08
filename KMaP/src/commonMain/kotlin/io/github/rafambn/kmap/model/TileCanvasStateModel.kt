@@ -8,7 +8,8 @@ data class TileCanvasStateModel(
     val translation: Offset,
     val rotation: Float,
     val magnifierScale: Float,
-    val visibleTilesList: TileLayers,
+    val tileLayers: TileLayers,
     val positionOffset: CanvasDrawReference,
-    val tileSize: Int
+    val tileSize: Int,
+    var trigger: Boolean
 )

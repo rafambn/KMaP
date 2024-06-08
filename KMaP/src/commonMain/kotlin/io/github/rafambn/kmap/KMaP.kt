@@ -3,6 +3,7 @@ package io.github.rafambn.kmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
@@ -15,14 +16,13 @@ import io.github.rafambn.kmap.core.DrawPosition
 import io.github.rafambn.kmap.core.MapComponentData
 import io.github.rafambn.kmap.core.TileCanvas
 import io.github.rafambn.kmap.core.componentData
-import io.github.rafambn.kmap.core.state.MapState
 import io.github.rafambn.kmap.gestures.GestureInterface
 import io.github.rafambn.kmap.model.TileCanvasStateModel
 
 @Composable
 fun KMaP(
     modifier: Modifier = Modifier,
-    mapState: MapState,
+    tileCanvasStateModel: State<TileCanvasStateModel>,
     canvasGestureListener: GestureInterface,
     onCanvasChangeSize: (Offset) -> Unit,
     content: @Composable KMaPScope.() -> Unit = {}
@@ -32,15 +32,7 @@ fun KMaP(
             TileCanvas(
                 Modifier
                     .componentData(MapComponentData(Offset.Zero, 0F, DrawPosition.TOP_LEFT, 0.0)),
-                TileCanvasStateModel( //TODO make it a flow
-                    mapState.canvasSize / 2F,
-                    mapState.angleDegrees.toFloat(),
-                    mapState.magnifierScale,
-                    mapState.tileCanvasState.tileLayers,
-                    mapState.positionOffset,
-                    mapState.mapProperties.mapSource.tileSize
-                ),
-                mapState.state,
+                tileCanvasStateModel.value,
                 canvasGestureListener
             )
             KMaPScope.content()

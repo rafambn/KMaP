@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,9 +30,10 @@ internal fun App() = AppTheme {
     Surface(modifier = Modifier.fillMaxSize()) {
         Box {
             val mapState = rememberMapState(CoroutineScope(Dispatchers.Default))
+            val tileCanvasStateModel = mapState.tileCanvasStateFlow.collectAsState()
             KMaP(
                 modifier = Modifier.align(Alignment.Center).size(300.dp, 600.dp),
-                mapState = mapState,
+                tileCanvasStateModel = tileCanvasStateModel,
                 canvasGestureListener = DefaultCanvasGestureListener(mapState.motionController),
                 onCanvasChangeSize = {
                     mapState.onCanvasSizeChanged(it)

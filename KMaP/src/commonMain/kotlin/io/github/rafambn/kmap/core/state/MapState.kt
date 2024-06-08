@@ -1,20 +1,21 @@
 package io.github.rafambn.kmap.core.state
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import io.github.rafambn.kmap.config.MapProperties
 import io.github.rafambn.kmap.core.CanvasSizeChangeListener
 import io.github.rafambn.kmap.model.BoundingBox
+import io.github.rafambn.kmap.model.TileCanvasStateModel
 import io.github.rafambn.kmap.utils.Degrees
 import io.github.rafambn.kmap.utils.offsets.ProjectedCoordinates
 import io.github.rafambn.kmap.utils.toIntFloor
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 
 class MapState(
     coroutineScope: CoroutineScope,
@@ -50,17 +51,26 @@ class MapState(
         get() = zoom.toIntFloor()
     val magnifierScale
         get() = zoom - zoomLevel + 1F
-    internal val positionOffset
-        get() = with(motionController) {
-            mapPosition.toCanvasDrawReference()
-        }
 
     //Controllers
-    val tileCanvasState = TileCanvasState(::redraw, zoomLevel)
+    private val tileCanvasState = TileCanvasState(::redraw, zoomLevel)
     val motionController = MotionController(this, coroutineScope)
 
     //Map state variable for recomposition
-    internal var state by mutableStateOf(false)
+    private val _tileCanvasStateFlow = MutableStateFlow(
+        TileCanvasStateModel(
+            canvasSize / 2F,
+            angleDegrees.toFloat(),
+            magnifierScale,
+            tileCanvasState.tileLayers,
+            with(motionController) {
+                mapPosition.toCanvasDrawReference()
+            },
+            mapProperties.mapSource.tileSize,
+            false
+        )
+    )
+    val tileCanvasStateFlow: StateFlow<TileCanvasStateModel> = _tileCanvasStateFlow
 
     fun updateState() {
         tileCanvasState.onStateChange(
@@ -73,7 +83,19 @@ class MapState(
     }
 
     private fun redraw() {
-        state = !state
+        _tileCanvasStateFlow.update {
+            TileCanvasStateModel(
+                canvasSize / 2F,
+                angleDegrees.toFloat(),
+                magnifierScale,
+                tileCanvasState.tileLayers,
+                with(motionController) {
+                    mapPosition.toCanvasDrawReference()
+                },
+                mapProperties.mapSource.tileSize,
+                !it.trigger //TODO when TileCanvas became possible to be set remove this
+            )
+        }
     }
 
     override fun onCanvasSizeChanged(size: Offset) {
@@ -92,7 +114,6 @@ class MapState(
             )
         }
     }
-
 }
 
 @Composable

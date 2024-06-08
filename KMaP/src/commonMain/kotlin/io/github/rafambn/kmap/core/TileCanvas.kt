@@ -24,7 +24,6 @@ import kotlin.math.pow
 internal fun TileCanvas(
     modifier: Modifier,
     tileCanvasStateModel: TileCanvasStateModel,
-    mapState: Boolean,
     gestureListener: GestureInterface
 ) {
     Canvas(
@@ -57,8 +56,8 @@ internal fun TileCanvas(
         }) {
             drawIntoCanvas { canvas ->
                 val adjustedTileSize =
-                    2F.pow(tileCanvasStateModel.visibleTilesList.frontLayerLevel - tileCanvasStateModel.visibleTilesList.backLayerLevel)
-                for (tile in tileCanvasStateModel.visibleTilesList.backLayer.toList()) {
+                    2F.pow(tileCanvasStateModel.tileLayers.frontLayerLevel - tileCanvasStateModel.tileLayers.backLayerLevel)
+                for (tile in tileCanvasStateModel.tileLayers.backLayer.toList()) {
                     tile.imageBitmap?.let {
                         canvas.drawImageRect(image = it,
                             dstOffset = IntOffset(
@@ -76,7 +75,7 @@ internal fun TileCanvas(
                         )
                     }
                 }
-                for (tile in tileCanvasStateModel.visibleTilesList.frontLayer.toList()) {
+                for (tile in tileCanvasStateModel.tileLayers.frontLayer.toList()) {
                     tile.imageBitmap?.let {
                         canvas.drawImageRect(image = it,
                             dstOffset = IntOffset(

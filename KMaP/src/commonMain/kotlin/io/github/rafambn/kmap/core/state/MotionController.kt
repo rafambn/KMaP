@@ -192,9 +192,9 @@ class MotionController(
     }
 
     //Conversion Functions
-    fun DifferentialScreenOffset.toCanvasPositionFromScreenCenter(): CanvasPosition = (mapState.canvasSize / 2F - this).fromDifferentialScreenOffsetToCanvasPosition()
-
     fun ScreenOffset.fromScreenOffsetToCanvasPosition(): CanvasPosition = this.toCanvasPositionFromScreenCenter() + mapState.mapPosition
+
+    fun DifferentialScreenOffset.toCanvasPositionFromScreenCenter(): CanvasPosition = (mapState.canvasSize / 2F - this).fromDifferentialScreenOffsetToCanvasPosition()
 
     fun DifferentialScreenOffset.fromDifferentialScreenOffsetToCanvasPosition(): CanvasPosition = (this.toPosition() / mapState.density.density.toDouble())
         .scaleToZoom(1 / (mapState.mapProperties.mapSource.tileSize * mapState.magnifierScale * (1 shl mapState.zoomLevel)))
