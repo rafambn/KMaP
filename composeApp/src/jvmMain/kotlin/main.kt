@@ -8,7 +8,7 @@ import io.github.rafambn.templateapp.App
 fun main() = application {
     Window(
         title = "Template library with App",
-        state = rememberWindowState(width = 800.dp, height = 600.dp),
+        state = rememberWindowState(width = 800.dp, height = 800.dp),
         onCloseRequest = ::exitApplication,
     ) {
         window.minimumSize = Dimension(350, 600)

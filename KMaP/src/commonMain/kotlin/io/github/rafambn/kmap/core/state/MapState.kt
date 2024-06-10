@@ -7,7 +7,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import io.github.rafambn.kmap.config.MapProperties
 import io.github.rafambn.kmap.config.MapSource
-import io.github.rafambn.kmap.config.sources.openStreetMaps.OSMMapSource
 import io.github.rafambn.kmap.core.CanvasSizeChangeListener
 import io.github.rafambn.kmap.model.BoundingBox
 import io.github.rafambn.kmap.model.TileCanvasStateModel
@@ -28,7 +27,8 @@ class MapState(
     val mapProperties: MapProperties = MapProperties(),
     val mapSource: MapSource  //TODO add source future -- online, db, cache or mapFile
 ) : CanvasSizeChangeListener {
-
+    init {
+    }
     //User define min/max zoom
     var maxZoomPreference = mapSource.zoomLevels.max
         set(value) {
@@ -73,7 +73,7 @@ class MapState(
             false
         )
     )
-    val tileCanvasStateFlow: StateFlow<TileCanvasStateModel> = _tileCanvasStateFlow
+   val tileCanvasStateFlow: StateFlow<TileCanvasStateModel> = _tileCanvasStateFlow
 
     fun updateState() {
         tileCanvasState.onStateChange(
