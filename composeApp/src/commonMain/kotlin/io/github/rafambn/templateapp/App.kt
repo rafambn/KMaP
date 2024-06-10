@@ -33,20 +33,16 @@ internal fun App() = AppTheme {
         Box {
             val mapState = rememberMapState(
                 coroutineScope = CoroutineScope(Dispatchers.Default),
-                mapSource = OSMMapSource,
+                mapSource = OSMMapSource
             )
             KMaP(
                 modifier = Modifier.align(Alignment.Center).size(300.dp, 600.dp),
+                tileCanvasStateModel = mapState.tileCanvasStateFlow.collectAsState(),
+                canvasGestureListener = DefaultCanvasGestureListener(mapState.motionController),
                 onCanvasChangeSize = {
                     mapState.onCanvasSizeChanged(it)
                 }
             ) {
-                tileCanvas( //TODO make it receive a tileProvider
-                    zIndex = 0F,
-                    alpha = 1F,
-                    gestureListener = DefaultCanvasGestureListener(mapState.motionController),
-                    tileCanvasStateModel = mapState.tileCanvasStateFlow.collectAsState().value
-                )
                 placers(
                     listOf(
                         Placer(
