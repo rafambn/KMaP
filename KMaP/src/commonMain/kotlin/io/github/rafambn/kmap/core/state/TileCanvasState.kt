@@ -1,20 +1,13 @@
 package io.github.rafambn.kmap.core.state
 
-import androidx.compose.ui.graphics.ImageBitmap
 import io.github.rafambn.kmap.config.border.OutsideTilesType
 import io.github.rafambn.kmap.config.characteristics.MapCoordinatesRange
 import io.github.rafambn.kmap.core.TileLayers
 import io.github.rafambn.kmap.model.BoundingBox
 import io.github.rafambn.kmap.model.Tile
 import io.github.rafambn.kmap.model.TileSpecs
-import io.github.rafambn.kmap.utils.loopInZoom
 import io.github.rafambn.kmap.utils.offsets.CanvasPosition
-import io.github.rafambn.kmap.utils.toImageBitmap
 import io.github.rafambn.kmap.utils.toIntFloor
-import io.ktor.client.HttpClient
-import io.ktor.client.request.get
-import io.ktor.client.request.header
-import io.ktor.client.statement.readBytes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -29,6 +22,7 @@ import kotlin.reflect.KFunction0
 
 class TileCanvasState(
     private val updateState: KFunction0<Unit>,
+    private val getTile: suspend (zoom: Int, row: Int, column: Int) -> Tile,
     startZoom: Int
 ) {
     companion object {
@@ -42,7 +36,6 @@ class TileCanvasState(
     private val tilesToProcessChannel = Channel<List<TileSpecs>>(capacity = Channel.UNLIMITED)
     private val workerResultSuccessChannel = Channel<Tile>(capacity = Channel.UNLIMITED)
     private val workerResultFailedChannel = Channel<TileSpecs>(capacity = Channel.UNLIMITED)
-    private val client = HttpClient()
 
     init {
         CoroutineScope(Dispatchers.Default).tilesKernel(tilesToProcessChannel, workerResultSuccessChannel, workerResultFailedChannel)
@@ -122,20 +115,8 @@ class TileCanvasState(
         tilesProcessSuccessResult: SendChannel<Tile>,
         tilesProcessFailedResult: SendChannel<TileSpecs>
     ) = launch(Dispatchers.Default) {
-        val imageBitmap: ImageBitmap
-//        println("${tileToProcess.zoom} -- ${tileToProcess.col} -- ${tileToProcess.row}")
         try {
-            val byteArray = client.get(
-                "https://tile.openstreetmap.org/${tileToProcess.zoom}/${(tileToProcess.row).loopInZoom(tileToProcess.zoom)}/${
-                    (tileToProcess.col).loopInZoom(
-                        tileToProcess.zoom
-                    )
-                }.png"
-            ) {
-                header("User-Agent", "my.app.test5")
-            }.readBytes()
-            imageBitmap = byteArray.toImageBitmap()
-            tilesProcessSuccessResult.send(Tile(tileToProcess.zoom, tileToProcess.row, tileToProcess.col, imageBitmap))
+            tilesProcessSuccessResult.send(getTile(tileToProcess.zoom, tileToProcess.row, tileToProcess.col))
         } catch (ex: Exception) {
             if (tileToProcess.numberOfTries < MAX_TRIES)
                 tilesProcessFailedResult.send(tileToProcess)

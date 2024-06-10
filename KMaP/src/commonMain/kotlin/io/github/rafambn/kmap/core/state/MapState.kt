@@ -6,6 +6,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import io.github.rafambn.kmap.config.MapProperties
+import io.github.rafambn.kmap.config.MapSource
+import io.github.rafambn.kmap.config.sources.openStreetMaps.OSMMapSource
 import io.github.rafambn.kmap.core.CanvasSizeChangeListener
 import io.github.rafambn.kmap.model.BoundingBox
 import io.github.rafambn.kmap.model.TileCanvasStateModel
@@ -24,16 +26,17 @@ class MapState(
     initialRotation: Degrees,
     val density: Density,
     val mapProperties: MapProperties = MapProperties(),
+    val mapSource: MapSource  //TODO add source future -- online, db, cache or mapFile
 ) : CanvasSizeChangeListener {
 
     //User define min/max zoom
-    var maxZoomPreference = mapProperties.mapSource.zoomLevels.max
+    var maxZoomPreference = mapSource.zoomLevels.max
         set(value) {
-            field = value.coerceIn(mapProperties.mapSource.zoomLevels.min, mapProperties.mapSource.zoomLevels.max)
+            field = value.coerceIn(mapSource.zoomLevels.min, mapSource.zoomLevels.max)
         }
-    var minZoomPreference = mapProperties.mapSource.zoomLevels.min
+    var minZoomPreference = mapSource.zoomLevels.min
         set(value) {
-            field = value.coerceIn(mapProperties.mapSource.zoomLevels.min, mapProperties.mapSource.zoomLevels.max)
+            field = value.coerceIn(mapSource.zoomLevels.min, mapSource.zoomLevels.max)
         }
 
     //Control variables
@@ -41,7 +44,7 @@ class MapState(
         internal set
     var angleDegrees = initialRotation
         internal set
-    var mapPosition = mapProperties.mapSource.toCanvasPosition(initialPosition) //TODO make if projection
+    var mapPosition = mapSource.toCanvasPosition(initialPosition) //TODO make if projection
         internal set
     var canvasSize = Offset.Zero
         internal set
@@ -53,7 +56,7 @@ class MapState(
         get() = zoom - zoomLevel + 1F
 
     //Controllers
-    private val tileCanvasState = TileCanvasState(::redraw, zoomLevel)
+    private val tileCanvasState = TileCanvasState(::redraw,mapSource::getTile, zoomLevel)
     val motionController = MotionController(this, coroutineScope)
 
     //Map state variable for recomposition
@@ -66,7 +69,7 @@ class MapState(
             with(motionController) {
                 mapPosition.toCanvasDrawReference()
             },
-            mapProperties.mapSource.tileSize,
+            mapSource.tileSize,
             false
         )
     )
@@ -76,7 +79,7 @@ class MapState(
         tileCanvasState.onStateChange(
             getBoundingBox(),
             zoomLevel,
-            mapProperties.mapSource.mapCoordinatesRange,
+            mapSource.mapCoordinatesRange,
             mapProperties.outsideTiles
         )
         redraw()
@@ -92,7 +95,7 @@ class MapState(
                 with(motionController) {
                     mapPosition.toCanvasDrawReference()
                 },
-                mapProperties.mapSource.tileSize,
+                mapSource.tileSize,
                 !it.trigger //TODO when TileCanvas became possible to be set remove this
             )
         }
@@ -119,6 +122,7 @@ class MapState(
 @Composable
 fun rememberMapState(
     coroutineScope: CoroutineScope,
+    mapSource: MapSource,
     initialPosition: ProjectedCoordinates = ProjectedCoordinates.Zero,
     initialZoom: Float = 0F,
     initialRotation: Degrees = 0.0,
@@ -129,6 +133,7 @@ fun rememberMapState(
         initialPosition = initialPosition,
         initialZoom = initialZoom,
         initialRotation = initialRotation,
-        density = density
+        density = density,
+        mapSource = mapSource
     )
 }

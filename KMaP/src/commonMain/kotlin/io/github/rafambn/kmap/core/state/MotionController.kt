@@ -158,18 +158,18 @@ class MotionController(
     private fun CanvasPosition.coerceInMap(): CanvasPosition {
         val x = if (mapState.mapProperties.boundMap.horizontal == MapBorderType.BOUND)
             horizontal.coerceIn(
-                mapState.mapProperties.mapSource.mapCoordinatesRange.longitute.west,
-                mapState.mapProperties.mapSource.mapCoordinatesRange.longitute.east
+                mapState.mapSource.mapCoordinatesRange.longitute.west,
+                mapState.mapSource.mapCoordinatesRange.longitute.east
             )
         else
-            horizontal.loopInRange(mapState.mapProperties.mapSource.mapCoordinatesRange.longitute)
+            horizontal.loopInRange(mapState.mapSource.mapCoordinatesRange.longitute)
         val y = if (mapState.mapProperties.boundMap.vertical == MapBorderType.BOUND)
             vertical.coerceIn(
-                mapState.mapProperties.mapSource.mapCoordinatesRange.latitude.south,
-                mapState.mapProperties.mapSource.mapCoordinatesRange.latitude.north
+                mapState.mapSource.mapCoordinatesRange.latitude.south,
+                mapState.mapSource.mapCoordinatesRange.latitude.north
             )
         else
-            vertical.loopInRange(mapState.mapProperties.mapSource.mapCoordinatesRange.latitude)
+            vertical.loopInRange(mapState.mapSource.mapCoordinatesRange.latitude)
         return CanvasPosition(x, y)
     }
 
@@ -197,33 +197,33 @@ class MotionController(
     fun DifferentialScreenOffset.toCanvasPositionFromScreenCenter(): CanvasPosition = (mapState.canvasSize / 2F - this).fromDifferentialScreenOffsetToCanvasPosition()
 
     fun DifferentialScreenOffset.fromDifferentialScreenOffsetToCanvasPosition(): CanvasPosition = (this.toPosition() / mapState.density.density.toDouble())
-        .scaleToZoom(1 / (mapState.mapProperties.mapSource.tileSize * mapState.magnifierScale * (1 shl mapState.zoomLevel)))
+        .scaleToZoom(1 / (mapState.mapSource.tileSize * mapState.magnifierScale * (1 shl mapState.zoomLevel)))
         .rotate(-mapState.angleDegrees.toRadians())
         .scaleToMap(
-            mapState.mapProperties.mapSource.mapCoordinatesRange.longitute.span,
-            mapState.mapProperties.mapSource.mapCoordinatesRange.latitude.span
+            mapState.mapSource.mapCoordinatesRange.longitute.span,
+            mapState.mapSource.mapCoordinatesRange.latitude.span
         )
-        .applyOrientation(mapState.mapProperties.mapSource.mapCoordinatesRange)
+        .applyOrientation(mapState.mapSource.mapCoordinatesRange)
 
     fun CanvasPosition.toCanvasDrawReference(): CanvasDrawReference {
-        val canvasDrawReference = this.applyOrientation(mapState.mapProperties.mapSource.mapCoordinatesRange)
-            .moveToTrueCoordinates(mapState.mapProperties.mapSource.mapCoordinatesRange)
-            .scaleToZoom((mapState.mapProperties.mapSource.tileSize * (1 shl mapState.zoomLevel)).toFloat())
+        val canvasDrawReference = this.applyOrientation(mapState.mapSource.mapCoordinatesRange)
+            .moveToTrueCoordinates(mapState.mapSource.mapCoordinatesRange)
+            .scaleToZoom((mapState.mapSource.tileSize * (1 shl mapState.zoomLevel)).toFloat())
             .scaleToMap(
-                1 / mapState.mapProperties.mapSource.mapCoordinatesRange.longitute.span,
-                1 / mapState.mapProperties.mapSource.mapCoordinatesRange.latitude.span
+                1 / mapState.mapSource.mapCoordinatesRange.longitute.span,
+                1 / mapState.mapSource.mapCoordinatesRange.latitude.span
             )
         return CanvasDrawReference(canvasDrawReference.horizontal, canvasDrawReference.vertical)
     }
 
     fun CanvasPosition.toScreenOffset(): ScreenOffset = -(this - mapState.mapPosition)
-        .applyOrientation(mapState.mapProperties.mapSource.mapCoordinatesRange)
+        .applyOrientation(mapState.mapSource.mapCoordinatesRange)
         .scaleToMap(
-            1 / mapState.mapProperties.mapSource.mapCoordinatesRange.longitute.span,
-            1 / mapState.mapProperties.mapSource.mapCoordinatesRange.latitude.span
+            1 / mapState.mapSource.mapCoordinatesRange.longitute.span,
+            1 / mapState.mapSource.mapCoordinatesRange.latitude.span
         )
         .rotate(mapState.angleDegrees.toRadians())
-        .scaleToZoom(mapState.mapProperties.mapSource.tileSize * mapState.magnifierScale * (1 shl mapState.zoomLevel))
+        .scaleToZoom(mapState.mapSource.tileSize * mapState.magnifierScale * (1 shl mapState.zoomLevel))
         .times(mapState.density.density.toDouble()).toOffset()
         .minus(mapState.canvasSize / 2F)
 

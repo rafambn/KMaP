@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import io.github.rafambn.kmap.KMaP
+import io.github.rafambn.kmap.config.sources.openStreetMaps.OSMMapSource
 import io.github.rafambn.kmap.core.DrawPosition
 import io.github.rafambn.kmap.core.Placer
 import io.github.rafambn.kmap.core.state.rememberMapState
@@ -30,11 +31,13 @@ import org.jetbrains.compose.resources.painterResource
 internal fun App() = AppTheme {
     Surface(modifier = Modifier.fillMaxSize()) {
         Box {
-            val mapState = rememberMapState(CoroutineScope(Dispatchers.Default))
-            val tileCanvasStateModel = mapState.tileCanvasStateFlow.collectAsState()
+            val mapState = rememberMapState(
+                coroutineScope = CoroutineScope(Dispatchers.Default),
+                mapSource = OSMMapSource
+            )
             KMaP(
                 modifier = Modifier.align(Alignment.Center).size(300.dp, 600.dp),
-                tileCanvasStateModel = tileCanvasStateModel,
+                tileCanvasStateModel = mapState.tileCanvasStateFlow.collectAsState(),
                 canvasGestureListener = DefaultCanvasGestureListener(mapState.motionController),
                 onCanvasChangeSize = {
                     mapState.onCanvasSizeChanged(it)

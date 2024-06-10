@@ -21,7 +21,7 @@ interface KMaPScope {
             measurePolicy = { measurables, constraints ->
                 val placeable = measurables.first().measure(constraints)
                 layout(placeable.width, placeable.height) {
-                    placeable.placeWithLayer(
+                    placeable.placeWithLayer(//TODO see if all this math can be avoid just by changing where things are calculated
                         x = (-item.drawPosition.x * placeable.width + if (item.scaleWithMap) (1 - 1 / 2F.pow(item.zoom - item.zoomToFix)) * placeable.width / 2 else 0F).toInt(),
                         y = (-item.drawPosition.y * placeable.height + if (item.scaleWithMap) (1 - 1 / 2F.pow(item.zoom - item.zoomToFix)) * placeable.height / 2 else 0F).toInt(),
                         zIndex = item.zIndex

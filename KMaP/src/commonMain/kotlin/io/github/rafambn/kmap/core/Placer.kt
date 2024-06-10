@@ -14,7 +14,7 @@ class Placer( //TODO add grouping, alpha, tag/description, specific rotation,
     val zoomToFix: Float = 0F, //Functionality Implemented
 ) {
     var coordinates: ScreenOffset = with(mapState.motionController) {
-        mapState.mapProperties.mapSource.toCanvasPosition(coordinates).toScreenOffset()
+        mapState.mapSource.toCanvasPosition(coordinates).toScreenOffset()
     }
     internal val angle: Double = mapState.angleDegrees //Functionality Implemented
     internal val zoom: Float = mapState.zoom
