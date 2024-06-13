@@ -51,4 +51,10 @@ data class MapComponentData(
     val zIndex: Float,
     val drawPosition: DrawPosition,
     private val angle: Degrees,
+    val componentType: ComponentType,
 )
+
+enum class ComponentType {
+    CANVAS,
+    PLACER
+}

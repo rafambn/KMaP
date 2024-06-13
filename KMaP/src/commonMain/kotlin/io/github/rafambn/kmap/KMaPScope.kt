@@ -3,6 +3,7 @@ package io.github.rafambn.kmap
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
+import io.github.rafambn.kmap.core.ComponentType
 import io.github.rafambn.kmap.core.MapComponentData
 import io.github.rafambn.kmap.core.Placer
 import io.github.rafambn.kmap.core.componentData
@@ -17,7 +18,7 @@ interface KMaPScope {
         Layout(
             content = { markerContent(item) },
             modifier = Modifier
-                .componentData(MapComponentData(item.coordinates, item.zIndex, item.drawPosition, item.angle)),
+                .componentData(MapComponentData(item.coordinates, item.zIndex, item.drawPosition, item.angle, ComponentType.PLACER)),
             measurePolicy = { measurables, constraints ->
                 val placeable = measurables.first().measure(constraints)
                 layout(placeable.width, placeable.height) {
