@@ -47,7 +47,9 @@ internal fun App() = AppTheme {
                         Placer(
                             mapState,
                             ProjectedCoordinates(-45.949303, -21.424608),
-                            DrawPosition.TOP_LEFT,
+                            DrawPosition.BOTTOM_RIGHT,
+                            scaleWithMap = true,
+                            zoomToFix = 2F
                         ),
                     )
                 ) {

@@ -1,5 +1,7 @@
 package io.github.rafambn.kmap.core
 
+import androidx.compose.ui.graphics.TransformOrigin
+
 class DrawPosition(x: Float, y: Float) {
     val x = x.coerceIn(0.0f, 1.0f).also {
         if (it != x) println("Warning: x was coerced to the range [0, 1]")
@@ -7,6 +9,8 @@ class DrawPosition(x: Float, y: Float) {
     val y = y.coerceIn(0.0f, 1.0f).also {
         if (it != y) println("Warning: y was coerced to the range [0, 1]")
     }
+
+    fun toTransformOrigin(): TransformOrigin = TransformOrigin(x, y)
 
     companion object {
         val CENTER = DrawPosition(0.5F, 0.5F)
