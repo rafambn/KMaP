@@ -8,10 +8,7 @@ import io.github.rafambn.kmap.core.ComponentType
 import io.github.rafambn.kmap.core.MapComponentData
 import io.github.rafambn.kmap.core.Placer
 import io.github.rafambn.kmap.core.componentData
-import io.github.rafambn.kmap.utils.offsets.CanvasPosition
-import io.github.rafambn.kmap.utils.rotateCentered
 import io.github.rafambn.kmap.utils.toIntFloor
-import io.github.rafambn.kmap.utils.toRadians
 import kotlin.math.pow
 
 interface KMaPScope {
@@ -29,15 +26,13 @@ interface KMaPScope {
                         y = (-item.drawPosition.y * placeable.height).toIntFloor(),
                         zIndex = item.zIndex
                     ) {
+                        alpha = item.alpha
+                        transformOrigin = TransformOrigin(0F, 0F)
                         if (item.scaleWithMap) {
-                            transformOrigin = TransformOrigin(0F,0F)
                             scaleX = 2F.pow(item.zoom - item.zoomToFix)
                             scaleY = 2F.pow(item.zoom - item.zoomToFix)
                         }
-                        if (item.rotateWithMap) {
-                            transformOrigin = TransformOrigin(0F,0F)
-                            rotationZ = item.angle.toFloat()
-                        }
+                        rotationZ = if (item.rotateWithMap) (item.angle + item.rotation).toFloat() else item.rotation.toFloat()
                     }
                 }
             }
