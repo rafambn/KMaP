@@ -22,12 +22,14 @@ interface KMaPScope {
                 val placeable = measurables.first().measure(constraints)
                 layout(placeable.width, placeable.height) {
                     placeable.placeWithLayer(
-                        x = (-item.drawPosition.x * placeable.width).toIntFloor(),
-                        y = (-item.drawPosition.y * placeable.height).toIntFloor(),
+                        x = 0,
+                        y = 0,
                         zIndex = item.zIndex
                     ) {
                         alpha = item.alpha
-                        transformOrigin = TransformOrigin(0F, 0F)
+                        translationX = -item.drawPosition.x * placeable.width
+                        translationY = -item.drawPosition.y * placeable.height
+                        transformOrigin = TransformOrigin(item.drawPosition.x, item.drawPosition.y)
                         if (item.scaleWithMap) {
                             scaleX = 2F.pow(item.zoom - item.zoomToFix)
                             scaleY = 2F.pow(item.zoom - item.zoomToFix)

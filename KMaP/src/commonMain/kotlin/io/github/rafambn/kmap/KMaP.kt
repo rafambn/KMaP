@@ -10,6 +10,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -48,8 +49,7 @@ fun KMaP(
         content = {
             TileCanvas( //TODO(2): make have multiple tile canvas
                 Modifier
-                    .componentData(MapComponentData(Offset.Zero, 0F, DrawPosition.TOP_LEFT, 0.0, ComponentType.CANVAS))
-                ,
+                    .componentData(MapComponentData(Offset.Zero, 0F, DrawPosition.TOP_LEFT, 0.0, ComponentType.CANVAS)),
                 mapState.tileCanvasStateFlow.collectAsState().value,
                 canvasGestureListener
             )
@@ -82,7 +82,7 @@ fun KMaP(
                 zIndex = canvasData.zIndex
             )
             placersPlaceable.forEachIndexed { index, placeable ->
-                placeable.place(
+                placeable.placeRelative(
                     x = placersData[index].position.x.toInt(),
                     y = placersData[index].position.y.toInt(),
                     zIndex = placersData[index].zIndex
