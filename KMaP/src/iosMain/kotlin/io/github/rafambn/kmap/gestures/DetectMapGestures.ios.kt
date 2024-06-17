@@ -5,7 +5,6 @@ import androidx.compose.foundation.gestures.calculateCentroid
 import androidx.compose.foundation.gestures.calculateCentroidSize
 import androidx.compose.foundation.gestures.calculatePan
 import androidx.compose.foundation.gestures.calculateRotation
-import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
 import androidx.compose.ui.input.pointer.PointerEvent
@@ -28,22 +27,22 @@ import kotlin.coroutines.cancellation.CancellationException
  * [detectMapGestures] detects all kinds of gestures needed for KMaP
  */
 internal actual suspend fun PointerInputScope.detectMapGestures(
-    onTap: (Offset) -> Unit,
-    onDoubleTap: (Offset) -> Unit,
-    onTwoFingersTap: (Offset) -> Unit,
-    onLongPress: (Offset) -> Unit,
-    onTapLongPress: (Offset) -> Unit,
-    onTapSwipe: (centroid: Offset, zoom: Float) -> Unit,
-    onGesture: (centroid: Offset, pan: Offset, zoom: Float, rotation: Float) -> Unit,
-    onDrag: (dragAmount: Offset) -> Unit,
-    onGestureStart: (gestureType: GestureState, offset: Offset) -> Unit,
-    onGestureEnd: (gestureType: GestureState) -> Unit,
-    onFling: (velocity: Velocity) -> Unit,
-    onFlingZoom: (centroid: Offset, velocity: Float) -> Unit,
-    onFlingRotation: (centroid: Offset?, velocity: Float) -> Unit,
-    onHover: (Offset) -> Unit,
-    onScroll: (mouseOffset: Offset, scrollAmount: Float) -> Unit,
-    onCtrlGesture: (rotation: Float) -> Unit
+    onTap: ((Offset) -> Unit)?,
+    onDoubleTap: ((Offset) -> Unit)?,
+    onTwoFingersTap: ((Offset) -> Unit)?,
+    onLongPress: ((Offset) -> Unit)?,
+    onTapLongPress: ((Offset) -> Unit)?,
+    onTapSwipe: ((centroid: Offset, zoom: Float) -> Unit)?,
+    onGesture: ((centroid: Offset, pan: Offset, zoom: Float, rotation: Float) -> Unit)?,
+    onDrag: ((dragAmount: Offset) -> Unit)?,
+    onGestureStart: ((gestureType: GestureState, offset: Offset) -> Unit)?,
+    onGestureEnd: ((gestureType: GestureState) -> Unit)?,
+    onFling: ((velocity: Velocity) -> Unit)?,
+    onFlingZoom: ((centroid: Offset, velocity: Float) -> Unit)?,
+    onFlingRotation: ((centroid: Offset?, velocity: Float) -> Unit)?,
+    onHover: ((Offset) -> Unit)?,
+    onScroll: ((mouseOffset: Offset, scrollAmount: Float) -> Unit)?,
+    onCtrlGesture: ((rotation: Float) -> Unit)?
 ) = coroutineScope {
     awaitMapGesture {
         //Parameters
