@@ -5,7 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import io.github.rafambn.kmap.config.MapSource
+import io.github.rafambn.kmap.config.characteristics.MapSource
 import io.github.rafambn.kmap.core.state.MapState
 
 @Composable

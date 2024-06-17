@@ -1,7 +1,13 @@
-package io.github.rafambn.kmap.config.sources.openStreetMaps
+package io.github.rafambn.kmap.config.customSources
 
 import androidx.compose.ui.graphics.ImageBitmap
-import io.github.rafambn.kmap.config.MapSource
+import io.github.rafambn.kmap.config.characteristics.BOTTOM_TO_TOP
+import io.github.rafambn.kmap.config.characteristics.LEFT_TO_RIGHT
+import io.github.rafambn.kmap.config.characteristics.Latitude
+import io.github.rafambn.kmap.config.characteristics.Longitude
+import io.github.rafambn.kmap.config.characteristics.MapCoordinatesRange
+import io.github.rafambn.kmap.config.characteristics.MapSource
+import io.github.rafambn.kmap.config.characteristics.MapZoomLevelsRange
 import io.github.rafambn.kmap.model.Tile
 import io.github.rafambn.kmap.utils.loopInZoom
 import io.github.rafambn.kmap.utils.offsets.CanvasPosition
@@ -19,8 +25,8 @@ import kotlin.math.pow
 import kotlin.math.tan
 
 object OSMMapSource : MapSource {
-    override val zoomLevels = OSMZoomLevelsRange
-    override val mapCoordinatesRange = OSMCoordinatesRange
+    override val zoomLevels = OSMZoomLevelsRange()
+    override val mapCoordinatesRange = OSMCoordinatesRange()
     override val tileSize = 256
     private val client = HttpClient()
 
@@ -47,3 +53,10 @@ object OSMMapSource : MapSource {
         }
     }
 }
+
+data class OSMZoomLevelsRange(override val max: Int = 19, override val min: Int = 0) : MapZoomLevelsRange
+
+data class OSMCoordinatesRange(
+    override val latitude: Latitude = Latitude(north = 85.051129, south = -85.051129, orientation = BOTTOM_TO_TOP),
+    override val longitute: Longitude = Longitude(east = 180.0, west = -180.0, orientation = LEFT_TO_RIGHT)
+) : MapCoordinatesRange

@@ -1,7 +1,5 @@
-package io.github.rafambn.kmap.config
+package io.github.rafambn.kmap.config.characteristics
 
-import io.github.rafambn.kmap.config.characteristics.MapCoordinatesRange
-import io.github.rafambn.kmap.config.characteristics.MapZoomLevelsRange
 import io.github.rafambn.kmap.model.Tile
 import io.github.rafambn.kmap.utils.offsets.CanvasPosition
 import io.github.rafambn.kmap.utils.offsets.ProjectedCoordinates

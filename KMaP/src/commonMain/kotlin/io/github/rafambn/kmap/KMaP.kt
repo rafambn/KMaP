@@ -16,7 +16,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.toSize
 import io.github.rafambn.kmap.config.DefaultMapProperties
 import io.github.rafambn.kmap.config.MapProperties
-import io.github.rafambn.kmap.config.MapSource
+import io.github.rafambn.kmap.config.characteristics.MapSource
 import io.github.rafambn.kmap.core.ComponentType
 import io.github.rafambn.kmap.core.DrawPosition
 import io.github.rafambn.kmap.core.MapComponentData

@@ -1,6 +1,6 @@
 package io.github.rafambn.kmap.core.motion
 
-import io.github.rafambn.kmap.config.MapSource
+import io.github.rafambn.kmap.config.characteristics.MapSource
 import io.github.rafambn.kmap.core.state.MapState
 import io.github.rafambn.kmap.utils.Degrees
 import io.github.rafambn.kmap.utils.offsets.CanvasPosition

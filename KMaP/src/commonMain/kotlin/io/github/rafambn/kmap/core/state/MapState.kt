@@ -6,10 +6,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Density
 import io.github.rafambn.kmap.config.DefaultMapProperties
 import io.github.rafambn.kmap.config.MapProperties
-import io.github.rafambn.kmap.config.MapSource
+import io.github.rafambn.kmap.config.characteristics.MapSource
 import io.github.rafambn.kmap.config.border.MapBorderType
 import io.github.rafambn.kmap.config.characteristics.MapCoordinatesRange
-import io.github.rafambn.kmap.config.sources.openStreetMaps.OSMMapSource
+import io.github.rafambn.kmap.config.customSources.OSMMapSource
 import io.github.rafambn.kmap.core.CanvasSizeChangeListener
 import io.github.rafambn.kmap.model.BoundingBox
 import io.github.rafambn.kmap.model.TileCanvasStateModel
