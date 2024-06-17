@@ -5,7 +5,6 @@ import androidx.compose.foundation.gestures.calculateCentroid
 import androidx.compose.foundation.gestures.calculateCentroidSize
 import androidx.compose.foundation.gestures.calculatePan
 import androidx.compose.foundation.gestures.calculateRotation
-import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
 import androidx.compose.ui.input.pointer.PointerEvent
@@ -16,9 +15,6 @@ import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.changedToDown
 import androidx.compose.ui.input.pointer.changedToDownIgnoreConsumed
 import androidx.compose.ui.input.pointer.isOutOfBounds
-import androidx.compose.ui.input.pointer.util.VelocityTracker
-import androidx.compose.ui.input.pointer.util.VelocityTracker1D
-import androidx.compose.ui.unit.Velocity
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
@@ -38,9 +34,6 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
     onDrag: (dragAmount: Offset) -> Unit,
     onGestureStart: (gestureType: GestureState, offset: Offset) -> Unit,
     onGestureEnd: (gestureType: GestureState) -> Unit,
-    onFling: (velocity: Velocity) -> Unit,
-    onFlingZoom: (centroid: Offset, velocity: Float) -> Unit,
-    onFlingRotation: (centroid: Offset?, velocity: Float) -> Unit,
     onHover: (Offset) -> Unit,
     onScroll: (mouseOffset: Offset, scrollAmount: Float) -> Unit,
     onCtrlGesture: (rotation: Float) -> Unit
@@ -51,20 +44,7 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
         val doubleTapTimeout = viewConfiguration.doubleTapTimeoutMillis
         val touchSlop = viewConfiguration.touchSlop
         var panSlop: Offset
-
-        val panVelocityTracker = VelocityTracker()
-        val zoomVelocityTracker = VelocityTracker1D(isDataDifferential = true)
-        val rotationVelocityTracker = VelocityTracker1D(isDataDifferential = true)
-
-        val flingVelocityMaxRange = 500F
-        val flingVelocityScale = 2F
-
-        val flingZoomMaxRange = 3000F
-        val flingZoomScale = 5F
         val zoomScale = 300F
-
-        val flingRotationMaxRange = 1800F
-        val flingRotationScale = 10F
 
         //Gets first event
         var previousEvent = awaitFirstEvent()
@@ -240,7 +220,6 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                 }
 
                 GestureState.DRAG -> {
-                    panVelocityTracker.resetTracking()
                     while (this@coroutineScope.isActive && !event.changes.any { it.isOutOfBounds(size, extendedTouchPadding) }) {
                         previousEvent = event
                         event = awaitPointerEvent()
@@ -256,21 +235,11 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
 
                         if (eventChanges.any { it == GestureChangeState.RELEASE }) {
                             onGestureEnd.invoke(gestureState)
-                            panVelocityTracker.addPosition(event.changes[0].uptimeMillis, event.changes[0].position)
-                            onFling(
-                                panVelocityTracker.calculateVelocity(
-                                    Velocity(
-                                        flingVelocityMaxRange,
-                                        flingVelocityMaxRange
-                                    )
-                                ) / flingVelocityScale
-                            )
                             gestureState = GestureState.FINISH_GESTURE
                             break
                         }
 
                         onDrag.invoke(event.changes[0].position - previousEvent.changes[0].position)
-                        panVelocityTracker.addPosition(event.changes[0].uptimeMillis, event.changes[0].position)
                     }
                 }
 
@@ -299,7 +268,6 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                 }
 
                 GestureState.TAP_SWIPE -> {
-                    zoomVelocityTracker.resetTracking()
                     while (this@coroutineScope.isActive && !event.changes.any { it.isOutOfBounds(size, extendedTouchPadding) }) {
                         previousEvent = event
                         event = awaitPointerEvent()
@@ -308,14 +276,6 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
 
                         if (eventChanges.any { it == GestureChangeState.RELEASE }) {
                             onGestureEnd.invoke(gestureState)
-                            zoomVelocityTracker.addDataPoint(
-                                event.changes[0].uptimeMillis,
-                                event.changes[0].position.y - previousEvent.changes[0].position.y
-                            )
-                            onFlingZoom(
-                                firstGestureEvent!!.changes[0].position,
-                                zoomVelocityTracker.calculateVelocity(flingZoomMaxRange) / (flingZoomScale * zoomScale)
-                            )
                             gestureState = GestureState.FINISH_GESTURE
                             break
                         }
@@ -331,16 +291,9 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                             firstGestureEvent!!.changes[0].position,
                             (event.changes[0].position.y - previousEvent.changes[0].position.y) / zoomScale
                         )
-                        zoomVelocityTracker.addDataPoint(
-                            event.changes[0].uptimeMillis,
-                            event.changes[0].position.y - previousEvent.changes[0].position.y
-                        )
                     }
                 }
                 GestureState.MOBILE -> {
-                    panVelocityTracker.resetTracking()
-                    zoomVelocityTracker.resetTracking()
-                    rotationVelocityTracker.resetTracking()
                     while (this@coroutineScope.isActive && !event.changes.any { it.isOutOfBounds(size, extendedTouchPadding) }) {
                         previousEvent = event
                         event = awaitPointerEvent()
@@ -360,9 +313,6 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
 
                         val panChange = event.calculatePan()
                         val centroid = event.calculateCentroid()
-                        panVelocityTracker.addPosition(event.changes[0].uptimeMillis, event.changes[0].position)
-                        zoomVelocityTracker.addDataPoint(event.changes[0].uptimeMillis, zoomChange)
-                        rotationVelocityTracker.addDataPoint(event.changes[0].uptimeMillis, rotationChange)
                         if (centroid != Offset.Unspecified)
                             onGesture(centroid, panChange, zoomChange / zoomScale, rotationChange)
                     }
@@ -381,22 +331,6 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                             event.changes.forEach { it.consume() }
 
                             if (event.changes.all { !it.pressed }) {
-                                onFling(
-                                    panVelocityTracker.calculateVelocity(
-                                        Velocity(
-                                            flingVelocityMaxRange,
-                                            flingVelocityMaxRange
-                                        )
-                                    ) / flingVelocityScale
-                                )
-                                onFlingZoom(
-                                    event.changes[0].position,
-                                    zoomVelocityTracker.calculateVelocity(flingZoomMaxRange) / (flingZoomScale * zoomScale)
-                                )
-                                onFlingRotation(
-                                    event.changes[0].position,
-                                    rotationVelocityTracker.calculateVelocity(flingRotationMaxRange) / flingRotationScale
-                                )
                                 gestureState = GestureState.FINISH_GESTURE
                                 break
                             }

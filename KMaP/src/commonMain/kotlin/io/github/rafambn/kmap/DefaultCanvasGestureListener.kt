@@ -1,6 +1,5 @@
 package io.github.rafambn.kmap
 
-import androidx.compose.ui.unit.Velocity
 import io.github.rafambn.kmap.core.motion.MapScrollFactory
 import io.github.rafambn.kmap.core.motion.MotionController
 import io.github.rafambn.kmap.gestures.GestureState
@@ -56,27 +55,14 @@ open class DefaultCanvasGestureListener { //TODO(3) make it expect
     fun onGestureEnd(gestureType: GestureState) {
     }
 
-    fun onFling(velocity: Velocity) {
-//        with(motionController) {
-//            motionController.animatePositionTo(Offset(velocity.x, velocity.y).fromScreenOffsetToCanvasPosition() + mapState.mapPosition)
-//        }
-    }
-
-    fun onFlingZoom(screenOffset: ScreenOffset, velocity: Float) {
-//        with(motionController) {
-//            motionController.animateZoomTo(velocity + mapState.zoom, position = screenOffset.fromScreenOffsetToCanvasPosition())
-//        }
-    }
-
-    fun onFlingRotation(screenOffset: ScreenOffset?, velocity: Float) {
-//        with(motionController) {
-//            screenOffset?.let {
-//                motionController.animateRotationTo(velocity + mapState.angleDegrees, position = screenOffset.fromScreenOffsetToCanvasPosition())
-//            } ?: run {
-//                motionController.animateRotationTo((velocity + mapState.angleDegrees).toDouble())
-//            }
-//        }
-    }
+//    fun onFling(velocity: Velocity) { //TODO(5) implement fling later
+//    }
+//
+//    fun onFlingZoom(screenOffset: ScreenOffset, velocity: Float) {
+//    }
+//
+//    fun onFlingRotation(screenOffset: ScreenOffset?, velocity: Float) {
+//    }
 
     fun onHover(screenOffset: ScreenOffset) {
     }

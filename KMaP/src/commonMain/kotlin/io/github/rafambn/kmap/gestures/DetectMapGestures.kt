@@ -7,7 +7,6 @@ import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.isCtrlPressed
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.Velocity
 import kotlinx.coroutines.isActive
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.PI
@@ -29,10 +28,6 @@ internal expect suspend fun PointerInputScope.detectMapGestures(
     onDrag: (dragAmount: Offset) -> Unit,
     onGestureStart: (gestureType: GestureState, offset: Offset) -> Unit = { _, _ -> },
     onGestureEnd: (gestureType: GestureState) -> Unit = { },
-
-    onFling: (velocity: Velocity) -> Unit = {}, //TODO (2) declare only used variables on actual
-    onFlingZoom: (centroid: Offset, velocity: Float) -> Unit = { _, _ -> }, //TODO(3) fix fling
-    onFlingRotation: (centroid: Offset?, velocity: Float) -> Unit = { _, _ -> },
 
     onHover: (Offset) -> Unit,
     onScroll: (mouseOffset: Offset, scrollAmount: Float) -> Unit,
