@@ -14,7 +14,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import io.github.rafambn.kmap.gestures.GestureInterface
+import io.github.rafambn.kmap.DefaultCanvasGestureListener
 import io.github.rafambn.kmap.gestures.detectMapGestures
 import io.github.rafambn.kmap.model.TileCanvasStateModel
 import io.github.rafambn.kmap.utils.toIntFloor
@@ -24,7 +24,7 @@ import kotlin.math.pow
 internal fun TileCanvas(
     modifier: Modifier,
     tileCanvasStateModel: TileCanvasStateModel,
-    gestureListener: GestureInterface
+    gestureListener: DefaultCanvasGestureListener
 ) {
     Canvas(
         modifier = modifier.fillMaxSize()

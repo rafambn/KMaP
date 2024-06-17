@@ -6,7 +6,7 @@ import io.github.rafambn.kmap.utils.offsets.ProjectedCoordinates
 import io.github.rafambn.kmap.utils.offsets.ScreenOffset
 
 class Placer(
-    //TODO add grouping
+    //TODO(4) add grouping
     mapState: MapState,
     coordinates: ProjectedCoordinates,
     val tag: String = "",
@@ -18,7 +18,7 @@ class Placer(
     val rotateWithMap: Boolean = false,
     val rotation: Degrees = 0.0,
 ) {
-    var coordinates: ScreenOffset = with(mapState.motionController) {
+    var coordinates: ScreenOffset = with(mapState) {
         mapState.mapSource.toCanvasPosition(coordinates).toScreenOffset()
     }
     internal val angle: Double = mapState.angleDegrees

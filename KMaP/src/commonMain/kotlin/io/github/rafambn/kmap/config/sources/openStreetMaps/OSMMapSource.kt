@@ -37,9 +37,9 @@ object OSMMapSource : MapSource {
     override suspend fun getTile(zoom: Int, row: Int, column: Int): Tile {
         val imageBitmap: ImageBitmap
         try {
-            val byteArray = client.get("https://tile.openstreetmap.org/${zoom}/${row.loopInZoom(zoom)}/${column.loopInZoom(zoom)}.png") { //TODO improve loopInZoom
+            val byteArray = client.get("https://tile.openstreetmap.org/${zoom}/${row.loopInZoom(zoom)}/${column.loopInZoom(zoom)}.png") {
                 header("User-Agent", "my.app.test5")
-            }.readBytes()
+            }.readBytes() //TODO(4) improve loopInZoom
             imageBitmap = byteArray.toImageBitmap()
             return Tile(zoom, row, column, imageBitmap)
         } catch (ex: Exception) {
