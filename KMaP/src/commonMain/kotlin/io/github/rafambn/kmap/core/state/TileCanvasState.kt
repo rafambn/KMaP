@@ -1,7 +1,9 @@
 package io.github.rafambn.kmap.core.state
 
 import io.github.rafambn.kmap.core.TileLayers
+import io.github.rafambn.kmap.model.ResultTile
 import io.github.rafambn.kmap.model.Tile
+import io.github.rafambn.kmap.model.TileResult
 import io.github.rafambn.kmap.model.TileSpecs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -16,18 +18,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 
 class TileCanvasState(
-    private val getTile: suspend (zoom: Int, row: Int, column: Int) -> Tile,
+    private val getTile: suspend (zoom: Int, row: Int, column: Int) -> ResultTile,
+    private val maxTries: Int,
+    private val maxCacheTiles: Int
 ) {
-    companion object {
-        private const val MAX_RENDERED_TILES = 100
-        private const val MAX_TRIES = 2
-    }
 
     private val _tileLayersStateFlow = MutableStateFlow(TileLayers())
     val tileLayersStateFlow = _tileLayersStateFlow.asStateFlow()
     private val renderedTiles = mutableListOf<Tile>()
     private val tilesToProcessChannel = Channel<List<TileSpecs>>(capacity = Channel.UNLIMITED)
-    private val workerResultSuccessChannel = Channel<Tile>(capacity = Channel.UNLIMITED)
+    private val workerResultSuccessChannel = Channel<ResultTile>(capacity = Channel.UNLIMITED)
 
     init {
         CoroutineScope(Dispatchers.Default).tilesKernel(tilesToProcessChannel, workerResultSuccessChannel)
@@ -58,7 +58,7 @@ class TileCanvasState(
 
     private fun CoroutineScope.tilesKernel(
         tilesToProcess: ReceiveChannel<List<TileSpecs>>,
-        tilesProcessSuccessResult: Channel<Tile>
+        tilesProcessResult: Channel<ResultTile>
     ) = launch(Dispatchers.Default) {
         val specsBeingProcessed = mutableSetOf<TileSpecs>()
 
@@ -68,23 +68,32 @@ class TileCanvasState(
                     tilesToProcess.forEach { tileSpecs ->
                         if (!specsBeingProcessed.contains(tileSpecs)) {
                             specsBeingProcessed.add(tileSpecs)
-                            worker(tileSpecs, tilesProcessSuccessResult)
+                            worker(tileSpecs, tilesProcessResult)
                         }
                     }
                 }
-                tilesProcessSuccessResult.onReceive { tile ->
-                    specsBeingProcessed.remove(tile.toTileSpecs())
-                    renderedTiles.add(tile)
-                    if (renderedTiles.size > MAX_RENDERED_TILES)
-                        renderedTiles.removeAt(0)
-                    if (tile.zoom == _tileLayersStateFlow.value.frontLayerLevel) {
-                        _tileLayersStateFlow.update { tileLayers ->
-                            tileLayers.copy(frontLayer = tileLayers.frontLayer.toMutableList().also { it.add(tile) })
+                tilesProcessResult.onReceive { tileResult ->
+                    when (tileResult.result) {
+                        TileResult.SUCCESS -> {
+                            val tile = tileResult.tile!!
+                            specsBeingProcessed.remove(tile.toTileSpecs())
+                            renderedTiles.add(tile)
+                            if (renderedTiles.size > maxCacheTiles)
+                                renderedTiles.removeAt(0)
+                            if (tile.zoom == _tileLayersStateFlow.value.frontLayerLevel) {
+                                _tileLayersStateFlow.update { tileLayers ->
+                                    tileLayers.copy(frontLayer = tileLayers.frontLayer.toMutableList().also { it.add(tile) })
+                                }
+                            }
+                            if (tile.zoom == _tileLayersStateFlow.value.backLayerLevel) {
+                                _tileLayersStateFlow.update { tileLayers ->
+                                    tileLayers.copy(backLayer = tileLayers.backLayer.toMutableList().also { it.add(tile) })
+                                }
+                            }
                         }
-                    }
-                    if (tile.zoom == _tileLayersStateFlow.value.backLayerLevel) {
-                        _tileLayersStateFlow.update { tileLayers ->
-                            tileLayers.copy(backLayer = tileLayers.backLayer.toMutableList().also { it.add(tile) })
+
+                        TileResult.FAILURE -> {
+                            specsBeingProcessed.remove(tileResult.tile!!.toTileSpecs())
                         }
                     }
                 }
@@ -94,15 +103,25 @@ class TileCanvasState(
 
     private fun CoroutineScope.worker(
         tileToProcess: TileSpecs,
-        tilesProcessSuccessResult: SendChannel<Tile>
+        tilesProcessSuccessResult: SendChannel<ResultTile>
     ) = launch(Dispatchers.Default) {
-        try {
-            tilesProcessSuccessResult.send(getTile(tileToProcess.zoom, tileToProcess.row, tileToProcess.col))
-        } catch (ex: Exception) {
-//            if (tileToProcess.numberOfTries < MAX_TRIES)
-//                tilesProcessFailedResult.send(tileToProcess)
-//            else
-                println("Failed to process tile after $MAX_TRIES attempts: $ex")
+        var resultTile: ResultTile
+        var numberOfTries = 0
+        while (numberOfTries < maxTries) {
+            try {
+                resultTile = getTile(tileToProcess.zoom, tileToProcess.row, tileToProcess.col)
+                if (resultTile.result == TileResult.SUCCESS) {
+                    tilesProcessSuccessResult.send(resultTile)
+                    break
+                }
+            } catch (ex: Exception) {
+                println("Failed to process tile on attempt ${numberOfTries}: $ex")
+                numberOfTries++
+            }
+        }
+        if (numberOfTries == maxTries) {
+            println("Failed to process tile after $maxTries attempts")
+            tilesProcessSuccessResult.send(ResultTile(tileToProcess.toTile(), TileResult.FAILURE))
         }
     }
 }

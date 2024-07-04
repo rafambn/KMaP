@@ -56,3 +56,10 @@ class Tile(
 
     fun toTileSpecs(): TileSpecs = TileSpecs(zoom, row, col)
 }
+
+data class ResultTile(val tile: Tile?, val result: TileResult)
+
+enum class TileResult {
+    SUCCESS,
+    FAILURE
+}

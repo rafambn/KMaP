@@ -1,6 +1,6 @@
 package io.github.rafambn.kmap.config.characteristics
 
-import io.github.rafambn.kmap.model.Tile
+import io.github.rafambn.kmap.model.ResultTile
 import io.github.rafambn.kmap.utils.offsets.CanvasPosition
 import io.github.rafambn.kmap.utils.offsets.ProjectedCoordinates
 
@@ -13,5 +13,5 @@ interface MapSource {
 
     fun toProjectedCoordinates(canvasPosition: CanvasPosition): ProjectedCoordinates
 
-    suspend fun getTile(zoom: Int, row: Int, column: Int): Tile
+    suspend fun getTile(zoom: Int, row: Int, column: Int): ResultTile
 }

@@ -8,7 +8,9 @@ import io.github.rafambn.kmap.config.characteristics.Longitude
 import io.github.rafambn.kmap.config.characteristics.MapCoordinatesRange
 import io.github.rafambn.kmap.config.characteristics.MapSource
 import io.github.rafambn.kmap.config.characteristics.MapZoomLevelsRange
+import io.github.rafambn.kmap.model.ResultTile
 import io.github.rafambn.kmap.model.Tile
+import io.github.rafambn.kmap.model.TileResult
 import io.github.rafambn.kmap.utils.loopInZoom
 import io.github.rafambn.kmap.utils.offsets.CanvasPosition
 import io.github.rafambn.kmap.utils.offsets.ProjectedCoordinates
@@ -40,16 +42,16 @@ object OSMMapSource : MapSource {
         (atan(E.pow(canvasPosition.vertical * (PI / 85.051129))) - PI / 4) * 360 / PI
     )
 
-    override suspend fun getTile(zoom: Int, row: Int, column: Int): Tile {
+    override suspend fun getTile(zoom: Int, row: Int, column: Int): ResultTile {
         val imageBitmap: ImageBitmap
         try {
             val byteArray = client.get("https://tile.openstreetmap.org/${zoom}/${row.loopInZoom(zoom)}/${column.loopInZoom(zoom)}.png") {
                 header("User-Agent", "my.app.test5")
             }.readBytes() //TODO(4) improve loopInZoom
             imageBitmap = byteArray.toImageBitmap()
-            return Tile(zoom, row, column, imageBitmap)
+            return ResultTile(Tile(zoom, row, column, imageBitmap), TileResult.SUCCESS)
         } catch (ex: Exception) {
-            throw ex
+            return ResultTile(null, TileResult.SUCCESS)
         }
     }
 }

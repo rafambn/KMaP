@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import io.github.rafambn.kmap.core.state.MapState
 import io.github.rafambn.kmap.core.state.TileCanvasState
-import io.github.rafambn.kmap.model.Tile
+import io.github.rafambn.kmap.model.ResultTile
 import io.github.rafambn.kmap.model.TileCanvasStateModel
 import io.github.rafambn.kmap.utils.offsets.CanvasDrawReference
 import io.github.rafambn.kmap.utils.toIntFloor
@@ -24,9 +24,11 @@ import kotlin.math.pow
 
 @Composable
 internal fun TileCanvas(
-    getTile: suspend (zoom: Int, row: Int, column: Int) -> Tile
+    getTile: suspend (zoom: Int, row: Int, column: Int) -> ResultTile,
+    maxTries: Int = 2,
+    maxCacheTiles: Int = 100
 ) {
-    val canvasState = remember { TileCanvasState(getTile) }
+    val canvasState = remember { TileCanvasState(getTile, maxTries, maxCacheTiles) }
     val tileCanvasStateModel = MapState.canvasSharedState.collectAsState(
             TileCanvasStateModel(
                 Offset.Zero,

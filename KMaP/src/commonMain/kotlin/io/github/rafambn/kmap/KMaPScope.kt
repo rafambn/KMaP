@@ -9,7 +9,7 @@ import io.github.rafambn.kmap.core.MapComponentData
 import io.github.rafambn.kmap.core.Placer
 import io.github.rafambn.kmap.core.TileCanvas
 import io.github.rafambn.kmap.core.componentData
-import io.github.rafambn.kmap.model.Tile
+import io.github.rafambn.kmap.model.ResultTile
 
 interface KMaPScope {
     @Composable
@@ -31,7 +31,7 @@ interface KMaPScope {
     }
 
     @Composable
-    fun canvas(item: Placer, getTile: suspend (zoom: Int, row: Int, column: Int) -> Tile) =
+    fun canvas(item: Placer, getTile: suspend (zoom: Int, row: Int, column: Int) -> ResultTile) =
         Layout(
             content = { TileCanvas(getTile) },
             modifier = Modifier

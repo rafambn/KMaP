@@ -34,7 +34,7 @@ fun KMaP(
     motionController: MotionController,
     mapProperties: MapProperties = DefaultMapProperties(),
     mapState: MapState,
-    mapSource: MapSource, //TODO(2): make have multiple tile canvas
+    mapSource: MapSource,
     canvasGestureListener: DefaultCanvasGestureListener = DefaultCanvasGestureListener(),
     onCanvasChangeSize: (Offset) -> Unit,
     content: @Composable KMaPScope.() -> Unit = {}
