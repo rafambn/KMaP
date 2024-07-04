@@ -1,12 +1,12 @@
 package io.github.rafambn.kmap
 
-import io.github.rafambn.kmap.core.motion.MapScrollFactory
-import io.github.rafambn.kmap.core.motion.MotionController
+import io.github.rafambn.kmap.core.MotionController
+import io.github.rafambn.kmap.core.MotionController.CenterLocation
 import io.github.rafambn.kmap.gestures.GestureState
 import io.github.rafambn.kmap.utils.offsets.DifferentialScreenOffset
 import io.github.rafambn.kmap.utils.offsets.ScreenOffset
 
-open class DefaultCanvasGestureListener { //TODO(3) make it expect
+open class DefaultCanvasGestureListener { //TODO(3) make it expect //TODO(5) implement fling
     private var motionController: MotionController? = null
 
     internal fun setMotionController(motionController: MotionController) {
@@ -17,36 +17,38 @@ open class DefaultCanvasGestureListener { //TODO(3) make it expect
     }
 
     fun onDoubleTap(screenOffset: ScreenOffset) {
-        motionController?.scroll(MapScrollFactory.zoomBy(-1 / 3F, screenOffset))
+        motionController?.scroll { zoomCentered(-1 / 3F, CenterLocation.Offset(screenOffset)) }
     }
 
     fun onTwoFingersTap(screenOffset: ScreenOffset) {
-        motionController?.scroll(MapScrollFactory.zoomBy(1 / 3F, screenOffset))
+        motionController?.scroll { zoomCentered(1 / 3F, CenterLocation.Offset(screenOffset)) }
     }
 
     fun onLongPress(screenOffset: ScreenOffset) {
     }
 
     fun onTapLongPress(differentialScreenOffset: DifferentialScreenOffset) {
-        motionController?.scroll(MapScrollFactory.moveBy(differentialScreenOffset))
+        motionController?.scroll { center(CenterLocation.Offset(differentialScreenOffset)) }
     }
 
     fun onTapSwipe(screenOffset: ScreenOffset, zoom: Float) {
-        motionController?.scroll(MapScrollFactory.zoomBy(zoom, screenOffset))
+        motionController?.scroll { zoomCentered(zoom, CenterLocation.Offset(screenOffset)) }
     }
 
     fun onGesture(screenOffset: ScreenOffset, differentialScreenOffset: DifferentialScreenOffset, zoom: Float, rotation: Float) {
-        motionController?.scroll(MapScrollFactory.rotateBy(rotation.toDouble(), screenOffset))
-        motionController?.scroll(MapScrollFactory.zoomBy(zoom, screenOffset))
-        motionController?.scroll(MapScrollFactory.moveBy(differentialScreenOffset))
+        motionController?.scroll {
+            rotateCentered(rotation.toDouble(), CenterLocation.Offset(screenOffset))
+            zoomCentered(zoom, CenterLocation.Offset(screenOffset))
+            center(CenterLocation.Offset(differentialScreenOffset))
+        }
     }
 
     fun onCtrlGesture(rotation: Float) {
-        motionController?.scroll(MapScrollFactory.rotateBy(rotation.toDouble()))
+        motionController?.scroll { angle(rotation.toDouble()) }
     }
 
     fun onDrag(differentialScreenOffset: DifferentialScreenOffset) {
-        motionController?.scroll(MapScrollFactory.moveBy(differentialScreenOffset))
+        motionController?.scroll { center(CenterLocation.Offset(differentialScreenOffset)) }
     }
 
     fun onGestureStart(gestureType: GestureState, screenOffset: ScreenOffset) {
@@ -55,19 +57,10 @@ open class DefaultCanvasGestureListener { //TODO(3) make it expect
     fun onGestureEnd(gestureType: GestureState) {
     }
 
-//    fun onFling(velocity: Velocity) { //TODO(5) implement fling later
-//    }
-//
-//    fun onFlingZoom(screenOffset: ScreenOffset, velocity: Float) {
-//    }
-//
-//    fun onFlingRotation(screenOffset: ScreenOffset?, velocity: Float) {
-//    }
-
     fun onHover(screenOffset: ScreenOffset) {
     }
 
     fun onScroll(screenOffset: ScreenOffset, scrollAmount: Float) {
-        motionController?.scroll(MapScrollFactory.zoomBy(scrollAmount, screenOffset))
+        motionController?.scroll { zoomCentered(scrollAmount, CenterLocation.Offset(screenOffset)) }
     }
 }

@@ -17,7 +17,7 @@ import io.github.rafambn.kmap.KMaP
 import io.github.rafambn.kmap.config.customSources.OSMMapSource
 import io.github.rafambn.kmap.core.DrawPosition
 import io.github.rafambn.kmap.core.Placer
-import io.github.rafambn.kmap.core.motion.rememberMotionController
+import io.github.rafambn.kmap.core.rememberMotionController
 import io.github.rafambn.kmap.core.state.rememberMapState
 import io.github.rafambn.kmap.utils.offsets.ProjectedCoordinates
 import io.github.rafambn.templateapp.theme.AppTheme

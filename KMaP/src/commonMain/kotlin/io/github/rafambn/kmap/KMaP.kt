@@ -10,7 +10,6 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -23,7 +22,7 @@ import io.github.rafambn.kmap.core.DrawPosition
 import io.github.rafambn.kmap.core.MapComponentData
 import io.github.rafambn.kmap.core.TileCanvas
 import io.github.rafambn.kmap.core.componentData
-import io.github.rafambn.kmap.core.motion.MotionController
+import io.github.rafambn.kmap.core.MotionController
 import io.github.rafambn.kmap.core.state.MapState
 
 @Composable

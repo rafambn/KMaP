@@ -6,9 +6,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Density
 import io.github.rafambn.kmap.config.DefaultMapProperties
 import io.github.rafambn.kmap.config.MapProperties
-import io.github.rafambn.kmap.config.characteristics.MapSource
 import io.github.rafambn.kmap.config.border.MapBorderType
 import io.github.rafambn.kmap.config.characteristics.MapCoordinatesRange
+import io.github.rafambn.kmap.config.characteristics.MapSource
 import io.github.rafambn.kmap.config.customSources.OSMMapSource
 import io.github.rafambn.kmap.core.CanvasSizeChangeListener
 import io.github.rafambn.kmap.model.BoundingBox
@@ -17,18 +17,15 @@ import io.github.rafambn.kmap.utils.loopInRange
 import io.github.rafambn.kmap.utils.offsets.CanvasDrawReference
 import io.github.rafambn.kmap.utils.offsets.CanvasPosition
 import io.github.rafambn.kmap.utils.offsets.DifferentialScreenOffset
+import io.github.rafambn.kmap.utils.offsets.ProjectedCoordinates
 import io.github.rafambn.kmap.utils.offsets.ScreenOffset
 import io.github.rafambn.kmap.utils.offsets.toPosition
 import io.github.rafambn.kmap.utils.rotate
 import io.github.rafambn.kmap.utils.toIntFloor
 import io.github.rafambn.kmap.utils.toRadians
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-import kotlin.math.exp
 
 @Composable
 fun rememberMapState(): MapState = remember { MapState() }
@@ -52,11 +49,26 @@ class MapState : CanvasSizeChangeListener {
 
     //Control variables
     var zoom = 0F
-        internal set
+        internal set(value) {
+            field = value.coerceZoom()
+        }
     var angleDegrees = 0.0
         internal set
-    var rawPosition = CanvasPosition.Zero //TODO(2) make if projection
-        internal set
+    var rawPosition = CanvasPosition.Zero
+        internal set(value) {
+            field = value.coerceInMap()
+        }
+    var projection: ProjectedCoordinates
+        get() {
+            return with(mapSource) {
+                toProjectedCoordinates(rawPosition)
+            }
+        }
+        set(value) {
+            rawPosition = with(mapSource) {
+                toCanvasPosition(value)
+            }
+        }
     var canvasSize = Offset.Zero
         internal set
 
@@ -104,36 +116,6 @@ class MapState : CanvasSizeChangeListener {
         }
     }
 
-    fun set(action: (MapState, MapSource) -> Unit) {
-        action(this, mapSource)
-        updateState()
-    }
-
-    fun set(action: (MapState) -> Unit) {
-        action(this)
-        updateState()
-    }
-
-    fun scroll(action: (MapState, MapSource) -> Unit) {
-        action(this, mapSource)
-        updateState()
-    }
-
-    fun scroll(action: (MapState) -> Unit) {
-        action(this)
-        updateState()
-    }
-
-    fun animate(action: (MapState, MapSource) -> Unit) {
-        action(this, mapSource)
-        updateState()
-    }
-
-    fun animate(action: (MapState) -> Unit) {
-        action(this)
-        updateState()
-    }
-
     override fun onCanvasSizeChanged(size: Offset) {
         canvasSize = size
         updateState()
@@ -161,8 +143,7 @@ class MapState : CanvasSizeChangeListener {
         )
     }
 
-
-    fun CanvasPosition.coerceInMap(): CanvasPosition {
+    private fun CanvasPosition.coerceInMap(): CanvasPosition {
         val x = if (mapProperties.boundMap.horizontal == MapBorderType.BOUND)
             horizontal.coerceIn(
                 mapSource.mapCoordinatesRange.longitute.west,
@@ -180,22 +161,12 @@ class MapState : CanvasSizeChangeListener {
         return CanvasPosition(x, y)
     }
 
-    fun Float.coerceZoom(): Float {
+    private fun Float.coerceZoom(): Float {
         return this.coerceIn(minZoomPreference.toFloat(), maxZoomPreference.toFloat())
     }
 
-    private fun decayValue(coroutineScope: CoroutineScope, decayRate: Double, function: (value: Double) -> Unit) = coroutineScope.launch {
-        val steps = 100
-        val timeStep = 10L
-        for (i in 0 until steps) {
-            val x = i.toDouble() / steps
-            function((1 - exp(decayRate * x)) / (1 - exp(decayRate)))
-            delay(timeStep)
-        }
-    }
-
     fun centerPositionAtOffset(position: CanvasPosition, offset: ScreenOffset) {
-        rawPosition = (rawPosition + position - offset.fromScreenOffsetToCanvasPosition()).coerceInMap()
+        rawPosition += position - offset.fromScreenOffsetToCanvasPosition()
     }
 
     //Conversion Functions

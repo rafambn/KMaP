@@ -40,9 +40,6 @@ internal fun TileCanvas(
                     onDrag = { dragAmount -> gestureListener.onDrag(dragAmount) },
                     onGestureStart = { gestureType, offset -> gestureListener.onGestureStart(gestureType, offset) },
                     onGestureEnd = { gestureType -> gestureListener.onGestureEnd(gestureType) },
-                    onFling = { targetLocation -> gestureListener.onFling(targetLocation) },
-                    onFlingZoom = { centroid, targetZoom -> gestureListener.onFlingZoom(centroid, targetZoom) },
-                    onFlingRotation = { centroid, targetRotation -> gestureListener.onFlingRotation(centroid, targetRotation) },
                     onHover = { offset -> gestureListener.onHover(offset) },
                     onScroll = { mouseOffset, scrollAmount -> gestureListener.onScroll(mouseOffset, scrollAmount) },
                     onCtrlGesture = { rotation -> gestureListener.onCtrlGesture(rotation) }
