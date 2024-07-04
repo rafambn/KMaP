@@ -82,7 +82,7 @@ class MapState : CanvasSizeChangeListener {
         get() = zoom - zoomLevel + 1F
 
     //Map state variable for recomposition
-    val trigger = mutableStateOf(false)
+    val trigger = mutableStateOf(false) //TODO make some control variables tied to kmap to remove this
     fun updateState() {
         _canvasSharedState.tryEmit(
             TileCanvasStateModel(

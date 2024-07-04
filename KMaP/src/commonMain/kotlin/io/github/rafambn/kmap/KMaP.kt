@@ -9,6 +9,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
@@ -20,10 +21,12 @@ import io.github.rafambn.kmap.config.MapProperties
 import io.github.rafambn.kmap.config.characteristics.MapSource
 import io.github.rafambn.kmap.core.ComponentType
 import io.github.rafambn.kmap.core.MapComponentData
-import io.github.rafambn.kmap.core.componentData
 import io.github.rafambn.kmap.core.MotionController
+import io.github.rafambn.kmap.core.componentData
 import io.github.rafambn.kmap.core.state.MapState
 import io.github.rafambn.kmap.gestures.detectMapGestures
+import io.github.rafambn.kmap.utils.offsets.ScreenOffset
+import kotlin.math.pow
 
 @Composable
 fun KMaP(
@@ -89,15 +92,32 @@ fun KMaP(
                 placeable.placeRelative(
                     x = 0,
                     y = 0,
-                    zIndex = canvasData[index].zIndex
+                    zIndex = canvasData[index].placer.zIndex
                 )
             }
             placersPlaceable.forEachIndexed { index, placeable ->
-                placeable.placeRelative(
-                    x = placersData[index].position.x.toInt(),
-                    y = placersData[index].position.y.toInt(),
-                    zIndex = placersData[index].zIndex
-                )
+                val coordinates: ScreenOffset = with(mapState) {
+                    mapState.mapSource.toCanvasPosition(placersData[index].placer.coordinates).toScreenOffset()
+                }
+                placeable.placeWithLayer(
+                    x = 0,
+                    y = 0,
+                    zIndex = placersData[index].placer.zIndex
+                ) {
+                    alpha = placersData[index].placer.alpha
+                    translationX = coordinates.x - placersData[index].placer.drawPosition.x * placeable.width
+                    translationY = coordinates.y - placersData[index].placer.drawPosition.y * placeable.height
+                    transformOrigin = TransformOrigin(placersData[index].placer.drawPosition.x, placersData[index].placer.drawPosition.y)
+                    if (placersData[index].placer.scaleWithMap) {
+                        scaleX = 2F.pow(mapState.zoom - placersData[index].placer.zoomToFix)
+                        scaleY = 2F.pow(mapState.zoom - placersData[index].placer.zoomToFix)
+                    }
+                    rotationZ =
+                        if (placersData[index].placer.rotateWithMap)
+                            (mapState.angleDegrees + placersData[index].placer.rotation).toFloat()
+                        else
+                            placersData[index].placer.rotation.toFloat()
+                }
             }
         }
     }

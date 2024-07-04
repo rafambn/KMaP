@@ -3,17 +3,13 @@ package io.github.rafambn.kmap
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.layout.Layout
 import io.github.rafambn.kmap.core.ComponentType
-import io.github.rafambn.kmap.core.DrawPosition
 import io.github.rafambn.kmap.core.MapComponentData
 import io.github.rafambn.kmap.core.Placer
 import io.github.rafambn.kmap.core.TileCanvas
 import io.github.rafambn.kmap.core.componentData
 import io.github.rafambn.kmap.model.Tile
-import kotlin.math.pow
 
 interface KMaPScope {
     @Composable
@@ -21,25 +17,14 @@ interface KMaPScope {
         Layout(
             content = { markerContent(item) },
             modifier = Modifier
-                .componentData(MapComponentData(item.coordinates, item.zIndex, item.drawPosition, item.angle, ComponentType.PLACER)),
+                .componentData(MapComponentData(item, ComponentType.PLACER)),
             measurePolicy = { measurables, constraints ->
                 val placeable = measurables.first().measure(constraints)
                 layout(placeable.width, placeable.height) {
-                    placeable.placeWithLayer(
+                    placeable.place(
                         x = 0,
-                        y = 0,
-                        zIndex = item.zIndex
-                    ) {
-                        alpha = item.alpha
-                        translationX = -item.drawPosition.x * placeable.width
-                        translationY = -item.drawPosition.y * placeable.height
-                        transformOrigin = TransformOrigin(item.drawPosition.x, item.drawPosition.y)
-                        if (item.scaleWithMap) {
-                            scaleX = 2F.pow(item.zoom - item.zoomToFix)
-                            scaleY = 2F.pow(item.zoom - item.zoomToFix)
-                        }
-                        rotationZ = if (item.rotateWithMap) (item.angle + item.rotation).toFloat() else item.rotation.toFloat()
-                    }
+                        y = 0
+                    )
                 }
             }
         )
@@ -51,17 +36,14 @@ interface KMaPScope {
             content = { TileCanvas(getTile) },
             modifier = Modifier
                 .fillMaxSize()
-                .componentData(MapComponentData(Offset.Zero, item.zIndex, DrawPosition.TOP_LEFT, 0.0, ComponentType.CANVAS)),
+                .componentData(MapComponentData(item, ComponentType.CANVAS)),
             measurePolicy = { measurables, constraints ->
                 val placeable = measurables.first().measure(constraints)
                 layout(placeable.width, placeable.height) {
-                    placeable.placeWithLayer(
+                    placeable.place(
                         x = 0,
-                        y = 0,
-                        zIndex = item.zIndex
-                    ) {
-                        alpha = item.alpha
-                    }
+                        y = 0
+                    )
                 }
             }
         )

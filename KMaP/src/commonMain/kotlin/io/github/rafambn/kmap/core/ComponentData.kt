@@ -6,8 +6,6 @@ import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.node.ParentDataModifierNode
 import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.unit.Density
-import io.github.rafambn.kmap.utils.Degrees
-import io.github.rafambn.kmap.utils.offsets.ScreenOffset
 
 fun Modifier.componentData(componentData: MapComponentData) = this.then(ComponentDataElement(componentData = componentData))
 
@@ -47,10 +45,7 @@ val Measurable.componentData: MapComponentData
 
 
 data class MapComponentData(
-    val position: ScreenOffset,
-    val zIndex: Float,
-    val drawPosition: DrawPosition,
-    private val angle: Degrees,
+    val placer: Placer,
     val componentType: ComponentType,
 )
 

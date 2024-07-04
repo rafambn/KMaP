@@ -49,17 +49,15 @@ internal fun App() = AppTheme {
             ) {
                 canvas(
                     Placer(
-                        mapState,
                         ProjectedCoordinates.Zero,
                         zIndex = 0F,
-                        alpha = 0.5F
+                        alpha = 1F
                     ),
                     OSMMapSource::getTile
                 )
                 placers(
                     listOf(
                         Placer(
-                            mapState,
                             ProjectedCoordinates(-45.949303, -21.424608),
                             drawPosition = DrawPosition.BOTTOM_RIGHT,
                             rotation = -45.0,
