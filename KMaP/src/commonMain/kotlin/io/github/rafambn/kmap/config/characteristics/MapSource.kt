@@ -13,5 +13,5 @@ interface MapSource {
 
     fun toProjectedCoordinates(canvasPosition: CanvasPosition): ProjectedCoordinates
 
-    suspend fun getTile(zoom: Int, row: Int, collumn: Int): Tile
+    suspend fun getTile(zoom: Int, row: Int, column: Int): Tile
 }

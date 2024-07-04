@@ -1,18 +1,21 @@
 package io.github.rafambn.kmap.core.state
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Density
 import io.github.rafambn.kmap.config.DefaultMapProperties
 import io.github.rafambn.kmap.config.MapProperties
 import io.github.rafambn.kmap.config.border.MapBorderType
+import io.github.rafambn.kmap.config.border.OutsideTilesType
 import io.github.rafambn.kmap.config.characteristics.MapCoordinatesRange
 import io.github.rafambn.kmap.config.characteristics.MapSource
 import io.github.rafambn.kmap.config.customSources.OSMMapSource
 import io.github.rafambn.kmap.core.CanvasSizeChangeListener
 import io.github.rafambn.kmap.model.BoundingBox
 import io.github.rafambn.kmap.model.TileCanvasStateModel
+import io.github.rafambn.kmap.model.TileSpecs
 import io.github.rafambn.kmap.utils.loopInRange
 import io.github.rafambn.kmap.utils.offsets.CanvasDrawReference
 import io.github.rafambn.kmap.utils.offsets.CanvasPosition
@@ -23,9 +26,10 @@ import io.github.rafambn.kmap.utils.offsets.toPosition
 import io.github.rafambn.kmap.utils.rotate
 import io.github.rafambn.kmap.utils.toIntFloor
 import io.github.rafambn.kmap.utils.toRadians
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlin.math.pow
 
 @Composable
 fun rememberMapState(): MapState = remember { MapState() }
@@ -35,7 +39,6 @@ class MapState : CanvasSizeChangeListener {
     private var mapProperties: MapProperties = DefaultMapProperties()
     var mapSource: MapSource = OSMMapSource  //TODO(3) add source future -- online, db, cache or mapFile
     private var density: Density = Density(1F)
-    private val tileCanvasState = TileCanvasState(::redraw, mapSource::getTile, zoomLevel)
 
     //User define min/max zoom
     var maxZoomPreference = mapSource.zoomLevels.max
@@ -79,41 +82,25 @@ class MapState : CanvasSizeChangeListener {
         get() = zoom - zoomLevel + 1F
 
     //Map state variable for recomposition
-    private val _tileCanvasStateFlow = MutableStateFlow(
-        TileCanvasStateModel(
-            canvasSize / 2F,
-            angleDegrees.toFloat(),
-            magnifierScale,
-            tileCanvasState.tileLayers,
-            rawPosition.toCanvasDrawReference(),
-            mapSource.tileSize,
-            false
-        )
-    )
-    val tileCanvasStateFlow: StateFlow<TileCanvasStateModel> = _tileCanvasStateFlow
-
+    val trigger = mutableStateOf(false)
     fun updateState() {
-        tileCanvasState.onStateChange(
-            getBoundingBox(),
-            zoomLevel,
-            mapSource.mapCoordinatesRange,
-            mapProperties.outsideTiles
-        )
-        redraw()
-    }
-
-    private fun redraw() {
-        _tileCanvasStateFlow.update {
+        _canvasSharedState.tryEmit(
             TileCanvasStateModel(
                 canvasSize / 2F,
                 angleDegrees.toFloat(),
                 magnifierScale,
-                tileCanvasState.tileLayers,
                 rawPosition.toCanvasDrawReference(),
                 mapSource.tileSize,
-                !it.trigger //TODO(1) when TileCanvas became possible to be set remove this
+                getVisibleTilesForLevel(
+                    getBoundingBox(),
+                    zoomLevel,
+                    mapProperties.outsideTiles,
+                    mapSource.mapCoordinatesRange
+                ),
+                zoomLevel
             )
-        }
+        )
+        trigger.value = !trigger.value
     }
 
     override fun onCanvasSizeChanged(size: Offset) {
@@ -222,5 +209,79 @@ class MapState : CanvasSizeChangeListener {
 
     fun CanvasPosition.applyOrientation(mapCoordinatesRange: MapCoordinatesRange): CanvasPosition {
         return CanvasPosition(horizontal * mapCoordinatesRange.longitute.orientation, vertical * mapCoordinatesRange.latitude.orientation)
+    }
+
+    private fun getVisibleTilesForLevel(
+        viewPort: BoundingBox,
+        zoomLevel: Int,
+        outsideTilesType: OutsideTilesType,
+        coordinatesRange: MapCoordinatesRange
+    ): List<TileSpecs> {
+        val topLeftTile = getXYTile(
+            viewPort.topLeft,
+            zoomLevel,
+            coordinatesRange
+        )
+        val topRightTile = getXYTile(
+            viewPort.topRight,
+            zoomLevel,
+            coordinatesRange
+        )
+        val bottomRightTile = getXYTile(
+            viewPort.bottomRight,
+            zoomLevel,
+            coordinatesRange
+        )
+        val bottomLeftTile = getXYTile(
+            viewPort.bottomLeft,
+            zoomLevel,
+            coordinatesRange
+        )
+        val horizontalTileIntRange =
+            IntRange(
+                minOf(topLeftTile.first, bottomRightTile.first, topRightTile.first, bottomLeftTile.first),
+                maxOf(topLeftTile.first, bottomRightTile.first, topRightTile.first, bottomLeftTile.first)
+            )
+        val verticalTileIntRange =
+            IntRange(
+                minOf(topLeftTile.second, bottomRightTile.second, topRightTile.second, bottomLeftTile.second),
+                maxOf(topLeftTile.second, bottomRightTile.second, topRightTile.second, bottomLeftTile.second)
+            )
+
+        val visibleTileSpecs = mutableListOf<TileSpecs>()
+        if (outsideTilesType == OutsideTilesType.NONE) {
+            for (x in horizontalTileIntRange)
+                for (y in verticalTileIntRange) {
+                    var xTile: Int
+                    if (x < 0 || x > 2F.pow(zoomLevel) - 1)
+                        continue
+                    else
+                        xTile = x
+                    var yTile: Int
+                    if (y < 0 || y > 2F.pow(zoomLevel) - 1)
+                        continue
+                    else
+                        yTile = y
+                    visibleTileSpecs.add(TileSpecs(zoomLevel, xTile, yTile))
+                }
+        } else {
+            for (x in horizontalTileIntRange)
+                for (y in verticalTileIntRange)
+                    visibleTileSpecs.add(TileSpecs(zoomLevel, x, y))
+        }
+        return visibleTileSpecs
+    }
+
+    private fun getXYTile(position: CanvasPosition, zoomLevel: Int, mapSize: MapCoordinatesRange): Pair<Int, Int> {
+        return Pair(
+            ((position.horizontal - mapSize.longitute.getMin()) / mapSize.longitute.span * (1 shl zoomLevel)).toIntFloor(),
+            ((-position.vertical + mapSize.latitude.getMax()) / mapSize.latitude.span * (1 shl zoomLevel)).toIntFloor()
+        )
+    }
+
+    companion object {
+        private val _canvasSharedState = MutableSharedFlow<TileCanvasStateModel>(onBufferOverflow = BufferOverflow.DROP_LATEST,
+            extraBufferCapacity = 1)
+        val canvasSharedState = _canvasSharedState.asSharedFlow()
     }
 }

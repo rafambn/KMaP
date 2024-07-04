@@ -7,7 +7,7 @@ import io.github.rafambn.kmap.utils.offsets.ScreenOffset
 
 class Placer(
     //TODO(4) add grouping
-    mapState: MapState,
+    mapState: MapState,//todo remove mapState
     coordinates: ProjectedCoordinates,
     val tag: String = "",
     val alpha: Float = 1F,

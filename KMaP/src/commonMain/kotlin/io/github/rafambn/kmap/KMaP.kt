@@ -4,12 +4,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -18,12 +19,11 @@ import io.github.rafambn.kmap.config.DefaultMapProperties
 import io.github.rafambn.kmap.config.MapProperties
 import io.github.rafambn.kmap.config.characteristics.MapSource
 import io.github.rafambn.kmap.core.ComponentType
-import io.github.rafambn.kmap.core.DrawPosition
 import io.github.rafambn.kmap.core.MapComponentData
-import io.github.rafambn.kmap.core.TileCanvas
 import io.github.rafambn.kmap.core.componentData
 import io.github.rafambn.kmap.core.MotionController
 import io.github.rafambn.kmap.core.state.MapState
+import io.github.rafambn.kmap.gestures.detectMapGestures
 
 @Composable
 fun KMaP(
@@ -46,27 +46,37 @@ fun KMaP(
     }
     Layout(
         content = {
-            TileCanvas( //TODO(2): make have multiple tile canvas
-                Modifier
-                    .componentData(MapComponentData(Offset.Zero, 0F, DrawPosition.TOP_LEFT, 0.0, ComponentType.CANVAS)),
-                mapState.tileCanvasStateFlow.collectAsState().value,
-                canvasGestureListener
-            )
             KMaPScope.content()
+            mapState.trigger.value
         },
         modifier
             .background(Color.Gray)
             .clipToBounds()
             .wrapContentSize()
-            .onGloballyPositioned { coordinates ->
-                onCanvasChangeSize(coordinates.size.toSize().toRect().bottomRight)
+            .onGloballyPositioned { coordinates -> onCanvasChangeSize(coordinates.size.toSize().toRect().bottomRight) }
+            .pointerInput(PointerEventPass.Main) {
+                detectMapGestures(
+                    onTap = { offset -> canvasGestureListener.onTap(offset) },
+                    onDoubleTap = { offset -> canvasGestureListener.onDoubleTap(offset) },
+                    onTwoFingersTap = { offset -> canvasGestureListener.onTwoFingersTap(offset) },
+                    onLongPress = { offset -> canvasGestureListener.onLongPress(offset) },
+                    onTapLongPress = { offset -> canvasGestureListener.onTapLongPress(offset) },
+                    onTapSwipe = { centroid, zoom -> canvasGestureListener.onTapSwipe(centroid, zoom) },
+                    onGesture = { centroid, pan, zoom, rotation -> canvasGestureListener.onGesture(centroid, pan, zoom, rotation) },
+                    onDrag = { dragAmount -> canvasGestureListener.onDrag(dragAmount) },
+                    onGestureStart = { gestureType, offset -> canvasGestureListener.onGestureStart(gestureType, offset) },
+                    onGestureEnd = { gestureType -> canvasGestureListener.onGestureEnd(gestureType) },
+                    onHover = { offset -> canvasGestureListener.onHover(offset) },
+                    onScroll = { mouseOffset, scrollAmount -> canvasGestureListener.onScroll(mouseOffset, scrollAmount) },
+                    onCtrlGesture = { rotation -> canvasGestureListener.onCtrlGesture(rotation) }
+                )
             }
     ) { measurables, constraints ->
-        val canvasData: MapComponentData
+        val canvasData: List<MapComponentData>
         val canvasPlaceable = measurables
-            .first { it.componentData.componentType == ComponentType.CANVAS }
-            .also { canvasData = it.componentData }
-            .measure(constraints)
+            .filter { it.componentData.componentType == ComponentType.CANVAS }
+            .also { measurableCanvas -> canvasData = measurableCanvas.map { it.componentData } }
+            .map { it.measure(constraints) }
 
         val placersData: List<MapComponentData>
         val placersPlaceable = measurables
@@ -75,11 +85,13 @@ fun KMaP(
             .map { it.measure(constraints) }
 
         layout(constraints.maxWidth, constraints.maxHeight) {
-            canvasPlaceable.place(
-                x = 0,
-                y = 0,
-                zIndex = canvasData.zIndex
-            )
+            canvasPlaceable.forEachIndexed { index, placeable ->
+                placeable.placeRelative(
+                    x = 0,
+                    y = 0,
+                    zIndex = canvasData[index].zIndex
+                )
+            }
             placersPlaceable.forEachIndexed { index, placeable ->
                 placeable.placeRelative(
                     x = placersData[index].position.x.toInt(),

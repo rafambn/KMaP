@@ -3,19 +3,12 @@ package io.github.rafambn.kmap.core
 import io.github.rafambn.kmap.model.Tile
 import kotlin.concurrent.Volatile
 
-class TileLayers(startZoom: Int) {
-    @Volatile
-    var backLayer = listOf<Tile>()
-
-    @Volatile
-    var frontLayer = listOf<Tile>()
-
-    @Volatile
-    var backLayerLevel = startZoom - 1
-
-    @Volatile
-    var frontLayerLevel = startZoom
-
+data class TileLayers(
+    @Volatile var backLayer: List<Tile> = listOf(),
+    @Volatile var frontLayer: List<Tile> = listOf(),
+    @Volatile var backLayerLevel: Int = -1,
+    @Volatile var frontLayerLevel: Int = 0
+) {
     fun changeLayer(frontLayerLevel: Int) {
         backLayer = frontLayer.toList()
         frontLayer = listOf()
