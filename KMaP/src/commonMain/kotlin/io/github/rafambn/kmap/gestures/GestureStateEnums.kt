@@ -17,6 +17,7 @@ enum class GestureChangeState {
  * [GestureState] is used to indicate what is the current state that the gesture is.
  */
 enum class GestureState {
+    START_GESTURE,
     DRAG,
     CTRL,
     MOBILE,

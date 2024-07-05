@@ -17,8 +17,10 @@ import androidx.compose.ui.input.pointer.changedToDownIgnoreConsumed
 import androidx.compose.ui.input.pointer.isOutOfBounds
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.isActive
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.properties.Delegates
 
 /**
  * [detectMapGestures] detects all kinds of gestures needed for KMaP
@@ -26,17 +28,18 @@ import kotlin.coroutines.cancellation.CancellationException
 internal actual suspend fun PointerInputScope.detectMapGestures(
     onTap: (Offset) -> Unit,
     onDoubleTap: (Offset) -> Unit,
-    onTwoFingersTap: (Offset) -> Unit,
     onLongPress: (Offset) -> Unit,
     onTapLongPress: (Offset) -> Unit,
     onTapSwipe: (centroid: Offset, zoom: Float) -> Unit,
-    onGesture: (centroid: Offset, pan: Offset, zoom: Float, rotation: Float) -> Unit,
     onDrag: (dragAmount: Offset) -> Unit,
-    onGestureStart: (gestureType: GestureState, offset: Offset) -> Unit,
-    onGestureEnd: (gestureType: GestureState) -> Unit,
+    currentGestureFlow: MutableStateFlow<GestureState>?,
+
+    onTwoFingersTap: (Offset) -> Unit,
+    onGesture: (centroid: Offset, pan: Offset, zoom: Float, rotation: Float) -> Unit,
+
     onHover: (Offset) -> Unit, //There isn't a call for this method in Mobile
-    onScroll: (mouseOffset: Offset, scrollAmount: Float) -> Unit, //There isn't a call for this method in Mobile
-    onCtrlGesture: (rotation: Float) -> Unit
+    onScroll: (mouseOffset: Offset, scrollAmount: Float) -> Unit,//There isn't a call for this method in Mobile
+    onCtrlGesture: (rotation: Float) -> Unit//There isn't a call for this method in Mobile
 ) = coroutineScope {
     awaitMapGesture {
         //Parameters
@@ -47,9 +50,12 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
         val zoomScale = 300F
 
         //Gets first event
+        var gestureState by Delegates.observable(GestureState.START_GESTURE) { _, _, newValue ->
+            currentGestureFlow?.tryEmit(newValue)
+        }
         var previousEvent = awaitFirstEvent()
         var event = previousEvent
-        var gestureState = GestureState.WAITING_UP
+        gestureState = GestureState.WAITING_UP
         var firstGestureEvent: PointerEvent? = null
 
         do {
@@ -72,7 +78,6 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                                 panSlop += event.calculatePan()
                                 if (panSlop.getDistance() > touchSlop) {
                                     gestureState = GestureState.DRAG
-                                    onGestureStart.invoke(gestureState, event.changes[0].position)
                                     break
                                 }
                             }
@@ -132,7 +137,6 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                                 if (panSlop.getDistance() > touchSlop) {
                                     gestureState = GestureState.TAP_SWIPE
                                     firstGestureEvent = event
-                                    onGestureStart.invoke(gestureState, event.changes[0].position)
                                     break
                                 }
                             }
@@ -143,7 +147,6 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                             }
                         } catch (_: PointerEventTimeoutCancellationException) {
                             gestureState = GestureState.TAP_LONG_PRESS
-                            onGestureStart.invoke(gestureState, event.changes[0].position)
                             break
                         }
                     }
@@ -165,7 +168,6 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                                 panSlop += event.calculatePan()
                                 if (panSlop.getDistance() > touchSlop) {
                                     gestureState = GestureState.MOBILE
-                                    onGestureStart.invoke(gestureState, event.changes[0].position)
                                     break
                                 }
                             }
@@ -180,7 +182,6 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                             }
                         } catch (_: PointerEventTimeoutCancellationException) {
                             gestureState = GestureState.MOBILE
-                            onGestureStart.invoke(gestureState, event.changes[0].position)
                             break
                         }
                     }
@@ -202,7 +203,6 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                                 panSlop += event.calculatePan()
                                 if (panSlop.getDistance() > touchSlop) {
                                     gestureState = GestureState.DRAG
-                                    onGestureStart.invoke(gestureState, event.changes[0].position)
                                     break
                                 }
                             }
@@ -227,14 +227,11 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                         val eventChanges = getGestureStateChanges(event, previousEvent)
 
                         if (eventChanges.any { it == GestureChangeState.TWO_PRESS }) {
-                            onGestureEnd.invoke(gestureState)
                             gestureState = GestureState.MOBILE
-                            onGestureStart.invoke(gestureState, event.changes[0].position)
                             break
                         }
 
                         if (eventChanges.any { it == GestureChangeState.RELEASE }) {
-                            onGestureEnd.invoke(gestureState)
                             gestureState = GestureState.FINISH_GESTURE
                             break
                         }
@@ -250,15 +247,12 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                         val eventChanges = getGestureStateChanges(event, previousEvent)
 
                         if (eventChanges.any { it == GestureChangeState.RELEASE }) {
-                            onGestureEnd.invoke(gestureState)
                             gestureState = GestureState.FINISH_GESTURE
                             break
                         }
 
                         if (eventChanges.any { it == GestureChangeState.TWO_PRESS }) {
-                            onGestureEnd.invoke(gestureState)
                             gestureState = GestureState.MOBILE
-                            onGestureStart.invoke(gestureState, event.changes[0].position)
                             break
                         }
 
@@ -274,15 +268,12 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                         val eventChanges = getGestureStateChanges(event, previousEvent)
 
                         if (eventChanges.any { it == GestureChangeState.RELEASE }) {
-                            onGestureEnd.invoke(gestureState)
                             gestureState = GestureState.FINISH_GESTURE
                             break
                         }
 
                         if (eventChanges.any { it == GestureChangeState.TWO_PRESS }) {
-                            onGestureEnd.invoke(gestureState)
                             gestureState = GestureState.MOBILE
-                            onGestureStart.invoke(gestureState, event.changes[0].position)
                             break
                         }
 
@@ -337,9 +328,7 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                             if (event.type == PointerEventType.Move) {
                                 panSlop += event.calculatePan()
                                 if (panSlop.getDistance() > (touchSlop * 2)) {
-                                    onGestureEnd.invoke(gestureState)
                                     gestureState = GestureState.DRAG
-                                    onGestureStart.invoke(gestureState, event.changes[0].position)
                                     break
                                 }
                             }
@@ -348,9 +337,7 @@ internal actual suspend fun PointerInputScope.detectMapGestures(
                                 break
                             }
                         } catch (_: PointerEventTimeoutCancellationException) {
-                            onGestureEnd.invoke(gestureState)
                             gestureState = GestureState.DRAG
-                            onGestureStart.invoke(gestureState, event.changes[0].position)
                             break
                         }
                     }

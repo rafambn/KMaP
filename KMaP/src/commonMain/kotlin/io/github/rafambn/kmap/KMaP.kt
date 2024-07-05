@@ -61,14 +61,12 @@ fun KMaP(
                 detectMapGestures(
                     onTap = { offset -> canvasGestureListener.onTap(offset) },
                     onDoubleTap = { offset -> canvasGestureListener.onDoubleTap(offset) },
-                    onTwoFingersTap = { offset -> canvasGestureListener.onTwoFingersTap(offset) },
                     onLongPress = { offset -> canvasGestureListener.onLongPress(offset) },
                     onTapLongPress = { offset -> canvasGestureListener.onTapLongPress(offset) },
                     onTapSwipe = { centroid, zoom -> canvasGestureListener.onTapSwipe(centroid, zoom) },
-                    onGesture = { centroid, pan, zoom, rotation -> canvasGestureListener.onGesture(centroid, pan, zoom, rotation) },
                     onDrag = { dragAmount -> canvasGestureListener.onDrag(dragAmount) },
-                    onGestureStart = { gestureType, offset -> canvasGestureListener.onGestureStart(gestureType, offset) },
-                    onGestureEnd = { gestureType -> canvasGestureListener.onGestureEnd(gestureType) },
+                    onTwoFingersTap = { offset -> canvasGestureListener.onTwoFingersTap(offset) },
+                    onGesture = { centroid, pan, zoom, rotation -> canvasGestureListener.onGesture(centroid, pan, zoom, rotation) },
                     onHover = { offset -> canvasGestureListener.onHover(offset) },
                     onScroll = { mouseOffset, scrollAmount -> canvasGestureListener.onScroll(mouseOffset, scrollAmount) },
                     onCtrlGesture = { rotation -> canvasGestureListener.onCtrlGesture(rotation) }

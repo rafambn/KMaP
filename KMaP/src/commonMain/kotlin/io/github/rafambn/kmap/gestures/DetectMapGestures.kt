@@ -7,6 +7,7 @@ import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.isCtrlPressed
 import androidx.compose.ui.unit.IntSize
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.isActive
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.PI
@@ -16,20 +17,18 @@ import kotlin.math.atan2
  * [detectMapGestures] detects all kinds of gestures needed for KMaP
  */
 internal expect suspend fun PointerInputScope.detectMapGestures(
-    onTap: (Offset) -> Unit,
+    onTap: (Offset) -> Unit, //common use
     onDoubleTap: (Offset) -> Unit,
-    onTwoFingersTap: (Offset) -> Unit,
     onLongPress: (Offset) -> Unit,
     onTapLongPress: (Offset) -> Unit,
     onTapSwipe: (centroid: Offset, zoom: Float) -> Unit,
+    onDrag: (dragAmount: Offset) -> Unit,
+    currentGestureFlow: MutableStateFlow<GestureState>? = null,
 
+    onTwoFingersTap: (Offset) -> Unit, //mobile use
     onGesture: (centroid: Offset, pan: Offset, zoom: Float, rotation: Float) -> Unit,
 
-    onDrag: (dragAmount: Offset) -> Unit,
-    onGestureStart: (gestureType: GestureState, offset: Offset) -> Unit = { _, _ -> },
-    onGestureEnd: (gestureType: GestureState) -> Unit = { },
-
-    onHover: (Offset) -> Unit,
+    onHover: (Offset) -> Unit, //jvm/web use
     onScroll: (mouseOffset: Offset, scrollAmount: Float) -> Unit,
     onCtrlGesture: (rotation: Float) -> Unit
 )
