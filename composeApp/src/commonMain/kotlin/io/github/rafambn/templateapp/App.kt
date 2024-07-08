@@ -11,18 +11,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.dp
 import io.github.rafambn.kmap.DefaultCanvasGestureListener
 import io.github.rafambn.kmap.KMaP
 import io.github.rafambn.kmap.config.customSources.OSMMapSource
+import io.github.rafambn.kmap.core.CanvasData
 import io.github.rafambn.kmap.core.DrawPosition
-import io.github.rafambn.kmap.core.Placer
+import io.github.rafambn.kmap.core.GroupData
+import io.github.rafambn.kmap.core.PlacerData
 import io.github.rafambn.kmap.core.rememberMotionController
 import io.github.rafambn.kmap.core.state.rememberMapState
 import io.github.rafambn.kmap.utils.offsets.ProjectedCoordinates
 import io.github.rafambn.templateapp.theme.AppTheme
 import kmap_library_with_app.composeapp.generated.resources.Res
 import kmap_library_with_app.composeapp.generated.resources.teste
+import kmap_library_with_app.composeapp.generated.resources.teste_azul
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
@@ -33,7 +37,7 @@ internal fun App() = AppTheme {
             val mapState = rememberMapState()
 //            CoroutineScope(Dispatchers.Default).launch {
 //                motionController.animate {
-//                    delay(2000)
+//                    delay(timeMillis = 2000)
 //                    positionTo(MotionController.CenterLocation.Position(CanvasPosition(80.0,80.0)))
 //                }
 //            }
@@ -48,20 +52,31 @@ internal fun App() = AppTheme {
                 }
             ) {
                 canvas(
-                    Placer(
-                        ProjectedCoordinates.Zero,
-                        zIndex = 0F,
-                        alpha = 1F
-                    ),
+                    CanvasData(),
                     OSMMapSource::getTile
                 )
                 placers(
                     listOf(
-                        Placer(
+                        PlacerData(
                             ProjectedCoordinates(-45.949303, -21.424608),
+                            drawPosition = DrawPosition.TOP_LEFT,
+                            rotation = 45.0,
+                            rotateWithMap = true,
+                            tag = "foi"
+                        ),
+                        PlacerData(
+                            ProjectedCoordinates(-95.949303, 31.424608),
                             drawPosition = DrawPosition.BOTTOM_RIGHT,
-                            rotation = -45.0,
-                            rotateWithMap = true
+                            rotation = 0.0,
+                            rotateWithMap = true,
+                            tag = "teste"
+                        ),
+                        PlacerData(
+                            ProjectedCoordinates(-90.949303, 21.424608),
+                            drawPosition = DrawPosition.CENTER,
+                            rotation = 0.0,
+                            rotateWithMap = true,
+                            tag = "teste"
                         ),
                     )
                 ) {
@@ -74,6 +89,19 @@ internal fun App() = AppTheme {
                             .clickable {
                                 println("fsdfd")
                             }
+                    )
+                }
+                group(
+                    listOf(
+                        GroupData("teste")
+                    )
+                ) {
+                    Image(
+                        painterResource(Res.drawable.teste_azul),
+                        "fd",
+                        Modifier
+                            .background(Color.Black)
+                            .size(32.dp)
                     )
                 }
             }

@@ -4,20 +4,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
+import io.github.rafambn.kmap.core.CanvasData
 import io.github.rafambn.kmap.core.ComponentType
+import io.github.rafambn.kmap.core.GroupData
 import io.github.rafambn.kmap.core.MapComponentData
-import io.github.rafambn.kmap.core.Placer
+import io.github.rafambn.kmap.core.PlacerData
 import io.github.rafambn.kmap.core.TileCanvas
 import io.github.rafambn.kmap.core.componentData
 import io.github.rafambn.kmap.model.ResultTile
 
 interface KMaPScope {
     @Composable
-    fun placers(items: List<Placer>, markerContent: @Composable (Placer) -> Unit) = items.forEach { item ->
+    fun placers(placerData: List<PlacerData>, markerContent: @Composable (PlacerData) -> Unit) = placerData.forEach { item ->
         Layout(
             content = { markerContent(item) },
             modifier = Modifier
-                .componentData(MapComponentData(item, ComponentType.PLACER)),
+                .componentData(MapComponentData(ComponentType.PLACER, item)),
             measurePolicy = { measurables, constraints ->
                 val placeable = measurables.first().measure(constraints)
                 layout(placeable.width, placeable.height) {
@@ -31,12 +33,30 @@ interface KMaPScope {
     }
 
     @Composable
-    fun canvas(item: Placer, getTile: suspend (zoom: Int, row: Int, column: Int) -> ResultTile) =
+    fun group(items: List<GroupData>, markerContent: @Composable (GroupData) -> Unit) = items.forEach { item ->
+        Layout(
+            content = { markerContent(item) },
+            modifier = Modifier
+                .componentData(MapComponentData(ComponentType.GROUP, item)),
+            measurePolicy = { measurables, constraints ->
+                val placeable = measurables.first().measure(constraints)
+                layout(placeable.width, placeable.height) {
+                    placeable.place(
+                        x = 0,
+                        y = 0
+                    )
+                }
+            }
+        )
+    }
+
+    @Composable
+    fun canvas(canvasData: CanvasData, getTile: suspend (zoom: Int, row: Int, column: Int) -> ResultTile) =
         Layout(
             content = { TileCanvas(getTile) },
             modifier = Modifier
                 .fillMaxSize()
-                .componentData(MapComponentData(item, ComponentType.CANVAS)),
+                .componentData(MapComponentData(ComponentType.CANVAS, canvasData)),
             measurePolicy = { measurables, constraints ->
                 val placeable = measurables.first().measure(constraints)
                 layout(placeable.width, placeable.height) {

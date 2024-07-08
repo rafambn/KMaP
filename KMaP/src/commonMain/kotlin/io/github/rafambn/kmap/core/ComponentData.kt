@@ -45,11 +45,12 @@ val Measurable.componentData: MapComponentData
 
 
 data class MapComponentData(
-    val placer: Placer,
     val componentType: ComponentType,
+    val componentData: Any,
 )
 
 enum class ComponentType {
     CANVAS,
+    GROUP,
     PLACER
 }
