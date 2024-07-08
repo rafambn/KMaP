@@ -5,9 +5,14 @@ import io.github.rafambn.kmap.core.MotionController.CenterLocation
 import io.github.rafambn.kmap.gestures.GestureState
 import io.github.rafambn.kmap.utils.offsets.DifferentialScreenOffset
 import io.github.rafambn.kmap.utils.offsets.ScreenOffset
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 open class DefaultCanvasGestureListener { //TODO(3) make it expect //TODO(5) implement fling
     private var motionController: MotionController? = null
+
+    internal val _currentGestureFlow = MutableStateFlow(GestureState.START_GESTURE)
+    val currentGestureFlow = _currentGestureFlow.asStateFlow()
 
     internal fun setMotionController(motionController: MotionController) {
         this.motionController = motionController

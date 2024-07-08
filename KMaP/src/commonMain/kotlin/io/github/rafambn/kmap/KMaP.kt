@@ -69,7 +69,8 @@ fun KMaP(
                     onGesture = { centroid, pan, zoom, rotation -> canvasGestureListener.onGesture(centroid, pan, zoom, rotation) },
                     onHover = { offset -> canvasGestureListener.onHover(offset) },
                     onScroll = { mouseOffset, scrollAmount -> canvasGestureListener.onScroll(mouseOffset, scrollAmount) },
-                    onCtrlGesture = { rotation -> canvasGestureListener.onCtrlGesture(rotation) }
+                    onCtrlGesture = { rotation -> canvasGestureListener.onCtrlGesture(rotation) },
+                    currentGestureFlow = canvasGestureListener._currentGestureFlow
                 )
             }
     ) { measurables, constraints ->
