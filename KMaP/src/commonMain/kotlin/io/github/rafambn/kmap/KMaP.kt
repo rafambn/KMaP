@@ -36,7 +36,6 @@ fun KMaP(
     mapState: MapState,
     mapSource: MapSource,
     canvasGestureListener: DefaultCanvasGestureListener = DefaultCanvasGestureListener(),
-    onCanvasChangeSize: (Offset) -> Unit,
     content: @Composable KMaPScope.() -> Unit = {}
 ) {
     val density = LocalDensity.current
@@ -56,7 +55,7 @@ fun KMaP(
             .background(Color.Gray)
             .clipToBounds()
             .wrapContentSize()
-            .onGloballyPositioned { coordinates -> onCanvasChangeSize(coordinates.size.toSize().toRect().bottomRight) }
+            .onGloballyPositioned { coordinates -> mapState.onCanvasSizeChanged(coordinates.size.toSize().toRect().bottomRight) }
             .pointerInput(PointerEventPass.Main) {
                 detectMapGestures(
                     onTap = { offset -> canvasGestureListener.onTap(offset) },

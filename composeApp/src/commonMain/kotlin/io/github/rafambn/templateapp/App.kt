@@ -42,10 +42,7 @@ internal fun App() = AppTheme {
                 motionController = motionController,
                 mapSource = OSMMapSource,
                 mapState = mapState,
-                canvasGestureListener = DefaultCanvasGestureListener(),
-                onCanvasChangeSize = {
-                    mapState.onCanvasSizeChanged(it)
-                }
+                canvasGestureListener = DefaultCanvasGestureListener()
             ) {
                 canvas(
                     Placer(
