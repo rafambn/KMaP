@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import io.github.rafambn.kmap.DefaultCanvasGestureListener
 import io.github.rafambn.kmap.KMaP
 import io.github.rafambn.kmap.config.customSources.OSMMapSource
+import io.github.rafambn.kmap.config.customSources.OSMTileSource
 import io.github.rafambn.kmap.core.DrawPosition
 import io.github.rafambn.kmap.core.Placer
 import io.github.rafambn.kmap.core.rememberMotionController
@@ -50,7 +51,7 @@ internal fun App() = AppTheme {
                         zIndex = 0F,
                         alpha = 1F
                     ),
-                    OSMMapSource::getTile
+                    OSMTileSource::getTile
                 )
                 placers(
                     listOf(

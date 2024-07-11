@@ -8,6 +8,7 @@ import io.github.rafambn.kmap.config.characteristics.Longitude
 import io.github.rafambn.kmap.config.characteristics.MapCoordinatesRange
 import io.github.rafambn.kmap.config.characteristics.MapSource
 import io.github.rafambn.kmap.config.characteristics.MapZoomLevelsRange
+import io.github.rafambn.kmap.config.characteristics.TileSource
 import io.github.rafambn.kmap.model.ResultTile
 import io.github.rafambn.kmap.model.Tile
 import io.github.rafambn.kmap.model.TileResult
@@ -30,7 +31,6 @@ object OSMMapSource : MapSource {
     override val zoomLevels = OSMZoomLevelsRange()
     override val mapCoordinatesRange = OSMCoordinatesRange()
     override val tileSize = 256
-    private val client = HttpClient()
 
     override fun toCanvasPosition(projectedCoordinates: ProjectedCoordinates): CanvasPosition = CanvasPosition(
         projectedCoordinates.horizontal,
@@ -41,7 +41,10 @@ object OSMMapSource : MapSource {
         canvasPosition.horizontal,
         (atan(E.pow(canvasPosition.vertical * (PI / 85.051129))) - PI / 4) * 360 / PI
     )
+}
 
+object OSMTileSource : TileSource {
+    private val client = HttpClient()
     override suspend fun getTile(zoom: Int, row: Int, column: Int): ResultTile {
         val imageBitmap: ImageBitmap
         try {

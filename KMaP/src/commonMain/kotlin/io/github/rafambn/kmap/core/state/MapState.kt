@@ -279,9 +279,15 @@ class MapState : CanvasSizeChangeListener {
         )
     }
 
+    internal fun ProjectedCoordinates.toCanvasPosition(): CanvasPosition = with(mapSource) {
+        toCanvasPosition(this@toCanvasPosition)
+    }
+
     companion object {
-        private val _canvasSharedState = MutableSharedFlow<TileCanvasStateModel>(onBufferOverflow = BufferOverflow.DROP_LATEST,
-            extraBufferCapacity = 1)
+        private val _canvasSharedState = MutableSharedFlow<TileCanvasStateModel>(
+            onBufferOverflow = BufferOverflow.DROP_LATEST,
+            extraBufferCapacity = 1
+        )
         val canvasSharedState = _canvasSharedState.asSharedFlow()
     }
 }

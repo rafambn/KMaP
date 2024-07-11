@@ -12,6 +12,4 @@ interface MapSource {
     fun toCanvasPosition(projectedCoordinates: ProjectedCoordinates): CanvasPosition
 
     fun toProjectedCoordinates(canvasPosition: CanvasPosition): ProjectedCoordinates
-
-    suspend fun getTile(zoom: Int, row: Int, column: Int): ResultTile
 }

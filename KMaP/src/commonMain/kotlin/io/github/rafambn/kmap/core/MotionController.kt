@@ -152,12 +152,10 @@ class MotionController {
             when (center) {
                 is CenterLocation.Coordinates -> {
                     with(mapState!!) {
-                        with(this.mapSource) {
-                            val previousOffset = toCanvasPosition(center.projectedCoordinates).toScreenOffset()
-                            val previousPosition = toCanvasPosition(center.projectedCoordinates)
-                            mapState!!.zoom = zoom
-                            centerPositionAtOffset(previousPosition, previousOffset)
-                        }
+                        val previousOffset = center.projectedCoordinates.toCanvasPosition().toScreenOffset()
+                        val previousPosition = center.projectedCoordinates.toCanvasPosition()
+                        mapState!!.zoom = zoom
+                        centerPositionAtOffset(previousPosition, previousOffset)
                     }
                 }
 
@@ -187,12 +185,10 @@ class MotionController {
             when (center) {
                 is CenterLocation.Coordinates -> {
                     with(mapState!!) {
-                        with(this.mapSource) {
-                            val previousOffset = toCanvasPosition(center.projectedCoordinates).toScreenOffset()
-                            val previousPosition = toCanvasPosition(center.projectedCoordinates)
-                            mapState!!.angleDegrees = degrees
-                            centerPositionAtOffset(previousPosition, previousOffset)
-                        }
+                        val previousOffset = center.projectedCoordinates.toCanvasPosition().toScreenOffset()
+                        val previousPosition = center.projectedCoordinates.toCanvasPosition()
+                        mapState!!.angleDegrees = degrees
+                        centerPositionAtOffset(previousPosition, previousOffset)
                     }
                 }
 
@@ -235,12 +231,10 @@ class MotionController {
             when (center) {
                 is CenterLocation.Coordinates -> {
                     with(mapState!!) {
-                        with(this.mapSource) {
-                            val previousOffset = toCanvasPosition(center.projectedCoordinates).toScreenOffset()
-                            val previousPosition = toCanvasPosition(center.projectedCoordinates)
-                            mapState!!.zoom += zoom
-                            centerPositionAtOffset(previousPosition, previousOffset)
-                        }
+                        val previousOffset = center.projectedCoordinates.toCanvasPosition().toScreenOffset()
+                        val previousPosition = center.projectedCoordinates.toCanvasPosition()
+                        mapState!!.zoom += zoom
+                        centerPositionAtOffset(previousPosition, previousOffset)
                     }
                 }
 
@@ -270,12 +264,10 @@ class MotionController {
             when (center) {
                 is CenterLocation.Coordinates -> {
                     with(mapState!!) {
-                        with(this.mapSource) {
-                            val previousOffset = toCanvasPosition(center.projectedCoordinates).toScreenOffset()
-                            val previousPosition = toCanvasPosition(center.projectedCoordinates)
-                            mapState!!.angleDegrees += degrees
-                            centerPositionAtOffset(previousPosition, previousOffset)
-                        }
+                        val previousOffset = center.projectedCoordinates.toCanvasPosition().toScreenOffset()
+                        val previousPosition = center.projectedCoordinates.toCanvasPosition()
+                        mapState!!.angleDegrees += degrees
+                        centerPositionAtOffset(previousPosition, previousOffset)
                     }
                 }
 
@@ -307,8 +299,8 @@ class MotionController {
             val startPosition = mapState!!.rawPosition
             val endPosition = when (center) {
                 is CenterLocation.Coordinates -> {
-                    with(mapState!!.mapSource) {
-                        toCanvasPosition(center.projectedCoordinates)
+                    with(mapState!!) {
+                        center.projectedCoordinates.toCanvasPosition()
                     }
                 }
 
@@ -334,8 +326,8 @@ class MotionController {
             val startPosition = mapState!!.rawPosition
             val endPosition = when (center) {
                 is CenterLocation.Coordinates -> {
-                    with(mapState!!.mapSource) {
-                        toCanvasPosition(center.projectedCoordinates)
+                    with(mapState!!) {
+                        center.projectedCoordinates.toCanvasPosition()
                     }
                 }
 
@@ -386,8 +378,8 @@ class MotionController {
             val startZoom = mapState!!.zoom
             val centerPosition = when (center) {
                 is CenterLocation.Coordinates -> {
-                    with(mapState!!.mapSource) {
-                        toCanvasPosition(center.projectedCoordinates)
+                    with(mapState!!) {
+                        center.projectedCoordinates.toCanvasPosition()
                     }
                 }
 
@@ -401,10 +393,8 @@ class MotionController {
             }
             val centerOffset = when (center) {
                 is CenterLocation.Coordinates -> {
-                    with(mapState!!.mapSource) {
-                        with(mapState!!) {
-                            toCanvasPosition(center.projectedCoordinates).toScreenOffset()
-                        }
+                    with(mapState!!) {
+                        center.projectedCoordinates.toCanvasPosition().toScreenOffset()
                     }
                 }
 
@@ -434,8 +424,8 @@ class MotionController {
             val endZoom = mapState!!.zoom + zoom
             val centerPosition = when (center) {
                 is CenterLocation.Coordinates -> {
-                    with(mapState!!.mapSource) {
-                        toCanvasPosition(center.projectedCoordinates)
+                    with(mapState!!) {
+                        center.projectedCoordinates.toCanvasPosition()
                     }
                 }
 
@@ -449,10 +439,8 @@ class MotionController {
             }
             val centerOffset = when (center) {
                 is CenterLocation.Coordinates -> {
-                    with(mapState!!.mapSource) {
-                        with(mapState!!) {
-                            toCanvasPosition(center.projectedCoordinates).toScreenOffset()
-                        }
+                    with(mapState!!) {
+                        center.projectedCoordinates.toCanvasPosition().toScreenOffset()
                     }
                 }
 
@@ -506,8 +494,8 @@ class MotionController {
             val startAngle = mapState!!.angleDegrees
             val centerPosition = when (center) {
                 is CenterLocation.Coordinates -> {
-                    with(mapState!!.mapSource) {
-                        toCanvasPosition(center.projectedCoordinates)
+                    with(mapState!!) {
+                        center.projectedCoordinates.toCanvasPosition()
                     }
                 }
 
@@ -521,10 +509,8 @@ class MotionController {
             }
             val centerOffset = when (center) {
                 is CenterLocation.Coordinates -> {
-                    with(mapState!!.mapSource) {
-                        with(mapState!!) {
-                            toCanvasPosition(center.projectedCoordinates).toScreenOffset()
-                        }
+                    with(mapState!!) {
+                        center.projectedCoordinates.toCanvasPosition().toScreenOffset()
                     }
                 }
 
@@ -554,8 +540,8 @@ class MotionController {
             val endAngle = mapState!!.angleDegrees + degrees
             val centerPosition = when (center) {
                 is CenterLocation.Coordinates -> {
-                    with(mapState!!.mapSource) {
-                        toCanvasPosition(center.projectedCoordinates)
+                    with(mapState!!) {
+                        center.projectedCoordinates.toCanvasPosition()
                     }
                 }
 
@@ -569,10 +555,8 @@ class MotionController {
             }
             val centerOffset = when (center) {
                 is CenterLocation.Coordinates -> {
-                    with(mapState!!.mapSource) {
-                        with(mapState!!) {
-                            toCanvasPosition(center.projectedCoordinates).toScreenOffset()
-                        }
+                    with(mapState!!) {
+                        center.projectedCoordinates.toCanvasPosition().toScreenOffset()
                     }
                 }
 
