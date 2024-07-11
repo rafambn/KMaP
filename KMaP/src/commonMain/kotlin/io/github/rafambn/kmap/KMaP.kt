@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
@@ -16,9 +15,6 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.toSize
-import io.github.rafambn.kmap.config.DefaultMapProperties
-import io.github.rafambn.kmap.config.MapProperties
-import io.github.rafambn.kmap.config.characteristics.MapSource
 import io.github.rafambn.kmap.core.ComponentType
 import io.github.rafambn.kmap.core.MapComponentData
 import io.github.rafambn.kmap.core.MotionController
@@ -32,9 +28,7 @@ import kotlin.math.pow
 fun KMaP(
     modifier: Modifier = Modifier,
     motionController: MotionController,
-    mapProperties: MapProperties = DefaultMapProperties(),
     mapState: MapState,
-    mapSource: MapSource,
     canvasGestureListener: DefaultCanvasGestureListener = DefaultCanvasGestureListener(),
     content: @Composable KMaPScope.() -> Unit = {}
 ) {
@@ -42,8 +36,6 @@ fun KMaP(
     LaunchedEffect(Unit) {
         motionController.setMap(mapState)
         canvasGestureListener.setMotionController(motionController)
-        mapState.setProperties(mapProperties)
-        mapState.setMapSource(mapSource)
         mapState.setDensity(density)
     }
     Layout(
@@ -95,7 +87,7 @@ fun KMaP(
             }
             placersPlaceable.forEachIndexed { index, placeable ->
                 val coordinates: ScreenOffset = with(mapState) {
-                    mapState.mapSource.toCanvasPosition(placersData[index].placer.coordinates).toScreenOffset()
+                    placersData[index].placer.coordinates.toCanvasPosition().toScreenOffset()
                 }
                 placeable.placeWithLayer(
                     x = 0,

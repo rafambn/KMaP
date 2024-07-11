@@ -5,13 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Density
-import io.github.rafambn.kmap.config.DefaultMapProperties
 import io.github.rafambn.kmap.config.MapProperties
 import io.github.rafambn.kmap.config.border.MapBorderType
 import io.github.rafambn.kmap.config.border.OutsideTilesType
 import io.github.rafambn.kmap.config.characteristics.MapCoordinatesRange
-import io.github.rafambn.kmap.config.characteristics.MapSource
-import io.github.rafambn.kmap.config.customSources.OSMMapSource
 import io.github.rafambn.kmap.core.CanvasSizeChangeListener
 import io.github.rafambn.kmap.model.BoundingBox
 import io.github.rafambn.kmap.model.TileCanvasStateModel
@@ -32,22 +29,26 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlin.math.pow
 
 @Composable
-fun rememberMapState(): MapState = remember { MapState() }
+fun rememberMapState(
+    mapProperties: MapProperties
+): MapState = remember {
+    MapState(mapProperties)
+}
 
-class MapState : CanvasSizeChangeListener {
+class MapState(
+    private val mapProperties: MapProperties //TODO(3) add source future -- online, db, cache or mapFile
+) : CanvasSizeChangeListener {
     //Map controllers
-    private var mapProperties: MapProperties = DefaultMapProperties()
-    var mapSource: MapSource = OSMMapSource  //TODO(3) add source future -- online, db, cache or mapFile
     private var density: Density = Density(1F)
 
     //User define min/max zoom
-    var maxZoomPreference = mapSource.zoomLevels.max
+    var maxZoomPreference = mapProperties.zoomLevels.max
         set(value) {
-            field = value.coerceIn(mapSource.zoomLevels.min, mapSource.zoomLevels.max)
+            field = value.coerceIn(mapProperties.zoomLevels.min, mapProperties.zoomLevels.max)
         }
-    var minZoomPreference = mapSource.zoomLevels.min
+    var minZoomPreference = mapProperties.zoomLevels.min
         set(value) {
-            field = value.coerceIn(mapSource.zoomLevels.min, mapSource.zoomLevels.max)
+            field = value.coerceIn(mapProperties.zoomLevels.min, mapProperties.zoomLevels.max)
         }
 
     //Control variables
@@ -63,14 +64,10 @@ class MapState : CanvasSizeChangeListener {
         }
     var projection: ProjectedCoordinates
         get() {
-            return with(mapSource) {
-                toProjectedCoordinates(rawPosition)
-            }
+            return rawPosition.toProjectedCoordinates()
         }
         set(value) {
-            rawPosition = with(mapSource) {
-                toCanvasPosition(value)
-            }
+            rawPosition = value.toCanvasPosition()
         }
     var canvasSize = Offset.Zero
         internal set
@@ -90,12 +87,12 @@ class MapState : CanvasSizeChangeListener {
                 angleDegrees.toFloat(),
                 magnifierScale,
                 rawPosition.toCanvasDrawReference(),
-                mapSource.tileSize,
+                mapProperties.tileSize,
                 getVisibleTilesForLevel(
                     getBoundingBox(),
                     zoomLevel,
                     mapProperties.outsideTiles,
-                    mapSource.mapCoordinatesRange
+                    mapProperties.mapCoordinatesRange
                 ),
                 zoomLevel
             )
@@ -106,14 +103,6 @@ class MapState : CanvasSizeChangeListener {
     override fun onCanvasSizeChanged(size: Offset) {
         canvasSize = size
         updateState()
-    }
-
-    internal fun setProperties(mapProperties: MapProperties) {
-        this.mapProperties = mapProperties
-    }
-
-    internal fun setMapSource(mapSource: MapSource) {
-        this.mapSource = mapSource
     }
 
     internal fun setDensity(density: Density) {
@@ -133,18 +122,18 @@ class MapState : CanvasSizeChangeListener {
     private fun CanvasPosition.coerceInMap(): CanvasPosition {
         val x = if (mapProperties.boundMap.horizontal == MapBorderType.BOUND)
             horizontal.coerceIn(
-                mapSource.mapCoordinatesRange.longitute.west,
-                mapSource.mapCoordinatesRange.longitute.east
+                mapProperties.mapCoordinatesRange.longitute.west,
+                mapProperties.mapCoordinatesRange.longitute.east
             )
         else
-            horizontal.loopInRange(mapSource.mapCoordinatesRange.longitute)
+            horizontal.loopInRange(mapProperties.mapCoordinatesRange.longitute)
         val y = if (mapProperties.boundMap.vertical == MapBorderType.BOUND)
             vertical.coerceIn(
-                mapSource.mapCoordinatesRange.latitude.south,
-                mapSource.mapCoordinatesRange.latitude.north
+                mapProperties.mapCoordinatesRange.latitude.south,
+                mapProperties.mapCoordinatesRange.latitude.north
             )
         else
-            vertical.loopInRange(mapSource.mapCoordinatesRange.latitude)
+            vertical.loopInRange(mapProperties.mapCoordinatesRange.latitude)
         return CanvasPosition(x, y)
     }
 
@@ -164,33 +153,33 @@ class MapState : CanvasSizeChangeListener {
 
     fun DifferentialScreenOffset.fromDifferentialScreenOffsetToCanvasPosition(): CanvasPosition =
         (this.toPosition() / density.density.toDouble())
-            .scaleToZoom(1 / (mapSource.tileSize * magnifierScale * (1 shl zoomLevel)))
+            .scaleToZoom(1 / (mapProperties.tileSize * magnifierScale * (1 shl zoomLevel)))
             .rotate(-angleDegrees.toRadians())
             .scaleToMap(
-                mapSource.mapCoordinatesRange.longitute.span,
-                mapSource.mapCoordinatesRange.latitude.span
+                mapProperties.mapCoordinatesRange.longitute.span,
+                mapProperties.mapCoordinatesRange.latitude.span
             )
-            .applyOrientation(mapSource.mapCoordinatesRange)
+            .applyOrientation(mapProperties.mapCoordinatesRange)
 
     fun CanvasPosition.toCanvasDrawReference(): CanvasDrawReference {
-        val canvasDrawReference = this.applyOrientation(mapSource.mapCoordinatesRange)
-            .moveToTrueCoordinates(mapSource.mapCoordinatesRange)
-            .scaleToZoom((mapSource.tileSize * (1 shl zoomLevel)).toFloat())
+        val canvasDrawReference = this.applyOrientation(mapProperties.mapCoordinatesRange)
+            .moveToTrueCoordinates(mapProperties.mapCoordinatesRange)
+            .scaleToZoom((mapProperties.tileSize * (1 shl zoomLevel)).toFloat())
             .scaleToMap(
-                1 / mapSource.mapCoordinatesRange.longitute.span,
-                1 / mapSource.mapCoordinatesRange.latitude.span
+                1 / mapProperties.mapCoordinatesRange.longitute.span,
+                1 / mapProperties.mapCoordinatesRange.latitude.span
             )
         return CanvasDrawReference(canvasDrawReference.horizontal, canvasDrawReference.vertical)
     }
 
     fun CanvasPosition.toScreenOffset(): ScreenOffset = -(this - rawPosition)
-        .applyOrientation(mapSource.mapCoordinatesRange)
+        .applyOrientation(mapProperties.mapCoordinatesRange)
         .scaleToMap(
-            1 / mapSource.mapCoordinatesRange.longitute.span,
-            1 / mapSource.mapCoordinatesRange.latitude.span
+            1 / mapProperties.mapCoordinatesRange.longitute.span,
+            1 / mapProperties.mapCoordinatesRange.latitude.span
         )
         .rotate(angleDegrees.toRadians())
-        .scaleToZoom(mapSource.tileSize * magnifierScale * (1 shl zoomLevel))
+        .scaleToZoom(mapProperties.tileSize * magnifierScale * (1 shl zoomLevel))
         .times(density.density.toDouble()).toOffset()
         .minus(canvasSize / 2F)
 
@@ -279,8 +268,12 @@ class MapState : CanvasSizeChangeListener {
         )
     }
 
-    internal fun ProjectedCoordinates.toCanvasPosition(): CanvasPosition = with(mapSource) {
+    internal fun ProjectedCoordinates.toCanvasPosition(): CanvasPosition = with(mapProperties) {
         toCanvasPosition(this@toCanvasPosition)
+    }
+
+    internal fun CanvasPosition.toProjectedCoordinates(): ProjectedCoordinates = with(mapProperties) {
+        toProjectedCoordinates(this@toProjectedCoordinates)
     }
 
     companion object {

@@ -14,7 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import io.github.rafambn.kmap.DefaultCanvasGestureListener
 import io.github.rafambn.kmap.KMaP
-import io.github.rafambn.kmap.config.customSources.OSMMapSource
+import io.github.rafambn.kmap.config.customSources.OSMMapProperties
 import io.github.rafambn.kmap.config.customSources.OSMTileSource
 import io.github.rafambn.kmap.core.DrawPosition
 import io.github.rafambn.kmap.core.Placer
@@ -31,7 +31,7 @@ internal fun App() = AppTheme {
     Surface(modifier = Modifier.fillMaxSize()) {
         Box {
             val motionController = rememberMotionController()
-            val mapState = rememberMapState()
+            val mapState = rememberMapState(mapProperties = OSMMapProperties())
 //            CoroutineScope(Dispatchers.Default).launch {
 //                motionController.animate {
 //                    delay(2000)
@@ -41,7 +41,6 @@ internal fun App() = AppTheme {
             KMaP(
                 modifier = Modifier.align(Alignment.Center).size(300.dp, 600.dp),
                 motionController = motionController,
-                mapSource = OSMMapSource,
                 mapState = mapState,
                 canvasGestureListener = DefaultCanvasGestureListener()
             ) {

@@ -8,7 +8,7 @@ import io.github.rafambn.kmap.utils.offsets.ScreenOffset
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-open class DefaultCanvasGestureListener { //TODO(3) make it expect //TODO(5) implement fling
+open class DefaultCanvasGestureListener {
     private var motionController: MotionController? = null
 
     internal val _currentGestureFlow = MutableStateFlow(GestureState.START_GESTURE)
@@ -54,12 +54,6 @@ open class DefaultCanvasGestureListener { //TODO(3) make it expect //TODO(5) imp
 
     fun onDrag(differentialScreenOffset: DifferentialScreenOffset) {
         motionController?.scroll { center(CenterLocation.Offset(differentialScreenOffset)) }
-    }
-
-    fun onGestureStart(gestureType: GestureState, screenOffset: ScreenOffset) {
-    }
-
-    fun onGestureEnd(gestureType: GestureState) {
     }
 
     fun onHover(screenOffset: ScreenOffset) {
