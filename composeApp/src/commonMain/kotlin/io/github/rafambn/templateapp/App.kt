@@ -32,12 +32,6 @@ internal fun App() = AppTheme {
         Box {
             val motionController = rememberMotionController()
             val mapState = rememberMapState(mapProperties = OSMMapProperties())
-//            CoroutineScope(Dispatchers.Default).launch {
-//                motionController.animate {
-//                    delay(2000)
-//                    positionTo(MotionController.CenterLocation.Position(CanvasPosition(80.0,80.0)))
-//                }
-//            }
             KMaP(
                 modifier = Modifier.align(Alignment.Center).size(300.dp, 600.dp),
                 motionController = motionController,
@@ -52,7 +46,7 @@ internal fun App() = AppTheme {
                     ),
                     OSMTileSource::getTile
                 )
-                placers(
+                markers(
                     listOf(
                         Placer(
                             ProjectedCoordinates(-45.949303, -21.424608),

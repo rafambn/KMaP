@@ -1,6 +1,7 @@
 package io.github.rafambn.kmap
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -18,6 +19,7 @@ import androidx.compose.ui.unit.toSize
 import io.github.rafambn.kmap.core.ComponentType
 import io.github.rafambn.kmap.core.MapComponentData
 import io.github.rafambn.kmap.core.MotionController
+import io.github.rafambn.kmap.core.TileCanvas
 import io.github.rafambn.kmap.core.componentData
 import io.github.rafambn.kmap.core.state.MapState
 import io.github.rafambn.kmap.gestures.detectMapGestures
@@ -30,8 +32,9 @@ fun KMaP(
     motionController: MotionController,
     mapState: MapState,
     canvasGestureListener: DefaultCanvasGestureListener = DefaultCanvasGestureListener(),
-    content: @Composable KMaPScope.() -> Unit = {}
+    content: KMaPConfig.() -> Unit
 ) {
+    val kmapContent = KMaPConfig().also { content.invoke(it) }
     val density = LocalDensity.current
     LaunchedEffect(Unit) {
         motionController.setMap(mapState)
@@ -40,7 +43,39 @@ fun KMaP(
     }
     Layout(
         content = {
-            KMaPScope.content()
+            kmapContent.placers.forEach {
+                Layout(
+                    content = { it.second.invoke(it.first) },
+                    modifier = Modifier
+                        .componentData(MapComponentData(it.first, ComponentType.PLACER)),
+                    measurePolicy = { measurables, constraints ->
+                        val placeable = measurables.first().measure(constraints)
+                        layout(placeable.width, placeable.height) {
+                            placeable.place(
+                                x = 0,
+                                y = 0
+                            )
+                        }
+                    }
+                )
+            }
+            kmapContent.canvas.forEach {
+                Layout(
+                    content = { TileCanvas(it.second) },
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .componentData(MapComponentData(it.first, ComponentType.CANVAS)),
+                    measurePolicy = { measurables, constraints ->
+                        val placeable = measurables.first().measure(constraints)
+                        layout(placeable.width, placeable.height) {
+                            placeable.place(
+                                x = 0,
+                                y = 0
+                            )
+                        }
+                    }
+                )
+            }
             mapState.trigger.value
         },
         modifier
