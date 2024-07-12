@@ -146,8 +146,8 @@ fun KMaP(
                     translationY = coordinates.y - placersData[index].placer.drawPosition.y * placeable.height
                     transformOrigin = TransformOrigin(placersData[index].placer.drawPosition.x, placersData[index].placer.drawPosition.y)
                     if (placersData[index].placer.scaleWithMap) {
-                        scaleX = 2F.pow(mapState.zoom.value - placersData[index].placer.zoomToFix)
-                        scaleY = 2F.pow(mapState.zoom.value - placersData[index].placer.zoomToFix)
+                        scaleX = 2F.pow(mapState.zoom - placersData[index].placer.zoomToFix)
+                        scaleY = 2F.pow(mapState.zoom - placersData[index].placer.zoomToFix)
                     }
                     rotationZ =
                         if (placersData[index].placer.rotateWithMap)

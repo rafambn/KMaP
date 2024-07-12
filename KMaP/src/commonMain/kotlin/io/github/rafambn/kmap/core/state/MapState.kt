@@ -1,6 +1,7 @@
 package io.github.rafambn.kmap.core.state
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,6 +26,7 @@ import io.github.rafambn.kmap.utils.rotate
 import io.github.rafambn.kmap.utils.toIntFloor
 import io.github.rafambn.kmap.utils.toRadians
 import kotlin.math.pow
+import kotlin.reflect.KProperty
 
 @Composable
 fun rememberMapState(
@@ -52,31 +54,27 @@ class MapState(
     //State variables
     var canvasSize by mutableStateOf(Offset.Zero)
         internal set
-    var zoom = mutableStateOf(0F)
-        internal set(value) {//TODO not working
-            field.value = value.value.coerceZoom()
-        }
+    var zoom by ZoomDelegate(mutableStateOf(0F))
+
     var angleDegrees by mutableStateOf(0.0)
         internal set
-    var rawPosition = mutableStateOf(CanvasPosition.Zero)
-        internal set(value) {
-            field.value = value.value.coerceInMap()
-        }
+    var rawPosition by RawPositionDelegate(mutableStateOf(CanvasPosition.Zero))
+
     var projection: ProjectedCoordinates
         get() {
-            return rawPosition.value.toProjectedCoordinates()
+            return rawPosition.toProjectedCoordinates()
         }
         set(value) {
-            rawPosition.value = value.toCanvasPosition()
+            rawPosition = value.toCanvasPosition()
         }
     val drawReference
-        get() = rawPosition.value.toCanvasDrawReference()
+        get() = rawPosition.toCanvasDrawReference()
 
     //Derivative variables
     val zoomLevel
-        get() = zoom.value.toIntFloor()
+        get() = zoom.toIntFloor()
     val magnifierScale
-        get() = zoom.value - zoomLevel + 1F
+        get() = zoom - zoomLevel + 1F
 
     val visibleTiles by derivedStateOf {
         getVisibleTilesForLevel(
@@ -101,7 +99,7 @@ class MapState(
         )
     }
 
-    private fun CanvasPosition.coerceInMap(): CanvasPosition {
+    fun CanvasPosition.coerceInMap(): CanvasPosition {
         val x = if (mapProperties.boundMap.horizontal == MapBorderType.BOUND)
             horizontal.coerceIn(
                 mapProperties.mapCoordinatesRange.longitute.west,
@@ -124,11 +122,11 @@ class MapState(
     }
 
     fun centerPositionAtOffset(position: CanvasPosition, offset: ScreenOffset) {
-        rawPosition.value += position - offset.fromScreenOffsetToCanvasPosition()
+        rawPosition += position - offset.fromScreenOffsetToCanvasPosition()
     }
 
     //Conversion Functions
-    fun ScreenOffset.fromScreenOffsetToCanvasPosition(): CanvasPosition = this.toCanvasPositionFromScreenCenter() + rawPosition.value
+    fun ScreenOffset.fromScreenOffsetToCanvasPosition(): CanvasPosition = this.toCanvasPositionFromScreenCenter() + rawPosition
 
     fun DifferentialScreenOffset.toCanvasPositionFromScreenCenter(): CanvasPosition =
         (canvasSize / 2F - this).fromDifferentialScreenOffsetToCanvasPosition()
@@ -154,7 +152,7 @@ class MapState(
         return CanvasDrawReference(canvasDrawReference.horizontal, canvasDrawReference.vertical)
     }
 
-    fun CanvasPosition.toScreenOffset(): ScreenOffset = -(this - rawPosition.value)
+    fun CanvasPosition.toScreenOffset(): ScreenOffset = -(this - rawPosition)
         .applyOrientation(mapProperties.mapCoordinatesRange)
         .scaleToMap(
             1 / mapProperties.mapCoordinatesRange.longitute.span,
@@ -256,5 +254,25 @@ class MapState(
 
     internal fun CanvasPosition.toProjectedCoordinates(): ProjectedCoordinates = with(mapProperties) {
         toProjectedCoordinates(this@toProjectedCoordinates)
+    }
+
+   private inner class ZoomDelegate(private var zoom: MutableState<Float>) {
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): Float {
+            return zoom.value
+        }
+
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Float) {
+            zoom.value = value.coerceZoom()
+        }
+    }
+
+   private inner class RawPositionDelegate(private var zoom: MutableState<CanvasPosition>) {
+        operator fun getValue(thisRef: Any?, property: KProperty<*>): CanvasPosition {
+            return zoom.value
+        }
+
+        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: CanvasPosition) {
+            zoom.value = value.coerceInMap()
+        }
     }
 }

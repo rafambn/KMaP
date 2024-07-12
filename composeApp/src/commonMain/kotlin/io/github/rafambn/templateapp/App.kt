@@ -24,10 +24,6 @@ import io.github.rafambn.kmap.utils.offsets.ProjectedCoordinates
 import io.github.rafambn.templateapp.theme.AppTheme
 import kmap_library_with_app.composeapp.generated.resources.Res
 import kmap_library_with_app.composeapp.generated.resources.teste
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
@@ -36,10 +32,6 @@ internal fun App() = AppTheme {
         Box {
             val motionController = rememberMotionController()
             val mapState = rememberMapState(mapProperties = OSMMapProperties())
-            CoroutineScope(Dispatchers.Default).launch {
-                delay(2000)
-
-            }
             KMaP(
                 modifier = Modifier.align(Alignment.Center).size(300.dp, 600.dp),
                 motionController = motionController,
