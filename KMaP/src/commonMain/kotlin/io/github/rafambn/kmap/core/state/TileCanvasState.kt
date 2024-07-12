@@ -36,21 +36,22 @@ class TileCanvasState(
         visibleTiles: List<TileSpecs>,
         zoomLevel: Int
     ) {
-        val newFrontLayer = renderedTiles.toList().filter {
-            visibleTiles.contains(it.toTileSpecs())
-        }
+        if (zoomLevel != _tileLayersStateFlow.value.frontLayerLevel)
+            _tileLayersStateFlow.update {
+                it.changeLayer(zoomLevel)
+                it.copy()
+            }
+        val newFrontLayer = _tileLayersStateFlow.value.frontLayer.toMutableList()
+            .also { if (renderedTiles.size != 0) it.addAll(renderedTiles) }
+            .toSet()
+            .toList()
+            .filter { visibleTiles.contains(it.toTileSpecs()) }
         val tilesToRender = visibleTiles.filter {
             !newFrontLayer.contains(it.toTile())
         }
-        if (zoomLevel == _tileLayersStateFlow.value.frontLayerLevel) {
-            _tileLayersStateFlow.update {
-                it.copy(frontLayer = newFrontLayer)
-            }
-        } else {
-            _tileLayersStateFlow.update {
-                it.changeLayer(zoomLevel)
-                it.copy(frontLayer = newFrontLayer)
-            }
+        println(renderedTiles.size)
+        _tileLayersStateFlow.update {
+            it.copy(frontLayer = newFrontLayer)
         }
         tilesToProcessChannel.trySend(tilesToRender)
     }
@@ -75,10 +76,11 @@ class TileCanvasState(
                     when (tileResult.result) {
                         TileResult.SUCCESS -> {
                             val tile = tileResult.tile!!
-                            specsBeingProcessed.remove(tile.toTileSpecs())
-                            renderedTiles.add(tile)
-                            if (renderedTiles.size > maxCacheTiles)
-                                renderedTiles.removeAt(0)
+                            if (maxCacheTiles != 0) {
+                                renderedTiles.add(tile)
+                                if (renderedTiles.size > maxCacheTiles)
+                                    renderedTiles.removeAt(0)
+                            }
                             if (tile.zoom == _tileLayersStateFlow.value.frontLayerLevel) {
                                 _tileLayersStateFlow.update { tileLayers ->
                                     tileLayers.copy(frontLayer = tileLayers.frontLayer.toMutableList().also { it.add(tile) })
@@ -89,6 +91,7 @@ class TileCanvasState(
                                     tileLayers.copy(backLayer = tileLayers.backLayer.toMutableList().also { it.add(tile) })
                                 }
                             }
+                            specsBeingProcessed.remove(tile.toTileSpecs())
                         }
 
                         TileResult.FAILURE -> {
