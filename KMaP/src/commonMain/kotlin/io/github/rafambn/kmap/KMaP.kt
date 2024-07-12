@@ -41,8 +41,10 @@ fun KMaP(
         canvasGestureListener.setMotionController(motionController)
         mapState.setDensity(density)
     }
+    println("kamap")
     Layout(
         content = {
+            println("content")
             kmapContent.placers.forEach {
                 Layout(
                     content = { it.second.invoke(it.first) },
@@ -61,7 +63,18 @@ fun KMaP(
             }
             kmapContent.canvas.forEach {
                 Layout(
-                    content = { TileCanvas(it.second) },
+                    content = {
+                        TileCanvas(
+                            it.second,
+                            mapState.magnifierScale,
+                            mapState.angleDegrees.toFloat(),
+                            mapState.canvasSize / 2F,
+                            mapState.mapProperties.tileSize,
+                            mapState.drawReference,
+                            mapState.zoomLevel,
+                            mapState.visibleTiles
+                        )
+                    },
                     modifier = Modifier
                         .fillMaxSize()
                         .componentData(MapComponentData(it.first, ComponentType.CANVAS)),
@@ -76,13 +89,12 @@ fun KMaP(
                     }
                 )
             }
-            mapState.trigger.value
         },
         modifier
             .background(Color.Gray)
             .clipToBounds()
             .wrapContentSize()
-            .onGloballyPositioned { coordinates -> mapState.onCanvasSizeChanged(coordinates.size.toSize().toRect().bottomRight) }
+            .onGloballyPositioned { coordinates -> mapState.canvasSize = coordinates.size.toSize().toRect().bottomRight }
             .pointerInput(PointerEventPass.Main) {
                 detectMapGestures(
                     onTap = { offset -> canvasGestureListener.onTap(offset) },
@@ -134,8 +146,8 @@ fun KMaP(
                     translationY = coordinates.y - placersData[index].placer.drawPosition.y * placeable.height
                     transformOrigin = TransformOrigin(placersData[index].placer.drawPosition.x, placersData[index].placer.drawPosition.y)
                     if (placersData[index].placer.scaleWithMap) {
-                        scaleX = 2F.pow(mapState.zoom - placersData[index].placer.zoomToFix)
-                        scaleY = 2F.pow(mapState.zoom - placersData[index].placer.zoomToFix)
+                        scaleX = 2F.pow(mapState.zoom.value - placersData[index].placer.zoomToFix)
+                        scaleY = 2F.pow(mapState.zoom.value - placersData[index].placer.zoomToFix)
                     }
                     rotationZ =
                         if (placersData[index].placer.rotateWithMap)

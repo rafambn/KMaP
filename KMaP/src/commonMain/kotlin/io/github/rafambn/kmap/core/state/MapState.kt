@@ -1,17 +1,18 @@
 package io.github.rafambn.kmap.core.state
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Density
 import io.github.rafambn.kmap.config.MapProperties
 import io.github.rafambn.kmap.config.border.MapBorderType
 import io.github.rafambn.kmap.config.border.OutsideTilesType
 import io.github.rafambn.kmap.config.characteristics.MapCoordinatesRange
-import io.github.rafambn.kmap.core.CanvasSizeChangeListener
 import io.github.rafambn.kmap.model.BoundingBox
-import io.github.rafambn.kmap.model.TileCanvasStateModel
 import io.github.rafambn.kmap.model.TileSpecs
 import io.github.rafambn.kmap.utils.loopInRange
 import io.github.rafambn.kmap.utils.offsets.CanvasDrawReference
@@ -23,9 +24,6 @@ import io.github.rafambn.kmap.utils.offsets.toPosition
 import io.github.rafambn.kmap.utils.rotate
 import io.github.rafambn.kmap.utils.toIntFloor
 import io.github.rafambn.kmap.utils.toRadians
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlin.math.pow
 
 @Composable
@@ -36,8 +34,8 @@ fun rememberMapState(
 }
 
 class MapState(
-    private val mapProperties: MapProperties //TODO(3) add source future -- online, db, cache or mapFile
-) : CanvasSizeChangeListener {
+    internal val mapProperties: MapProperties //TODO(3) add source future -- online, db, cache or mapFile
+) {
     //Map controllers
     private var density: Density = Density(1F)
 
@@ -51,58 +49,42 @@ class MapState(
             field = value.coerceIn(mapProperties.zoomLevels.min, mapProperties.zoomLevels.max)
         }
 
-    //Control variables
-    var zoom = 0F
-        internal set(value) {
-            field = value.coerceZoom()
-        }
-    var angleDegrees = 0.0
+    //State variables
+    var canvasSize by mutableStateOf(Offset.Zero)
         internal set
-    var rawPosition = CanvasPosition.Zero
+    var zoom = mutableStateOf(0F)
+        internal set(value) {//TODO not working
+            field.value = value.value.coerceZoom()
+        }
+    var angleDegrees by mutableStateOf(0.0)
+        internal set
+    var rawPosition = mutableStateOf(CanvasPosition.Zero)
         internal set(value) {
-            field = value.coerceInMap()
+            field.value = value.value.coerceInMap()
         }
     var projection: ProjectedCoordinates
         get() {
-            return rawPosition.toProjectedCoordinates()
+            return rawPosition.value.toProjectedCoordinates()
         }
         set(value) {
-            rawPosition = value.toCanvasPosition()
+            rawPosition.value = value.toCanvasPosition()
         }
-    var canvasSize = Offset.Zero
-        internal set
+    val drawReference
+        get() = rawPosition.value.toCanvasDrawReference()
 
     //Derivative variables
     val zoomLevel
-        get() = zoom.toIntFloor()
+        get() = zoom.value.toIntFloor()
     val magnifierScale
-        get() = zoom - zoomLevel + 1F
+        get() = zoom.value - zoomLevel + 1F
 
-    //Map state variable for recomposition
-    val trigger = mutableStateOf(false) //TODO(1) make some control variables tied to kmap to remove this
-    fun updateState() {
-        _canvasSharedState.tryEmit(
-            TileCanvasStateModel(
-                canvasSize / 2F,
-                angleDegrees.toFloat(),
-                magnifierScale,
-                rawPosition.toCanvasDrawReference(),
-                mapProperties.tileSize,
-                getVisibleTilesForLevel(
-                    getBoundingBox(),
-                    zoomLevel,
-                    mapProperties.outsideTiles,
-                    mapProperties.mapCoordinatesRange
-                ),
-                zoomLevel
-            )
+    val visibleTiles by derivedStateOf {
+        getVisibleTilesForLevel(
+            getBoundingBox(),
+            zoomLevel,
+            mapProperties.outsideTiles,
+            mapProperties.mapCoordinatesRange
         )
-        trigger.value = !trigger.value
-    }
-
-    override fun onCanvasSizeChanged(size: Offset) {
-        canvasSize = size
-        updateState()
     }
 
     internal fun setDensity(density: Density) {
@@ -142,11 +124,11 @@ class MapState(
     }
 
     fun centerPositionAtOffset(position: CanvasPosition, offset: ScreenOffset) {
-        rawPosition += position - offset.fromScreenOffsetToCanvasPosition()
+        rawPosition.value += position - offset.fromScreenOffsetToCanvasPosition()
     }
 
     //Conversion Functions
-    fun ScreenOffset.fromScreenOffsetToCanvasPosition(): CanvasPosition = this.toCanvasPositionFromScreenCenter() + rawPosition
+    fun ScreenOffset.fromScreenOffsetToCanvasPosition(): CanvasPosition = this.toCanvasPositionFromScreenCenter() + rawPosition.value
 
     fun DifferentialScreenOffset.toCanvasPositionFromScreenCenter(): CanvasPosition =
         (canvasSize / 2F - this).fromDifferentialScreenOffsetToCanvasPosition()
@@ -172,7 +154,7 @@ class MapState(
         return CanvasDrawReference(canvasDrawReference.horizontal, canvasDrawReference.vertical)
     }
 
-    fun CanvasPosition.toScreenOffset(): ScreenOffset = -(this - rawPosition)
+    fun CanvasPosition.toScreenOffset(): ScreenOffset = -(this - rawPosition.value)
         .applyOrientation(mapProperties.mapCoordinatesRange)
         .scaleToMap(
             1 / mapProperties.mapCoordinatesRange.longitute.span,
@@ -274,13 +256,5 @@ class MapState(
 
     internal fun CanvasPosition.toProjectedCoordinates(): ProjectedCoordinates = with(mapProperties) {
         toProjectedCoordinates(this@toProjectedCoordinates)
-    }
-
-    companion object {
-        private val _canvasSharedState = MutableSharedFlow<TileCanvasStateModel>(
-            onBufferOverflow = BufferOverflow.DROP_LATEST,
-            extraBufferCapacity = 1
-        )
-        val canvasSharedState = _canvasSharedState.asSharedFlow()
     }
 }

@@ -22,7 +22,6 @@ class TileCanvasState(
     private val maxTries: Int,
     private val maxCacheTiles: Int
 ) {
-
     private val _tileLayersStateFlow = MutableStateFlow(TileLayers())
     val tileLayersStateFlow = _tileLayersStateFlow.asStateFlow()
     private val renderedTiles = mutableListOf<Tile>()

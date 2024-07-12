@@ -75,12 +75,10 @@ class MotionController {
         if (map == null) {
             onMapChanged = {
                 block(setObject)
-                it.updateState()
                 onMapChanged?.let { callback -> callback(it) }
             }
         } else {
             block(setObject)
-            map.updateState()
         }
     }
 
@@ -93,12 +91,10 @@ class MotionController {
         if (map == null) {
             onMapChanged = {
                 block(scrollObject)
-                it.updateState()
                 onMapChanged?.let { callback -> callback(it) }
             }
         } else {
             block(scrollObject)
-            map.updateState()
         }
     }
 
@@ -136,16 +132,16 @@ class MotionController {
         override fun center(center: CenterLocation) {
             when (center) {
                 is CenterLocation.Offset -> with(mapState!!) {
-                    mapState!!.rawPosition = center.offset.fromScreenOffsetToCanvasPosition()
+                    mapState!!.rawPosition.value = center.offset.fromScreenOffsetToCanvasPosition()
                 }
 
-                is CenterLocation.Position -> mapState!!.rawPosition = center.position
+                is CenterLocation.Position -> mapState!!.rawPosition.value = center.position
                 is CenterLocation.Coordinates -> mapState!!.projection = center.projectedCoordinates
             }
         }
 
         override fun zoom(zoom: Float) {
-            mapState!!.zoom = zoom
+            mapState!!.zoom.value = zoom
         }
 
         override fun zoomCentered(zoom: Float, center: CenterLocation) {
@@ -154,7 +150,7 @@ class MotionController {
                     with(mapState!!) {
                         val previousOffset = center.projectedCoordinates.toCanvasPosition().toScreenOffset()
                         val previousPosition = center.projectedCoordinates.toCanvasPosition()
-                        mapState!!.zoom = zoom
+                        mapState!!.zoom.value = zoom
                         centerPositionAtOffset(previousPosition, previousOffset)
                     }
                 }
@@ -162,7 +158,7 @@ class MotionController {
                 is CenterLocation.Offset -> {
                     with(mapState!!) {
                         val position = center.offset.fromScreenOffsetToCanvasPosition()
-                        this.zoom = zoom
+                        this.zoom.value = zoom
                         centerPositionAtOffset(position, center.offset)
                     }
                 }
@@ -170,7 +166,7 @@ class MotionController {
                 is CenterLocation.Position -> {
                     with(mapState!!) {
                         val previousOffset = center.position.toScreenOffset()
-                        this.zoom = zoom
+                        this.zoom.value = zoom
                         centerPositionAtOffset(center.position, previousOffset)
                     }
                 }
@@ -215,16 +211,16 @@ class MotionController {
         override fun center(center: CenterLocation) {
             when (center) {
                 is CenterLocation.Offset -> with(mapState!!) {
-                    mapState!!.rawPosition += center.offset.fromDifferentialScreenOffsetToCanvasPosition()
+                    mapState!!.rawPosition.value += center.offset.fromDifferentialScreenOffsetToCanvasPosition()
                 }
 
-                is CenterLocation.Position -> mapState!!.rawPosition += center.position
+                is CenterLocation.Position -> mapState!!.rawPosition.value += center.position
                 is CenterLocation.Coordinates -> mapState!!.projection += center.projectedCoordinates
             }
         }
 
         override fun zoom(zoom: Float) {
-            mapState!!.zoom += zoom
+            mapState!!.zoom.value += zoom
         }
 
         override fun zoomCentered(zoom: Float, center: CenterLocation) {
@@ -233,7 +229,7 @@ class MotionController {
                     with(mapState!!) {
                         val previousOffset = center.projectedCoordinates.toCanvasPosition().toScreenOffset()
                         val previousPosition = center.projectedCoordinates.toCanvasPosition()
-                        mapState!!.zoom += zoom
+                        mapState!!.zoom.value += zoom
                         centerPositionAtOffset(previousPosition, previousOffset)
                     }
                 }
@@ -241,7 +237,7 @@ class MotionController {
                 is CenterLocation.Offset -> {
                     with(mapState!!) {
                         val position = center.offset.fromScreenOffsetToCanvasPosition()
-                        this.zoom += zoom
+                        this.zoom.value += zoom
                         centerPositionAtOffset(position, center.offset)
                     }
                 }
@@ -249,7 +245,7 @@ class MotionController {
                 is CenterLocation.Position -> {
                     with(mapState!!) {
                         val previousOffset = center.position.toScreenOffset()
-                        this.zoom += zoom
+                        this.zoom.value += zoom
                         centerPositionAtOffset(center.position, previousOffset)
                     }
                 }
@@ -296,7 +292,7 @@ class MotionController {
                 throw IllegalArgumentException("decay rate must be greater than 0")
             if (duration <= 0)
                 throw IllegalArgumentException("duration must be greater than 0")
-            val startPosition = mapState!!.rawPosition
+            val startPosition = mapState!!.rawPosition.value
             val endPosition = when (center) {
                 is CenterLocation.Coordinates -> {
                     with(mapState!!) {
@@ -313,8 +309,7 @@ class MotionController {
                 is CenterLocation.Position -> center.position
             }
             decayValue(decayRate, duration) {
-                mapState!!.rawPosition = lerp(startPosition, endPosition, it)
-                mapState!!.updateState()
+                mapState!!.rawPosition.value = lerp(startPosition, endPosition, it)
             }
         }
 
@@ -323,7 +318,7 @@ class MotionController {
                 throw IllegalArgumentException("decay rate must be greater than 0")
             if (duration <= 0)
                 throw IllegalArgumentException("duration must be greater than 0")
-            val startPosition = mapState!!.rawPosition
+            val startPosition = mapState!!.rawPosition.value
             val endPosition = when (center) {
                 is CenterLocation.Coordinates -> {
                     with(mapState!!) {
@@ -338,10 +333,9 @@ class MotionController {
                 }
 
                 is CenterLocation.Position -> center.position
-            } + mapState!!.rawPosition
+            } + mapState!!.rawPosition.value
             decayValue(decayRate, duration) {
-                mapState!!.rawPosition = lerp(startPosition, endPosition, it)
-                mapState!!.updateState()
+                mapState!!.rawPosition.value = lerp(startPosition, endPosition, it)
             }
         }
 
@@ -350,10 +344,9 @@ class MotionController {
                 throw IllegalArgumentException("decay rate must be greater than 0")
             if (duration <= 0)
                 throw IllegalArgumentException("duration must be greater than 0")
-            val startZoom = mapState!!.zoom
+            val startZoom = mapState!!.zoom.value
             decayValue(decayRate, duration) {
-                mapState!!.zoom = lerp(startZoom, zoom, it.toFloat())
-                mapState!!.updateState()
+                mapState!!.zoom.value = lerp(startZoom, zoom, it.toFloat())
             }
         }
 
@@ -362,11 +355,10 @@ class MotionController {
                 throw IllegalArgumentException("decay rate must be greater than 0")
             if (duration <= 0)
                 throw IllegalArgumentException("duration must be greater than 0")
-            val startZoom = mapState!!.zoom
+            val startZoom = mapState!!.zoom.value
             val endZoom = startZoom + zoom
             decayValue(decayRate, duration) {
-                mapState!!.zoom = lerp(startZoom, endZoom, it.toFloat())
-                mapState!!.updateState()
+                mapState!!.zoom.value = lerp(startZoom, endZoom, it.toFloat())
             }
         }
 
@@ -375,7 +367,7 @@ class MotionController {
                 throw IllegalArgumentException("decay rate must be greater than 0")
             if (duration <= 0)
                 throw IllegalArgumentException("duration must be greater than 0")
-            val startZoom = mapState!!.zoom
+            val startZoom = mapState!!.zoom.value
             val centerPosition = when (center) {
                 is CenterLocation.Coordinates -> {
                     with(mapState!!) {
@@ -407,11 +399,10 @@ class MotionController {
                 }
             }
             decayValue(decayRate, duration) {
-                mapState!!.zoom = lerp(startZoom, zoom, it.toFloat())
+                mapState!!.zoom.value = lerp(startZoom, zoom, it.toFloat())
                 with(mapState!!) {
                     centerPositionAtOffset(centerPosition, centerOffset)
                 }
-                mapState!!.updateState()
             }
         }
 
@@ -420,8 +411,8 @@ class MotionController {
                 throw IllegalArgumentException("decay rate must be greater than 0")
             if (duration <= 0)
                 throw IllegalArgumentException("duration must be greater than 0")
-            val startZoom = mapState!!.zoom
-            val endZoom = mapState!!.zoom + zoom
+            val startZoom = mapState!!.zoom.value
+            val endZoom = mapState!!.zoom.value + zoom
             val centerPosition = when (center) {
                 is CenterLocation.Coordinates -> {
                     with(mapState!!) {
@@ -453,11 +444,10 @@ class MotionController {
                 }
             }
             decayValue(decayRate, duration) {
-                mapState!!.zoom = lerp(startZoom, endZoom, it.toFloat())
+                mapState!!.zoom.value = lerp(startZoom, endZoom, it.toFloat())
                 with(mapState!!) {
                     centerPositionAtOffset(centerPosition, centerOffset)
                 }
-                mapState!!.updateState()
             }
         }
 
@@ -469,7 +459,6 @@ class MotionController {
             val startAngle = mapState!!.angleDegrees
             decayValue(decayRate, duration) {
                 mapState!!.angleDegrees = lerp(startAngle, degrees, it)
-                mapState!!.updateState()
             }
         }
 
@@ -482,7 +471,6 @@ class MotionController {
             val endAngle = mapState!!.angleDegrees + degrees
             decayValue(decayRate, duration) {
                 mapState!!.angleDegrees = lerp(startAngle, endAngle, it)
-                mapState!!.updateState()
             }
         }
 
@@ -527,7 +515,6 @@ class MotionController {
                 with(mapState!!) {
                     centerPositionAtOffset(centerPosition, centerOffset)
                 }
-                mapState!!.updateState()
             }
         }
 
@@ -573,7 +560,6 @@ class MotionController {
                 with(mapState!!) {
                     centerPositionAtOffset(centerPosition, centerOffset)
                 }
-                mapState!!.updateState()
             }
         }
 
