@@ -23,7 +23,7 @@ object OSMTileSource : TileSource {
             imageBitmap = byteArray.toImageBitmap()
             return ResultTile(Tile(zoom, row, column, imageBitmap), TileResult.SUCCESS)
         } catch (ex: Exception) {
-            return ResultTile(null, TileResult.SUCCESS)
+            return ResultTile(null, TileResult.FAILURE)
         }
     }
 }
