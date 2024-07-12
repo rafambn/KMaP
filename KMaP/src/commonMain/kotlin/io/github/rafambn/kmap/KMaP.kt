@@ -41,22 +41,29 @@ fun KMaP(
         canvasGestureListener.setMotionController(motionController)
         mapState.setDensity(density)
     }
-    println("kamap")
     Layout(
         content = {
-            println("content")
             kmapContent.placers.forEach {
                 Layout(
                     content = { it.second.invoke(it.first) },
                     modifier = Modifier
                         .componentData(MapComponentData(it.first, ComponentType.PLACER)),
                     measurePolicy = { measurables, constraints ->
-                        val placeable = measurables.first().measure(constraints)
-                        layout(placeable.width, placeable.height) {
-                            placeable.place(
-                                x = 0,
-                                y = 0
-                            )
+                        if (measurables.isEmpty())
+                            return@Layout layout(0, 0) {}
+                        val listPlaceables = measurables.map { measurable ->
+                            measurable.measure(constraints)
+                        }
+                        val maxWidth = listPlaceables.maxOf { placeable -> placeable.width }
+                        val maxHeight = listPlaceables.maxOf { placeable -> placeable.height }
+
+                        layout(maxWidth, maxHeight) {
+                            listPlaceables.forEach { placeable ->
+                                placeable.place(
+                                    x = 0,
+                                    y = 0
+                                )
+                            }
                         }
                     }
                 )
@@ -79,6 +86,8 @@ fun KMaP(
                         .fillMaxSize()
                         .componentData(MapComponentData(it.first, ComponentType.CANVAS)),
                     measurePolicy = { measurables, constraints ->
+                        if (measurables.isEmpty())
+                            throw IllegalArgumentException("No canvas declared")
                         val placeable = measurables.first().measure(constraints)
                         layout(placeable.width, placeable.height) {
                             placeable.place(

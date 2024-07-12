@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,6 +27,10 @@ import io.github.rafambn.kmap.utils.offsets.ProjectedCoordinates
 import io.github.rafambn.templateapp.theme.AppTheme
 import kmap_library_with_app.composeapp.generated.resources.Res
 import kmap_library_with_app.composeapp.generated.resources.teste
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
@@ -32,6 +39,11 @@ internal fun App() = AppTheme {
         Box {
             val motionController = rememberMotionController()
             val mapState = rememberMapState(mapProperties = OSMMapProperties())
+            var show by mutableStateOf(true)
+            CoroutineScope(Dispatchers.Default).launch {
+                delay(2000)
+                show = false
+            }
             KMaP(
                 modifier = Modifier.align(Alignment.Center).size(300.dp, 600.dp),
                 motionController = motionController,
@@ -56,16 +68,17 @@ internal fun App() = AppTheme {
                         ),
                     )
                 ) {
-                    Image(
-                        painterResource(Res.drawable.teste),
-                        "fd",
-                        Modifier
-                            .background(Color.Black)
-                            .size(32.dp)
-                            .clickable {
-                                println("fsdfd")
-                            }
-                    )
+                    if (show)
+                        Image(
+                            painterResource(Res.drawable.teste),
+                            "fd",
+                            Modifier
+                                .background(Color.Black)
+                                .size(32.dp)
+                                .clickable {
+                                    println("fsdfd")
+                                }
+                        )
                 }
             }
         }

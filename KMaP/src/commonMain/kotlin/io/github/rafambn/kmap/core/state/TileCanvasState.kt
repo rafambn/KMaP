@@ -49,7 +49,6 @@ class TileCanvasState(
         val tilesToRender = visibleTiles.filter {
             !newFrontLayer.contains(it.toTile())
         }
-        println(renderedTiles.size)
         _tileLayersStateFlow.update {
             it.copy(frontLayer = newFrontLayer)
         }
