@@ -7,6 +7,7 @@ import io.github.rafambn.kmap.model.TileResult
 import io.github.rafambn.kmap.model.TileSpecs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
@@ -58,7 +59,7 @@ class TileCanvasState(
     private fun CoroutineScope.tilesKernel(
         tilesToProcess: ReceiveChannel<List<TileSpecs>>,
         tilesProcessResult: Channel<ResultTile>
-    ) = launch(Dispatchers.Default) {
+    ) = launch(Dispatchers.Default + SupervisorJob()) {
         val specsBeingProcessed = mutableSetOf<TileSpecs>()
 
         while (isActive) {

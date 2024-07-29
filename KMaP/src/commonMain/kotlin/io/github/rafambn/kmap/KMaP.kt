@@ -5,9 +5,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.geometry.toRect
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -15,12 +16,14 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.toSize
+import io.github.rafambn.kmap.core.CanvasData
+import io.github.rafambn.kmap.core.Component
 import io.github.rafambn.kmap.core.ComponentType
-import io.github.rafambn.kmap.core.MapComponentData
+import io.github.rafambn.kmap.core.MapComponentInfo
+import io.github.rafambn.kmap.core.MarkerData
 import io.github.rafambn.kmap.core.MotionController
 import io.github.rafambn.kmap.core.TileCanvas
-import io.github.rafambn.kmap.core.componentData
+import io.github.rafambn.kmap.core.componentInfo
 import io.github.rafambn.kmap.core.state.MapState
 import io.github.rafambn.kmap.gestures.detectMapGestures
 import io.github.rafambn.kmap.utils.offsets.ScreenOffset
@@ -34,7 +37,7 @@ fun KMaP(
     canvasGestureListener: DefaultCanvasGestureListener = DefaultCanvasGestureListener(),
     content: KMaPConfig.() -> Unit
 ) {
-    val kmapContent = KMaPConfig().also { content.invoke(it) }
+    val kmapContent = remember { KMaPContent().also { content.invoke(it) } }
     val density = LocalDensity.current
     LaunchedEffect(Unit) {
         motionController.setMap(mapState)
@@ -43,11 +46,10 @@ fun KMaP(
     }
     Layout(
         content = {
-            kmapContent.placers.forEach {
+            kmapContent.markers.forEach {
                 Layout(
                     content = { it.second.invoke(it.first) },
-                    modifier = Modifier
-                        .componentData(MapComponentData(it.first, ComponentType.PLACER)),
+                    modifier = Modifier.componentInfo(MapComponentInfo(it.first, ComponentType.MARKER)),
                     measurePolicy = { measurables, constraints ->
                         if (measurables.isEmpty())
                             return@Layout layout(0, 0) {}
@@ -84,7 +86,7 @@ fun KMaP(
                     },
                     modifier = Modifier
                         .fillMaxSize()
-                        .componentData(MapComponentData(it.first, ComponentType.CANVAS)),
+                        .componentInfo(MapComponentInfo(it.first, ComponentType.CANVAS)),
                     measurePolicy = { measurables, constraints ->
                         if (measurables.isEmpty())
                             throw IllegalArgumentException("No canvas declared")
@@ -103,7 +105,12 @@ fun KMaP(
             .background(Color.Gray)
             .clipToBounds()
             .wrapContentSize()
-            .onGloballyPositioned { coordinates -> mapState.canvasSize = coordinates.size.toSize().toRect().bottomRight }
+            .onGloballyPositioned { coordinates ->
+                mapState.canvasSize = Offset(
+                    coordinates.size.width.toFloat(),
+                    coordinates.size.height.toFloat()
+                )
+            }
             .pointerInput(PointerEventPass.Main) {
                 detectMapGestures(
                     onTap = { offset -> canvasGestureListener.onTap(offset) },
@@ -121,48 +128,50 @@ fun KMaP(
                 )
             }
     ) { measurables, constraints ->
-        val canvasData: List<MapComponentData>
-        val canvasPlaceable = measurables
-            .filter { it.componentData.componentType == ComponentType.CANVAS }
-            .also { measurableCanvas -> canvasData = measurableCanvas.map { it.componentData } }
-            .map { it.measure(constraints) }
+        val canvasComponent = measurables
+            .filter { it.componentInfo.type == ComponentType.CANVAS }
+            .map { Component(it.componentInfo.data, it.measure(constraints)) }
 
-        val placersData: List<MapComponentData>
-        val placersPlaceable = measurables
-            .filter { it.componentData.componentType == ComponentType.PLACER }
-            .also { measurableMarkers -> placersData = measurableMarkers.map { it.componentData } }
-            .map { it.measure(constraints) }
+        val markersComponent = measurables
+            .filter { it.componentInfo.type == ComponentType.MARKER }
+            .map { Component(it.componentInfo.data, it.measure(constraints)) }
+
+        val clusterComponent = measurables
+            .filter { it.componentInfo.type == ComponentType.CLUSTER }
+            .map { Component(it.componentInfo.data, it.measure(constraints)) }
 
         layout(constraints.maxWidth, constraints.maxHeight) {
-            canvasPlaceable.forEachIndexed { index, placeable ->
-                placeable.placeRelative(
+            canvasComponent.forEach {
+                val componentData = it.data as CanvasData
+                it.placeable.placeRelative(
                     x = 0,
                     y = 0,
-                    zIndex = canvasData[index].placer.zIndex
+                    zIndex = componentData.zIndex
                 )
             }
-            placersPlaceable.forEachIndexed { index, placeable ->
-                val coordinates: ScreenOffset = with(mapState) {
-                    placersData[index].placer.coordinates.toCanvasPosition().toScreenOffset()
+            markersComponent.forEach {
+                val componentData = it.data as MarkerData
+                val coordinates: ScreenOffset = with(mapState) {//TODO make it so that this context change doesn't happen here
+                    componentData.coordinates.toCanvasPosition().toScreenOffset()
                 }
-                placeable.placeWithLayer(
+                it.placeable.placeWithLayer(
                     x = 0,
                     y = 0,
-                    zIndex = placersData[index].placer.zIndex
+                    zIndex = componentData.zIndex
                 ) {
-                    alpha = placersData[index].placer.alpha
-                    translationX = coordinates.x - placersData[index].placer.drawPosition.x * placeable.width
-                    translationY = coordinates.y - placersData[index].placer.drawPosition.y * placeable.height
-                    transformOrigin = TransformOrigin(placersData[index].placer.drawPosition.x, placersData[index].placer.drawPosition.y)
-                    if (placersData[index].placer.scaleWithMap) {
-                        scaleX = 2F.pow(mapState.zoom - placersData[index].placer.zoomToFix)
-                        scaleY = 2F.pow(mapState.zoom - placersData[index].placer.zoomToFix)
+                    alpha = componentData.alpha
+                    translationX = coordinates.x - componentData.drawPosition.x * it.placeable.width
+                    translationY = coordinates.y - componentData.drawPosition.y * it.placeable.height
+                    transformOrigin = TransformOrigin(componentData.drawPosition.x, componentData.drawPosition.y)
+                    if (componentData.scaleWithMap) {
+                        scaleX = 2F.pow(mapState.zoom - componentData.zoomToFix)
+                        scaleY = 2F.pow(mapState.zoom - componentData.zoomToFix)
                     }
                     rotationZ =
-                        if (placersData[index].placer.rotateWithMap)
-                            (mapState.angleDegrees + placersData[index].placer.rotation).toFloat()
+                        if (componentData.rotateWithMap)
+                            (mapState.angleDegrees + componentData.rotation).toFloat()
                         else
-                            placersData[index].placer.rotation.toFloat()
+                            componentData.rotation.toFloat()
                 }
             }
         }

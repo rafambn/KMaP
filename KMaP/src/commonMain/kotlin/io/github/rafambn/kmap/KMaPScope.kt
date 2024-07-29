@@ -1,25 +1,39 @@
 package io.github.rafambn.kmap
 
 import androidx.compose.runtime.Composable
-import io.github.rafambn.kmap.core.Placer
+import io.github.rafambn.kmap.core.CanvasData
+import io.github.rafambn.kmap.core.ClusterData
+import io.github.rafambn.kmap.core.MarkerData
 import io.github.rafambn.kmap.model.ResultTile
 
-class KMaPConfig {
-    val canvas: MutableList<Pair<Placer, suspend (zoom: Int, row: Int, column: Int) -> ResultTile>> = mutableListOf()
-    val placers: MutableList<Pair<Placer, @Composable (Placer) -> Unit>> = mutableListOf()
-    val clusters: MutableList<Pair<Placer, @Composable (Placer) -> Unit>> = mutableListOf()
+class KMaPContent : KMaPConfig {
+    val canvas: MutableList<Pair<CanvasData, suspend (zoom: Int, row: Int, column: Int) -> ResultTile>> = mutableListOf()
+    val markers: MutableList<Pair<MarkerData, @Composable (MarkerData) -> Unit>> = mutableListOf()
+    val clusters: MutableList<Pair<ClusterData, @Composable (ClusterData) -> Unit>> = mutableListOf()
 
-    fun markers(items: List<Placer>, markerContent: @Composable (Placer) -> Unit) {
+    override fun markers(items: List<MarkerData>, markerContent: @Composable (MarkerData) -> Unit) {
         items.forEach {
-            placers.add(Pair(it, markerContent))
+            markers.add(Pair(it, markerContent))
         }
     }
 
-    fun canvas(item: Placer, getTile: suspend (zoom: Int, row: Int, column: Int) -> ResultTile) {
+    override fun canvas(item: CanvasData, getTile: suspend (zoom: Int, row: Int, column: Int) -> ResultTile) {
         canvas.add(Pair(item, getTile))
     }
 
-    fun cluster(item: Placer, markerContent: @Composable (Placer) -> Unit) {
+    override fun cluster(item: ClusterData, markerContent: @Composable (ClusterData) -> Unit) {
         clusters.add(Pair(item, markerContent))
     }
+
+    fun update() {
+
+    }
+}
+
+interface KMaPConfig {
+    fun markers(items: List<MarkerData>, markerContent: @Composable (MarkerData) -> Unit)
+
+    fun canvas(item: CanvasData, getTile: suspend (zoom: Int, row: Int, column: Int) -> ResultTile)
+
+    fun cluster(item: ClusterData, markerContent: @Composable (ClusterData) -> Unit)
 }

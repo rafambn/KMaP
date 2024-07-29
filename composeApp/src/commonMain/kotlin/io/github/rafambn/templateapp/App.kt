@@ -20,7 +20,8 @@ import io.github.rafambn.kmap.KMaP
 import io.github.rafambn.kmap.config.customSources.OSMMapProperties
 import io.github.rafambn.kmap.config.customSources.OSMTileSource
 import io.github.rafambn.kmap.core.DrawPosition
-import io.github.rafambn.kmap.core.Placer
+import io.github.rafambn.kmap.core.CanvasData
+import io.github.rafambn.kmap.core.MarkerData
 import io.github.rafambn.kmap.core.rememberMotionController
 import io.github.rafambn.kmap.core.state.rememberMapState
 import io.github.rafambn.kmap.utils.offsets.ProjectedCoordinates
@@ -41,7 +42,7 @@ internal fun App() = AppTheme {
             val mapState = rememberMapState(mapProperties = OSMMapProperties())
             var show by mutableStateOf(true)
             CoroutineScope(Dispatchers.Default).launch {
-                delay(2000)
+                delay(5000)
                 show = false
             }
             KMaP(
@@ -51,8 +52,7 @@ internal fun App() = AppTheme {
                 canvasGestureListener = DefaultCanvasGestureListener()
             ) {
                 canvas(
-                    Placer(
-                        ProjectedCoordinates.Zero,
+                    CanvasData(
                         zIndex = 0F,
                         alpha = 1F
                     ),
@@ -60,7 +60,7 @@ internal fun App() = AppTheme {
                 )
                 markers(
                     listOf(
-                        Placer(
+                        MarkerData(
                             ProjectedCoordinates(-45.949303, -21.424608),
                             drawPosition = DrawPosition.BOTTOM_RIGHT,
                             rotation = -45.0,

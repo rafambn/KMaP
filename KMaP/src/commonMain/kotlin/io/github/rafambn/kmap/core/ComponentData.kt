@@ -7,49 +7,50 @@ import androidx.compose.ui.node.ParentDataModifierNode
 import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.unit.Density
 
-fun Modifier.componentData(componentData: MapComponentData) = this.then(ComponentDataElement(componentData = componentData))
+fun Modifier.componentInfo(componentInfo: MapComponentInfo) = this.then(ComponentDataElement(componentInfo = componentInfo))
 
 private data class ComponentDataElement(
-    private val componentData: MapComponentData
-) : ModifierNodeElement<ComponentDataModifier>() {
-    override fun create() = ComponentDataModifier(componentData)
+    private val componentInfo: MapComponentInfo
+) : ModifierNodeElement<ComponentInfoModifier>() {
+    override fun create() = ComponentInfoModifier(componentInfo)
 
-    override fun update(node: ComponentDataModifier) {
-        node.componentData = componentData
+    override fun update(node: ComponentInfoModifier) {
+        node.componentInfo = componentInfo
     }
 
     override fun InspectorInfo.inspectableProperties() {
-        name = "componentData"
-        value = componentData
+        name = "componentInfo"
+        value = componentInfo
     }
 }
 
-internal class ComponentDataModifier(
-    componentData: MapComponentData,
-) : ParentDataModifierNode, ComponentDataParentData, Modifier.Node() {
+internal class ComponentInfoModifier(
+    componentData: MapComponentInfo,
+) : ParentDataModifierNode, ComponentInfoParentData, Modifier.Node() {
 
-    override var componentData: MapComponentData = componentData
+    override var componentInfo: MapComponentInfo = componentData
         internal set
 
     override fun Density.modifyParentData(parentData: Any?): Any {
-        return this@ComponentDataModifier
+        return this@ComponentInfoModifier
     }
 }
 
-interface ComponentDataParentData {
-    val componentData: MapComponentData
+interface ComponentInfoParentData {
+    val componentInfo: MapComponentInfo
 }
 
-val Measurable.componentData: MapComponentData
-    get() = (parentData as ComponentDataParentData).componentData
+val Measurable.componentInfo: MapComponentInfo
+    get() = (parentData as ComponentInfoParentData).componentInfo
 
 
-data class MapComponentData(
-    val placer: Placer,
-    val componentType: ComponentType,
+data class MapComponentInfo(
+    val data: Any,
+    val type: ComponentType,
 )
 
 enum class ComponentType {
     CANVAS,
-    PLACER
+    CLUSTER,
+    MARKER
 }
