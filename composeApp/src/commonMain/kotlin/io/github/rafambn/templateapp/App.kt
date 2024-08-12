@@ -16,10 +16,10 @@ import io.github.rafambn.kmap.DefaultCanvasGestureListener
 import io.github.rafambn.kmap.KMaP
 import io.github.rafambn.kmap.config.customSources.OSMMapProperties
 import io.github.rafambn.kmap.config.customSources.OSMTileSource
-import io.github.rafambn.kmap.core.CanvasData
-import io.github.rafambn.kmap.core.ClusterCondition
+import io.github.rafambn.kmap.core.CanvasParameters
+import io.github.rafambn.kmap.core.ClusterParameters
 import io.github.rafambn.kmap.core.DrawPosition
-import io.github.rafambn.kmap.core.MarkerData
+import io.github.rafambn.kmap.core.MarkerParameters
 import io.github.rafambn.kmap.core.rememberMotionController
 import io.github.rafambn.kmap.core.state.rememberMapState
 import io.github.rafambn.kmap.utils.offsets.ProjectedCoordinates
@@ -42,7 +42,7 @@ internal fun App() = AppTheme {
                 canvasGestureListener = DefaultCanvasGestureListener()
             ) {
                 canvas(
-                    CanvasData(
+                    CanvasParameters(
                         zIndex = 0F,
                         alpha = 1F
                     ),
@@ -50,31 +50,27 @@ internal fun App() = AppTheme {
                 )
                 markers(
                     listOf(
-                        MarkerData(
+                        MarkerParameters(
                             ProjectedCoordinates(-45.949303, -21.424608),
                             drawPosition = DrawPosition.BOTTOM_RIGHT,
-                            rotation = -45.0,
                             rotateWithMap = true,
                             tag = "zika"
                         ),
-                        MarkerData(
+                        MarkerParameters(
                             ProjectedCoordinates(-46.949303, -21.424608),
                             drawPosition = DrawPosition.BOTTOM_RIGHT,
-                            rotation = -45.0,
                             rotateWithMap = true,
                             tag = "zika"
                         ),
-                        MarkerData(
+                        MarkerParameters(
                             ProjectedCoordinates(180.0, -85.0),
                             drawPosition = DrawPosition.BOTTOM_RIGHT,
-                            rotation = -45.0,
                             rotateWithMap = true,
                             tag = "zika"
                         ),
-                        MarkerData(
+                        MarkerParameters(
                             ProjectedCoordinates(180.0, 85.0),
                             drawPosition = DrawPosition.TOP_RIGHT,
-                            rotation = -45.0,
                             rotateWithMap = true,
                         ),
                     )
@@ -90,7 +86,7 @@ internal fun App() = AppTheme {
                             }
                     )
                 }
-                cluster(ClusterCondition("zika", 50.dp)){
+                cluster(ClusterParameters("zika", 50.dp, rotateWithMap = true)) {
                     Image(
                         painterResource(Res.drawable.teste2),
                         "fd",

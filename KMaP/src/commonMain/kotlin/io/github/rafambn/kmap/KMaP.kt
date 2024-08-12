@@ -16,7 +16,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import io.github.rafambn.kmap.core.CanvasData
+import io.github.rafambn.kmap.core.CanvasParameters
 import io.github.rafambn.kmap.core.ClusterData
 import io.github.rafambn.kmap.core.Component
 import io.github.rafambn.kmap.core.ComponentType
@@ -27,7 +27,6 @@ import io.github.rafambn.kmap.core.TileCanvas
 import io.github.rafambn.kmap.core.componentInfo
 import io.github.rafambn.kmap.core.state.MapState
 import io.github.rafambn.kmap.gestures.detectMapGestures
-import io.github.rafambn.kmap.utils.offsets.ScreenOffset
 import kotlin.math.pow
 
 @Composable
@@ -45,7 +44,6 @@ fun KMaP(
         canvasGestureListener.setMotionController(motionController)
         mapState.setDensity(density)
         kmapContent.setMap(mapState)
-        content.invoke(kmapContent)
     }
     kmapContent.updateCluster()
     Layout(
@@ -168,26 +166,25 @@ fun KMaP(
 
         layout(constraints.maxWidth, constraints.maxHeight) {
             canvasComponent.forEach {
-                val componentData = it.data as CanvasData
-                it.placeable.placeRelative(
+                val componentData = it.data as CanvasParameters
+                it.placeable.placeWithLayer(
                     x = 0,
                     y = 0,
                     zIndex = componentData.zIndex
-                )
+                ){
+                    alpha = componentData.alpha
+                }
             }
             markersComponent.forEach {
                 val componentData = it.data as MarkerData
-                val coordinates: ScreenOffset = with(mapState) {//TODO make it so that this context change doesn't happen here
-                    componentData.coordinates.toCanvasPosition().toScreenOffset()
-                }
                 it.placeable.placeWithLayer(
                     x = 0,
                     y = 0,
                     zIndex = componentData.zIndex
                 ) {
                     alpha = componentData.alpha
-                    translationX = coordinates.x - componentData.drawPosition.x * it.placeable.width
-                    translationY = coordinates.y - componentData.drawPosition.y * it.placeable.height
+                    translationX = componentData.placementOffset.x - componentData.drawPosition.x * it.placeable.width
+                    translationY = componentData.placementOffset.y - componentData.drawPosition.y * it.placeable.height
                     transformOrigin = TransformOrigin(componentData.drawPosition.x, componentData.drawPosition.y)
                     if (componentData.scaleWithMap) {
                         scaleX = 2F.pow(mapState.zoom - componentData.zoomToFix)
@@ -208,8 +205,14 @@ fun KMaP(
                     zIndex = componentData.zIndex
                 ) {
                     alpha = componentData.alpha
-                    translationX = componentData.coordinates.x
-                    translationY = componentData.coordinates.y
+                    translationX = componentData.placementOffset.x - componentData.drawPosition.x * it.placeable.width
+                    translationY = componentData.placementOffset.y - componentData.drawPosition.y * it.placeable.height
+                    transformOrigin = TransformOrigin(componentData.drawPosition.x, componentData.drawPosition.y)
+                    rotationZ =
+                        if (componentData.rotateWithMap)
+                            (mapState.angleDegrees + componentData.rotation).toFloat()
+                        else
+                            componentData.rotation.toFloat()
                 }
             }
         }
