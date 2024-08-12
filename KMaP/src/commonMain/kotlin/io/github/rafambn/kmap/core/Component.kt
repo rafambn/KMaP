@@ -1,8 +1,10 @@
 package io.github.rafambn.kmap.core
 
 import androidx.compose.ui.layout.Placeable
+import androidx.compose.ui.unit.Dp
 import io.github.rafambn.kmap.utils.Degrees
 import io.github.rafambn.kmap.utils.offsets.ProjectedCoordinates
+import io.github.rafambn.kmap.utils.offsets.ScreenOffset
 
 data class MarkerData(
     var coordinates: ProjectedCoordinates,
@@ -13,8 +15,7 @@ data class MarkerData(
     val scaleWithMap: Boolean = false,
     val zoomToFix: Float = 0F,
     val rotateWithMap: Boolean = false,
-    val rotation: Degrees = 0.0,
-    val cluster: Boolean = false
+    val rotation: Degrees = 0.0
 )
 
 data class CanvasData(
@@ -23,10 +24,20 @@ data class CanvasData(
     val zIndex: Float = 1F
 )
 
-data class ClusterData( //TODO implement clustering
-    val tag: String = "",
+data class ClusterCondition(
+    val tag: String,
+    val clusterThreshold: Dp,
     val alpha: Float = 1F,
     val zIndex: Float = 1F
+)
+
+data class ClusterData(
+    val tag: String,
+    val clusterThreshold: Dp,
+    val alpha: Float = 1F,
+    val zIndex: Float = 1F,
+    val coordinates: ScreenOffset,
+    val size: Int,
 )
 
 data class Component(val data: Any, val placeable: Placeable)
