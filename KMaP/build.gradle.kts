@@ -1,9 +1,12 @@
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetTree
+
 plugins {
     alias(libs.plugins.multiplatform)
-    alias(libs.plugins.android.library)
+    alias(libs.plugins.android.application)
     alias(libs.plugins.compose)
     alias(libs.plugins.compose.compiler)
-    id("convention.publication")
 }
 
 group = "io.github.rafambn"
@@ -11,12 +14,16 @@ version = "1.0"
 
 kotlin {
     androidTarget {
-        publishLibraryVariants("release")
         compilations.all {
-            kotlinOptions {
-                jvmTarget = "17"
+            compileTaskProvider {
+                compilerOptions {
+                    jvmTarget.set(JvmTarget.JVM_17)
+                    freeCompilerArgs.add("-Xjdk-release=${JavaVersion.VERSION_17}")
+                }
             }
         }
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        instrumentedTestVariant.sourceSetTree.set(KotlinSourceSetTree.test)
     }
 
     jvm()
@@ -70,11 +77,13 @@ kotlin {
 
     }
 
-    //https://kotlinlang.org/docs/native-objc-interop.html#export-of-kdoc-comments-to-generated-objective-c-headers
     targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
-        compilations["main"].compilerOptions.options.freeCompilerArgs.add("-Xexport-kdoc")
+        compilations["main"].compileTaskProvider.configure {
+            compilerOptions {
+                freeCompilerArgs.add("-Xexport-kdoc")
+            }
+        }
     }
-
 }
 
 android {
@@ -87,31 +96,5 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-}
-
-gradle.projectsEvaluated {
-    val signTasks = listOf(
-        "signAndroidReleasePublication",
-        "signJsPublication",
-        "signJvmPublication",
-        "signKotlinMultiplatformPublication"
-    )
-
-    val publishTasks = listOf(
-        "publishAndroidReleasePublicationToSonatypeRepository",
-        "publishJsPublicationToSonatypeRepository",
-        "publishJvmPublicationToSonatypeRepository",
-        "publishKotlinMultiplatformPublicationToSonatypeRepository"
-    )
-
-
-    //TODO check is the same logic is necessary for ios
-    publishTasks.forEach { publishTask ->
-        tasks.named(publishTask) {
-            signTasks.forEach { signTask ->
-                mustRunAfter(signTask)
-            }
-        }
     }
 }
