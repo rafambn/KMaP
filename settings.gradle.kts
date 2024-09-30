@@ -1,5 +1,5 @@
-rootProject.name = "KMaP-library-with-app"
-include(":composeApp")
+rootProject.name = "KMaP"
+include(":KMaPDemo")
 include(":KMaP")
 
 pluginManagement {

@@ -9,7 +9,7 @@ plugins {
     alias(libs.plugins.compose.compiler)
 }
 
-group = "io.github.rafambn"
+group = "com.rafambn"
 version = "1.0"
 
 kotlin {
@@ -87,7 +87,7 @@ kotlin {
 }
 
 android {
-    namespace = "io.github.rafambn.KMaP"
+    namespace = "com.rafambn.kmap"
     compileSdk = 34
 
     defaultConfig {
