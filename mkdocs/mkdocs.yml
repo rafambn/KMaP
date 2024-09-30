@@ -1,0 +1,19 @@
+site_name: KMaP
+site_url: https://kmap.rafambn.com
+site_description: Flexible and powerful mapping library for Compose Multiplatform
+repo_name: rafambn/KMaP
+repo_url: https://github.com/rafambn/KMaP
+
+theme:
+  name: material
+  logo: 'assets/KMaP-Logo.svg'
+  favicon: 'assets/KMaP-Logo.svg'
+
+plugins:
+  - search
+
+markdown_extensions:
+
+nav:
+  - 'Overview': index.md
+  - 'Setup': setup.md
