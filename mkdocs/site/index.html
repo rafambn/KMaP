@@ -14,6 +14,8 @@
       
       
       
+        <link rel="next" href="setup/">
+      
       
       <link rel="icon" href="assets/KMaP-Logo.svg">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
@@ -220,7 +222,9 @@
 
 
 
-<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="." title="KMaP" class="md-nav__button md-logo" aria-label="KMaP" data-md-component="logo">
       
@@ -344,11 +348,31 @@
   
   
     <li class="md-nav__item">
-      <a href="setup.md" class="md-nav__link">
+      <a href="setup/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
     Setup
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="usage/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Usage
   </span>
   
 
@@ -363,67 +387,6 @@
                 </div>
               </div>
             
-            
-              
-                
-              
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" hidden>
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#map-everything-with-kmap-a-flexible-and-powerful-compose-multiplatform-mapping-library" class="md-nav__link">
-    <span class="md-ellipsis">
-      Map everything with KMaP: A flexible and powerful compose multiplatform mapping library
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Map everything with KMaP: A flexible and powerful compose multiplatform mapping library">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#key-features" class="md-nav__link">
-    <span class="md-ellipsis">
-      Key Features
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#usage-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      Usage Example
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-                  </div>
-                </div>
-              </div>
             
           
           
@@ -458,18 +421,18 @@
 </ul>
 <h3 id="usage-example">Usage Example</h3>
 <p>With KMaP, you don't need a mapping source for each platform. Here's a simple example to get you started:</p>
-<pre><code class="language-kotlin">val motionController = rememberMotionController()
-val mapState = rememberMapState(mapProperties = OSMMapProperties())
+<div class="highlight"><pre><span></span><code><span class="kd">val</span><span class="w"> </span><span class="nv">motionController</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rememberMotionController</span><span class="p">()</span>
+<span class="kd">val</span><span class="w"> </span><span class="nv">mapState</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rememberMapState</span><span class="p">(</span><span class="n">mapProperties</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OSMMapProperties</span><span class="p">())</span>
 
-KMaP(
-    modifier = Modifier.size(300.dp, 600.dp),
-    motionController = motionController,
-    mapState = mapState,
-    canvasGestureListener = DefaultCanvasGestureListener()
-) {
-    canvas(tileSource =  OSMTileSource::getTile)
-}
-</code></pre>
+<span class="n">KMaP</span><span class="p">(</span>
+<span class="w">    </span><span class="n">modifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Modifier</span><span class="p">.</span><span class="na">size</span><span class="p">(</span><span class="m">300.</span><span class="n">dp</span><span class="p">,</span><span class="w"> </span><span class="m">600.</span><span class="n">dp</span><span class="p">),</span>
+<span class="w">    </span><span class="n">motionController</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">motionController</span><span class="p">,</span>
+<span class="w">    </span><span class="n">mapState</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mapState</span><span class="p">,</span>
+<span class="w">    </span><span class="n">canvasGestureListener</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DefaultCanvasGestureListener</span><span class="p">()</span>
+<span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">canvas</span><span class="p">(</span><span class="n">tileSource</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="n">OSMTileSource</span><span class="o">::</span><span class="n">getTile</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>
 
 
 
@@ -499,6 +462,32 @@ KMaP(
       
         <footer class="md-footer">
   
+    
+      
+        
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+        
+          
+          <a href="setup/" class="md-footer__link md-footer__link--next" aria-label="Next: Setup">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Setup
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
       <div class="md-copyright">
@@ -521,7 +510,7 @@ KMaP(
     </div>
     
     
-    <script id="__config" type="application/json">{"base": ".", "features": [], "search": "assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": ".", "features": ["content.code.copy", "toc.integrate", "navigation.footer", "navigation.expand", "content.code.annotate"], "search": "assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
       <script src="assets/javascripts/bundle.525ec568.min.js"></script>
