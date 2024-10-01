@@ -8,11 +8,29 @@ theme:
   name: material
   logo: 'assets/KMaP-Logo.svg'
   favicon: 'assets/KMaP-Logo.svg'
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    - media: '(prefers-color-scheme: light)'
+      scheme: default
+      primary: 'orange'
+      accent: 'deep-purple'
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: '(prefers-color-scheme: dark)'
+      scheme: slate
+      primary: 'black'
+      accent: 'deep-purple'
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
 
 plugins:
   - search
 
 markdown_extensions:
+  - toc:
 
 nav:
   - 'Overview': index.md

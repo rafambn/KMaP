@@ -14,7 +14,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmapdemo.config.customSources.OSMMapProperties
 import com.rafambn.kmapdemo.config.customSources.OSMTileSource
-import com.rafambn.kmapdemo.core.CanvasParameters
 import com.rafambn.kmapdemo.core.ClusterParameters
 import com.rafambn.kmapdemo.core.DrawPosition
 import com.rafambn.kmapdemo.core.MarkerParameters
@@ -39,13 +38,7 @@ internal fun App() = AppTheme {
                 mapState = mapState,
                 canvasGestureListener = DefaultCanvasGestureListener()
             ) {
-                canvas(
-                    CanvasParameters(
-                        zIndex = 0F,
-                        alpha = 1F
-                    ),
-                    OSMTileSource::getTile
-                )
+                canvas(tileSource =  OSMTileSource::getTile)
                 markers(
                     listOf(
                         MarkerParameters(

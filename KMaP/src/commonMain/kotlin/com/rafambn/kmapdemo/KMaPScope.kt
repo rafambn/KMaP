@@ -31,8 +31,8 @@ class KMaPContent : KMaPConfig {
         markers += items.map { it to markerContent }
     }
 
-    override fun canvas(item: CanvasParameters, getTile: suspend (zoom: Int, row: Int, column: Int) -> ResultTile) {
-        visibleCanvas += item to getTile
+    override fun canvas(item: CanvasParameters, tileSource: suspend (zoom: Int, row: Int, column: Int) -> ResultTile) {
+        visibleCanvas += item to tileSource
     }
 
     override fun cluster(item: ClusterParameters, clusterContent: @Composable (ClusterData) -> Unit) {
@@ -90,7 +90,7 @@ class KMaPContent : KMaPConfig {
 interface KMaPConfig {
     fun markers(items: List<MarkerParameters>, markerContent: @Composable (MarkerData) -> Unit)
 
-    fun canvas(item: CanvasParameters, getTile: suspend (zoom: Int, row: Int, column: Int) -> ResultTile)
+    fun canvas(item: CanvasParameters = CanvasParameters(), tileSource: suspend (zoom: Int, row: Int, column: Int) -> ResultTile)
 
     fun cluster(item: ClusterParameters, clusterContent: @Composable (ClusterData) -> Unit)
 }
