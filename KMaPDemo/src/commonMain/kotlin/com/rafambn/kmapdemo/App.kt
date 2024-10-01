@@ -10,6 +10,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmapdemo.config.customSources.OSMMapProperties
@@ -17,13 +18,20 @@ import com.rafambn.kmapdemo.config.customSources.OSMTileSource
 import com.rafambn.kmapdemo.core.ClusterParameters
 import com.rafambn.kmapdemo.core.DrawPosition
 import com.rafambn.kmapdemo.core.MarkerParameters
+import com.rafambn.kmapdemo.core.MotionController
+import com.rafambn.kmapdemo.core.MotionController.CenterLocation
 import com.rafambn.kmapdemo.core.rememberMotionController
 import com.rafambn.kmapdemo.core.state.rememberMapState
 import com.rafambn.kmapdemo.theme.AppTheme
+import com.rafambn.kmapdemo.utils.offsets.CanvasPosition
 import com.rafambn.kmapdemo.utils.offsets.ProjectedCoordinates
+import com.rafambn.kmapdemo.utils.offsets.ScreenOffset
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.teste
 import kmap.kmapdemo.generated.resources.teste2
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
@@ -31,6 +39,12 @@ internal fun App() = AppTheme {
     Surface(modifier = Modifier.fillMaxSize()) {
         Box {
             val motionController = rememberMotionController()
+            CoroutineScope(Dispatchers.Default).launch {
+                motionController.animate {
+                    positionTo(CenterLocation.Offset(Offset(5F,5F)))
+                    positionBy(CenterLocation.Offset(Offset(10F, 10F)))
+                }
+            }
             val mapState = rememberMapState(mapProperties = OSMMapProperties())
             KMaP(
                 modifier = Modifier.align(Alignment.Center).size(300.dp, 600.dp),
@@ -38,7 +52,7 @@ internal fun App() = AppTheme {
                 mapState = mapState,
                 canvasGestureListener = DefaultCanvasGestureListener()
             ) {
-                canvas(tileSource =  OSMTileSource::getTile)
+                canvas(tileSource = OSMTileSource::getTile)
                 markers(
                     listOf(
                         MarkerParameters(

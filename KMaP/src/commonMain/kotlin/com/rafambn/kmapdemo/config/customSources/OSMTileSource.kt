@@ -18,7 +18,7 @@ object OSMTileSource : TileSource {
         val imageBitmap: ImageBitmap
         try {
             val byteArray = client.get("https://tile.openstreetmap.org/${zoom}/${row.loopInZoom(zoom)}/${column.loopInZoom(zoom)}.png") {
-                header("User-Agent", "my.app.test5")
+                header("User-Agent", "com.rafambn.kmap")//TODO make user use its own id
             }.readBytes() //TODO(4) improve loopInZoom
             imageBitmap = byteArray.toImageBitmap()
             return ResultTile(Tile(zoom, row, column, imageBitmap), TileResult.SUCCESS)

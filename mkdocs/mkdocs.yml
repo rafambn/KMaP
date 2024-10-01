@@ -10,6 +10,12 @@ theme:
   favicon: 'assets/KMaP-Logo.svg'
   icon:
     repo: fontawesome/brands/github
+  features:
+    - content.code.copy
+    - toc.integrate
+    - navigation.footer
+    - navigation.expand
+    - content.code.annotate
   palette:
     - media: '(prefers-color-scheme: light)'
       scheme: default
@@ -31,7 +37,12 @@ plugins:
 
 markdown_extensions:
   - toc:
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.superfences
+  - admonition
 
 nav:
-  - 'Overview': index.md
-  - 'Setup': setup.md
+  - Overview: index.md
+  - Setup: setup.md
+  - Usage: usage.md
