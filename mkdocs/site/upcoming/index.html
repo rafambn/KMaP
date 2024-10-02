@@ -73,6 +73,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#upcoming" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -312,6 +317,8 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
       
       <a href="./" class="md-nav__link md-nav__link--active">
         
@@ -344,6 +351,8 @@
   
   
   
+    
+  
   
 </nav>
                   </div>
@@ -361,9 +370,31 @@
   
 
 
-  <h1>Upcoming</h1>
-
-
+<h1 id="upcoming">Upcoming</h1>
+<p>The following items will eventually be implemented:</p>
+<ul>
+<li>Improve Gesture Detection, currently all type of gestures are detected adding necessary code. Implement in a
+way that only the used gesture are detected.</li>
+<li>Improve LoopInZoom</li>
+<li>Improve Motion Controller API, merging set and scroll, also optimizing CenterLocation</li>
+<li>Add user id to Mapnik tile source</li>
+<li>Improve KMaP scoped parameters</li>
+<li>Improve BoundingBox adding more methods for it to be more helpfully.</li>
+<li>Add user option for tile Caching</li>
+<li>Add more Built-in sources:<ul>
+<li>Other OSM sources</li>
+<li>Google Source</li>
+<li>MapsForce Source</li>
+<li>Local file reader</li>
+<li>Local Db reader</li>
+<li>Parser for rendering Tiles</li>
+<li>Custom Tile Generation API</li>
+</ul>
+</li>
+<li>Non tiled Canvas</li>
+<li>Improve Lifecycle of the KMaP to reduce recomposition</li>
+<li>More Clustering algorithms</li>
+</ul>
 
 
 

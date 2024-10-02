@@ -458,6 +458,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#clusters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Clusters
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -632,6 +641,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#clusters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Clusters
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -795,6 +813,78 @@ Skyrim map (I'm old sorry) with this you can do it all. </p>
 <p>For offline use you can either read from a .map file or a repo and render it with MapsForge or create your own renderer.</p>
 <p>Future versions will have both built-in</p>
 <h2 id="markers">Markers</h2>
+<p>Markers are a powerful way to draw anything on the map, instead of a bitmap or vector, like other libraries, it uses
+composable instead this way you draw whatever you want. Declare it on the KMaP Scope for it to work.</p>
+<div class="highlight"><pre><span></span><code><span class="n">markers</span><span class="p">(</span>
+<span class="w">    </span><span class="n">listOf</span><span class="p">(</span>
+<span class="w">        </span><span class="n">MarkerParameters</span><span class="p">(</span>
+<span class="w">            </span><span class="n">ProjectedCoordinates</span><span class="p">(</span><span class="o">-</span><span class="m">45.949303</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="m">21.424608</span><span class="p">),</span>
+<span class="w">            </span><span class="n">drawPosition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DrawPosition</span><span class="p">.</span><span class="na">BOTTOM_RIGHT</span><span class="p">,</span>
+<span class="w">            </span><span class="n">rotateWithMap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">            </span><span class="n">tag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;marker1&quot;</span>
+<span class="w">        </span><span class="p">),</span>
+<span class="w">        </span><span class="n">MarkerParameters</span><span class="p">(</span>
+<span class="w">            </span><span class="n">ProjectedCoordinates</span><span class="p">(</span><span class="o">-</span><span class="m">46.949303</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="m">21.424608</span><span class="p">),</span>
+<span class="w">            </span><span class="n">drawPosition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DrawPosition</span><span class="p">.</span><span class="na">BOTTOM_RIGHT</span><span class="p">,</span>
+<span class="w">            </span><span class="n">rotateWithMap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">            </span><span class="n">tag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;marker1&quot;</span>
+<span class="w">        </span><span class="p">)</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">Image</span><span class="p">(</span>
+<span class="w">        </span><span class="n">painterResource</span><span class="p">(</span><span class="n">Res</span><span class="p">.</span><span class="na">drawable</span><span class="p">.</span><span class="na">test</span><span class="p">),</span>
+<span class="w">        </span><span class="s">&quot;&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="n">Modifier</span>
+<span class="w">            </span><span class="p">.</span><span class="na">background</span><span class="p">(</span><span class="n">Color</span><span class="p">.</span><span class="na">Black</span><span class="p">)</span>
+<span class="w">            </span><span class="p">.</span><span class="na">size</span><span class="p">(</span><span class="m">32.</span><span class="n">dp</span><span class="p">)</span>
+<span class="w">            </span><span class="p">.</span><span class="na">clickable</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">println</span><span class="p">(</span><span class="s">&quot;you clicked on the marker&quot;</span><span class="p">)</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Use the markers() API to draw a list of markers with the provided composable, you can set up how many you want with this.
+There is a lot of options on how to handle your marker. Fell free to toy with them. Bellow is the data class that store 
+the options and its default values.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">MarkerParameters</span><span class="p">(</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">coordinates</span><span class="p">:</span><span class="w"> </span><span class="n">ProjectedCoordinates</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">tag</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">alpha</span><span class="p">:</span><span class="w"> </span><span class="kt">Float</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1F</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">drawPosition</span><span class="p">:</span><span class="w"> </span><span class="n">DrawPosition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DrawPosition</span><span class="p">.</span><span class="na">TOP_LEFT</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">zIndex</span><span class="p">:</span><span class="w"> </span><span class="kt">Float</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2F</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">scaleWithMap</span><span class="p">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">zoomToFix</span><span class="p">:</span><span class="w"> </span><span class="kt">Float</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0F</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">rotateWithMap</span><span class="p">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">rotation</span><span class="p">:</span><span class="w"> </span><span class="n">Degrees</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.0</span>
+<span class="p">)</span>
+</code></pre></div>
+<h2 id="clusters">Clusters</h2>
+<p>With cluster, you can merge markers if they are overlying for example. Declare it on the KMaP scope with the tag of the markers you want to cluster for it to work.</p>
+<div class="highlight"><pre><span></span><code><span class="n">cluster</span><span class="p">(</span><span class="n">ClusterParameters</span><span class="p">(</span><span class="s">&quot;marker1&quot;</span><span class="p">,</span><span class="w"> </span><span class="m">50.</span><span class="n">dp</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">Image</span><span class="p">(</span>
+<span class="w">        </span><span class="n">painterResource</span><span class="p">(</span><span class="n">Res</span><span class="p">.</span><span class="na">drawable</span><span class="p">.</span><span class="na">test2</span><span class="p">),</span>
+<span class="w">        </span><span class="s">&quot;&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="n">Modifier</span>
+<span class="w">            </span><span class="p">.</span><span class="na">background</span><span class="p">(</span><span class="n">Color</span><span class="p">.</span><span class="na">Black</span><span class="p">)</span>
+<span class="w">            </span><span class="p">.</span><span class="na">size</span><span class="p">(</span><span class="m">32.</span><span class="n">dp</span><span class="p">)</span>
+<span class="w">            </span><span class="p">.</span><span class="na">clickable</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">println</span><span class="p">(</span><span class="s">&quot;you clicked a cluster&quot;</span><span class="p">)</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">    </span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Cluster composable do not behave the same as the markers so you have to provide how it will behave with its parameters.
+Here is the data class with the options.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">data</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nc">ClusterParameters</span><span class="p">(</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">tag</span><span class="p">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">clusterThreshold</span><span class="p">:</span><span class="w"> </span><span class="n">Dp</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">alpha</span><span class="p">:</span><span class="w"> </span><span class="kt">Float</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1F</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">zIndex</span><span class="p">:</span><span class="w"> </span><span class="kt">Float</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1F</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">drawPosition</span><span class="p">:</span><span class="w"> </span><span class="n">DrawPosition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DrawPosition</span><span class="p">.</span><span class="na">CENTER</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">rotateWithMap</span><span class="p">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">    </span><span class="kd">val</span><span class="w"> </span><span class="nv">rotation</span><span class="p">:</span><span class="w"> </span><span class="n">Degrees</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.0</span>
+<span class="p">)</span>
+</code></pre></div>
 
 
 
