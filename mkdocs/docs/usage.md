@@ -159,3 +159,31 @@ After this initial phase, the movement will be executed on demand with a single 
 executing, and you Set or Scroll that this job will be cancelled and your Synchronous function will be executed.
 
 ## Canvas
+
+The Canvas function usable in the KMaP scope is just a wrapper on the native canvas so that we can handle the render 
+process the only thing you need to do its provide the source tile implementing the following api.
+
+```kotlin
+interface TileSource {
+    suspend fun getTile(zoom: Int, row: Int, column: Int): ResultTile
+}
+```
+
+With this simple trick you can render any tilled map you want. Maybe you want a free map off the world with OSM, or don't 
+like to use Google library but want to use its tiles, or render it on the device, or read from a local files for your 
+Skyrim map (I'm old sorry) with this you can do it all. 
+
+See https://wiki.openstreetmap.org/wiki/Slippy_map for better understand how it works.
+
+### Built-in Sources
+
+* OSM Mapnik
+
+### Offline
+
+For offline use you can either read from a .map file or a repo and render it with MapsForge or create your own renderer.
+
+Future versions will have both built-in
+
+## Markers
+

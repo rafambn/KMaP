@@ -12,7 +12,6 @@ theme:
     repo: fontawesome/brands/github
   features:
     - content.code.copy
-    - toc.integrate
     - navigation.footer
     - navigation.expand
     - content.code.annotate
@@ -46,3 +45,4 @@ nav:
   - Overview: index.md
   - Setup: setup.md
   - Usage: usage.md
+  - Upcoming: upcoming.md

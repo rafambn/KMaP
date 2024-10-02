@@ -16,6 +16,8 @@
         <link rel="prev" href="../setup/">
       
       
+        <link rel="next" href="../upcoming/">
+      
       
       <link rel="icon" href="../assets/KMaP-Logo.svg">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
@@ -220,9 +222,7 @@
 
 
 
-  
-
-<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href=".." title="KMaP" class="md-nav__button md-logo" aria-label="KMaP" data-md-component="logo">
       
@@ -423,6 +423,39 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Canvas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#built-in-sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      Built-in Sources
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#offline" class="md-nav__link">
+    <span class="md-ellipsis">
+      Offline
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#markers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Markers
+    </span>
+  </a>
+  
 </li>
       
     </ul>
@@ -433,12 +466,178 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../upcoming/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Upcoming
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
                 </div>
               </div>
             
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      How it Works
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mapstate" class="md-nav__link">
+    <span class="md-ellipsis">
+      MapState
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gesturelistener" class="md-nav__link">
+    <span class="md-ellipsis">
+      GestureListener
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#motioncontroller" class="md-nav__link">
+    <span class="md-ellipsis">
+      MotionController
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MotionController">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#center-location" class="md-nav__link">
+    <span class="md-ellipsis">
+      Center Location
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set-and-scroll" class="md-nav__link">
+    <span class="md-ellipsis">
+      Set and Scroll
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#animate" class="md-nav__link">
+    <span class="md-ellipsis">
+      Animate
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      Behavior
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#canvas" class="md-nav__link">
+    <span class="md-ellipsis">
+      Canvas
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Canvas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#built-in-sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      Built-in Sources
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#offline" class="md-nav__link">
+    <span class="md-ellipsis">
+      Offline
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#markers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Markers
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
             
           
           
@@ -578,6 +777,24 @@ to be. When this happens the Motion Controller will execute all Set's and Scroll
 <p>After this initial phase, the movement will be executed on demand with a single difference that is if an Animate job is
 executing, and you Set or Scroll that this job will be cancelled and your Synchronous function will be executed.</p>
 <h2 id="canvas">Canvas</h2>
+<p>The Canvas function usable in the KMaP scope is just a wrapper on the native canvas so that we can handle the render 
+process the only thing you need to do its provide the source tile implementing the following api.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">interface</span><span class="w"> </span><span class="nc">TileSource</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">suspend</span><span class="w"> </span><span class="kd">fun</span><span class="w"> </span><span class="nf">getTile</span><span class="p">(</span><span class="n">zoom</span><span class="p">:</span><span class="w"> </span><span class="kt">Int</span><span class="p">,</span><span class="w"> </span><span class="n">row</span><span class="p">:</span><span class="w"> </span><span class="kt">Int</span><span class="p">,</span><span class="w"> </span><span class="n">column</span><span class="p">:</span><span class="w"> </span><span class="kt">Int</span><span class="p">):</span><span class="w"> </span><span class="n">ResultTile</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>With this simple trick you can render any tilled map you want. Maybe you want a free map off the world with OSM, or don't 
+like to use Google library but want to use its tiles, or render it on the device, or read from a local files for your 
+Skyrim map (I'm old sorry) with this you can do it all. </p>
+<p>See https://wiki.openstreetmap.org/wiki/Slippy_map for better understand how it works.</p>
+<h3 id="built-in-sources">Built-in Sources</h3>
+<ul>
+<li>OSM Mapnik</li>
+</ul>
+<h3 id="offline">Offline</h3>
+<p>For offline use you can either read from a .map file or a repo and render it with MapsForge or create your own renderer.</p>
+<p>Future versions will have both built-in</p>
+<h2 id="markers">Markers</h2>
 
 
 
@@ -623,6 +840,22 @@ executing, and you Set or Scroll that this job will be cancelled and your Synchr
           </a>
         
         
+          
+          <a href="../upcoming/" class="md-footer__link md-footer__link--next" aria-label="Next: Upcoming">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Upcoming
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
       </nav>
     
   
@@ -648,7 +881,7 @@ executing, and you Set or Scroll that this job will be cancelled and your Synchr
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "toc.integrate", "navigation.footer", "navigation.expand", "content.code.annotate"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "navigation.footer", "navigation.expand", "content.code.annotate"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
       <script src="../assets/javascripts/bundle.525ec568.min.js"></script>
