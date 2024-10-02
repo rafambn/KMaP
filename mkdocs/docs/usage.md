@@ -187,3 +187,87 @@ Future versions will have both built-in
 
 ## Markers
 
+Markers are a powerful way to draw anything on the map, instead of a bitmap or vector, like other libraries, it uses
+composable instead this way you draw whatever you want. Declare it on the KMaP Scope for it to work.
+
+```kotlin
+markers(
+    listOf(
+        MarkerParameters(
+            ProjectedCoordinates(-45.949303, -21.424608),
+            drawPosition = DrawPosition.BOTTOM_RIGHT,
+            rotateWithMap = true,
+            tag = "marker1"
+        ),
+        MarkerParameters(
+            ProjectedCoordinates(-46.949303, -21.424608),
+            drawPosition = DrawPosition.BOTTOM_RIGHT,
+            rotateWithMap = true,
+            tag = "marker1"
+        )
+    )
+) {
+    Image(
+        painterResource(Res.drawable.test),
+        "",
+        Modifier
+            .background(Color.Black)
+            .size(32.dp)
+            .clickable {
+                println("you clicked on the marker")
+            }
+    )
+}
+```
+
+Use the markers() API to draw a list of markers with the provided composable, you can set up how many you want with this.
+There is a lot of options on how to handle your marker. Fell free to toy with them. Bellow is the data class that store 
+the options and its default values.
+
+```kotlin
+data class MarkerParameters(
+    val coordinates: ProjectedCoordinates,
+    val tag: String = "",
+    val alpha: Float = 1F,
+    val drawPosition: DrawPosition = DrawPosition.TOP_LEFT,
+    val zIndex: Float = 2F,
+    val scaleWithMap: Boolean = false,
+    val zoomToFix: Float = 0F,
+    val rotateWithMap: Boolean = false,
+    val rotation: Degrees = 0.0
+)
+```
+
+## Clusters
+
+With cluster, you can merge markers if they are overlying for example. Declare it on the KMaP scope with the tag of the markers you want to cluster for it to work.
+
+```kotlin
+cluster(ClusterParameters("marker1", 50.dp)) {
+    Image(
+        painterResource(Res.drawable.test2),
+        "",
+        Modifier
+            .background(Color.Black)
+            .size(32.dp)
+            .clickable {
+                println("you clicked a cluster")
+            }
+    )
+}
+```
+
+Cluster composable do not behave the same as the markers so you have to provide how it will behave with its parameters.
+Here is the data class with the options.
+
+```kotlin
+data class ClusterParameters(
+    val tag: String,
+    val clusterThreshold: Dp,
+    val alpha: Float = 1F,
+    val zIndex: Float = 1F,
+    val drawPosition: DrawPosition = DrawPosition.CENTER,
+    val rotateWithMap: Boolean = false,
+    val rotation: Degrees = 0.0
+)
+```

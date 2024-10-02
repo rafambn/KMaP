@@ -12,8 +12,8 @@ data class MarkerParameters(
     val alpha: Float = 1F,
     val drawPosition: DrawPosition = DrawPosition.TOP_LEFT,
     val zIndex: Float = 2F,
-    val scaleWithMap: Boolean = false,
-    val zoomToFix: Float = 0F,
+    val scaleWithMap: Boolean = false, // TODO join this variable
+    val zoomToFix: Float = 0F,//TODO
     val rotateWithMap: Boolean = false,
     val rotation: Degrees = 0.0
 ) {
