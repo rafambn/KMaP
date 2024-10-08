@@ -38,61 +38,6 @@ kotlin {
         }
     }
 
-//    jvmToolchain(11)
-//    androidTarget {
-//        publishLibraryVariants("release")
-//    }
-//
-//    jvm()
-//
-//    js {
-//        browser {
-//            webpackTask {
-//                mainOutputFileName = "shared.js"
-//            }
-//        }
-//        binaries.executable()
-//    }
-//
-//    wasmJs {
-//        browser()
-//        binaries.executable()
-//    }
-//
-//    listOf(
-//        iosX64(),
-//        iosArm64(),
-//        iosSimulatorArm64()
-//    ).forEach {
-//        it.binaries.framework {
-//            baseName = "shared"
-//            isStatic = true
-//        }
-//    }
-//
-//    listOf(
-//        macosX64(),
-//        macosArm64()
-//    ).forEach {
-//        it.binaries.framework {
-//            baseName = "shared"
-//            isStatic = true
-//        }
-//    }
-//
-//    linuxX64 {
-//        binaries.staticLib {
-//            baseName = "shared"
-//        }
-//    }
-//
-//
-//    mingwX64 {
-//        binaries.staticLib {
-//            baseName = "shared"
-//        }
-//    }
-
     sourceSets {
         all {
             languageSettings {

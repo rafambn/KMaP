@@ -28,9 +28,9 @@ import com.rafambn.kmapdemo.theme.AppTheme
 import com.rafambn.kmapdemo.utils.offsets.CanvasPosition
 import com.rafambn.kmapdemo.utils.offsets.ProjectedCoordinates
 import com.rafambn.kmapdemo.utils.offsets.ScreenOffset
-import kmap_library.kmapdemo.generated.resources.Res
-import kmap_library.kmapdemo.generated.resources.teste
-import kmap_library.kmapdemo.generated.resources.teste2
+import kmap.kmapdemo.generated.resources.Res
+import kmap.kmapdemo.generated.resources.teste
+import kmap.kmapdemo.generated.resources.teste2
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
