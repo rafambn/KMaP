@@ -33,10 +33,65 @@ kotlin {
         iosSimulatorArm64()
     ).forEach {
         it.binaries.framework {
-            baseName = "ComposeApp"
+            baseName = "KMaPDemo"
             isStatic = true
         }
     }
+
+//    jvmToolchain(11)
+//    androidTarget {
+//        publishLibraryVariants("release")
+//    }
+//
+//    jvm()
+//
+//    js {
+//        browser {
+//            webpackTask {
+//                mainOutputFileName = "shared.js"
+//            }
+//        }
+//        binaries.executable()
+//    }
+//
+//    wasmJs {
+//        browser()
+//        binaries.executable()
+//    }
+//
+//    listOf(
+//        iosX64(),
+//        iosArm64(),
+//        iosSimulatorArm64()
+//    ).forEach {
+//        it.binaries.framework {
+//            baseName = "shared"
+//            isStatic = true
+//        }
+//    }
+//
+//    listOf(
+//        macosX64(),
+//        macosArm64()
+//    ).forEach {
+//        it.binaries.framework {
+//            baseName = "shared"
+//            isStatic = true
+//        }
+//    }
+//
+//    linuxX64 {
+//        binaries.staticLib {
+//            baseName = "shared"
+//        }
+//    }
+//
+//
+//    mingwX64 {
+//        binaries.staticLib {
+//            baseName = "shared"
+//        }
+//    }
 
     sourceSets {
         all {
@@ -51,10 +106,6 @@ kotlin {
             implementation(compose.materialIconsExtended)
             implementation(compose.components.resources)
             implementation(project(":KMaP"))
-        }
-
-        commonTest.dependencies {
-            implementation(kotlin("test"))
         }
 
         androidMain.dependencies {
@@ -86,7 +137,7 @@ android {
         minSdk = 24
         targetSdk = 34
 
-        applicationId = "com.rafambn.kmapdemo.androidApp"
+        applicationId = "com.rafambn.kmapdemo"
         versionCode = 1
         versionName = "1.0.0"
     }
@@ -106,6 +157,7 @@ android {
         kotlinCompilerExtensionVersion = "1.5.11"
     }
 }
+
 
 compose.desktop {
     application {

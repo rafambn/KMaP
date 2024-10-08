@@ -71,7 +71,6 @@ class KMaPContent : KMaPConfig {
                 visibleMarkers.addAll(result.second)
             }
         }
-        println(visibleMarkers)
     }
 
     fun setMap(mapState: MapState) {

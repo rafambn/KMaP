@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -26,13 +28,14 @@ import com.rafambn.kmapdemo.theme.AppTheme
 import com.rafambn.kmapdemo.utils.offsets.CanvasPosition
 import com.rafambn.kmapdemo.utils.offsets.ProjectedCoordinates
 import com.rafambn.kmapdemo.utils.offsets.ScreenOffset
-import kmap.kmapdemo.generated.resources.Res
-import kmap.kmapdemo.generated.resources.teste
-import kmap.kmapdemo.generated.resources.teste2
+import kmap_library.kmapdemo.generated.resources.Res
+import kmap_library.kmapdemo.generated.resources.teste
+import kmap_library.kmapdemo.generated.resources.teste2
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
+import kotlin.random.Random
 
 @Composable
 internal fun App() = AppTheme {
@@ -41,7 +44,7 @@ internal fun App() = AppTheme {
             val motionController = rememberMotionController()
             CoroutineScope(Dispatchers.Default).launch {
                 motionController.animate {
-                    positionTo(CenterLocation.Offset(Offset(5F,5F)))
+                    positionTo(CenterLocation.Offset(Offset(5F, 5F)))
                     positionBy(CenterLocation.Offset(Offset(10F, 10F)))
                 }
             }
@@ -73,11 +76,6 @@ internal fun App() = AppTheme {
                             rotateWithMap = true,
                             tag = "zika"
                         ),
-                        MarkerParameters(
-                            ProjectedCoordinates(180.0, 85.0),
-                            drawPosition = DrawPosition.TOP_RIGHT,
-                            rotateWithMap = true,
-                        ),
                     )
                 ) {
                     Image(
@@ -90,6 +88,27 @@ internal fun App() = AppTheme {
                                 println("fsdfd")
                             }
                     )
+                }
+                markers(
+                    listOf(
+                        MarkerParameters(
+                            ProjectedCoordinates(180.0, 85.0),
+                            drawPosition = DrawPosition.TOP_RIGHT,
+                            rotateWithMap = false,
+                        )
+                    )
+                ) {
+                    val cor = remember { mutableStateOf(Color.Black) }
+                    val rnd = remember { Random(545) }
+                    Box(
+                        Modifier
+                            .background(cor.value)
+                            .size(32.dp)
+                            .clickable {
+                                cor.value = Color(rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256))
+                            }
+                    ) {
+                    }
                 }
                 cluster(ClusterParameters("zika", 50.dp, rotateWithMap = true)) {
                     Image(

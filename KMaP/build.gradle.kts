@@ -1,6 +1,4 @@
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetTree
 
 plugins {
     alias(libs.plugins.multiplatform)
@@ -9,8 +7,8 @@ plugins {
     alias(libs.plugins.compose.compiler)
 }
 
-group = "com.rafambn"
-version = "1.0"
+group = "com.rafambn.kmap"
+version = "0.1.0"
 
 kotlin {
     androidTarget {
@@ -22,8 +20,6 @@ kotlin {
                 }
             }
         }
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
-        instrumentedTestVariant.sourceSetTree.set(KotlinSourceSetTree.test)
     }
 
     jvm()
@@ -70,11 +66,6 @@ kotlin {
         jsMain.dependencies {
             implementation(libs.ktor.client.js)
         }
-
-        commonTest.dependencies {
-            implementation(kotlin("test"))
-        }
-
     }
 
     targets.withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
@@ -88,7 +79,7 @@ kotlin {
 
 android {
     namespace = "com.rafambn.kmap"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 24

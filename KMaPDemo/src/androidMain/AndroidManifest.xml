@@ -6,7 +6,7 @@
         android:name="com.rafambn.kmapdemo.AndroidApp"
         android:icon="@android:drawable/ic_menu_compass"
         android:usesCleartextTraffic="true"
-        android:label="Template library with App"
+        android:label="KMaP Demo"
         android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
         <activity
             android:name="com.rafambn.kmapdemo.AppActivity"
