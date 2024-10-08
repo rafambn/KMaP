@@ -1,4 +1,4 @@
-rootProject.name = "KMaP-Library"
+rootProject.name = "KMaP"
 include(":KMaPDemo")
 include(":KMaP")
 
