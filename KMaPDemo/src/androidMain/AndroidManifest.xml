@@ -3,13 +3,13 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <application
-        android:name="com.rafambn.kmapdemo.AndroidApp"
+        android:name="com.rafambn.kmap.AndroidApp"
         android:icon="@android:drawable/ic_menu_compass"
         android:usesCleartextTraffic="true"
         android:label="KMaP Demo"
         android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
         <activity
-            android:name="com.rafambn.kmapdemo.AppActivity"
+            android:name="com.rafambn.kmap.AppActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:launchMode="singleInstance"
             android:windowSoftInputMode="adjustPan"
