@@ -52,7 +52,7 @@ internal fun App() = AppTheme {
                 mapState = mapState,
                 canvasGestureListener = DefaultCanvasGestureListener()
             ) {
-                canvas(tileSource = OSMTileSource::getTile)
+                canvas(tileSource = OSMTileSource("com.rafambn.kmap")::getTile)
                 markers(
                     listOf(
                         MarkerParameters(

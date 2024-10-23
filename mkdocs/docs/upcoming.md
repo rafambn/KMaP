@@ -7,7 +7,6 @@ The following items will eventually be implemented:
 way that only the used gesture are detected.
 * Improve LoopInZoom
 * Improve Motion Controller API, merging set and scroll, also optimizing CenterLocation
-* Add user id to Mapnik tile source
 * Improve KMaP scoped parameters
 * Improve BoundingBox adding more methods for it to be more helpfully.
 * Add user option for tile Caching
