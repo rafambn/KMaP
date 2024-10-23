@@ -102,11 +102,11 @@ class MapState(
     fun CanvasPosition.coerceInMap(): CanvasPosition {
         val x = if (mapProperties.boundMap.horizontal == MapBorderType.BOUND)
             horizontal.coerceIn(
-                mapProperties.mapCoordinatesRange.longitute.west,
-                mapProperties.mapCoordinatesRange.longitute.east
+                mapProperties.mapCoordinatesRange.longitude.west,
+                mapProperties.mapCoordinatesRange.longitude.east
             )
         else
-            horizontal.loopInRange(mapProperties.mapCoordinatesRange.longitute)
+            horizontal.loopInRange(mapProperties.mapCoordinatesRange.longitude)
         val y = if (mapProperties.boundMap.vertical == MapBorderType.BOUND)
             vertical.coerceIn(
                 mapProperties.mapCoordinatesRange.latitude.south,
@@ -136,7 +136,7 @@ class MapState(
             .scaleToZoom(1 / (mapProperties.tileSize * magnifierScale * (1 shl zoomLevel)))
             .rotate(-angleDegrees.toRadians())
             .scaleToMap(
-                mapProperties.mapCoordinatesRange.longitute.span,
+                mapProperties.mapCoordinatesRange.longitude.span,
                 mapProperties.mapCoordinatesRange.latitude.span
             )
             .applyOrientation(mapProperties.mapCoordinatesRange)
@@ -146,7 +146,7 @@ class MapState(
             .moveToTrueCoordinates(mapProperties.mapCoordinatesRange)
             .scaleToZoom((mapProperties.tileSize * (1 shl zoomLevel)).toFloat())
             .scaleToMap(
-                1 / mapProperties.mapCoordinatesRange.longitute.span,
+                1 / mapProperties.mapCoordinatesRange.longitude.span,
                 1 / mapProperties.mapCoordinatesRange.latitude.span
             )
         return CanvasDrawReference(canvasDrawReference.horizontal, canvasDrawReference.vertical)
@@ -155,7 +155,7 @@ class MapState(
     fun CanvasPosition.toScreenOffset(): ScreenOffset = -(this - rawPosition)
         .applyOrientation(mapProperties.mapCoordinatesRange)
         .scaleToMap(
-            1 / mapProperties.mapCoordinatesRange.longitute.span,
+            1 / mapProperties.mapCoordinatesRange.longitude.span,
             1 / mapProperties.mapCoordinatesRange.latitude.span
         )
         .rotate(angleDegrees.toRadians())
@@ -170,7 +170,7 @@ class MapState(
 
     fun CanvasPosition.moveToTrueCoordinates(mapCoordinatesRange: MapCoordinatesRange): CanvasPosition {
         return CanvasPosition(
-            horizontal - mapCoordinatesRange.longitute.span / 2,
+            horizontal - mapCoordinatesRange.longitude.span / 2,
             vertical - mapCoordinatesRange.latitude.span / 2
         )
     }
@@ -181,7 +181,7 @@ class MapState(
 
     fun CanvasPosition.applyOrientation(mapCoordinatesRange: MapCoordinatesRange): CanvasPosition {
         return CanvasPosition(
-            horizontal * mapCoordinatesRange.longitute.orientation,
+            horizontal * mapCoordinatesRange.longitude.orientation,
             vertical * mapCoordinatesRange.latitude.orientation
         )
     }
@@ -212,6 +212,7 @@ class MapState(
             zoomLevel,
             coordinatesRange
         )
+        println("$topLeftTile -- $bottomLeftTile")
         val horizontalTileIntRange =
             IntRange(
                 minOf(topLeftTile.first, bottomRightTile.first, topRightTile.first, bottomLeftTile.first),
@@ -247,9 +248,9 @@ class MapState(
         return visibleTileSpecs
     }
 
-    private fun getXYTile(position: CanvasPosition, zoomLevel: Int, mapSize: MapCoordinatesRange): Pair<Int, Int> {
+    private fun getXYTile(position: CanvasPosition, zoomLevel: Int, mapSize: MapCoordinatesRange): Pair<Int, Int> { //TODO fix this behavior
         return Pair(
-            ((position.horizontal - mapSize.longitute.getMin()) / mapSize.longitute.span * (1 shl zoomLevel)).toIntFloor(),
+            ((position.horizontal - mapSize.longitude.getMin()) / mapSize.longitude.span * (1 shl zoomLevel)).toIntFloor(),
             ((-position.vertical + mapSize.latitude.getMax()) / mapSize.latitude.span * (1 shl zoomLevel)).toIntFloor()
         )
     }

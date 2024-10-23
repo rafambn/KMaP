@@ -1,4 +1,5 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -6,6 +7,7 @@ plugins {
     alias(libs.plugins.compose)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
@@ -23,6 +25,12 @@ kotlin {
     jvm()
 
     js {
+        browser()
+        binaries.executable()
+    }
+
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
         browser()
         binaries.executable()
     }
@@ -50,6 +58,10 @@ kotlin {
             implementation(compose.material3)
             implementation(compose.materialIconsExtended)
             implementation(compose.components.resources)
+            implementation(libs.androidx.lifecycle.viewmodel)
+            implementation(libs.androidx.lifecycle.runtime.compose)
+            implementation(libs.androidx.navigation.composee)
+            implementation(libs.kotlinx.serialization.json)
             implementation(project(":KMaP"))
         }
 
@@ -67,10 +79,6 @@ kotlin {
         jsMain.dependencies {
             implementation(compose.html.core)
         }
-
-        iosMain.dependencies {
-        }
-
     }
 }
 

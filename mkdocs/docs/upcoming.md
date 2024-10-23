@@ -3,7 +3,7 @@
 The following items will eventually be implemented:
 
 * Publish library to maven
-* Improve Gesture Detection, currently all type of gestures are detected adding necessary code. Implement in a
+* Improve Gesture Detection, currently all type of gestures are detected adding unecessary code. Implement in a
 way that only the used gesture are detected.
 * Improve LoopInZoom
 * Improve Motion Controller API, merging set and scroll, also optimizing CenterLocation
