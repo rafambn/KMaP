@@ -186,6 +186,13 @@ class MapState(
         )
     }
 
+    fun CanvasPosition.applyInverseOrientation(mapCoordinatesRange: MapCoordinatesRange): CanvasPosition {
+        return CanvasPosition(
+            horizontal * mapCoordinatesRange.longitude.orientation * -1,
+            vertical * mapCoordinatesRange.latitude.orientation * -1
+        )
+    }
+
     private fun getVisibleTilesForLevel(
         viewPort: BoundingBox,
         zoomLevel: Int,
@@ -193,26 +200,25 @@ class MapState(
         coordinatesRange: MapCoordinatesRange
     ): List<TileSpecs> {
         val topLeftTile = getXYTile(
-            viewPort.topLeft,
+            viewPort.topLeft.applyInverseOrientation(coordinatesRange),
             zoomLevel,
             coordinatesRange
         )
         val topRightTile = getXYTile(
-            viewPort.topRight,
+            viewPort.topRight.applyInverseOrientation(coordinatesRange),
             zoomLevel,
             coordinatesRange
         )
         val bottomRightTile = getXYTile(
-            viewPort.bottomRight,
+            viewPort.bottomRight.applyInverseOrientation(coordinatesRange),
             zoomLevel,
             coordinatesRange
         )
         val bottomLeftTile = getXYTile(
-            viewPort.bottomLeft,
+            viewPort.bottomLeft.applyInverseOrientation(coordinatesRange),
             zoomLevel,
             coordinatesRange
         )
-        println("$topLeftTile -- $bottomLeftTile")
         val horizontalTileIntRange =
             IntRange(
                 minOf(topLeftTile.first, bottomRightTile.first, topRightTile.first, bottomLeftTile.first),
@@ -248,10 +254,10 @@ class MapState(
         return visibleTileSpecs
     }
 
-    private fun getXYTile(position: CanvasPosition, zoomLevel: Int, mapSize: MapCoordinatesRange): Pair<Int, Int> { //TODO fix this behavior
+    private fun getXYTile(position: CanvasPosition, zoomLevel: Int, mapSize: MapCoordinatesRange): Pair<Int, Int> {
         return Pair(
             ((position.horizontal - mapSize.longitude.getMin()) / mapSize.longitude.span * (1 shl zoomLevel)).toIntFloor(),
-            ((-position.vertical + mapSize.latitude.getMax()) / mapSize.latitude.span * (1 shl zoomLevel)).toIntFloor()
+            ((position.vertical - mapSize.latitude.getMin()) / mapSize.latitude.span * (1 shl zoomLevel)).toIntFloor()
         )
     }
 
@@ -263,7 +269,7 @@ class MapState(
         toProjectedCoordinates(this@toProjectedCoordinates)
     }
 
-   private inner class ZoomDelegate(private var zoom: MutableState<Float>) {
+    private inner class ZoomDelegate(private var zoom: MutableState<Float>) {
         operator fun getValue(thisRef: Any?, property: KProperty<*>): Float {
             return zoom.value
         }
@@ -273,7 +279,7 @@ class MapState(
         }
     }
 
-   private inner class RawPositionDelegate(private var zoom: MutableState<CanvasPosition>) {
+    private inner class RawPositionDelegate(private var zoom: MutableState<CanvasPosition>) {
         operator fun getValue(thisRef: Any?, property: KProperty<*>): CanvasPosition {
             return zoom.value
         }
