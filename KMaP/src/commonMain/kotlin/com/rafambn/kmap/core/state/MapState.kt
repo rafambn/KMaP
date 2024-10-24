@@ -94,23 +94,23 @@ class MapState(
         return BoundingBox(
             Offset.Zero.fromScreenOffsetToCanvasPosition(),
             Offset(canvasSize.x, 0F).fromScreenOffsetToCanvasPosition(),
-            Offset(0F, canvasSize.y).fromScreenOffsetToCanvasPosition(),
             canvasSize.fromScreenOffsetToCanvasPosition(),
+            Offset(0F, canvasSize.y).fromScreenOffsetToCanvasPosition(),
         )
     }
 
     fun CanvasPosition.coerceInMap(): CanvasPosition {
         val x = if (mapProperties.boundMap.horizontal == MapBorderType.BOUND)
             horizontal.coerceIn(
-                mapProperties.mapCoordinatesRange.longitude.west,
-                mapProperties.mapCoordinatesRange.longitude.east
+                mapProperties.mapCoordinatesRange.longitude.west * mapProperties.mapCoordinatesRange.longitude.getOrientation(),
+                mapProperties.mapCoordinatesRange.longitude.east * mapProperties.mapCoordinatesRange.longitude.getOrientation()
             )
         else
             horizontal.loopInRange(mapProperties.mapCoordinatesRange.longitude)
         val y = if (mapProperties.boundMap.vertical == MapBorderType.BOUND)
             vertical.coerceIn(
-                mapProperties.mapCoordinatesRange.latitude.south,
-                mapProperties.mapCoordinatesRange.latitude.north
+                mapProperties.mapCoordinatesRange.latitude.north * mapProperties.mapCoordinatesRange.latitude.getOrientation(),
+                mapProperties.mapCoordinatesRange.latitude.south * mapProperties.mapCoordinatesRange.latitude.getOrientation()
             )
         else
             vertical.loopInRange(mapProperties.mapCoordinatesRange.latitude)
@@ -181,15 +181,15 @@ class MapState(
 
     fun CanvasPosition.applyOrientation(mapCoordinatesRange: MapCoordinatesRange): CanvasPosition {
         return CanvasPosition(
-            horizontal * mapCoordinatesRange.longitude.orientation,
-            vertical * mapCoordinatesRange.latitude.orientation
+            horizontal * mapCoordinatesRange.longitude.getOrientation(),
+            vertical * mapCoordinatesRange.latitude.getOrientation()
         )
     }
 
     fun CanvasPosition.applyInverseOrientation(mapCoordinatesRange: MapCoordinatesRange): CanvasPosition {
         return CanvasPosition(
-            horizontal * mapCoordinatesRange.longitude.orientation * -1,
-            vertical * mapCoordinatesRange.latitude.orientation * -1
+            horizontal * mapCoordinatesRange.longitude.getOrientation() * -1,
+            vertical * mapCoordinatesRange.latitude.getOrientation() * -1
         )
     }
 
@@ -219,6 +219,7 @@ class MapState(
             zoomLevel,
             coordinatesRange
         )
+        println("$topLeftTile -- $topRightTile -- $bottomLeftTile -- $bottomRightTile")
         val horizontalTileIntRange =
             IntRange(
                 minOf(topLeftTile.first, bottomRightTile.first, topRightTile.first, bottomLeftTile.first),

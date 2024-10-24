@@ -21,3 +21,11 @@ fun lerp(start: ProjectedCoordinates, end: ProjectedCoordinates, value: Double):
 fun Float.toIntFloor(): Int = floor(this).toInt()
 
 fun Double.toIntFloor(): Int = floor(this).toInt()
+
+fun getSign(number: Double): Int {
+    return when {
+        number > 0 -> 1
+        number < 0 -> -1
+        else -> 1
+    }
+}

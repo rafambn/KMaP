@@ -4,8 +4,6 @@ import com.rafambn.kmap.config.MapProperties
 import com.rafambn.kmap.config.border.BoundMapBorder
 import com.rafambn.kmap.config.border.MapBorderType
 import com.rafambn.kmap.config.border.OutsideTilesType
-import com.rafambn.kmap.config.characteristics.BOTTOM_TO_TOP
-import com.rafambn.kmap.config.characteristics.LEFT_TO_RIGHT
 import com.rafambn.kmap.config.characteristics.Latitude
 import com.rafambn.kmap.config.characteristics.Longitude
 import com.rafambn.kmap.config.characteristics.MapCoordinatesRange
@@ -40,6 +38,6 @@ data class OSMMapProperties(
 data class OSMZoomLevelsRange(override val max: Int = 19, override val min: Int = 0) : MapZoomLevelsRange
 
 data class OSMCoordinatesRange(
-    override val latitude: Latitude = Latitude(north = 85.051129, south = -85.051129, orientation = BOTTOM_TO_TOP),
-    override val longitude: Longitude = Longitude(east = 180.0, west = -180.0, orientation = LEFT_TO_RIGHT)
+    override val latitude: Latitude = Latitude(north = 85.051129, south = -85.051129),
+    override val longitude: Longitude = Longitude(east = 180.0, west = -180.0)
 ) : MapCoordinatesRange

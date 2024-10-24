@@ -38,7 +38,7 @@ internal fun App() = AppTheme {
         ) {
             composable<Routes.Start> {
                 StartRoot(
-                    navigateSimpleMap = {navigationController.navigate(Routes.SimpleMap)},
+                    navigateSimpleMap = { navigationController.navigate(Routes.SimpleMap) },
                     navigateLayers = {},
                     navigateMarkers = {},
                     navigatePath = {},
