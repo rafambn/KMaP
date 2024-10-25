@@ -27,16 +27,16 @@ class KMaPContent : KMaPConfig {
     val visibleMarkers = mutableListOf<MarkerOutput>()
     val visibleClusters = mutableListOf<ClusterOutput>()
 
-    override fun markers(items: List<MarkerParameters>, markerContent: @Composable (MarkerData) -> Unit) {
-        markers += items.map { it to markerContent }
+    override fun markers(markerParameters: List<MarkerParameters>, markerContent: @Composable (MarkerData) -> Unit) {
+        markers += markerParameters.map { it to markerContent }
     }
 
-    override fun canvas(item: CanvasParameters, tileSource: suspend (zoom: Int, row: Int, column: Int) -> ResultTile) {
-        visibleCanvas += item to tileSource
+    override fun canvas(canvasParameters: CanvasParameters, tileSource: suspend (zoom: Int, row: Int, column: Int) -> ResultTile) {
+        visibleCanvas += canvasParameters to tileSource
     }
 
-    override fun cluster(item: ClusterParameters, clusterContent: @Composable (ClusterData) -> Unit) {
-        clusters += item to clusterContent
+    override fun cluster(clusterParameters: ClusterParameters, clusterContent: @Composable (ClusterData) -> Unit) {
+        clusters += clusterParameters to clusterContent
     }
 
     fun updateCluster() {
@@ -87,11 +87,11 @@ class KMaPContent : KMaPConfig {
 }
 
 interface KMaPConfig {
-    fun markers(items: List<MarkerParameters>, markerContent: @Composable (MarkerData) -> Unit)
+    fun markers(markerParameters: List<MarkerParameters>, markerContent: @Composable (MarkerData) -> Unit)
 
-    fun canvas(item: CanvasParameters = CanvasParameters(), tileSource: suspend (zoom: Int, row: Int, column: Int) -> ResultTile)
+    fun canvas(canvasParameters: CanvasParameters = CanvasParameters(), tileSource: suspend (zoom: Int, row: Int, column: Int) -> ResultTile)
 
-    fun cluster(item: ClusterParameters, clusterContent: @Composable (ClusterData) -> Unit)
+    fun cluster(clusterParameters: ClusterParameters, clusterContent: @Composable (ClusterData) -> Unit)
 }
 
 fun distance(point1: Offset, point2: Offset): Float {

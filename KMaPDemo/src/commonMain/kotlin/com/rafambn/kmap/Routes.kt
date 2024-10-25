@@ -9,4 +9,6 @@ sealed interface Routes {
     @Serializable
     data object SimpleMap
 
+    @Serializable
+    data object LayerMap
 }

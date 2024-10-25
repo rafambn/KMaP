@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.rafambn.kmap.screens.LayerMapRoot
 import com.rafambn.kmap.screens.SimpleMapRoot
 import com.rafambn.kmap.screens.StartRoot
 import com.rafambn.kmap.theme.AppTheme
@@ -39,7 +40,7 @@ internal fun App() = AppTheme {
             composable<Routes.Start> {
                 StartRoot(
                     navigateSimpleMap = { navigationController.navigate(Routes.SimpleMap) },
-                    navigateLayers = {},
+                    navigateLayers = { navigationController.navigate(Routes.LayerMap) },
                     navigateMarkers = {},
                     navigatePath = {},
                     navigateAnimation = {},
@@ -49,7 +50,14 @@ internal fun App() = AppTheme {
                 )
             }
             composable<Routes.SimpleMap> {
-                SimpleMapRoot()
+                SimpleMapRoot(
+                    navigateBack = { navigationController.popBackStack() }
+                )
+            }
+            composable<Routes.LayerMap> {
+                LayerMapRoot(
+                    navigateBack = { navigationController.popBackStack() }
+                )
             }
         }
     }
