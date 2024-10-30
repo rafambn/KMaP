@@ -19,13 +19,19 @@ typealias Cluster = Pair<ClusterParameters, @Composable (ClusterData) -> Unit>
 typealias ClusterOutput = Pair<ClusterData, @Composable (ClusterData) -> Unit>
 typealias Canvas = Pair<CanvasParameters, suspend (zoom: Int, row: Int, column: Int) -> ResultTile>
 
-class KMaPContent : KMaPScope {
+class KMaPContent(
+    content: KMaPScope.() -> Unit,
+) : KMaPScope {
     private var mapState: MapState? = null
     private val markers = mutableListOf<Marker>()
     private val clusters = mutableListOf<Cluster>()
     val visibleCanvas = mutableListOf<Canvas>()
     val visibleMarkers = mutableListOf<MarkerOutput>()
     val visibleClusters = mutableListOf<ClusterOutput>()
+
+    init {
+        apply(content)
+    }
 
     override fun markers(markerParameters: List<MarkerParameters>, markerContent: @Composable (MarkerData) -> Unit) {
         markers += markerParameters.map { it to markerContent }
@@ -40,7 +46,7 @@ class KMaPContent : KMaPScope {
     }
 
     fun updateCluster() {
-        if (clusters.isEmpty() || mapState == null || markers.size < 2)
+        if (mapState == null)
             return
 
         //clear visible markers

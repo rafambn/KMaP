@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
@@ -37,7 +36,7 @@ fun KMaP(
     canvasGestureListener: DefaultCanvasGestureListener = DefaultCanvasGestureListener(),
     content: KMaPScope.() -> Unit
 ) {
-    val kmapContent =   KMaPContent().also { content.invoke(it) } //TODO fix this code to prevent unnecessary recompositions
+    val kmapContent = KMaPContent(content) //TODO fix this code to prevent unnecessary recompositions
     // and allow recomposition from changes in the KMaPScope
     val density = LocalDensity.current
     LaunchedEffect(Unit) {

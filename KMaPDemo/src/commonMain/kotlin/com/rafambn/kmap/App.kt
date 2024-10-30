@@ -11,10 +11,18 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Applier
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,55 +52,88 @@ import org.jetbrains.compose.resources.painterResource
 import kotlin.random.Random
 
 @Composable
- fun App() = AppTheme {
+fun App() = AppTheme {
     Surface(modifier = Modifier.fillMaxSize()) {
-        val navigationController = rememberNavController()
-        NavHost(
-            navController = navigationController,
-            startDestination = Routes.Start,
-            enterTransition = {
-                slideInHorizontally(
-                    initialOffsetX = { fullWidth -> fullWidth },
-                    animationSpec = tween(durationMillis = 300)
-                ) + fadeIn(animationSpec = tween(300))
-            },
-            exitTransition = {
-                slideOutHorizontally(
-                    targetOffsetX = { fullWidth -> -fullWidth },
-                    animationSpec = tween(durationMillis = 300)
-                ) + fadeOut(animationSpec = tween(300))
+        Box {
+            val list = mutableStateListOf<String>()
+            var bool by mutableStateOf(false)
+            LazyColumn {
+                items(list){
+                    if (bool)
+                        Text(it)
+                    else
+                        Text("noip")
+                }
             }
-        ) {
-            composable<Routes.Start> {
-                StartRoot(
-                    navigateSimpleMap = { navigationController.navigate(Routes.SimpleMap) },
-                    navigateLayers = { navigationController.navigate(Routes.LayerMap) },
-                    navigateMarkers = {navigationController.navigate(Routes.MarkersMap) },
-                    navigatePath = {},
-                    navigateAnimation = {},
-                    navigateOSM = {},
-                    navigateClustering = {},
-                    navigateWidgets = {}
-                )
+            Button(onClick = {
+                list.add("oitr")
+            }, modifier = Modifier.align(Alignment.BottomCenter)) {
+                Text("click")
             }
-            composable<Routes.SimpleMap> {
-                SimpleMapRoot(
-                    navigateBack = { navigationController.popBackStack() }
-                )
+            Button(onClick = {
+                bool = !bool
+            }, modifier = Modifier.align(Alignment.BottomEnd)) {
+                Text("modify")
             }
-            composable<Routes.LayerMap> {
-                LayerMapRoot(
-                    navigateBack = { navigationController.popBackStack() }
-                )
-            }
-            composable<Routes.MarkersMap> {
-                MarkerMapRoot(
-                    navigateBack = { navigationController.popBackStack() }
-                )
+            Button(onClick = {
+                list[0] = "fdsfs"
+            }, modifier = Modifier.align(Alignment.BottomStart)) {
+                Text("modify 2")
             }
         }
     }
 }
+
+//@Composable
+// fun App() = AppTheme {
+//    Surface(modifier = Modifier.fillMaxSize()) {
+//        val navigationController = rememberNavController()
+//        NavHost(
+//            navController = navigationController,
+//            startDestination = Routes.Start,
+//            enterTransition = {
+//                slideInHorizontally(
+//                    initialOffsetX = { fullWidth -> fullWidth },
+//                    animationSpec = tween(durationMillis = 300)
+//                ) + fadeIn(animationSpec = tween(300))
+//            },
+//            exitTransition = {
+//                slideOutHorizontally(
+//                    targetOffsetX = { fullWidth -> -fullWidth },
+//                    animationSpec = tween(durationMillis = 300)
+//                ) + fadeOut(animationSpec = tween(300))
+//            }
+//        ) {
+//            composable<Routes.Start> {
+//                StartRoot(
+//                    navigateSimpleMap = { navigationController.navigate(Routes.SimpleMap) },
+//                    navigateLayers = { navigationController.navigate(Routes.LayerMap) },
+//                    navigateMarkers = {navigationController.navigate(Routes.MarkersMap) },
+//                    navigatePath = {},
+//                    navigateAnimation = {},
+//                    navigateOSM = {},
+//                    navigateClustering = {},
+//                    navigateWidgets = {}
+//                )
+//            }
+//            composable<Routes.SimpleMap> {
+//                SimpleMapRoot(
+//                    navigateBack = { navigationController.popBackStack() }
+//                )
+//            }
+//            composable<Routes.LayerMap> {
+//                LayerMapRoot(
+//                    navigateBack = { navigationController.popBackStack() }
+//                )
+//            }
+//            composable<Routes.MarkersMap> {
+//                MarkerMapRoot(
+//                    navigateBack = { navigationController.popBackStack() }
+//                )
+//            }
+//        }
+//    }
+//}
 
 //@Composable
 // fun App() = AppTheme {
