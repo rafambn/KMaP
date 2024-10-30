@@ -5,20 +5,46 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.rafambn.kmap.config.customSources.OSMMapProperties
+import com.rafambn.kmap.config.customSources.OSMTileSource
+import com.rafambn.kmap.core.ClusterParameters
+import com.rafambn.kmap.core.DrawPosition
+import com.rafambn.kmap.core.MarkerParameters
+import com.rafambn.kmap.core.rememberMotionController
+import com.rafambn.kmap.core.state.rememberMapState
 import com.rafambn.kmap.screens.LayerMapRoot
+import com.rafambn.kmap.screens.MarkerMapRoot
+import com.rafambn.kmap.screens.SimpleMapProperties
 import com.rafambn.kmap.screens.SimpleMapRoot
+import com.rafambn.kmap.screens.SimpleMapTileSource
 import com.rafambn.kmap.screens.StartRoot
 import com.rafambn.kmap.theme.AppTheme
+import com.rafambn.kmap.utils.offsets.ProjectedCoordinates
+import kmap.kmapdemo.generated.resources.Res
+import kmap.kmapdemo.generated.resources.teste
+import kmap.kmapdemo.generated.resources.teste2
+import org.jetbrains.compose.resources.painterResource
+import kotlin.random.Random
 
 @Composable
-internal fun App() = AppTheme {
+ fun App() = AppTheme {
     Surface(modifier = Modifier.fillMaxSize()) {
         val navigationController = rememberNavController()
         NavHost(
@@ -41,7 +67,7 @@ internal fun App() = AppTheme {
                 StartRoot(
                     navigateSimpleMap = { navigationController.navigate(Routes.SimpleMap) },
                     navigateLayers = { navigationController.navigate(Routes.LayerMap) },
-                    navigateMarkers = {},
+                    navigateMarkers = {navigationController.navigate(Routes.MarkersMap) },
                     navigatePath = {},
                     navigateAnimation = {},
                     navigateOSM = {},
@@ -59,12 +85,17 @@ internal fun App() = AppTheme {
                     navigateBack = { navigationController.popBackStack() }
                 )
             }
+            composable<Routes.MarkersMap> {
+                MarkerMapRoot(
+                    navigateBack = { navigationController.popBackStack() }
+                )
+            }
         }
     }
 }
 
 //@Composable
-//internal fun App() = AppTheme {
+// fun App() = AppTheme {
 //    Surface(modifier = Modifier.fillMaxSize()) {
 //        Box {
 //            val motionController = rememberMotionController()

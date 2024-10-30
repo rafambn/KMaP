@@ -58,7 +58,7 @@ class MapState(
 
     var angleDegrees by mutableStateOf(0.0)
         internal set
-    var rawPosition by RawPositionDelegate(mutableStateOf(CanvasPosition.Companion.Zero))
+    var rawPosition by RawPositionDelegate(mutableStateOf(CanvasPosition.Zero))
 
     var projection: ProjectedCoordinates
         get() {
@@ -219,7 +219,6 @@ class MapState(
             zoomLevel,
             coordinatesRange
         )
-        println("$topLeftTile -- $topRightTile -- $bottomLeftTile -- $bottomRightTile")
         val horizontalTileIntRange =
             IntRange(
                 minOf(topLeftTile.first, bottomRightTile.first, topRightTile.first, bottomLeftTile.first),

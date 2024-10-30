@@ -19,7 +19,7 @@ typealias Cluster = Pair<ClusterParameters, @Composable (ClusterData) -> Unit>
 typealias ClusterOutput = Pair<ClusterData, @Composable (ClusterData) -> Unit>
 typealias Canvas = Pair<CanvasParameters, suspend (zoom: Int, row: Int, column: Int) -> ResultTile>
 
-class KMaPContent : KMaPConfig {
+class KMaPContent : KMaPScope {
     private var mapState: MapState? = null
     private val markers = mutableListOf<Marker>()
     private val clusters = mutableListOf<Cluster>()
@@ -86,7 +86,7 @@ class KMaPContent : KMaPConfig {
     }
 }
 
-interface KMaPConfig {
+interface KMaPScope {
     fun markers(markerParameters: List<MarkerParameters>, markerContent: @Composable (MarkerData) -> Unit)
 
     fun canvas(canvasParameters: CanvasParameters = CanvasParameters(), tileSource: suspend (zoom: Int, row: Int, column: Int) -> ResultTile)

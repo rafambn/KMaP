@@ -11,4 +11,7 @@ sealed interface Routes {
 
     @Serializable
     data object LayerMap
+
+    @Serializable
+    data object MarkersMap
 }

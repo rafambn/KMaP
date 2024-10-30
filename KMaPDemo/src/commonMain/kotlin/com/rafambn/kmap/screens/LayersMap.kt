@@ -67,7 +67,7 @@ fun LayerMapRoot(
 
 class LayerMapTileSource : TileSource {
     override suspend fun getTile(zoom: Int, row: Int, column: Int): ResultTile {
-        val resourcePath = "drawable/map_overlay.png"
+        val resourcePath = "drawable/map_overlay_${(row + column) % 2}.png"
         val bytes = Res.readBytes(resourcePath)
         val imageBitmap = bytes.decodeToImageBitmap()
         return ResultTile(Tile(zoom, row, column, imageBitmap), TileResult.SUCCESS)
