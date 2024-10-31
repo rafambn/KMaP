@@ -38,6 +38,9 @@ fun LayerMapRoot(
         val motionController = rememberMotionController()
         val mapState = rememberMapState(mapProperties = SimpleMapProperties())
         var sliderPosition by remember { mutableStateOf(0f) }
+        val canvasParameters = derivedStateOf {
+            CanvasParameters(alpha = sliderPosition)
+        }
 
         KMaP(
             modifier = Modifier.fillMaxSize(),
@@ -47,7 +50,7 @@ fun LayerMapRoot(
         ) {
             canvas(tileSource = SimpleMapTileSource()::getTile)
             canvas(
-                canvasParameters = CanvasParameters(alpha = sliderPosition),
+                canvasParameters = canvasParameters.value,
                 tileSource = LayerMapTileSource()::getTile
             )
         }

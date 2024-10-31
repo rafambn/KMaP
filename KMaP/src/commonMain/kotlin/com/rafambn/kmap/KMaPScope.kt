@@ -2,7 +2,6 @@ package com.rafambn.kmap
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.unit.Dp
 import com.rafambn.kmap.core.Canvas
 import com.rafambn.kmap.core.CanvasParameters
 import com.rafambn.kmap.core.Cluster
@@ -19,7 +18,6 @@ import kotlin.math.sqrt
 class KMaPContent(
     content: KMaPScope.() -> Unit,
 ) : KMaPScope {
-    private var mapState: MapState? = null
     private val markers = mutableListOf<MarkerComponent>()
     private val clusters = mutableListOf<ClusterComponent>()
     val visibleCanvas = mutableListOf<Canvas>()
@@ -44,10 +42,7 @@ class KMaPContent(
         clusters.add(ClusterComponent(clusterParameters, clusterContent))
     }
 
-    fun updateCluster() {
-        if (mapState == null)
-            return
-
+    fun updateCluster(mapState: MapState) {
         //clear visible markers
         visibleMarkers.clear()
         visibleClusters.clear()
@@ -55,7 +50,7 @@ class KMaPContent(
         val clusterTags = clusters.map { it.clusterParameters.tag }
         val markersPositions = markers.mapNotNull {
             val markerData = it
-            val markerPlacemente = with(mapState!!) {
+            val markerPlacemente = with(mapState) {
                 it.markerParameters.coordinates.toCanvasPosition().toScreenOffset()
             }
             if (clusterTags.contains(it.markerParameters.tag))
@@ -75,20 +70,6 @@ class KMaPContent(
                 visibleMarkers.addAll(result.second)
             }
         }
-    }
-
-    fun setMap(mapState: MapState) {
-        this.mapState = mapState
-        if (clusters.isEmpty() || markers.size < 2)
-            visibleMarkers.addAll(
-                markers.map {
-                    Marker(
-                        it.markerParameters,
-                        with(mapState) { it.markerParameters.coordinates.toCanvasPosition().toScreenOffset() },
-                        it.markerContent
-                    )
-                }
-            )
     }
 }
 
