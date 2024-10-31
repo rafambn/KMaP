@@ -1,6 +1,7 @@
 package com.rafambn.kmap.core
 
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.node.ParentDataModifierNode
@@ -46,6 +47,7 @@ val Measurable.componentInfo: MapComponentInfo
 
 data class MapComponentInfo(
     val data: Any,
+    val placementOffset: Offset,
     val type: ComponentType,
 )
 

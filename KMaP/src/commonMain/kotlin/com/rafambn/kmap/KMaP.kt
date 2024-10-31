@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
@@ -16,11 +17,11 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import com.rafambn.kmap.core.CanvasParameters
-import com.rafambn.kmap.core.ClusterData
+import com.rafambn.kmap.core.ClusterParameters
 import com.rafambn.kmap.core.Component
 import com.rafambn.kmap.core.ComponentType
 import com.rafambn.kmap.core.MapComponentInfo
-import com.rafambn.kmap.core.MarkerData
+import com.rafambn.kmap.core.MarkerParameters
 import com.rafambn.kmap.core.MotionController
 import com.rafambn.kmap.core.TileCanvas
 import com.rafambn.kmap.core.componentInfo
@@ -36,7 +37,7 @@ fun KMaP(
     canvasGestureListener: DefaultCanvasGestureListener = DefaultCanvasGestureListener(),
     content: KMaPScope.() -> Unit
 ) {
-    val kmapContent = KMaPContent(content) //TODO fix this code to prevent unnecessary recompositions
+    val kmapContent = remember { KMaPContent(content) } //TODO fix this code to prevent unnecessary recompositions
     // and allow recomposition from changes in the KMaPScope
     val density = LocalDensity.current
     LaunchedEffect(Unit) {
@@ -50,8 +51,13 @@ fun KMaP(
         content = {
             kmapContent.visibleMarkers.forEach {
                 Layout(
-                    content = { it.second.invoke(it.first) },
-                    modifier = Modifier.Companion.componentInfo(MapComponentInfo(it.first, ComponentType.MARKER)),
+                    content = { it.markerContent.invoke(it.markerParameters) },
+                    modifier = Modifier.Companion.componentInfo(
+                        MapComponentInfo(
+                            it.markerParameters, it.placementOffset, ComponentType
+                                .MARKER
+                        )
+                    ),
                     measurePolicy = { measurables, constraints ->
                         if (measurables.isEmpty())
                             return@Layout layout(0, 0) {}
@@ -74,8 +80,8 @@ fun KMaP(
             }
             kmapContent.visibleClusters.forEach {
                 Layout(
-                    content = { it.second.invoke(it.first) },
-                    modifier = Modifier.componentInfo(MapComponentInfo(it.first, ComponentType.CLUSTER)),
+                    content = { it.clusterContent.invoke(it.clusterParameters, it.size) },
+                    modifier = Modifier.componentInfo(MapComponentInfo(it.clusterParameters, it.placementOffset, ComponentType.CLUSTER)),
                     measurePolicy = { measurables, constraints ->
                         if (measurables.isEmpty())
                             return@Layout layout(0, 0) {}
@@ -100,7 +106,7 @@ fun KMaP(
                 Layout(
                     content = {
                         TileCanvas(
-                            it.second,
+                            it.getTile,
                             mapState.magnifierScale,
                             mapState.angleDegrees.toFloat(),
                             mapState.canvasSize / 2F,
@@ -112,7 +118,7 @@ fun KMaP(
                     },
                     modifier = Modifier
                         .fillMaxSize()
-                        .componentInfo(MapComponentInfo(it.first, ComponentType.CANVAS)),
+                        .componentInfo(MapComponentInfo(it.canvasParameters, Offset.Zero, ComponentType.CANVAS)),
                     measurePolicy = { measurables, constraints ->
                         val placeable = measurables.first().measure(constraints)
                         layout(placeable.width, placeable.height) {
@@ -154,15 +160,15 @@ fun KMaP(
     ) { measurables, constraints ->
         val canvasComponent = measurables
             .filter { it.componentInfo.type == ComponentType.CANVAS }
-            .map { Component(it.componentInfo.data, it.measure(constraints)) }
+            .map { Component(it.componentInfo.data, it.componentInfo.placementOffset, it.measure(constraints)) }
 
         val markersComponent = measurables
             .filter { it.componentInfo.type == ComponentType.MARKER }
-            .map { Component(it.componentInfo.data, it.measure(constraints)) }
+            .map { Component(it.componentInfo.data, it.componentInfo.placementOffset, it.measure(constraints)) }
 
         val clusterComponent = measurables
             .filter { it.componentInfo.type == ComponentType.CLUSTER }
-            .map { Component(it.componentInfo.data, it.measure(constraints)) }
+            .map { Component(it.componentInfo.data, it.componentInfo.placementOffset, it.measure(constraints)) }
 
         layout(constraints.maxWidth, constraints.maxHeight) {
             canvasComponent.forEach {
@@ -176,15 +182,16 @@ fun KMaP(
                 }
             }
             markersComponent.forEach {
-                val componentData = it.data as MarkerData
+                val componentData = it.data as MarkerParameters
+                val componentOffset = it.placementOffset
                 it.placeable.placeWithLayer(
                     x = 0,
                     y = 0,
                     zIndex = componentData.zIndex
                 ) {
                     alpha = componentData.alpha
-                    translationX = componentData.placementOffset.x - componentData.drawPosition.x * it.placeable.width
-                    translationY = componentData.placementOffset.y - componentData.drawPosition.y * it.placeable.height
+                    translationX = componentOffset.x - componentData.drawPosition.x * it.placeable.width
+                    translationY = componentOffset.y - componentData.drawPosition.y * it.placeable.height
                     transformOrigin = TransformOrigin(componentData.drawPosition.x, componentData.drawPosition.y)
                     if (componentData.scaleWithMap) {
                         scaleX = 2F.pow(mapState.zoom - componentData.zoomToFix)
@@ -198,15 +205,16 @@ fun KMaP(
                 }
             }
             clusterComponent.forEach {
-                val componentData = it.data as ClusterData
+                val componentData = it.data as ClusterParameters
+                val componentOffset = it.placementOffset
                 it.placeable.placeWithLayer(
                     x = 0,
                     y = 0,
                     zIndex = componentData.zIndex
                 ) {
                     alpha = componentData.alpha
-                    translationX = componentData.placementOffset.x - componentData.drawPosition.x * it.placeable.width
-                    translationY = componentData.placementOffset.y - componentData.drawPosition.y * it.placeable.height
+                    translationX = componentOffset.x - componentData.drawPosition.x * it.placeable.width
+                    translationY = componentOffset.y - componentData.drawPosition.y * it.placeable.height
                     transformOrigin = TransformOrigin(componentData.drawPosition.x, componentData.drawPosition.y)
                     rotationZ =
                         if (componentData.rotateWithMap)

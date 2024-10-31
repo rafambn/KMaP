@@ -71,11 +71,11 @@ fun MarkerMapRoot(
                 )
             }
         }
-//        Image(
-//            imageVector = vectorResource(Res.drawable.back_arrow),
-//            contentDescription = "",
-//            modifier = Modifier.clickable { navigateBack() }
-//                .size(70.dp)
-//        )
+        Image(
+            imageVector = vectorResource(Res.drawable.back_arrow),
+            contentDescription = "",
+            modifier = Modifier.clickable { navigateBack() }
+                .size(70.dp)
+        )
     }
 }

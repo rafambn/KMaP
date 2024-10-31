@@ -62,4 +62,4 @@ data class ResultTile(val tile: Tile?, val result: TileResult)
 enum class TileResult {
     SUCCESS,
     FAILURE
-}
+} //TODO simplify this

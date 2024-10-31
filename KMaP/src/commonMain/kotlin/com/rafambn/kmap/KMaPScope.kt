@@ -3,46 +3,45 @@ package com.rafambn.kmap
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Dp
+import com.rafambn.kmap.core.Canvas
 import com.rafambn.kmap.core.CanvasParameters
-import com.rafambn.kmap.core.ClusterData
+import com.rafambn.kmap.core.Cluster
+import com.rafambn.kmap.core.ClusterComponent
 import com.rafambn.kmap.core.ClusterParameters
-import com.rafambn.kmap.core.MarkerData
+import com.rafambn.kmap.core.Marker
+import com.rafambn.kmap.core.MarkerComponent
 import com.rafambn.kmap.core.MarkerParameters
 import com.rafambn.kmap.core.state.MapState
 import com.rafambn.kmap.model.ResultTile
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-typealias Marker = Pair<MarkerParameters, @Composable (MarkerData) -> Unit>
-typealias MarkerOutput = Pair<MarkerData, @Composable (MarkerData) -> Unit>
-typealias Cluster = Pair<ClusterParameters, @Composable (ClusterData) -> Unit>
-typealias ClusterOutput = Pair<ClusterData, @Composable (ClusterData) -> Unit>
-typealias Canvas = Pair<CanvasParameters, suspend (zoom: Int, row: Int, column: Int) -> ResultTile>
-
 class KMaPContent(
     content: KMaPScope.() -> Unit,
 ) : KMaPScope {
     private var mapState: MapState? = null
-    private val markers = mutableListOf<Marker>()
-    private val clusters = mutableListOf<Cluster>()
+    private val markers = mutableListOf<MarkerComponent>()
+    private val clusters = mutableListOf<ClusterComponent>()
     val visibleCanvas = mutableListOf<Canvas>()
-    val visibleMarkers = mutableListOf<MarkerOutput>()
-    val visibleClusters = mutableListOf<ClusterOutput>()
+    val visibleMarkers = mutableListOf<Marker>()
+    val visibleClusters = mutableListOf<Cluster>()
 
     init {
         apply(content)
     }
 
-    override fun markers(markerParameters: List<MarkerParameters>, markerContent: @Composable (MarkerData) -> Unit) {
-        markers += markerParameters.map { it to markerContent }
+    override fun markers(markerParameters: List<MarkerParameters>, markerContent: @Composable (MarkerParameters) -> Unit) {
+        markerParameters.forEach {
+            markers.add(MarkerComponent(it, markerContent))
+        }
     }
 
     override fun canvas(canvasParameters: CanvasParameters, tileSource: suspend (zoom: Int, row: Int, column: Int) -> ResultTile) {
-        visibleCanvas += canvasParameters to tileSource
+        visibleCanvas.add(Canvas(canvasParameters, tileSource))
     }
 
-    override fun cluster(clusterParameters: ClusterParameters, clusterContent: @Composable (ClusterData) -> Unit) {
-        clusters += clusterParameters to clusterContent
+    override fun cluster(clusterParameters: ClusterParameters, clusterContent: @Composable (ClusterParameters, size: Int) -> Unit) {
+        clusters.add(ClusterComponent(clusterParameters, clusterContent))
     }
 
     fun updateCluster() {
@@ -53,26 +52,25 @@ class KMaPContent(
         visibleMarkers.clear()
         visibleClusters.clear()
         //show markers that do not map to clusters
-        val clusterTags = clusters.map { it.first.tag }
+        val clusterTags = clusters.map { it.clusterParameters.tag }
         val markersPositions = markers.mapNotNull {
-            val markerData = it.first.toMarkerData(
-                with(mapState!!) {
-                    it.first.coordinates.toCanvasPosition().toScreenOffset()
-                }
-            )
-            if (clusterTags.contains(it.first.tag))
-                Pair(markerData, it.second)
+            val markerData = it
+            val markerPlacemente = with(mapState!!) {
+                it.markerParameters.coordinates.toCanvasPosition().toScreenOffset()
+            }
+            if (clusterTags.contains(it.markerParameters.tag))
+                Marker(markerData.markerParameters, markerPlacemente, markerData.markerContent)
             else {
-                visibleMarkers.add(Pair(markerData, it.second))
+                visibleMarkers.add(Marker(markerData.markerParameters, markerPlacemente, markerData.markerContent))
                 null
             }
         }
 
         //for each cluster tag calculate the visible markers and clusters
         clusterTags.forEach { tag ->
-            val markerWithTag = markersPositions.filter { it.first.tag == tag }
-            val currentCluster = clusters.find { it.first.tag == tag }!!
-            createClusters(markerWithTag, currentCluster.first.clusterThreshold, currentCluster).also { result ->
+            val markerWithTag = markersPositions.filter { it.markerParameters.tag == tag }
+            val currentCluster = clusters.find { it.clusterParameters.tag == tag }!!
+            createClusters(markerWithTag, currentCluster).also { result ->
                 visibleClusters.addAll(result.first)
                 visibleMarkers.addAll(result.second)
             }
@@ -82,22 +80,27 @@ class KMaPContent(
     fun setMap(mapState: MapState) {
         this.mapState = mapState
         if (clusters.isEmpty() || markers.size < 2)
-            visibleMarkers.addAll(markers.map {
-                Pair(it.first.toMarkerData(
-                    with(mapState) {
-                        it.first.coordinates.toCanvasPosition().toScreenOffset()
-                    }
-                ), it.second)
-            })
+            visibleMarkers.addAll(
+                markers.map {
+                    Marker(
+                        it.markerParameters,
+                        with(mapState) { it.markerParameters.coordinates.toCanvasPosition().toScreenOffset() },
+                        it.markerContent
+                    )
+                }
+            )
     }
 }
 
 interface KMaPScope {
-    fun markers(markerParameters: List<MarkerParameters>, markerContent: @Composable (MarkerData) -> Unit)
+    fun markers(markerParameters: List<MarkerParameters>, markerContent: @Composable (MarkerParameters) -> Unit)
 
-    fun canvas(canvasParameters: CanvasParameters = CanvasParameters(), tileSource: suspend (zoom: Int, row: Int, column: Int) -> ResultTile)
+    fun canvas(
+        canvasParameters: CanvasParameters = CanvasParameters(),
+        tileSource: suspend (zoom: Int, row: Int, column: Int) -> ResultTile
+    )
 
-    fun cluster(clusterParameters: ClusterParameters, clusterContent: @Composable (ClusterData) -> Unit)
+    fun cluster(clusterParameters: ClusterParameters, clusterContent: @Composable (ClusterParameters, size: Int) -> Unit)
 }
 
 fun distance(point1: Offset, point2: Offset): Float {
@@ -107,22 +110,22 @@ fun distance(point1: Offset, point2: Offset): Float {
 }
 
 fun createClusters(
-    coordinates: List<MarkerOutput>,
-    threshold: Dp,
-    originalCluster: Cluster
-): Pair<List<ClusterOutput>, List<MarkerOutput>> {
-    val clusters = mutableListOf<ClusterOutput>()
-    val visited = mutableSetOf<MarkerOutput>()
-    val noise = mutableListOf<MarkerOutput>()
+    coordinates: List<Marker>,
+    originalCluster: ClusterComponent
+): Pair<List<Cluster>, List<Marker>> {
+    val threshold = originalCluster.clusterParameters.clusterThreshold.value
+    val clusters = mutableListOf<Cluster>()
+    val visited = mutableSetOf<Marker>()
+    val noise = mutableListOf<Marker>()
 
     for (coord in coordinates) {
         if (coord !in visited) {
             visited.add(coord)
             val neighbors = coordinates.filter {
                 distance(
-                    it.first.placementOffset,
-                    coord.first.placementOffset
-                ) <= threshold.value && !visited.contains(it)
+                    it.placementOffset,
+                    coord.placementOffset
+                ) <= threshold && !visited.contains(it)
             }
             if (neighbors.isNotEmpty())
                 expandCluster(coord, neighbors, clusters, visited, originalCluster)
@@ -134,25 +137,27 @@ fun createClusters(
 }
 
 private fun expandCluster(
-    coord: MarkerOutput,
-    neighbors: List<MarkerOutput>,
-    cluster: MutableList<ClusterOutput>,
-    visited: MutableSet<MarkerOutput>,
-    originalCluster: Cluster
+    coord: Marker,
+    neighbors: List<Marker>,
+    cluster: MutableList<Cluster>,
+    visited: MutableSet<Marker>,
+    originalCluster: ClusterComponent
 ) {
     var size = 1
-    var avgOffset = coord.first.placementOffset
+    var avgOffset = coord.placementOffset
     val queue = neighbors.toMutableList()
     while (queue.isNotEmpty()) {
         val current = queue.removeAt(0)
         visited.add(current)
         size++
-        avgOffset += current.first.placementOffset
+        avgOffset += current.placementOffset
     }
     cluster.add(
-        Pair(
-            originalCluster.first.toClusterData(avgOffset / size.toFloat(), size),
-            originalCluster.second
+        Cluster(
+            originalCluster.clusterParameters,
+            avgOffset / size.toFloat(),
+            size,
+            originalCluster.clusterContent
         )
     )
 }
