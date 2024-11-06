@@ -1,4 +1,4 @@
-package org.company.app.theme
+package com.rafambn.kmap.theme
 
 import androidx.compose.runtime.Composable
 
