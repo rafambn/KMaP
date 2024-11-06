@@ -1,4 +1,4 @@
-package com.rafambn.kmap.config.customSources
+package com.rafambn.kmap.customSources
 
 import com.rafambn.kmap.config.MapProperties
 import com.rafambn.kmap.config.border.BoundMapBorder

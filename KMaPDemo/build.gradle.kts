@@ -11,6 +11,7 @@ plugins {
 }
 
 kotlin {
+    jvmToolchain(21)
     androidTarget {
         compilations.all {
             compileTaskProvider {
@@ -63,51 +64,42 @@ kotlin {
             implementation(libs.androidx.navigation.composee)
             implementation(libs.kotlinx.serialization.json)
             implementation(project(":KMaP"))
+            implementation(libs.ktor.client.core)
         }
-
         androidMain.dependencies {
             implementation(libs.androidx.appcompat)
             implementation(libs.androidx.activityCompose)
             implementation(libs.compose.uitooling)
+            implementation(libs.ktor.client.okhttp)
         }
-
         jvmMain.dependencies {
             implementation(compose.desktop.common)
             implementation(compose.desktop.currentOs)
+            implementation(libs.ktor.client.okhttp)
+            implementation(libs.logback.classic)
         }
-
+        iosMain.dependencies {
+            implementation(libs.ktor.client.darwin)
+        }
         jsMain.dependencies {
             implementation(compose.html.core)
+            implementation(libs.ktor.client.js)
         }
+
     }
 }
 
 android {
     namespace = "com.rafambn.kmapdemo"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
 
         applicationId = "com.rafambn.kmapdemo"
         versionCode = 1
         versionName = "1.0.0"
-    }
-    sourceSets["main"].apply {
-        manifest.srcFile("src/androidMain/AndroidManifest.xml")
-        res.srcDirs("src/androidMain/resources")
-        resources.srcDirs("src/commonMain/resources")
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    buildFeatures {
-        compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.11"
     }
 }
 

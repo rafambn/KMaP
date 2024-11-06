@@ -1,4 +1,4 @@
-package com.rafambn.kmap.config.customSources
+package com.rafambn.kmap.customSources
 
 import androidx.compose.ui.graphics.ImageBitmap
 import com.rafambn.kmap.config.characteristics.TileSource
@@ -7,7 +7,6 @@ import com.rafambn.kmap.model.Tile
 import com.rafambn.kmap.model.TileResult
 import com.rafambn.kmap.utils.loopInZoom
 import io.ktor.client.HttpClient
-import io.ktor.client.plugins.UserAgent
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.readBytes

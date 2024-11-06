@@ -12,6 +12,7 @@ group = "com.rafambn.kmap"
 version = "0.1.0"
 
 kotlin {
+    jvmToolchain(21)
     androidTarget {
         compilations.all {
             compileTaskProvider {
@@ -57,21 +58,6 @@ kotlin {
             implementation(compose.material3)
             implementation(compose.components.resources)
             implementation(libs.kotlinx.coroutines.core)
-            implementation(libs.ktor.client.core)
-        }
-
-        androidMain.dependencies {
-            implementation(libs.ktor.client.okhttp)
-        }
-        jvmMain.dependencies {
-            implementation(libs.ktor.client.okhttp)
-            implementation(libs.logback.classic)
-        }
-        iosMain.dependencies {
-            implementation(libs.ktor.client.darwin)
-        }
-        jsMain.dependencies {
-            implementation(libs.ktor.client.js)
         }
     }
 
