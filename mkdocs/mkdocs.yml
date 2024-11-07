@@ -1,5 +1,5 @@
 site_name: KMaP
-site_url: https://kmap.rafambn.com
+site_url: https://kmap.rafambn.com/
 site_description: Flexible and powerful mapping library for Compose Multiplatform
 repo_name: rafambn/KMaP
 repo_url: https://github.com/rafambn/KMaP
@@ -46,3 +46,4 @@ nav:
   - Setup: setup.md
   - Usage: usage.md
   - Upcoming: upcoming.md
+  - KMaP Demo App: kmapdemo/index.html

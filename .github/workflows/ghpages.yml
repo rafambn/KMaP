@@ -26,4 +26,5 @@ jobs:
           restore-keys: |
             mkdocs-material-
       - run: pip install mkdocs-material
+      - run: ./gradlew wasmJsBrowserDistribution
       - run: cd mkdocs && mkdocs gh-deploy --force
