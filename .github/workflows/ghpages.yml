@@ -26,5 +26,7 @@ jobs:
           restore-keys: |
             mkdocs-material-
       - run: pip install mkdocs-material
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
       - run: ./gradlew wasmJsBrowserDistribution
       - run: cd mkdocs && mkdocs gh-deploy --force
