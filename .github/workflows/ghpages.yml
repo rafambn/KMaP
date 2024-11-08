@@ -10,27 +10,40 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Configure Git Credentials
-        run: |
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-      - uses: actions/setup-python@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: 3.x
-      - uses: actions/setup-java@v3
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
-      - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
-      - uses: actions/cache@v4
+
+      - name: Get cache ID
+        run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
+
+      - name: Cache mkdocs dependencies
+        uses: actions/cache@v4
+        id: cache_id
         with:
           key: mkdocs-material-${{ env.cache_id }}
-          path: .cache
-          restore-keys: |
-            mkdocs-material-
-      - run: pip install mkdocs-material
+          path: |
+            ~/.cache/pip
+            .cache
+
+      - name: Install dependencies
+        run: pip install mkdocs-material
+
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
-      - run: ./gradlew wasmJsBrowserDistribution
-      - run: cd mkdocs && mkdocs gh-deploy --force
+
+      - name: Build project
+        run: ./gradlew wasmJsBrowserDistribution
+
+      - name: Deploy documentation
+        run: cd mkdocs && mkdocs gh-deploy --force
