@@ -10,6 +10,8 @@ hide: toc
   <img src="assets/KMaP-Logo.svg" alt="KMaP-Logo" width="200" height="200">
 </div>
 
+## Checkout the demo app on wasm target: [**KMaP Demo**](https://kmap.rafambn.com/kmapdemo/).
+
 ### Key Features
 
 - **Cross-Platform Compatibility**: Use a single KMaP Composable in your common code for a consistent user experience across all platforms.
