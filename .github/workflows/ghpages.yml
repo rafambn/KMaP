@@ -1,8 +1,7 @@
-name: ci
+name: Publish KMaP Documentation
 on:
   push:
     branches:
-      - master
       - main
 permissions:
   contents: write
@@ -37,7 +36,7 @@ jobs:
 
       - name: Deploy
         if: success()
-        uses: JamesIves/github-pages-deploy-action@releases/v4
+        uses: JamesIves/github-pages-deploy-action@releases/v3
         with:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
           BRANCH: gh-pages
