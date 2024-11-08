@@ -45,5 +45,11 @@ jobs:
       - name: Build project
         run: ./gradlew wasmJsBrowserDistribution
 
-      - name: Deploy documentation
-        run: cd mkdocs && mkdocs gh-deploy --force
+      - name: Deploy 🚀
+        if: success()
+        uses: JamesIves/github-pages-deploy-action@releases/v3
+        with:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+          BRANCH: gh-pages
+          FOLDER: site
+          SINGLE_COMMIT: true
