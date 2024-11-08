@@ -24,29 +24,16 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Get cache ID
-        run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
-
-      - name: Cache mkdocs dependencies
-        uses: actions/cache@v4
-        id: cache_id
-        with:
-          key: mkdocs-material-${{ env.cache_id }}
-          path: |
-            ~/.cache/pip
-            .cache
-
-      - name: Install dependencies
-        run: pip install mkdocs-material
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x ./gradlew
-
-      - name: Build project
-        run: ./gradlew wasmJsBrowserDistribution
+      - name: Build KMaP Wasm target
+        run: | 
+          chmod +x ./gradlew 
+          ./gradlew wasmJsBrowserDistribution
 
       - name: Build MkDocs
-        run: mkdocs build
+        run: |
+          pip install mkdocs-material
+          cd mkdocs 
+          mkdocs build
 
       - name: Deploy
         if: success()
