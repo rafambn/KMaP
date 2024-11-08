@@ -45,11 +45,14 @@ jobs:
       - name: Build project
         run: ./gradlew wasmJsBrowserDistribution
 
-      - name: Deploy 🚀
+      - name: Build MkDocs
+        run: mkdocs build
+
+      - name: Deploy
         if: success()
-        uses: JamesIves/github-pages-deploy-action@releases/v3
+        uses: JamesIves/github-pages-deploy-action@releases/v4
         with:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
           BRANCH: gh-pages
-          FOLDER: site
+          FOLDER: mkdocs/site
           SINGLE_COMMIT: true
