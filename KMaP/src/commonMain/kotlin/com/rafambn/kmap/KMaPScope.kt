@@ -74,7 +74,7 @@ class KMaPContent(
 }
 
 interface KMaPScope {
-    fun markers(markerParameters: List<MarkerParameters>, markerContent: @Composable (MarkerParameters) -> Unit)
+    fun markers(markerParameters: List<MarkerParameters>, markerContent: @Composable (MarkerParameters) -> Unit)//TODO add function to single marker
 
     fun canvas(
         canvasParameters: CanvasParameters = CanvasParameters(),

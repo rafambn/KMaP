@@ -20,7 +20,7 @@ import com.rafambn.kmap.theme.AppTheme
 
 
 @Composable
- fun App() = AppTheme {
+fun App() = AppTheme {
     Surface(modifier = Modifier.fillMaxSize()) {
         val navigationController = rememberNavController()
         NavHost(
@@ -43,7 +43,7 @@ import com.rafambn.kmap.theme.AppTheme
                 StartRoot(
                     navigateSimpleMap = { navigationController.navigate(Routes.SimpleMap) },
                     navigateLayers = { navigationController.navigate(Routes.LayerMap) },
-                    navigateMarkers = {navigationController.navigate(Routes.MarkersMap) },
+                    navigateMarkers = { navigationController.navigate(Routes.MarkersMap) },
                     navigatePath = {},
                     navigateAnimation = {},
                     navigateOSM = {},

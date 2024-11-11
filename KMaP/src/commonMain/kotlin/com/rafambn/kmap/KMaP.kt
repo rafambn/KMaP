@@ -37,7 +37,9 @@ fun KMaP(
     canvasGestureListener: DefaultCanvasGestureListener = DefaultCanvasGestureListener(),
     content: KMaPScope.() -> Unit
 ) {
-    val kmapContent = remember(content) { KMaPContent(content) }//TODO improve this code to prevent unnecessary recompositions
+    val kmapContent = remember(content) {
+        println("teste")
+        KMaPContent(content) }//TODO improve this code to prevent unnecessary recompositions
     val density = LocalDensity.current
     LaunchedEffect(Unit) {
         motionController.setMap(mapState)
