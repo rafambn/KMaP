@@ -10,6 +10,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.readBytes
+import io.ktor.client.statement.readRawBytes
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.decodeToImageBitmap
 
@@ -20,8 +21,8 @@ class OSMTileSource(private val userAgent: String) : TileSource {
         val imageBitmap: ImageBitmap
         try {
             val byteArray = client.get("https://tile.openstreetmap.org/${zoom}/${row.loopInZoom(zoom)}/${column.loopInZoom(zoom)}.png") {
-                header("User-Agent", userAgent)
-            }.readBytes() //TODO(4) improve loopInZoom
+                        header("User-Agent", userAgent)
+                    }.readRawBytes() //TODO(4) improve loopInZoom
             imageBitmap = byteArray.decodeToImageBitmap()
             return ResultTile(Tile(zoom, row, column, imageBitmap), TileResult.SUCCESS)
         } catch (ex: Exception) {
