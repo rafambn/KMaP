@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
@@ -37,15 +38,15 @@ fun KMaP(
     canvasGestureListener: DefaultCanvasGestureListener = DefaultCanvasGestureListener(),
     content: KMaPScope.() -> Unit
 ) {
-    val kmapContent = remember(content) {
-        println("teste")
-        KMaPContent(content) }//TODO improve this code to prevent unnecessary recompositions
     val density = LocalDensity.current
     LaunchedEffect(Unit) {
         motionController.setMap(mapState)
         canvasGestureListener.setMotionController(motionController)
         mapState.setDensity(density)
     }
+    //TODO improve this code to prevent unnecessary recompositions
+    val latest = rememberUpdatedState(content)
+    val kmapContent = remember(latest.value) { KMaPContent(content) }
     kmapContent.updateCluster(mapState)
     Layout(
         content = {
@@ -54,8 +55,7 @@ fun KMaP(
                     content = { it.markerContent.invoke(it.markerParameters) },
                     modifier = Modifier.Companion.componentInfo(
                         MapComponentInfo(
-                            it.markerParameters, it.placementOffset, ComponentType
-                                .MARKER
+                            it.markerParameters, it.placementOffset, ComponentType.MARKER
                         )
                     ),
                     measurePolicy = { measurables, constraints ->

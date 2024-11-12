@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.DefaultCanvasGestureListener
 import com.rafambn.kmap.KMaP
+import com.rafambn.kmap.canvas
 import com.rafambn.kmap.config.MapProperties
 import com.rafambn.kmap.config.border.BoundMapBorder
 import com.rafambn.kmap.config.border.MapBorderType
