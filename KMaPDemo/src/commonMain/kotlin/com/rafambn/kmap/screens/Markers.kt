@@ -41,7 +41,16 @@ fun MarkerMapRoot(
     Box {
         val motionController = rememberMotionController()
         val mapState = rememberMapState(mapProperties = SimpleMapProperties())
-        val markersList = remember { mutableStateListOf<MarkerParameters>() }
+        val markersList = remember {
+            mutableStateListOf(
+                MarkerParameters(
+                    ProjectedCoordinates(90.0, 0.0),
+                    drawPosition = DrawPosition.TOP_RIGHT,
+                    scaleWithMap = false,
+                    tag = "Removable marker"
+                )
+            )
+        }
         println("newState ${markersList.size}")
         KMaP(
             modifier = Modifier.align(Alignment.Center).fillMaxSize(),

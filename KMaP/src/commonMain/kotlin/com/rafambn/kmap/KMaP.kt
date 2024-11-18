@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
@@ -36,7 +34,7 @@ fun KMaP(
     motionController: MotionController,
     mapState: MapState,
     canvasGestureListener: DefaultCanvasGestureListener = DefaultCanvasGestureListener(),
-    content: KMaPScope.() -> Unit
+    content: KMaPScope.() -> Unit //TODO understand why this reference doesnt change for markers map
 ) {
     val density = LocalDensity.current
     LaunchedEffect(Unit) {
@@ -45,8 +43,7 @@ fun KMaP(
         mapState.setDensity(density)
     }
     //TODO improve this code to prevent unnecessary recompositions
-    val latest = rememberUpdatedState(content)
-    val kmapContent = remember(latest.value) { KMaPContent(content) }
+    val kmapContent = KMaPContent(content)
     kmapContent.updateCluster(mapState)
     Layout(
         content = {
