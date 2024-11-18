@@ -20,4 +20,7 @@ sealed interface Routes {
 
     @Serializable
     data object Animation
+
+    @Serializable
+    data object OSMRemote
 }

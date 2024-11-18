@@ -15,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import com.rafambn.kmap.screens.AnimationScreen
 import com.rafambn.kmap.screens.LayersScreen
 import com.rafambn.kmap.screens.MarkersScreen
+import com.rafambn.kmap.screens.OSMRemoteScreen
 import com.rafambn.kmap.screens.PathScreen
 import com.rafambn.kmap.screens.SimpleMapScreen
 import com.rafambn.kmap.screens.StartScreen
@@ -48,7 +49,7 @@ fun App() = AppTheme {
                     navigateMarkers = { navigationController.navigate(Routes.Markers) },
                     navigatePath = { navigationController.navigate(Routes.Path) },
                     navigateAnimation = { navigationController.navigate(Routes.Animation) },
-                    navigateOSM = {},
+                    navigateOSM = {  navigationController.navigate(Routes.OSMRemote)},
                     navigateClustering = {},
                     navigateWidgets = {}
                 )
@@ -75,6 +76,11 @@ fun App() = AppTheme {
             }
             composable<Routes.Animation> {
                 AnimationScreen(
+                    navigateBack = { navigationController.popBackStack() }
+                )
+            }
+            composable<Routes.OSMRemote> {
+                OSMRemoteScreen(
                     navigateBack = { navigationController.popBackStack() }
                 )
             }
