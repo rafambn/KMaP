@@ -7,11 +7,14 @@ sealed interface Routes {
     data object Start
 
     @Serializable
-    data object SimpleMap
+    data object Simple
 
     @Serializable
-    data object LayerMap
+    data object Layers
 
     @Serializable
-    data object MarkersMap
+    data object Markers
+
+    @Serializable
+    data object Path
 }

@@ -33,7 +33,7 @@ import org.jetbrains.compose.resources.decodeToImageBitmap
 import org.jetbrains.compose.resources.vectorResource
 
 @Composable
-fun SimpleMapRoot(
+fun SimpleMapScreen(
     navigateBack: () -> Unit
 ) {
     val motionController = rememberMotionController()

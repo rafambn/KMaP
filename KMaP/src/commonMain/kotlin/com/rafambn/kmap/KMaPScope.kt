@@ -9,7 +9,7 @@ import com.rafambn.kmap.core.MarkerComponent
 import com.rafambn.kmap.core.MarkerParameters
 import com.rafambn.kmap.model.ResultTile
 
-interface KMaPScope
+interface KMaPScope //TODO brainStorm a path api
 
 inline fun KMaPScope.cluster(
     clusterParameters: ClusterParameters,

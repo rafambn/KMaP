@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 
 @Composable
-fun StartRoot(
+fun StartScreen(
     navigateSimpleMap: () -> Unit,
     navigateLayers: () -> Unit,
     navigateMarkers: () -> Unit,

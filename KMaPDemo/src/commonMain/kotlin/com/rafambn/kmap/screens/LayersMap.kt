@@ -31,7 +31,7 @@ import org.jetbrains.compose.resources.decodeToImageBitmap
 import org.jetbrains.compose.resources.vectorResource
 
 @Composable
-fun LayerMapRoot(
+fun LayersScreen(
     navigateBack: () -> Unit
 ) {
     Box {

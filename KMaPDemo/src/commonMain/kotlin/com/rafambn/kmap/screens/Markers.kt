@@ -37,7 +37,7 @@ import org.jetbrains.compose.resources.vectorResource
 import kotlin.random.Random
 
 @Composable
-fun MarkerMapRoot(
+fun MarkersScreen(
     navigateBack: () -> Unit
 ) {
     Box {

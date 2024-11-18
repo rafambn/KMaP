@@ -12,10 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.rafambn.kmap.screens.LayerMapRoot
-import com.rafambn.kmap.screens.MarkerMapRoot
-import com.rafambn.kmap.screens.SimpleMapRoot
-import com.rafambn.kmap.screens.StartRoot
+import com.rafambn.kmap.screens.LayersScreen
+import com.rafambn.kmap.screens.MarkersScreen
+import com.rafambn.kmap.screens.PathScreen
+import com.rafambn.kmap.screens.SimpleMapScreen
+import com.rafambn.kmap.screens.StartScreen
 import com.rafambn.kmap.theme.AppTheme
 
 
@@ -40,29 +41,34 @@ fun App() = AppTheme {
             }
         ) {
             composable<Routes.Start> {
-                StartRoot(
-                    navigateSimpleMap = { navigationController.navigate(Routes.SimpleMap) },
-                    navigateLayers = { navigationController.navigate(Routes.LayerMap) },
-                    navigateMarkers = { navigationController.navigate(Routes.MarkersMap) },
-                    navigatePath = {},
+                StartScreen(
+                    navigateSimpleMap = { navigationController.navigate(Routes.Simple) },
+                    navigateLayers = { navigationController.navigate(Routes.Layers) },
+                    navigateMarkers = { navigationController.navigate(Routes.Markers) },
+                    navigatePath = { navigationController.navigate(Routes.Path) },
                     navigateAnimation = {},
                     navigateOSM = {},
                     navigateClustering = {},
                     navigateWidgets = {}
                 )
             }
-            composable<Routes.SimpleMap> {
-                SimpleMapRoot(
+            composable<Routes.Simple> {
+                SimpleMapScreen(
                     navigateBack = { navigationController.popBackStack() }
                 )
             }
-            composable<Routes.LayerMap> {
-                LayerMapRoot(
+            composable<Routes.Layers> {
+                LayersScreen(
                     navigateBack = { navigationController.popBackStack() }
                 )
             }
-            composable<Routes.MarkersMap> {
-                MarkerMapRoot(
+            composable<Routes.Markers> {
+                MarkersScreen(
+                    navigateBack = { navigationController.popBackStack() }
+                )
+            }
+            composable<Routes.Path> {
+                PathScreen(
                     navigateBack = { navigationController.popBackStack() }
                 )
             }
