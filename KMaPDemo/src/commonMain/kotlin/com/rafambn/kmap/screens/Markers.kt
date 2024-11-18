@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,17 +43,8 @@ fun MarkerMapRoot(
     Box {
         val motionController = rememberMotionController()
         val mapState = rememberMapState(mapProperties = SimpleMapProperties())
-        val markersList = remember {
-            mutableStateListOf(
-                MarkerParameters(
-                    ProjectedCoordinates(90.0, 0.0),
-                    drawPosition = DrawPosition.TOP_RIGHT,
-                    scaleWithMap = false,
-                    tag = "Removable marker"
-                )
-            )
-        }
-        println("newState ${markersList.size}")
+        val markersList = remember { mutableStateListOf<MarkerParameters>() }
+        var draggableMarkerPos by remember { mutableStateOf(ProjectedCoordinates(90.0, -20.0)) }
         KMaP(
             modifier = Modifier.align(Alignment.Center).fillMaxSize(),
             motionController = motionController,
@@ -147,6 +140,36 @@ fun MarkerMapRoot(
                         .size(32.dp)
                 )
             }
+//            marker(//TODO add when pointer events in canvas are improved
+//                MarkerParameters(
+//                    draggableMarkerPos,
+//                    drawPosition = DrawPosition.TOP_RIGHT,
+//                    tag = "Draggable marker"
+//                )
+//            ) {
+//                Text(
+//                    text = "Draggable marker",
+//                    modifier = Modifier
+//                        .background(Color.Black)
+//                        .padding(16.dp)
+//                        .pointerInput(Unit) {
+//                            detectDragGestures { change, dragAmount ->
+//                                change.consume()
+//                                val canvasDelta: CanvasPosition
+//                                with(mapState) {
+//                                    canvasDelta = dragAmount.fromDifferentialScreenOffsetToCanvasPosition()
+//                                }
+//                                val coordinatesDelta: ProjectedCoordinates = SimpleMapProperties().toProjectedCoordinates(canvasDelta)
+//                                draggableMarkerPos = ProjectedCoordinates(
+//                                    draggableMarkerPos.horizontal - coordinatesDelta.horizontal,
+//                                    draggableMarkerPos.vertical - coordinatesDelta.vertical
+//                                )
+//                                //TODO fix coordinate system
+//                            }
+//                        },
+//                    color = Color.White
+//                )
+//            }
         }
         Button(
             onClick = {
@@ -158,7 +181,6 @@ fun MarkerMapRoot(
                         tag = "Removable marker"
                     )
                 )
-                println("bottom clicked")
             },
             modifier = Modifier.align(Alignment.TopEnd),
         ) {

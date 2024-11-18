@@ -138,7 +138,7 @@ fun KMaP(
                     coordinates.size.height.toFloat()
                 )
             }
-            .pointerInput(PointerEventPass.Main) {
+            .pointerInput(PointerEventPass.Main) { //TODO add this to the canvas
                 detectMapGestures(
                     onTap = { offset -> canvasGestureListener.onTap(offset) },
                     onDoubleTap = { offset -> canvasGestureListener.onDoubleTap(offset) },
