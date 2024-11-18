@@ -17,4 +17,7 @@ sealed interface Routes {
 
     @Serializable
     data object Path
+
+    @Serializable
+    data object Animation
 }
