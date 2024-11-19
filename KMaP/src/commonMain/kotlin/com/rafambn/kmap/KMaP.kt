@@ -103,14 +103,15 @@ fun KMaP(
                 Layout(
                     content = {
                         TileCanvas(
-                            it.getTile,
-                            mapState.magnifierScale,
-                            mapState.angleDegrees.toFloat(),
-                            mapState.canvasSize / 2F,
-                            mapState.mapProperties.tileSize,
-                            mapState.drawReference,
-                            mapState.zoomLevel,
-                            mapState.visibleTiles
+                            getTile = it.getTile,
+                            magnifierScale = mapState.magnifierScale,
+                            rotationDegrees = mapState.angleDegrees.toFloat(),
+                            translation = mapState.canvasSize / 2F,
+                            tileSize = mapState.mapProperties.tileSize,
+                            positionOffset = mapState.drawReference,
+                            zoomLevel = mapState.zoomLevel,
+                            visibleTiles = mapState.visibleTiles,
+                            maxCacheTiles = it.canvasParameters.maxCacheTiles
                         )
                     },
                     modifier = Modifier

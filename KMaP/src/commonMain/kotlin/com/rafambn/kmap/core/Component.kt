@@ -23,7 +23,8 @@ data class MarkerParameters(
 data class CanvasParameters(
     val tag: String = "",
     val alpha: Float = 1F,
-    val zIndex: Float = 1F
+    val zIndex: Float = 1F,
+    val maxCacheTiles: Int = 20
 )
 
 data class ClusterParameters(

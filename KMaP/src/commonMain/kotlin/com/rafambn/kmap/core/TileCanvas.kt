@@ -32,7 +32,7 @@ internal fun TileCanvas(
     zoomLevel: Int,
     visibleTiles: List<TileSpecs>,
     maxTries: Int = 2,
-    maxCacheTiles: Int = 100 //TODO add options for the user to control
+    maxCacheTiles: Int
 ) {
     val canvasState = remember { TileCanvasState(getTile, maxTries, maxCacheTiles) }
     canvasState.onStateChange(visibleTiles, zoomLevel)
