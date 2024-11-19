@@ -56,7 +56,6 @@ fun MarkersScreen(
                 MarkerParameters(
                     ProjectedCoordinates(-0.0, -0.0),
                     drawPosition = DrawPosition.TOP_RIGHT,
-                    scaleWithMap = false,
                     tag = "Fixed size"
                 )
             ) {
@@ -72,7 +71,6 @@ fun MarkersScreen(
                 MarkerParameters(
                     ProjectedCoordinates(-0.0, -10.0),
                     drawPosition = DrawPosition.TOP_RIGHT,
-                    scaleWithMap = true,
                     zoomToFix = 1F,
                     tag = "Scale with zoom"
                 )
@@ -89,7 +87,6 @@ fun MarkersScreen(
                 MarkerParameters(
                     ProjectedCoordinates(-0.0, 20.0),
                     drawPosition = DrawPosition.TOP_RIGHT,
-                    scaleWithMap = false,
                     rotateWithMap = true,
                     rotation = -45.0,
                     tag = "Rotate with map and custom start angle"
@@ -107,7 +104,6 @@ fun MarkersScreen(
                 MarkerParameters(
                     ProjectedCoordinates(-90.0, 0.0),
                     drawPosition = DrawPosition.TOP_RIGHT,
-                    scaleWithMap = false,
                     tag = "Clickable"
                 )
             ) {
@@ -177,7 +173,6 @@ fun MarkersScreen(
                     MarkerParameters(
                         ProjectedCoordinates(90.0, 0.0),
                         drawPosition = DrawPosition.TOP_RIGHT,
-                        scaleWithMap = false,
                         tag = "Removable marker"
                     )
                 )

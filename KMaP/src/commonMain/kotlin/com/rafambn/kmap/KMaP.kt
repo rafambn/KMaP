@@ -178,7 +178,7 @@ fun KMaP(
                     alpha = componentData.alpha
                 }
             }
-            markersComponent.forEach {
+            markersComponent.forEach { it ->
                 val componentData = it.data as MarkerParameters
                 val componentOffset = it.placementOffset
                 it.placeable.placeWithLayer(
@@ -190,9 +190,9 @@ fun KMaP(
                     translationX = componentOffset.x - componentData.drawPosition.x * it.placeable.width
                     translationY = componentOffset.y - componentData.drawPosition.y * it.placeable.height
                     transformOrigin = TransformOrigin(componentData.drawPosition.x, componentData.drawPosition.y)
-                    if (componentData.scaleWithMap) {
-                        scaleX = 2F.pow(mapState.zoom - componentData.zoomToFix)
-                        scaleY = 2F.pow(mapState.zoom - componentData.zoomToFix)
+                    componentData.zoomToFix?.let { zoom ->
+                        scaleX = 2F.pow(mapState.zoom - zoom)
+                        scaleY = 2F.pow(mapState.zoom - zoom)
                     }
                     rotationZ =
                         if (componentData.rotateWithMap)

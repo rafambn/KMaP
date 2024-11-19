@@ -15,8 +15,7 @@ data class MarkerParameters(
     val alpha: Float = 1F,
     val drawPosition: DrawPosition = DrawPosition.TOP_LEFT,
     val zIndex: Float = 2F,
-    val scaleWithMap: Boolean = false, // TODO join this variable
-    val zoomToFix: Float = 0F,//TODO
+    val zoomToFix: Float? = null,
     val rotateWithMap: Boolean = false,
     val rotation: Degrees = 0.0
 )
@@ -39,18 +38,18 @@ data class ClusterParameters(
 
 data class MarkerComponent(
     val markerParameters: MarkerParameters,
-    val markerContent: @Composable (MarkerParameters) -> Unit
+    val markerContent: @Composable (marker: MarkerParameters) -> Unit
 )
 
 data class ClusterComponent(
     val clusterParameters: ClusterParameters,
-    val clusterContent: @Composable (ClusterParameters, size: Int) -> Unit
+    val clusterContent: @Composable (cluster: ClusterParameters, size: Int) -> Unit
 )
 
 data class Marker(
     val markerParameters: MarkerParameters,
     val placementOffset: ScreenOffset,
-    val markerContent: @Composable (MarkerParameters) -> Unit
+    val markerContent: @Composable (marker: MarkerParameters) -> Unit
 )
 
 data class Canvas(
@@ -62,7 +61,7 @@ data class Cluster(
     val clusterParameters: ClusterParameters,
     val placementOffset: ScreenOffset,
     val size: Int,
-    val clusterContent: @Composable (ClusterParameters, size: Int) -> Unit
+    val clusterContent: @Composable (cluster: ClusterParameters, size: Int) -> Unit
 )
 
 data class Component(

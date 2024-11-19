@@ -11,36 +11,36 @@ import com.rafambn.kmap.model.ResultTile
 
 interface KMaPScope //TODO brainStorm a path api
 
-inline fun KMaPScope.cluster(
+fun KMaPScope.cluster(
     clusterParameters: ClusterParameters,
-    noinline clusterContent: @Composable (cluster: ClusterParameters, size: Int) -> Unit
+    clusterContent: @Composable (cluster: ClusterParameters, size: Int) -> Unit
 ) {
     if (this is KMaPContent) {
         clusters.add(ClusterComponent(clusterParameters, clusterContent))
     }
 }
 
-inline fun KMaPScope.canvas(
+fun KMaPScope.canvas(
     canvasParameters: CanvasParameters = CanvasParameters(),
-    noinline tileSource: suspend (zoom: Int, row: Int, column: Int) -> ResultTile
+    tileSource: suspend (zoom: Int, row: Int, column: Int) -> ResultTile
 ) {
     if (this is KMaPContent) {
         visibleCanvas.add(Canvas(canvasParameters, tileSource))
     }
 }
 
-inline fun KMaPScope.marker(
+fun KMaPScope.marker(
     markerParameters: MarkerParameters,
-    noinline markerContent: @Composable (marker: MarkerParameters) -> Unit
+    markerContent: @Composable (marker: MarkerParameters) -> Unit
 ) {
     if (this is KMaPContent) {
         markers.add(MarkerComponent(markerParameters, markerContent))
     }
 }
 
-inline fun KMaPScope.markers(
+fun KMaPScope.markers(
     markerParameters: MutableList<MarkerParameters>,
-    noinline markerContent: @Composable (marker: MarkerParameters) -> Unit
+    markerContent: @Composable (marker: MarkerParameters) -> Unit
 ) {
     if (this is KMaPContent) {
         markerParameters.forEach {
