@@ -11,6 +11,9 @@ import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.DefaultCanvasGestureListener
 import com.rafambn.kmap.KMaP
 import com.rafambn.kmap.canvas
+import com.rafambn.kmap.config.border.BoundMapBorder
+import com.rafambn.kmap.config.border.MapBorderType
+import com.rafambn.kmap.config.border.OutsideTilesType
 import com.rafambn.kmap.core.rememberMotionController
 import com.rafambn.kmap.core.state.rememberMapState
 import com.rafambn.kmap.customSources.OSMMapProperties
@@ -24,7 +27,12 @@ fun OSMRemoteScreen(
     navigateBack: () -> Unit
 ) {
     val motionController = rememberMotionController()
-    val mapState = rememberMapState(mapProperties = OSMMapProperties())
+    val mapState = rememberMapState(
+        mapProperties = OSMMapProperties(
+            boundMap = BoundMapBorder(horizontal = MapBorderType.LOOP, vertical = MapBorderType.LOOP),
+            outsideTiles = OutsideTilesType.LOOP
+        )
+    )
     Box {
         KMaP(
             modifier = Modifier.fillMaxSize(),

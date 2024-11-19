@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.core.state.TileCanvasState
-import com.rafambn.kmap.model.ResultTile
+import com.rafambn.kmap.model.TileRenderResult
 import com.rafambn.kmap.model.TileSpecs
 import com.rafambn.kmap.utils.offsets.CanvasDrawReference
 import com.rafambn.kmap.utils.toIntFloor
@@ -23,7 +23,7 @@ import kotlin.math.pow
 
 @Composable
 internal fun TileCanvas(
-    getTile: suspend (zoom: Int, row: Int, column: Int) -> ResultTile,
+    getTile: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult,
     magnifierScale: Float,
     rotationDegrees: Float,
     translation: Offset,

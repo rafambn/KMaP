@@ -22,9 +22,8 @@ import com.rafambn.kmap.config.characteristics.TileSource
 import com.rafambn.kmap.core.CanvasParameters
 import com.rafambn.kmap.core.rememberMotionController
 import com.rafambn.kmap.core.state.rememberMapState
-import com.rafambn.kmap.model.ResultTile
 import com.rafambn.kmap.model.Tile
-import com.rafambn.kmap.model.TileResult
+import com.rafambn.kmap.model.TileRenderResult
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import org.jetbrains.compose.resources.decodeToImageBitmap
@@ -70,10 +69,10 @@ fun LayersScreen(
 }
 
 class LayerMapTileSource : TileSource {
-    override suspend fun getTile(zoom: Int, row: Int, column: Int): ResultTile {
+    override suspend fun getTile(zoom: Int, row: Int, column: Int): TileRenderResult {
         val resourcePath = "drawable/map_overlay_${(row + column) % 2}.png"
         val bytes = Res.readBytes(resourcePath)
         val imageBitmap = bytes.decodeToImageBitmap()
-        return ResultTile(Tile(zoom, row, column, imageBitmap), TileResult.SUCCESS)
+        return TileRenderResult.Success(Tile(zoom, row, column, imageBitmap))
     }
 }

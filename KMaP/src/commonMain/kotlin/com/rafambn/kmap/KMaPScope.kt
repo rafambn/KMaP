@@ -7,7 +7,7 @@ import com.rafambn.kmap.core.ClusterComponent
 import com.rafambn.kmap.core.ClusterParameters
 import com.rafambn.kmap.core.MarkerComponent
 import com.rafambn.kmap.core.MarkerParameters
-import com.rafambn.kmap.model.ResultTile
+import com.rafambn.kmap.model.TileRenderResult
 
 interface KMaPScope //TODO brainStorm a path api
 
@@ -22,7 +22,7 @@ fun KMaPScope.cluster(
 
 fun KMaPScope.canvas(
     canvasParameters: CanvasParameters = CanvasParameters(),
-    tileSource: suspend (zoom: Int, row: Int, column: Int) -> ResultTile
+    tileSource: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult
 ) {
     if (this is KMaPContent) {
         visibleCanvas.add(Canvas(canvasParameters, tileSource))

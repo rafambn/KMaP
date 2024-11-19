@@ -1,7 +1,7 @@
 package com.rafambn.kmap.config.characteristics
 
-import com.rafambn.kmap.model.ResultTile
+import com.rafambn.kmap.model.TileRenderResult
 
 interface TileSource {
-    suspend fun getTile(zoom: Int, row: Int, column: Int): ResultTile
+    suspend fun getTile(zoom: Int, row: Int, column: Int): TileRenderResult
 }

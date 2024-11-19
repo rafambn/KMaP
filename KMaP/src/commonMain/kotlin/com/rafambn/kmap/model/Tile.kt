@@ -2,7 +2,7 @@ package com.rafambn.kmap.model
 
 import androidx.compose.ui.graphics.ImageBitmap
 
-open class TileCore(
+open class TileCore(//TODO simplify this class
     val zoom: Int,
     val row: Int,
     val col: Int
@@ -57,9 +57,7 @@ class Tile(
     fun toTileSpecs(): TileSpecs = TileSpecs(zoom, row, col)
 }
 
-data class ResultTile(val tile: Tile?, val result: TileResult)
-
-enum class TileResult {
-    SUCCESS,
-    FAILURE
-} //TODO simplify this
+interface TileRenderResult {
+    data class Success(val tile: Tile): TileRenderResult
+    data class Failure(val specs: TileSpecs): TileRenderResult
+}

@@ -22,9 +22,8 @@ import com.rafambn.kmap.config.characteristics.MapZoomLevelsRange
 import com.rafambn.kmap.config.characteristics.TileSource
 import com.rafambn.kmap.core.rememberMotionController
 import com.rafambn.kmap.core.state.rememberMapState
-import com.rafambn.kmap.model.ResultTile
 import com.rafambn.kmap.model.Tile
-import com.rafambn.kmap.model.TileResult
+import com.rafambn.kmap.model.TileRenderResult
 import com.rafambn.kmap.utils.offsets.CanvasPosition
 import com.rafambn.kmap.utils.offsets.ProjectedCoordinates
 import kmap.kmapdemo.generated.resources.Res
@@ -82,10 +81,10 @@ data class SimpleMapCoordinatesRange(
 ) : MapCoordinatesRange
 
 class SimpleMapTileSource : TileSource {
-    override suspend fun getTile(zoom: Int, row: Int, column: Int): ResultTile {
+    override suspend fun getTile(zoom: Int, row: Int, column: Int): TileRenderResult {
         val resourcePath = "drawable/${zoom}_${column}_${row}.png"
         val bytes = Res.readBytes(resourcePath)
         val imageBitmap = bytes.decodeToImageBitmap()
-        return ResultTile(Tile(zoom, row, column, imageBitmap), TileResult.SUCCESS)
+        return TileRenderResult.Success(Tile(zoom, row, column, imageBitmap))
     }
 }

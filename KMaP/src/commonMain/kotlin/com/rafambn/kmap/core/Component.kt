@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.unit.Dp
-import com.rafambn.kmap.model.ResultTile
+import com.rafambn.kmap.model.TileRenderResult
 import com.rafambn.kmap.utils.Degrees
 import com.rafambn.kmap.utils.offsets.ProjectedCoordinates
 import com.rafambn.kmap.utils.offsets.ScreenOffset
@@ -55,7 +55,7 @@ data class Marker(
 
 data class Canvas(
     val canvasParameters: CanvasParameters,
-    val getTile: suspend (zoom: Int, row: Int, column: Int) -> ResultTile
+    val getTile: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult
 )
 
 data class Cluster(
