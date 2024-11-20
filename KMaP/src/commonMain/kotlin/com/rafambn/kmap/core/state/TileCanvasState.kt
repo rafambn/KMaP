@@ -47,9 +47,8 @@ class TileCanvasState( //TODO move this to mapState
         val newFrontLayer = mutableListOf<Tile>()
         val tilesToRender = mutableListOf<TileSpecs>()
         visibleTiles.forEach { tile ->
-            val toTile = tile.toTile()
-            val foundInFrontLayer = frontLayerCopy.find { it == toTile }
-            val foundInRenderedTiles = renderedTilesCopy.find { it == TileSpecs(tile.zoom, tile.row.loopInZoom(tile.zoom), tile.col.loopInZoom(tile.zoom)).toTile() }
+            val foundInFrontLayer = frontLayerCopy.find { it == tile }
+            val foundInRenderedTiles = renderedTilesCopy.find { it == TileSpecs(tile.zoom, tile.row.loopInZoom(tile.zoom), tile.col.loopInZoom(tile.zoom)) }
 
             when {
                 foundInFrontLayer != null -> {
@@ -71,8 +70,8 @@ class TileCanvasState( //TODO move this to mapState
         tilesToProcess: ReceiveChannel<List<TileSpecs>>,
         tilesProcessResult: Channel<TileRenderResult>
     ) = launch(Dispatchers.Default + SupervisorJob()) {
-        val specsBeingProcessed = mutableSetOf<TileSpecs>()
-        val tilesBeingProcessed = mutableSetOf<TileSpecs>()
+        val specsBeingProcessed = mutableListOf<TileSpecs>()
+        val tilesBeingProcessed = mutableListOf<TileSpecs>()
 
         while (isActive) {
             select {
@@ -107,9 +106,9 @@ class TileCanvasState( //TODO move this to mapState
                                 _tileLayersStateFlow.update { tileLayers ->
                                     tileLayers.copy(frontLayer = tileLayers.frontLayer.toMutableList().also { tileMutableList ->
                                         tileMutableList.add(tileResult.tile)
-                                        specsBeingProcessed.remove(tileResult.tile.toTileSpecs())
+                                        specsBeingProcessed.remove(tileResult.tile)
                                         specsBeingProcessed.forEach {
-                                            if (TileSpecs(it.zoom, it.row.loopInZoom(it.zoom), it.col.loopInZoom(it.zoom)) == tileResult.tile.toTileSpecs())
+                                            if (TileSpecs(it.zoom, it.row.loopInZoom(it.zoom), it.col.loopInZoom(it.zoom)) == tileResult.tile)
                                                 tileMutableList.add(Tile(it.zoom, it.row, it.col, tileResult.tile.imageBitmap))
                                         }
                                     })
@@ -119,21 +118,21 @@ class TileCanvasState( //TODO move this to mapState
                                 _tileLayersStateFlow.update { tileLayers ->
                                     tileLayers.copy(backLayer = tileLayers.backLayer.toMutableList().also { tileMutableList ->
                                         tileMutableList.add(tileResult.tile)
-                                        specsBeingProcessed.remove(tileResult.tile.toTileSpecs())
+                                        specsBeingProcessed.remove(tileResult.tile)
                                         specsBeingProcessed.forEach {
-                                            if (TileSpecs(it.zoom, it.row.loopInZoom(it.zoom), it.col.loopInZoom(it.zoom)) == tileResult.tile.toTileSpecs())
+                                            if (TileSpecs(it.zoom, it.row.loopInZoom(it.zoom), it.col.loopInZoom(it.zoom)) == tileResult.tile)
                                                 tileMutableList.add(Tile(it.zoom, it.row, it.col, tileResult.tile.imageBitmap))
                                         }
                                     })
                                 }
                             }
-                            tilesBeingProcessed.remove(tileResult.tile.toTileSpecs())
+                            tilesBeingProcessed.remove(tileResult.tile)
                             specsBeingProcessed.removeAll {
                                 TileSpecs(
                                     it.zoom,
                                     it.row.loopInZoom(it.zoom),
                                     it.col.loopInZoom(it.zoom)
-                                ) == tileResult.tile.toTileSpecs()
+                                ) == tileResult.tile
                             }
                         }
 

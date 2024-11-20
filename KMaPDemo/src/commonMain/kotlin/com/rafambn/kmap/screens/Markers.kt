@@ -26,6 +26,8 @@ import com.rafambn.kmap.core.DrawPosition
 import com.rafambn.kmap.core.MarkerParameters
 import com.rafambn.kmap.core.rememberMotionController
 import com.rafambn.kmap.core.state.rememberMapState
+import com.rafambn.kmap.customSources.SimpleMapProperties
+import com.rafambn.kmap.customSources.SimpleMapTileSource
 import com.rafambn.kmap.marker
 import com.rafambn.kmap.markers
 import com.rafambn.kmap.utils.offsets.ProjectedCoordinates

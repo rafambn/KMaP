@@ -13,6 +13,8 @@ import com.rafambn.kmap.KMaP
 import com.rafambn.kmap.canvas
 import com.rafambn.kmap.core.rememberMotionController
 import com.rafambn.kmap.core.state.rememberMapState
+import com.rafambn.kmap.customSources.SimpleMapProperties
+import com.rafambn.kmap.customSources.SimpleMapTileSource
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import org.jetbrains.compose.resources.vectorResource

@@ -38,7 +38,7 @@ internal fun TileCanvas(
     maxCacheTiles: Int
 ) {
     val canvasState = remember { TileCanvasState(getTile, maxTries, maxCacheTiles) }
-    var visibleTilesTracker by remember { mutableStateOf(visibleTiles) }
+    var visibleTilesTracker by remember { mutableStateOf<List<TileSpecs>>(emptyList()) }
     if (visibleTilesTracker != visibleTiles) {
         visibleTilesTracker = visibleTiles
         canvasState.onStateChange(visibleTilesTracker, zoomLevel)
@@ -80,8 +80,8 @@ internal fun TileCanvas(
                                 (tileSize * tile.col + positionOffset.vertical).dp.toPx().toIntFloor()
                             ),
                             dstSize = IntSize(
-                                tileSize.dp.toPx().toIntFloor()-1,
-                                tileSize.dp.toPx().toIntFloor()-1
+                                tileSize.dp.toPx().toIntFloor(),
+                                tileSize.dp.toPx().toIntFloor()
                             ),
                             paint = Paint().apply {
                                 isAntiAlias = false

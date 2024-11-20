@@ -105,8 +105,8 @@ fun KMaP(
                         TileCanvas(
                             getTile = it.getTile,
                             magnifierScale = mapState.magnifierScale,
-                            rotationDegrees = mapState.angleDegrees.toFloat(),
-                            translation = mapState.canvasSize / 2F,
+                            rotationDegrees = mapState.cameraState.angleDegrees.toFloat(),
+                            translation = mapState.cameraState.canvasSize / 2F,
                             tileSize = mapState.mapProperties.tileSize,
                             positionOffset = mapState.drawReference,
                             zoomLevel = mapState.zoomLevel,
@@ -134,10 +134,10 @@ fun KMaP(
             .clipToBounds()
             .wrapContentSize()
             .onGloballyPositioned { coordinates ->
-                mapState.canvasSize = Offset(
+                mapState.setCanvasSize(Offset(
                     coordinates.size.width.toFloat(),
                     coordinates.size.height.toFloat()
-                )
+                ))
             }
             .pointerInput(PointerEventPass.Main) { //TODO add this to the canvas
                 detectMapGestures(
@@ -179,7 +179,7 @@ fun KMaP(
                     alpha = componentData.alpha
                 }
             }
-            markersComponent.forEach { it ->
+            markersComponent.forEach {
                 val componentData = it.data as MarkerParameters
                 val componentOffset = it.placementOffset
                 it.placeable.placeWithLayer(
@@ -192,12 +192,12 @@ fun KMaP(
                     translationY = componentOffset.y - componentData.drawPosition.y * it.placeable.height
                     transformOrigin = TransformOrigin(componentData.drawPosition.x, componentData.drawPosition.y)
                     componentData.zoomToFix?.let { zoom ->
-                        scaleX = 2F.pow(mapState.zoom - zoom)
-                        scaleY = 2F.pow(mapState.zoom - zoom)
+                        scaleX = 2F.pow(mapState.cameraState.zoom - zoom)
+                        scaleY = 2F.pow(mapState.cameraState.zoom - zoom)
                     }
                     rotationZ =
                         if (componentData.rotateWithMap)
-                            (mapState.angleDegrees + componentData.rotation).toFloat()
+                            (mapState.cameraState.angleDegrees + componentData.rotation).toFloat()
                         else
                             componentData.rotation.toFloat()
                 }
@@ -216,7 +216,7 @@ fun KMaP(
                     transformOrigin = TransformOrigin(componentData.drawPosition.x, componentData.drawPosition.y)
                     rotationZ =
                         if (componentData.rotateWithMap)
-                            (mapState.angleDegrees + componentData.rotation).toFloat()
+                            (mapState.cameraState.angleDegrees + componentData.rotation).toFloat()
                         else
                             componentData.rotation.toFloat()
                 }

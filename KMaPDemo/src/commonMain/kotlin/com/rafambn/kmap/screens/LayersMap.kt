@@ -22,6 +22,8 @@ import com.rafambn.kmap.config.characteristics.TileSource
 import com.rafambn.kmap.core.CanvasParameters
 import com.rafambn.kmap.core.rememberMotionController
 import com.rafambn.kmap.core.state.rememberMapState
+import com.rafambn.kmap.customSources.SimpleMapProperties
+import com.rafambn.kmap.customSources.SimpleMapTileSource
 import com.rafambn.kmap.model.Tile
 import com.rafambn.kmap.model.TileRenderResult
 import kmap.kmapdemo.generated.resources.Res

@@ -1,7 +1,6 @@
 package com.rafambn.kmap.core.state
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -14,6 +13,7 @@ import com.rafambn.kmap.config.border.MapBorderType
 import com.rafambn.kmap.config.border.OutsideTilesType
 import com.rafambn.kmap.config.characteristics.MapCoordinatesRange
 import com.rafambn.kmap.model.BoundingBox
+import com.rafambn.kmap.model.CameraState
 import com.rafambn.kmap.model.TileSpecs
 import com.rafambn.kmap.utils.loopInRange
 import com.rafambn.kmap.utils.offsets.CanvasDrawReference
@@ -26,7 +26,6 @@ import com.rafambn.kmap.utils.rotate
 import com.rafambn.kmap.utils.toIntFloor
 import com.rafambn.kmap.utils.toRadians
 import kotlin.math.pow
-import kotlin.reflect.KProperty
 
 @Composable
 fun rememberMapState(
@@ -52,29 +51,22 @@ class MapState(
         }
 
     //State variables
-    var canvasSize by mutableStateOf(Offset.Zero)
-        internal set
-    var zoom by ZoomDelegate(mutableStateOf(0F))
-
-    var angleDegrees by mutableStateOf(0.0)
-        internal set
-    var rawPosition by RawPositionDelegate(mutableStateOf(CanvasPosition.Zero))
-
-    var projection: ProjectedCoordinates
-        get() {
-            return rawPosition.toProjectedCoordinates()
-        }
-        set(value) {
-            rawPosition = value.toCanvasPosition()
-        }
-    val drawReference
-        get() = rawPosition.toCanvasDrawReference()
+    var cameraState by mutableStateOf(CameraState())
 
     //Derivative variables
+    var projection: ProjectedCoordinates
+        get() {
+            return cameraState.rawPosition.toProjectedCoordinates()
+        }
+        set(value) {
+            setRawPosition(value.toCanvasPosition())
+        }
+    val drawReference
+        get() = cameraState.rawPosition.toCanvasDrawReference()
     val zoomLevel
-        get() = zoom.toIntFloor()
+        get() = cameraState.zoom.toIntFloor()
     val magnifierScale
-        get() = zoom - zoomLevel + 1F
+        get() = cameraState.zoom - zoomLevel + 1F
 
     val visibleTiles by derivedStateOf {
         getVisibleTilesForLevel(
@@ -85,17 +77,13 @@ class MapState(
         )
     }
 
-    internal fun setDensity(density: Density) {
-        this.density = density
-    }
-
     //Utility functions
     private fun getBoundingBox(): BoundingBox {
         return BoundingBox(
             Offset.Zero.fromScreenOffsetToCanvasPosition(),
-            Offset(canvasSize.x, 0F).fromScreenOffsetToCanvasPosition(),
-            canvasSize.fromScreenOffsetToCanvasPosition(),
-            Offset(0F, canvasSize.y).fromScreenOffsetToCanvasPosition(),
+            Offset(cameraState.canvasSize.x, 0F).fromScreenOffsetToCanvasPosition(),
+            cameraState.canvasSize.fromScreenOffsetToCanvasPosition(),
+            Offset(0F, cameraState.canvasSize.y).fromScreenOffsetToCanvasPosition(),
         )
     }
 
@@ -122,19 +110,19 @@ class MapState(
     }
 
     fun centerPositionAtOffset(position: CanvasPosition, offset: ScreenOffset) {
-        rawPosition += position - offset.fromScreenOffsetToCanvasPosition()
+        setRawPosition(cameraState.rawPosition + position - offset.fromScreenOffsetToCanvasPosition())
     }
 
     //Conversion Functions
-    fun ScreenOffset.fromScreenOffsetToCanvasPosition(): CanvasPosition = this.toCanvasPositionFromScreenCenter() + rawPosition
+    fun ScreenOffset.fromScreenOffsetToCanvasPosition(): CanvasPosition = this.toCanvasPositionFromScreenCenter() + cameraState.rawPosition
 
     fun DifferentialScreenOffset.toCanvasPositionFromScreenCenter(): CanvasPosition =
-        (canvasSize / 2F - this).fromDifferentialScreenOffsetToCanvasPosition()
+        (cameraState.canvasSize / 2F - this).fromDifferentialScreenOffsetToCanvasPosition()
 
     fun DifferentialScreenOffset.fromDifferentialScreenOffsetToCanvasPosition(): CanvasPosition =
         (this.toPosition() / density.density.toDouble())
             .scaleToZoom(1 / (mapProperties.tileSize * magnifierScale * (1 shl zoomLevel)))
-            .rotate(-angleDegrees.toRadians())
+            .rotate(-cameraState.angleDegrees.toRadians())
             .scaleToMap(
                 mapProperties.mapCoordinatesRange.longitude.span,
                 mapProperties.mapCoordinatesRange.latitude.span
@@ -152,16 +140,16 @@ class MapState(
         return CanvasDrawReference(canvasDrawReference.horizontal, canvasDrawReference.vertical)
     }
 
-    fun CanvasPosition.toScreenOffset(): ScreenOffset = -(this - rawPosition)
+    fun CanvasPosition.toScreenOffset(): ScreenOffset = -(this - cameraState.rawPosition)
         .applyOrientation(mapProperties.mapCoordinatesRange)
         .scaleToMap(
             1 / mapProperties.mapCoordinatesRange.longitude.span,
             1 / mapProperties.mapCoordinatesRange.latitude.span
         )
-        .rotate(angleDegrees.toRadians())
+        .rotate(cameraState.angleDegrees.toRadians())
         .scaleToZoom(mapProperties.tileSize * magnifierScale * (1 shl zoomLevel))
         .times(density.density.toDouble()).toOffset()
-        .minus(canvasSize / 2F)
+        .minus(cameraState.canvasSize / 2F)
 
 
     fun CanvasPosition.scaleToZoom(zoomScale: Float): CanvasPosition {
@@ -269,23 +257,23 @@ class MapState(
         toProjectedCoordinates(this@toProjectedCoordinates)
     }
 
-    private inner class ZoomDelegate(private var zoom: MutableState<Float>) {
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): Float {
-            return zoom.value
-        }
-
-        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Float) {
-            zoom.value = value.coerceZoom()
-        }
+    internal fun setDensity(density: Density) {
+        this.density = density
     }
 
-    private inner class RawPositionDelegate(private var zoom: MutableState<CanvasPosition>) {
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): CanvasPosition {
-            return zoom.value
-        }
+    fun setCanvasSize(offset: Offset) {
+        cameraState = cameraState.copy(canvasSize = offset)
+    }
 
-        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: CanvasPosition) {
-            zoom.value = value.coerceInMap()
-        }
+    fun setZoom(zoom: Float) {
+        cameraState = cameraState.copy(zoom = zoom.coerceZoom())
+    }
+
+    fun setAngle(angle: Double) {
+        cameraState = cameraState.copy(angleDegrees = angle)
+    }
+
+    fun setRawPosition(position: CanvasPosition) {
+        cameraState = cameraState.copy(rawPosition = position.coerceInMap())
     }
 }
