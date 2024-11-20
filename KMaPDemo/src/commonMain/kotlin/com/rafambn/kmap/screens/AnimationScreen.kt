@@ -61,7 +61,7 @@ fun AnimationScreen(
                 withContext(Dispatchers.Main) { description = "Zooming centered on (0.0, 0.0)" }
                 zoomToCentered(1F, MotionController.CenterLocation.Coordinates(ProjectedCoordinates(0.0, 0.0)))
                 withContext(Dispatchers.Main) { description = "Rotating around screen center" }
-                angleBy(360.0)
+                rotateBy(360.0)
                 withContext(Dispatchers.Main) { description = "Rotating centered on (0.0, 0.0)" }
                 rotateByCentered(-360.0, MotionController.CenterLocation.Coordinates(ProjectedCoordinates(0.0, 0.0)))
                 withContext(Dispatchers.Main) { description = "No Animation" }

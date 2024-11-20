@@ -3,11 +3,8 @@
 The following items will eventually be implemented:
 
 * Publish library to maven
-* Improve Gesture Detection, currently all type of gestures are detected adding unecessary code. Implement in a
-way that only the used gesture are detected.
-* Improve Motion Controller API, merging set and scroll, also optimizing CenterLocation
+* Improve Gesture Detection, currently all type of gestures are detected adding unecessary code. Implement in a way that only the used gesture are detected.
 * Improve KMaP scoped parameters
-* Improve BoundingBox adding more methods for it to be more helpfully.
 * Add more Built-in sources:
     * Other OSM sources
     * Google Source

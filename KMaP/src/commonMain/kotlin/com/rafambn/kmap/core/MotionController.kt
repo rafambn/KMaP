@@ -37,11 +37,16 @@ class MotionController {
     }
 
     interface MoveInterface {
-        fun center(center: CenterLocation)
-        fun zoom(zoom: Float)
-        fun zoomCentered(zoom: Float, center: CenterLocation)
-        fun angle(degrees: Double)
-        fun rotateCentered(degrees: Double, center: CenterLocation)
+        fun positionTo(center: CenterLocation)
+        fun positionBy(center: CenterLocation)
+        fun zoomTo(zoom: Float)
+        fun zoomBy(zoom: Float)
+        fun zoomToCentered(zoom: Float, center: CenterLocation)
+        fun zoomByCentered(zoom: Float, center: CenterLocation)
+        fun rotateTo(degrees: Double)
+        fun rotateBy(degrees: Double)
+        fun rotateToCentered(degrees: Double, center: CenterLocation)
+        fun rotateByCentered(degrees: Double, center: CenterLocation)
     }
 
     interface AnimationInterface {
@@ -51,8 +56,8 @@ class MotionController {
         suspend fun zoomBy(zoom: Float, decayRate: Double = 5.0, duration: MilliSeconds = 1000)
         suspend fun zoomToCentered(zoom: Float, center: CenterLocation, decayRate: Double = 5.0, duration: MilliSeconds = 1000)
         suspend fun zoomByCentered(zoom: Float, center: CenterLocation, decayRate: Double = 5.0, duration: MilliSeconds = 1000)
-        suspend fun angleTo(degrees: Double, decayRate: Double = 5.0, duration: MilliSeconds = 1000)
-        suspend fun angleBy(degrees: Double, decayRate: Double = 5.0, duration: MilliSeconds = 1000)
+        suspend fun rotateTo(degrees: Double, decayRate: Double = 5.0, duration: MilliSeconds = 1000)
+        suspend fun rotateBy(degrees: Double, decayRate: Double = 5.0, duration: MilliSeconds = 1000)
         suspend fun rotateToCentered(degrees: Double, center: CenterLocation, decayRate: Double = 5.0, duration: MilliSeconds = 1000)
         suspend fun rotateByCentered(degrees: Double, center: CenterLocation, decayRate: Double = 5.0, duration: MilliSeconds = 1000)
     }
@@ -66,7 +71,7 @@ class MotionController {
         cancellableContinuation?.resume(Unit)
     }
 
-    fun set(block: MoveInterface.() -> Unit) {
+    fun move(block: MoveInterface.() -> Unit) {
         animationJob?.let {
             it.cancel(CancellationException("Animation cancelled by set"))
             onMapChanged = null
@@ -74,27 +79,11 @@ class MotionController {
         val map = mapState
         if (map == null) {
             onMapChanged = {
-                block(setObject)
+                block(moveObject)
                 onMapChanged?.let { callback -> callback(it) }
             }
         } else {
-            block(setObject)
-        }
-    }
-
-    fun scroll(block: MoveInterface.() -> Unit) {
-        animationJob?.let {
-            it.cancel(CancellationException("Animation cancelled by scroll"))
-            onMapChanged = null
-        }
-        val map = mapState
-        if (map == null) {
-            onMapChanged = {
-                block(scrollObject)
-                onMapChanged?.let { callback -> callback(it) }
-            }
-        } else {
-            block(scrollObject)
+            block(moveObject)
         }
     }
 
@@ -128,86 +117,20 @@ class MotionController {
         }
     }
 
-    private val setObject = object : MoveInterface {
-        override fun center(center: CenterLocation) {
+    private val moveObject = object : MoveInterface {
+
+        override fun positionTo(center: CenterLocation) {
             when (center) {
                 is CenterLocation.Offset -> with(mapState!!) {
                     mapState!!.setRawPosition(center.offset.fromScreenOffsetToCanvasPosition())
                 }
+
                 is CenterLocation.Position -> mapState!!.setRawPosition(center.position)
                 is CenterLocation.Coordinates -> mapState!!.projection = center.projectedCoordinates
             }
         }
 
-        override fun zoom(zoom: Float) {
-            mapState!!.setZoom(zoom)
-        }
-
-        override fun zoomCentered(zoom: Float, center: CenterLocation) {
-            when (center) {
-                is CenterLocation.Coordinates -> {
-                    with(mapState!!) {
-                        val previousOffset = center.projectedCoordinates.toCanvasPosition().toScreenOffset()
-                        val previousPosition = center.projectedCoordinates.toCanvasPosition()
-                        mapState!!.setZoom(zoom)
-                        centerPositionAtOffset(previousPosition, previousOffset)
-                    }
-                }
-
-                is CenterLocation.Offset -> {
-                    with(mapState!!) {
-                        val position = center.offset.fromScreenOffsetToCanvasPosition()
-                        mapState!!.setZoom(zoom)
-                        centerPositionAtOffset(position, center.offset)
-                    }
-                }
-
-                is CenterLocation.Position -> {
-                    with(mapState!!) {
-                        val previousOffset = center.position.toScreenOffset()
-                        mapState!!.setZoom(zoom)
-                        centerPositionAtOffset(center.position, previousOffset)
-                    }
-                }
-            }
-        }
-
-        override fun angle(degrees: Double) {
-            mapState!!.setAngle(degrees)
-        }
-
-        override fun rotateCentered(degrees: Double, center: CenterLocation) {
-            when (center) {
-                is CenterLocation.Coordinates -> {
-                    with(mapState!!) {
-                        val previousOffset = center.projectedCoordinates.toCanvasPosition().toScreenOffset()
-                        val previousPosition = center.projectedCoordinates.toCanvasPosition()
-                        mapState!!.setAngle(degrees)
-                        centerPositionAtOffset(previousPosition, previousOffset)
-                    }
-                }
-
-                is CenterLocation.Offset -> {
-                    with(mapState!!) {
-                        val position = center.offset.fromScreenOffsetToCanvasPosition()
-                        mapState!!.setAngle(degrees)
-                        centerPositionAtOffset(position, center.offset)
-                    }
-                }
-
-                is CenterLocation.Position -> {
-                    with(mapState!!) {
-                        val previousOffset = center.position.toScreenOffset()
-                        mapState!!.setAngle(degrees)
-                        centerPositionAtOffset(center.position, previousOffset)
-                    }
-                }
-            }
-        }
-    }
-
-    private val scrollObject = object : MoveInterface {
-        override fun center(center: CenterLocation) {
+        override fun positionBy(center: CenterLocation) {
             when (center) {
                 is CenterLocation.Offset -> with(mapState!!) {
                     mapState!!.setRawPosition(center.offset.fromDifferentialScreenOffsetToCanvasPosition() + mapState!!.cameraState.rawPosition)
@@ -218,11 +141,44 @@ class MotionController {
             }
         }
 
-        override fun zoom(zoom: Float) {
+        override fun zoomTo(zoom: Float) {
+            mapState!!.setZoom(zoom)
+        }
+
+        override fun zoomBy(zoom: Float) {
             mapState!!.setZoom(mapState!!.cameraState.zoom + zoom)
         }
 
-        override fun zoomCentered(zoom: Float, center: CenterLocation) {
+        override fun zoomToCentered(zoom: Float, center: CenterLocation) {
+            when (center) {
+                is CenterLocation.Coordinates -> {
+                    with(mapState!!) {
+                        val previousOffset = center.projectedCoordinates.toCanvasPosition().toScreenOffset()
+                        val previousPosition = center.projectedCoordinates.toCanvasPosition()
+                        mapState!!.setZoom(zoom)
+                        centerPositionAtOffset(previousPosition, previousOffset)
+                    }
+                }
+
+                is CenterLocation.Offset -> {
+                    with(mapState!!) {
+                        val position = center.offset.fromScreenOffsetToCanvasPosition()
+                        mapState!!.setZoom(zoom)
+                        centerPositionAtOffset(position, center.offset)
+                    }
+                }
+
+                is CenterLocation.Position -> {
+                    with(mapState!!) {
+                        val previousOffset = center.position.toScreenOffset()
+                        mapState!!.setZoom(zoom)
+                        centerPositionAtOffset(center.position, previousOffset)
+                    }
+                }
+            }
+        }
+
+        override fun zoomByCentered(zoom: Float, center: CenterLocation) {
             when (center) {
                 is CenterLocation.Coordinates -> {
                     with(mapState!!) {
@@ -251,11 +207,44 @@ class MotionController {
             }
         }
 
-        override fun angle(degrees: Double) {
+        override fun rotateTo(degrees: Double) {
+            mapState!!.setAngle(degrees)
+        }
+
+        override fun rotateBy(degrees: Double) {
             mapState!!.setAngle(degrees + mapState!!.cameraState.angleDegrees)
         }
 
-        override fun rotateCentered(degrees: Double, center: CenterLocation) {
+        override fun rotateToCentered(degrees: Double, center: CenterLocation) {
+            when (center) {
+                is CenterLocation.Coordinates -> {
+                    with(mapState!!) {
+                        val previousOffset = center.projectedCoordinates.toCanvasPosition().toScreenOffset()
+                        val previousPosition = center.projectedCoordinates.toCanvasPosition()
+                        mapState!!.setAngle(degrees)
+                        centerPositionAtOffset(previousPosition, previousOffset)
+                    }
+                }
+
+                is CenterLocation.Offset -> {
+                    with(mapState!!) {
+                        val position = center.offset.fromScreenOffsetToCanvasPosition()
+                        mapState!!.setAngle(degrees)
+                        centerPositionAtOffset(position, center.offset)
+                    }
+                }
+
+                is CenterLocation.Position -> {
+                    with(mapState!!) {
+                        val previousOffset = center.position.toScreenOffset()
+                        mapState!!.setAngle(degrees)
+                        centerPositionAtOffset(center.position, previousOffset)
+                    }
+                }
+            }
+        }
+
+        override fun rotateByCentered(degrees: Double, center: CenterLocation) {
             when (center) {
                 is CenterLocation.Coordinates -> {
                     with(mapState!!) {
@@ -450,7 +439,7 @@ class MotionController {
             }
         }
 
-        override suspend fun angleTo(degrees: Double, decayRate: Double, duration: MilliSeconds) {
+        override suspend fun rotateTo(degrees: Double, decayRate: Double, duration: MilliSeconds) {
             if (decayRate <= 0.0)
                 throw IllegalArgumentException("decay rate must be greater than 0")
             if (duration <= 0)
@@ -461,7 +450,7 @@ class MotionController {
             }
         }
 
-        override suspend fun angleBy(degrees: Double, decayRate: Double, duration: MilliSeconds) {
+        override suspend fun rotateBy(degrees: Double, decayRate: Double, duration: MilliSeconds) {
             if (decayRate <= 0.0)
                 throw IllegalArgumentException("decay rate must be greater than 0")
             if (duration <= 0)
