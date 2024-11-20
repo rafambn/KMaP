@@ -18,14 +18,14 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 
-class TileCanvasState(
+class TileCanvasState( //TODO move this to mapState
     private val getTile: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult,
     private val maxTries: Int,
     private val maxCacheTiles: Int
 ) {
     private val _tileLayersStateFlow = MutableStateFlow(TileLayers())
     val tileLayersStateFlow = _tileLayersStateFlow.asStateFlow()
-    private val renderedTiles = mutableListOf<Tile>()
+    private var renderedTiles = mutableSetOf<Tile>()
     private val tilesToProcessChannel = Channel<List<TileSpecs>>(capacity = Channel.UNLIMITED)
     private val workerResultSuccessChannel = Channel<TileRenderResult>(capacity = Channel.UNLIMITED)
 
@@ -44,19 +44,25 @@ class TileCanvasState(
             }
         val frontLayerCopy = tileLayersStateFlow.value.frontLayer.toList()
         val renderedTilesCopy = renderedTiles.toList()
-        val newFrontLayer = visibleTiles.mapNotNull { tileSpecs ->
-            val tileInLayer = frontLayerCopy.find { it == tileSpecs.toTile() }
-            val tileInCache = renderedTilesCopy.find {
-                it == TileSpecs(
-                    tileSpecs.zoom,
-                    tileSpecs.row.loopInZoom(tileSpecs.zoom),
-                    tileSpecs.col.loopInZoom(tileSpecs.zoom)
-                ).toTile()
+        val newFrontLayer = mutableListOf<Tile>()
+        val tilesToRender = mutableListOf<TileSpecs>()
+        visibleTiles.forEach { tile ->
+            val toTile = tile.toTile()
+            val foundInFrontLayer = frontLayerCopy.find { it == toTile }
+            val foundInRenderedTiles = renderedTilesCopy.find { it == TileSpecs(tile.zoom, tile.row.loopInZoom(tile.zoom), tile.col.loopInZoom(tile.zoom)).toTile() }
+
+            when {
+                foundInFrontLayer != null -> {
+                    newFrontLayer.add(foundInFrontLayer)
+                }
+                foundInRenderedTiles != null -> {
+                    newFrontLayer.add(Tile(tile.zoom, tile.row, tile.col, foundInRenderedTiles.imageBitmap))
+                }
+                else -> {
+                    tilesToRender.add(tile)
+                }
             }
-            tileInLayer ?: tileInCache
         }
-        val tilesToRender = visibleTiles.filter { !newFrontLayer.contains(it.toTile()) }
-        //TODO fix already rendered tiles being recalled
         _tileLayersStateFlow.update { it.copy(frontLayer = newFrontLayer) }
         tilesToProcessChannel.trySend(tilesToRender)
     }
@@ -91,13 +97,17 @@ class TileCanvasState(
                         is TileRenderResult.Success -> {
                             if (maxCacheTiles != 0) {
                                 renderedTiles.add(tileResult.tile)
-                                if (renderedTiles.size > maxCacheTiles)
-                                    renderedTiles.removeAt(0)
+                                if (renderedTiles.size > maxCacheTiles) {
+                                    val mutableRendered = renderedTiles.toMutableList()
+                                    mutableRendered.removeAt(0)
+                                    renderedTiles = mutableRendered.toMutableSet()
+                                }
                             }
                             if (tileResult.tile.zoom == _tileLayersStateFlow.value.frontLayerLevel) {
                                 _tileLayersStateFlow.update { tileLayers ->
                                     tileLayers.copy(frontLayer = tileLayers.frontLayer.toMutableList().also { tileMutableList ->
                                         tileMutableList.add(tileResult.tile)
+                                        specsBeingProcessed.remove(tileResult.tile.toTileSpecs())
                                         specsBeingProcessed.forEach {
                                             if (TileSpecs(it.zoom, it.row.loopInZoom(it.zoom), it.col.loopInZoom(it.zoom)) == tileResult.tile.toTileSpecs())
                                                 tileMutableList.add(Tile(it.zoom, it.row, it.col, tileResult.tile.imageBitmap))
@@ -109,6 +119,7 @@ class TileCanvasState(
                                 _tileLayersStateFlow.update { tileLayers ->
                                     tileLayers.copy(backLayer = tileLayers.backLayer.toMutableList().also { tileMutableList ->
                                         tileMutableList.add(tileResult.tile)
+                                        specsBeingProcessed.remove(tileResult.tile.toTileSpecs())
                                         specsBeingProcessed.forEach {
                                             if (TileSpecs(it.zoom, it.row.loopInZoom(it.zoom), it.col.loopInZoom(it.zoom)) == tileResult.tile.toTileSpecs())
                                                 tileMutableList.add(Tile(it.zoom, it.row, it.col, tileResult.tile.imageBitmap))

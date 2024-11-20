@@ -19,7 +19,6 @@ class OSMTileSource(private val userAgent: String) : TileSource {
     override suspend fun getTile(zoom: Int, row: Int, column: Int): TileRenderResult {
         val imageBitmap: ImageBitmap
         try {
-            println("generator $zoom -- $row")
             val byteArray = client.get("https://tile.openstreetmap.org/$zoom/$row/$column.png") {
                 header("User-Agent", userAgent)
             }.readRawBytes()
