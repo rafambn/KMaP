@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.core.state.TileCanvasState
-import com.rafambn.kmap.model.TileRenderResult
+import com.rafambn.kmap.utils.TileRenderResult
 import com.rafambn.kmap.model.TileSpecs
 import com.rafambn.kmap.utils.offsets.CanvasDrawReference
 import com.rafambn.kmap.utils.toIntFloor

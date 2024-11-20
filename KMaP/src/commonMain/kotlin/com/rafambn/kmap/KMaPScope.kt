@@ -7,7 +7,7 @@ import com.rafambn.kmap.core.ClusterComponent
 import com.rafambn.kmap.core.ClusterParameters
 import com.rafambn.kmap.core.MarkerComponent
 import com.rafambn.kmap.core.MarkerParameters
-import com.rafambn.kmap.model.TileRenderResult
+import com.rafambn.kmap.utils.TileRenderResult
 
 interface KMaPScope //TODO brainStorm a path api
 

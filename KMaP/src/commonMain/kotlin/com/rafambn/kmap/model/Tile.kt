@@ -52,8 +52,3 @@ class Tile(
         return "Tile(zoom=$zoom, row=$row, col=$col, imageBitmap=$imageBitmap)"
     }
 }
-
-interface TileRenderResult {
-    data class Success(val tile: Tile) : TileRenderResult
-    data class Failure(val specs: TileSpecs) : TileRenderResult
-}

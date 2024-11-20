@@ -25,7 +25,7 @@ import com.rafambn.kmap.core.state.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
 import com.rafambn.kmap.model.Tile
-import com.rafambn.kmap.model.TileRenderResult
+import com.rafambn.kmap.utils.TileRenderResult
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import org.jetbrains.compose.resources.decodeToImageBitmap

@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.unit.Dp
-import com.rafambn.kmap.model.TileRenderResult
+import com.rafambn.kmap.utils.TileRenderResult
 import com.rafambn.kmap.utils.Degrees
 import com.rafambn.kmap.utils.offsets.ProjectedCoordinates
 import com.rafambn.kmap.utils.offsets.ScreenOffset

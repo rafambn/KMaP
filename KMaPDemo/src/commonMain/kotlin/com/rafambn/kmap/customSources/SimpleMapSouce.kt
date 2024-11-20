@@ -2,7 +2,7 @@ package com.rafambn.kmap.customSources
 
 import com.rafambn.kmap.config.characteristics.TileSource
 import com.rafambn.kmap.model.Tile
-import com.rafambn.kmap.model.TileRenderResult
+import com.rafambn.kmap.utils.TileRenderResult
 import kmap.kmapdemo.generated.resources.Res
 import org.jetbrains.compose.resources.decodeToImageBitmap
 
