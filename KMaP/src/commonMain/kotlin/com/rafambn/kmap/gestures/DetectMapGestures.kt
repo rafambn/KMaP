@@ -75,23 +75,6 @@ fun getGestureStateChanges(
     return gestureChangeStates
 }
 
-/**
- * [awaitMapGesture] is a version of [awaitEachGesture] where after the gestures ends it does
- * not [awaitForGestureReset].
- *
- * Repeatedly calls [block] to handle gestures. If there is a [CancellationException],
- * it will wait until all pointers are raised before another gesture is detected, or it
- * exits if [isActive] is `false`.
- */
-
-internal expect suspend fun PointerInputScope.awaitMapGesture(block: suspend AwaitPointerEventScope.() -> Unit)
-
-/**
- * Same version as [androidx.compose.foundation.gestures.awaitAllPointersUp] because the original is
- * internal
- */
-internal expect suspend fun AwaitPointerEventScope.awaitForGestureReset()
-
 fun handleGestureWithCtrl(
     event: PointerEvent,
     previousEvent: PointerEvent,

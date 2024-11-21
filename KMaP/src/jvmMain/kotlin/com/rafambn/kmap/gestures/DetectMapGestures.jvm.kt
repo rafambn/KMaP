@@ -284,38 +284,3 @@ fun PointerInputChange.customIsOutOfBounds(size: IntSize, extendedTouchPadding: 
     val maxY = size.height + extendedTouchPadding.height
     return x <= minX || x >= maxX || y <= minY || y >= maxY
 }
-
-
-/**
- * [awaitMapGesture] is a version of [awaitEachGesture] where after the gestures ends it does
- * not [awaitForGestureReset].
- *
- * Repeatedly calls [block] to handle gestures. If there is a [CancellationException],
- * it will wait until all pointers are raised before another gesture is detected, or it
- * exits if [isActive] is `false`.
- */
-internal actual suspend fun PointerInputScope.awaitMapGesture(block: suspend AwaitPointerEventScope.() -> Unit) {
-    val currentContext = currentCoroutineContext()
-    awaitPointerEventScope {
-        while (currentContext.isActive) {
-            try {
-                block()
-                awaitForGestureReset()
-            } catch (e: CancellationException) {
-                if (currentContext.isActive) {
-                    awaitForGestureReset()
-                } else {
-                    throw e
-                }
-            }
-        }
-    }
-}
-
-internal actual suspend fun AwaitPointerEventScope.awaitForGestureReset() {
-    if (currentEvent.changes.any { it.isOutOfBounds(size, extendedTouchPadding) }) {
-        do {
-            val events = awaitPointerEvent(PointerEventPass.Final)
-        } while (events.changes.any { it.isOutOfBounds(size, extendedTouchPadding) })
-    }
-}

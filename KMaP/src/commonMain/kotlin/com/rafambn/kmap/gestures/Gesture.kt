@@ -1,84 +1,95 @@
 package com.rafambn.kmap.gestures
 
+import androidx.compose.foundation.gestures.awaitAllPointersUp
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.calculatePan
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventTimeoutCancellationException
 import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.PointerInputScope
+import androidx.compose.ui.input.pointer.PointerType
+import androidx.compose.ui.input.pointer.changedToDown
+import androidx.compose.ui.input.pointer.changedToDownIgnoreConsumed
 import androidx.compose.ui.input.pointer.isCtrlPressed
 import androidx.compose.ui.input.pointer.isOutOfBounds
-import androidx.compose.ui.unit.IntSize
+import com.rafambn.kmap.utils.DifferentialScreenOffset
+import com.rafambn.kmap.utils.ScreenOffset
+import com.rafambn.kmap.utils.asScreenOffset
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import kotlin.coroutines.cancellation.CancellationException
-import kotlin.properties.Delegates
 
+suspend fun PointerInputScope.detectMapGesturesNew(
+    // common use
+    onTap: ((screenOffset: ScreenOffset) -> Unit)? = null,
+    onDoubleTap: ((screenOffset: ScreenOffset) -> Unit)? = null,
+    onLongPress: ((screenOffset: ScreenOffset) -> Unit)? = null,
+    onTapLongPress: ((screenOffsetDiff: DifferentialScreenOffset) -> Unit)? = null,
+    onTapSwipe: ((screenOffset: ScreenOffset, zoom: Float) -> Unit)? = null,
+    onDrag: ((screenOffsetDiff: DifferentialScreenOffset) -> Unit)? = null,
 
-/**
- * [detectMapGestures] detects all kinds of gestures needed for KMaP
- */
-actual suspend fun PointerInputScope.detectMapGestures(
-    onTap: (Offset) -> Unit,
-    onDoubleTap: (Offset) -> Unit,
-    onLongPress: (Offset) -> Unit,
-    onTapLongPress: (Offset) -> Unit,
-    onTapSwipe: (centroid: Offset, zoom: Float) -> Unit,
-    onDrag: (dragAmount: Offset) -> Unit,
-    currentGestureFlow: MutableStateFlow<GestureState>?,
+    // mobile use
+    onTwoFingersTap: ((screenOffset: ScreenOffset) -> Unit)? = null,
+    onGesture: ((screenOffset: ScreenOffset, screenOffsetDiff: DifferentialScreenOffset, zoom: Float, rotation: Float) -> Unit)? = null,
 
-    onTwoFingersTap: (Offset) -> Unit, //There isn't a call for this method in Js
-    onGesture: (centroid: Offset, pan: Offset, zoom: Float, rotation: Float) -> Unit, //There isn't a call for this method in Js
-
-    onHover: (Offset) -> Unit,
-    onScroll: (mouseOffset: Offset, scrollAmount: Float) -> Unit,
-    onCtrlGesture: (rotation: Float) -> Unit
+    // jvm/web use
+    onHover: ((screenOffset: ScreenOffset) -> Unit)? = null,
+    onScroll: ((screenOffset: ScreenOffset, scrollAmount: Float) -> Unit)? = null,
+    onCtrlGesture: ((rotation: Float) -> Unit)? = null
 ) = coroutineScope {
-    launch {
-        awaitMapGesture {
-            do {
-                val event = awaitPointerEvent()
-                if (event.type == PointerEventType.Scroll) {
-                    event.changes.forEach { it.consume() }
-                    onScroll.invoke(event.changes[0].position, event.changes[0].scrollDelta.y / 300)
-                    continue
-                }
-            } while (this@coroutineScope.isActive && !event.changes.any { it.customIsOutOfBounds(size, extendedTouchPadding) })
-        }
-    }
     awaitMapGesture {
         //Parameters
         val longPressTimeout = viewConfiguration.longPressTimeoutMillis
         val doubleTapTimeout = viewConfiguration.doubleTapTimeoutMillis
         val touchSlop = viewConfiguration.touchSlop
         var panSlop: Offset
-        val zoomScale = 100F
+        val zoomScale = 100F  //TODO verify this scale
 
-        //Gets first event
-        var gestureState by Delegates.observable(GestureState.START_GESTURE) { _, _, newValue ->
-            currentGestureFlow?.tryEmit(newValue)
-        }
-        var previousEvent = awaitPointerEvent()
-        var event = previousEvent
-        gestureState = GestureState.HOVER
+        var gestureState = GestureState.START_GESTURE
+
+        var event: PointerEvent
         var firstGestureEvent: PointerEvent? = null
+        do {
+            event = awaitPointerEvent()
+        } while (
+            !event.changes.all { it.changedToDown() } ||
+            (onHover != null && !event.changes.all { it.isConsumed }) ||
+            (onScroll != null && event.type == PointerEventType.Scroll)
+        )
 
-        onHover(event.changes[0].position)
+        if (!event.changes.all { it.changedToDown() }) {
+            gestureState = if (event.keyboardModifiers.isCtrlPressed) {
+                firstGestureEvent = event
+                GestureState.CTRL
+            } else
+                GestureState.WAITING_UP
+
+        } else if ((onHover != null && !event.changes.all { it.isConsumed })) {
+            event.changes.forEach {
+                if (!it.isConsumed && !it.isOutOfBounds(size, extendedTouchPadding)) {
+                    it.consume()
+                    onHover.invoke(it.position.asScreenOffset())
+                    gestureState = GestureState.HOVER
+                }
+            }
+        } else {
+            event.changes.forEach {
+                if (it.scrollDelta.y != 0F) {
+                    it.consume()
+                    onScroll?.invoke(it.position.asScreenOffset(), it.scrollDelta.y)
+                    return@awaitMapGesture
+                }
+            }
+        }
+
         do {
             when (gestureState) {
                 GestureState.HOVER -> {
-                    while (this@coroutineScope.isActive && !event.changes.any { it.customIsOutOfBounds(size, extendedTouchPadding) }) {
-                        previousEvent = event
-                        event = awaitPointerEvent()
-                        event.changes.forEach { it.consume() }
+                    do {
                         val eventChanges = getGestureStateChanges(event, previousEvent)
 
                         if (eventChanges.contains(GestureChangeState.PRESS) && !event.keyboardModifiers.isCtrlPressed) {
@@ -90,7 +101,9 @@ actual suspend fun PointerInputScope.detectMapGestures(
                             break
                         }
                         onHover.invoke(event.changes[0].position)
-                    }
+
+                        event = awaitPointerEvent()
+                    } while (!event.changes.any { it.isOutOfBounds(size, extendedTouchPadding) })
                 }
 
                 GestureState.WAITING_UP -> {
@@ -271,17 +284,27 @@ actual suspend fun PointerInputScope.detectMapGestures(
                 else -> continue
             }
         } while (this@coroutineScope.isActive && !event.changes.any { it.customIsOutOfBounds(size, extendedTouchPadding) })
+
     }
 }
 
-//This is necessary because for js method isOutOfBounds doesn't work properly at all
-fun PointerInputChange.customIsOutOfBounds(size: IntSize, extendedTouchPadding: Size): Boolean {
-    val position = position
-    val x = position.x
-    val y = position.y
-    val minX = -extendedTouchPadding.width
-    val maxX = size.width + extendedTouchPadding.width
-    val minY = -extendedTouchPadding.height
-    val maxY = size.height + extendedTouchPadding.height
-    return x <= minX || x >= maxX || y <= minY || y >= maxY
+/**
+ * [awaitMapGesture] is a version of [awaitEachGesture] where after the gestures ends it does
+ * not [awaitAllPointersUp].
+ *
+ * Repeatedly calls [block] to handle gestures. If there is a [CancellationException],
+ * it will exits if [isActive] is `false`.
+ */
+internal suspend fun PointerInputScope.awaitMapGesture(block: suspend AwaitPointerEventScope.() -> Unit) {
+    val currentContext = currentCoroutineContext()
+    awaitPointerEventScope {
+        while (currentContext.isActive) {
+            try {
+                block()
+            } catch (e: CancellationException) {
+                if (!currentContext.isActive)
+                    throw e
+            }
+        }
+    }
 }
