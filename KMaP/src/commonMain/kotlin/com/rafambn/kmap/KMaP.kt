@@ -25,10 +25,7 @@ import com.rafambn.kmap.core.MotionController
 import com.rafambn.kmap.core.TileCanvas
 import com.rafambn.kmap.core.componentInfo
 import com.rafambn.kmap.core.state.MapState
-import com.rafambn.kmap.gestures.detectMapGestures
-import com.rafambn.kmap.utils.asDifferentialScreenOffset
 import com.rafambn.kmap.utils.asOffset
-import com.rafambn.kmap.utils.asScreenOffset
 import kotlin.math.pow
 
 @Composable
@@ -36,13 +33,11 @@ fun KMaP(
     modifier: Modifier = Modifier,
     motionController: MotionController,
     mapState: MapState,
-    canvasGestureListener: DefaultCanvasGestureListener = DefaultCanvasGestureListener(),
     content: KMaPScope.() -> Unit //TODO understand why this reference doesnt change for markers map
 ) {
     val density = LocalDensity.current
     LaunchedEffect(Unit) {
         motionController.setMap(mapState)
-        canvasGestureListener.setMotionController(motionController)
         mapState.setDensity(density)
     }
     //TODO improve this code to prevent unnecessary recompositions
@@ -119,7 +114,8 @@ fun KMaP(
                     },
                     modifier = Modifier
                         .fillMaxSize()
-                        .componentInfo(MapComponentInfo(it.canvasParameters, Offset.Zero, ComponentType.CANVAS)),
+                        .componentInfo(MapComponentInfo(it.canvasParameters, Offset.Zero, ComponentType.CANVAS))
+                        .then(it.gestureDetection?.let { Modifier.pointerInput(PointerEventPass.Main) { it(this) } } ?: Modifier),
                     measurePolicy = { measurables, constraints ->
                         val placeable = measurables.first().measure(constraints)
                         layout(placeable.width, placeable.height) {
@@ -142,22 +138,6 @@ fun KMaP(
                         coordinates.size.width.toFloat(),
                         coordinates.size.height.toFloat()
                     )
-                )
-            }
-            .pointerInput(PointerEventPass.Main) { //TODO add this to the canvas
-                detectMapGestures(
-                    onTap = { offset -> canvasGestureListener.onTap(offset.asScreenOffset()) },
-                    onDoubleTap = { offset -> canvasGestureListener.onDoubleTap(offset.asScreenOffset()) },
-                    onLongPress = { offset -> canvasGestureListener.onLongPress(offset.asScreenOffset()) },
-                    onTapLongPress = { offset -> canvasGestureListener.onTapLongPress(offset.asDifferentialScreenOffset()) },
-                    onTapSwipe = { centroid, zoom -> canvasGestureListener.onTapSwipe(centroid.asScreenOffset(), zoom) },
-                    onDrag = { dragAmount -> canvasGestureListener.onDrag(dragAmount.asDifferentialScreenOffset()) },
-                    onTwoFingersTap = { offset -> canvasGestureListener.onTwoFingersTap(offset.asScreenOffset()) },
-                    onGesture = { centroid, pan, zoom, rotation -> canvasGestureListener.onGesture(centroid.asScreenOffset(), pan.asDifferentialScreenOffset(), zoom, rotation) },
-                    onHover = { offset -> canvasGestureListener.onHover(offset.asScreenOffset()) },
-                    onScroll = { mouseOffset, scrollAmount -> canvasGestureListener.onScroll(mouseOffset.asScreenOffset(), scrollAmount) },
-                    onCtrlGesture = { rotation -> canvasGestureListener.onCtrlGesture(rotation) },
-                    currentGestureFlow = canvasGestureListener._currentGestureFlow
                 )
             }
     ) { measurables, constraints ->

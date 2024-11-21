@@ -26,7 +26,7 @@ import kotlin.properties.Delegates
 /**
  * [detectMapGestures] detects all kinds of gestures needed for KMaP
  */
-internal actual suspend fun PointerInputScope.detectMapGestures(
+actual suspend fun PointerInputScope.detectMapGestures(
     onTap: (Offset) -> Unit,
     onDoubleTap: (Offset) -> Unit,
     onLongPress: (Offset) -> Unit,

@@ -3,6 +3,7 @@ package com.rafambn.kmap.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -18,8 +19,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import com.rafambn.kmap.DefaultCanvasGestureListener
 import com.rafambn.kmap.KMaP
 import com.rafambn.kmap.canvas
 import com.rafambn.kmap.core.DrawPosition
@@ -28,9 +29,13 @@ import com.rafambn.kmap.core.rememberMotionController
 import com.rafambn.kmap.core.state.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
+import com.rafambn.kmap.gestures.detectMapGestures
 import com.rafambn.kmap.marker
 import com.rafambn.kmap.markers
+import com.rafambn.kmap.utils.CanvasPosition
 import com.rafambn.kmap.utils.ProjectedCoordinates
+import com.rafambn.kmap.utils.asDifferentialScreenOffset
+import com.rafambn.kmap.utils.asScreenOffset
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import kmap.kmapdemo.generated.resources.pin
@@ -51,9 +56,36 @@ fun MarkersScreen(
             modifier = Modifier.align(Alignment.Center).fillMaxSize(),
             motionController = motionController,
             mapState = mapState,
-            canvasGestureListener = DefaultCanvasGestureListener()
         ) {
-            canvas(tileSource = SimpleMapTileSource()::getTile)
+            canvas(tileSource = SimpleMapTileSource()::getTile,
+                gestureDetection = {
+                    detectMapGestures(
+                        onTap = { offset ->
+//                            canvasGestureListener.onTap(offset.asScreenOffset())
+                        },
+                        onDoubleTap = { offset -> motionController.move { zoomByCentered(-1 / 3F, offset.asScreenOffset()) } },
+                        onLongPress = { offset ->
+//                            canvasGestureListener.onLongPress(offset.asScreenOffset())
+                        },
+                        onTapLongPress = { offset -> motionController.move { positionBy(offset.asDifferentialScreenOffset()) } },
+                        onTapSwipe = { centroid, zoom -> motionController.move { zoomByCentered(zoom, centroid.asScreenOffset()) } },
+                        onDrag = { dragAmount -> motionController.move { positionBy(dragAmount.asDifferentialScreenOffset()) } },
+                        onTwoFingersTap = { offset -> motionController.move { zoomByCentered(1 / 3F, offset.asScreenOffset()) } },
+                        onGesture = { centroid, pan, zoom, rotation ->
+                            motionController.move {
+                                rotateByCentered(rotation.toDouble(), centroid.asScreenOffset())
+                                zoomByCentered(zoom, centroid.asScreenOffset())
+                                positionBy(pan.asDifferentialScreenOffset())
+                            }
+                        },
+                        onHover = { offset ->
+//                            canvasGestureListener.onHover(offset.asScreenOffset())
+                        },
+                        onScroll = { mouseOffset, scrollAmount -> motionController.move { zoomByCentered(scrollAmount, mouseOffset.asScreenOffset()) } },
+                        onCtrlGesture = { rotation -> motionController.move { rotateBy(rotation.toDouble()) } },
+//                        currentGestureFlow = canvasGestureListener._currentGestureFlow
+                    )
+                })
             marker(
                 MarkerParameters(
                     ProjectedCoordinates(-0.0, -0.0),
@@ -138,36 +170,35 @@ fun MarkersScreen(
                         .size(32.dp)
                 )
             }
-//            marker(//TODO add when pointer events in canvas are improved
-//                MarkerParameters(
-//                    draggableMarkerPos,
-//                    drawPosition = DrawPosition.TOP_RIGHT,
-//                    tag = "Draggable marker"
-//                )
-//            ) {
-//                Text(
-//                    text = "Draggable marker",
-//                    modifier = Modifier
-//                        .background(Color.Black)
-//                        .padding(16.dp)
-//                        .pointerInput(Unit) {
-//                            detectDragGestures { change, dragAmount ->
-//                                change.consume()
-//                                val canvasDelta: CanvasPosition
-//                                with(mapState) {
-//                                    canvasDelta = dragAmount.fromDifferentialScreenOffsetToCanvasPosition()
-//                                }
-//                                val coordinatesDelta: ProjectedCoordinates = SimpleMapProperties().toProjectedCoordinates(canvasDelta)
-//                                draggableMarkerPos = ProjectedCoordinates(
-//                                    draggableMarkerPos.horizontal - coordinatesDelta.horizontal,
-//                                    draggableMarkerPos.vertical - coordinatesDelta.vertical
-//                                )
-//                                //TODO fix coordinate system
-//                            }
-//                        },
-//                    color = Color.White
-//                )
-//            }
+            marker(
+                MarkerParameters(
+                    draggableMarkerPos,
+                    drawPosition = DrawPosition.TOP_RIGHT,
+                    tag = "Draggable marker"
+                )
+            ) {
+                Text(
+                    text = "Draggable marker",
+                    modifier = Modifier
+                        .background(Color.Black)
+                        .padding(16.dp)
+                        .pointerInput(Unit) {
+                            detectDragGestures { change, dragAmount ->
+                                change.consume()
+                                val canvasDelta: CanvasPosition
+                                with(mapState) {
+                                    canvasDelta = dragAmount.asDifferentialScreenOffset().toCanvasPosition()
+                                }
+                                val coordinatesDelta: ProjectedCoordinates = SimpleMapProperties().toProjectedCoordinates(canvasDelta)
+                                draggableMarkerPos = ProjectedCoordinates(
+                                    draggableMarkerPos.longitude - coordinatesDelta.longitude,
+                                    draggableMarkerPos.latitude - coordinatesDelta.latitude
+                                )
+                            }
+                        },
+                    color = Color.White
+                )
+            }
         }
         Button(
             onClick = {

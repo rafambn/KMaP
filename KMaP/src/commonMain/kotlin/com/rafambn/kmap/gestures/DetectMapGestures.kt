@@ -16,7 +16,7 @@ import kotlin.math.atan2
 /**
  * [detectMapGestures] detects all kinds of gestures needed for KMaP
  */
-internal expect suspend fun PointerInputScope.detectMapGestures(//TODO make it no use consumed pointer events
+expect suspend fun PointerInputScope.detectMapGestures(//TODO make it no use consumed pointer events
     onTap: (Offset) -> Unit, //common use
     onDoubleTap: (Offset) -> Unit,
     onLongPress: (Offset) -> Unit,

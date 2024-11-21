@@ -2,6 +2,7 @@ package com.rafambn.kmap.core
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.unit.Dp
 import com.rafambn.kmap.utils.TileRenderResult
@@ -55,7 +56,8 @@ data class Marker(
 
 data class Canvas(
     val canvasParameters: CanvasParameters,
-    val getTile: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult
+    val getTile: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult,
+    val gestureDetection: (suspend PointerInputScope.() -> Unit)?,
 )
 
 data class Cluster(

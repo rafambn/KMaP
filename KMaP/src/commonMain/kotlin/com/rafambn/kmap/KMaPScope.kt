@@ -1,6 +1,7 @@
 package com.rafambn.kmap
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.input.pointer.PointerInputScope
 import com.rafambn.kmap.core.Canvas
 import com.rafambn.kmap.core.CanvasParameters
 import com.rafambn.kmap.core.ClusterComponent
@@ -22,10 +23,11 @@ fun KMaPScope.cluster(
 
 fun KMaPScope.canvas(
     canvasParameters: CanvasParameters = CanvasParameters(),
-    tileSource: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult
+    tileSource: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult,
+    gestureDetection: (suspend PointerInputScope.() -> Unit)? = null
 ) {
     if (this is KMaPContent) {
-        visibleCanvas.add(Canvas(canvasParameters, tileSource))
+        visibleCanvas.add(Canvas(canvasParameters, tileSource, gestureDetection))
     }
 }
 
