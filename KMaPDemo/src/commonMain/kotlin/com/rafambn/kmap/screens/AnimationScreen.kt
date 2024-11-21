@@ -22,12 +22,11 @@ import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.DefaultCanvasGestureListener
 import com.rafambn.kmap.KMaP
 import com.rafambn.kmap.canvas
-import com.rafambn.kmap.core.MotionController
 import com.rafambn.kmap.core.rememberMotionController
 import com.rafambn.kmap.core.state.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
-import com.rafambn.kmap.utils.offsets.ProjectedCoordinates
+import com.rafambn.kmap.utils.ProjectedCoordinates
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import kotlinx.coroutines.Dispatchers
@@ -52,18 +51,18 @@ fun AnimationScreen(
         job = scope.launch {
             motionController.animate {
                 withContext(Dispatchers.Main) { description = "Panning" }
-                positionTo(MotionController.CenterLocation.Coordinates(ProjectedCoordinates(0.0, 0.0)))
-                positionTo(MotionController.CenterLocation.Coordinates(ProjectedCoordinates(180.0, 90.0)))
-                positionTo(MotionController.CenterLocation.Coordinates(ProjectedCoordinates(45.0, 0.0)))
+                positionTo(ProjectedCoordinates(0.0, 0.0))
+                positionTo(ProjectedCoordinates(180.0, 90.0))
+                positionTo(ProjectedCoordinates(45.0, 0.0))
                 withContext(Dispatchers.Main) { description = "Zooming by 1 level" }
                 zoomBy(1F)
                 zoomBy(-1F)
                 withContext(Dispatchers.Main) { description = "Zooming centered on (0.0, 0.0)" }
-                zoomToCentered(1F, MotionController.CenterLocation.Coordinates(ProjectedCoordinates(0.0, 0.0)))
+                zoomToCentered(1F, ProjectedCoordinates(0.0, 0.0))
                 withContext(Dispatchers.Main) { description = "Rotating around screen center" }
                 rotateBy(360.0)
                 withContext(Dispatchers.Main) { description = "Rotating centered on (0.0, 0.0)" }
-                rotateByCentered(-360.0, MotionController.CenterLocation.Coordinates(ProjectedCoordinates(0.0, 0.0)))
+                rotateByCentered(-360.0, ProjectedCoordinates(0.0, 0.0))
                 withContext(Dispatchers.Main) { description = "No Animation" }
             }
         }

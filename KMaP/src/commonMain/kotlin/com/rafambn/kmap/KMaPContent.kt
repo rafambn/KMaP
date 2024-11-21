@@ -1,15 +1,14 @@
 package com.rafambn.kmap
 
-import androidx.compose.ui.geometry.Offset
 import com.rafambn.kmap.core.Canvas
 import com.rafambn.kmap.core.Cluster
 import com.rafambn.kmap.core.ClusterComponent
 import com.rafambn.kmap.core.Marker
 import com.rafambn.kmap.core.MarkerComponent
 import com.rafambn.kmap.core.state.MapState
+import com.rafambn.kmap.utils.ScreenOffset
 import kotlin.math.pow
 import kotlin.math.sqrt
-
 
 class KMaPContent(
     content: KMaPScope.() -> Unit,
@@ -54,7 +53,7 @@ class KMaPContent(
         }
     }
 
-    private fun distance(point1: Offset, point2: Offset): Float {
+    private fun distance(point1: ScreenOffset, point2: ScreenOffset): Float {
         val xDifference = point2.x - point1.x
         val yDifference = point2.y - point1.y
         return sqrt(xDifference.pow(2) + yDifference.pow(2))

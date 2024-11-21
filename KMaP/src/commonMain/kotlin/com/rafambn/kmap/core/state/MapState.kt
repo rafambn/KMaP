@@ -15,13 +15,15 @@ import com.rafambn.kmap.config.characteristics.MapCoordinatesRange
 import com.rafambn.kmap.model.BoundingBox
 import com.rafambn.kmap.model.CameraState
 import com.rafambn.kmap.model.TileSpecs
+import com.rafambn.kmap.utils.CanvasDrawReference
+import com.rafambn.kmap.utils.CanvasPosition
+import com.rafambn.kmap.utils.DifferentialScreenOffset
+import com.rafambn.kmap.utils.ProjectedCoordinates
+import com.rafambn.kmap.utils.ScreenOffset
+import com.rafambn.kmap.utils.asCanvasPosition
+import com.rafambn.kmap.utils.asDifferentialScreenOffset
+import com.rafambn.kmap.utils.asScreenOffset
 import com.rafambn.kmap.utils.loopInRange
-import com.rafambn.kmap.utils.offsets.CanvasDrawReference
-import com.rafambn.kmap.utils.offsets.CanvasPosition
-import com.rafambn.kmap.utils.offsets.DifferentialScreenOffset
-import com.rafambn.kmap.utils.offsets.ProjectedCoordinates
-import com.rafambn.kmap.utils.offsets.ScreenOffset
-import com.rafambn.kmap.utils.offsets.toPosition
 import com.rafambn.kmap.utils.rotate
 import com.rafambn.kmap.utils.toIntFloor
 import com.rafambn.kmap.utils.toRadians
@@ -80,14 +82,14 @@ class MapState(
     //Utility functions
     private fun getBoundingBox(): BoundingBox {
         return BoundingBox(
-            Offset.Zero.fromScreenOffsetToCanvasPosition(),
-            Offset(cameraState.canvasSize.x, 0F).fromScreenOffsetToCanvasPosition(),
-            cameraState.canvasSize.fromScreenOffsetToCanvasPosition(),
-            Offset(0F, cameraState.canvasSize.y).fromScreenOffsetToCanvasPosition(),
+            ScreenOffset.Zero.toCanvasPosition(),
+            ScreenOffset(cameraState.canvasSize.x, 0F).toCanvasPosition(),
+            cameraState.canvasSize.toCanvasPosition(),
+            ScreenOffset(0F, cameraState.canvasSize.y).toCanvasPosition(),
         )
     }
 
-    fun CanvasPosition.coerceInMap(): CanvasPosition {
+    private fun CanvasPosition.coerceInMap(): CanvasPosition {
         val x = if (mapProperties.boundMap.horizontal == MapBorderType.BOUND)
             horizontal.coerceIn(
                 mapProperties.mapCoordinatesRange.longitude.west * mapProperties.mapCoordinatesRange.longitude.getOrientation(),
@@ -110,17 +112,15 @@ class MapState(
     }
 
     fun centerPositionAtOffset(position: CanvasPosition, offset: ScreenOffset) {
-        setRawPosition(cameraState.rawPosition + position - offset.fromScreenOffsetToCanvasPosition())
+        setRawPosition(cameraState.rawPosition + position - offset.toCanvasPosition())
     }
 
     //Conversion Functions
-    fun ScreenOffset.fromScreenOffsetToCanvasPosition(): CanvasPosition = this.toCanvasPositionFromScreenCenter() + cameraState.rawPosition
+    fun ScreenOffset.toCanvasPosition(): CanvasPosition =
+        (cameraState.canvasSize / 2F - this).asDifferentialScreenOffset().toCanvasPosition() + cameraState.rawPosition
 
-    fun DifferentialScreenOffset.toCanvasPositionFromScreenCenter(): CanvasPosition =
-        (cameraState.canvasSize / 2F - this).fromDifferentialScreenOffsetToCanvasPosition()
-
-    fun DifferentialScreenOffset.fromDifferentialScreenOffsetToCanvasPosition(): CanvasPosition =
-        (this.toPosition() / density.density.toDouble())
+    fun DifferentialScreenOffset.toCanvasPosition(): CanvasPosition =
+        (this.asCanvasPosition() / density.density.toDouble())
             .scaleToZoom(1 / (mapProperties.tileSize * magnifierScale * (1 shl zoomLevel)))
             .rotate(-cameraState.angleDegrees.toRadians())
             .scaleToMap(
@@ -129,7 +129,18 @@ class MapState(
             )
             .applyOrientation(mapProperties.mapCoordinatesRange)
 
-    fun CanvasPosition.toCanvasDrawReference(): CanvasDrawReference {
+    fun CanvasPosition.toScreenOffset(): ScreenOffset = -(this - cameraState.rawPosition)
+        .applyOrientation(mapProperties.mapCoordinatesRange)
+        .scaleToMap(
+            1 / mapProperties.mapCoordinatesRange.longitude.span,
+            1 / mapProperties.mapCoordinatesRange.latitude.span
+        )
+        .rotate(cameraState.angleDegrees.toRadians())
+        .scaleToZoom(mapProperties.tileSize * magnifierScale * (1 shl zoomLevel))
+        .times(density.density.toDouble()).asScreenOffset()
+        .minus(cameraState.canvasSize / 2F)
+
+    private fun CanvasPosition.toCanvasDrawReference(): CanvasDrawReference {
         val canvasDrawReference = this.applyOrientation(mapProperties.mapCoordinatesRange)
             .moveToTrueCoordinates(mapProperties.mapCoordinatesRange)
             .scaleToZoom((mapProperties.tileSize * (1 shl zoomLevel)).toFloat())
@@ -140,41 +151,30 @@ class MapState(
         return CanvasDrawReference(canvasDrawReference.horizontal, canvasDrawReference.vertical)
     }
 
-    fun CanvasPosition.toScreenOffset(): ScreenOffset = -(this - cameraState.rawPosition)
-        .applyOrientation(mapProperties.mapCoordinatesRange)
-        .scaleToMap(
-            1 / mapProperties.mapCoordinatesRange.longitude.span,
-            1 / mapProperties.mapCoordinatesRange.latitude.span
-        )
-        .rotate(cameraState.angleDegrees.toRadians())
-        .scaleToZoom(mapProperties.tileSize * magnifierScale * (1 shl zoomLevel))
-        .times(density.density.toDouble()).toOffset()
-        .minus(cameraState.canvasSize / 2F)
-
-
-    fun CanvasPosition.scaleToZoom(zoomScale: Float): CanvasPosition {
+    //Transformation functions
+    private fun CanvasPosition.scaleToZoom(zoomScale: Float): CanvasPosition {
         return CanvasPosition(horizontal * zoomScale, vertical * zoomScale)
     }
 
-    fun CanvasPosition.moveToTrueCoordinates(mapCoordinatesRange: MapCoordinatesRange): CanvasPosition {
+    private fun CanvasPosition.moveToTrueCoordinates(mapCoordinatesRange: MapCoordinatesRange): CanvasPosition {
         return CanvasPosition(
             horizontal - mapCoordinatesRange.longitude.span / 2,
             vertical - mapCoordinatesRange.latitude.span / 2
         )
     }
 
-    fun CanvasPosition.scaleToMap(horizontal: Double, vertical: Double): CanvasPosition {
+    private fun CanvasPosition.scaleToMap(horizontal: Double, vertical: Double): CanvasPosition {
         return CanvasPosition(this.horizontal * horizontal, this.vertical * vertical)
     }
 
-    fun CanvasPosition.applyOrientation(mapCoordinatesRange: MapCoordinatesRange): CanvasPosition {
+    private fun CanvasPosition.applyOrientation(mapCoordinatesRange: MapCoordinatesRange): CanvasPosition {
         return CanvasPosition(
             horizontal * mapCoordinatesRange.longitude.getOrientation(),
             vertical * mapCoordinatesRange.latitude.getOrientation()
         )
     }
 
-    fun CanvasPosition.applyInverseOrientation(mapCoordinatesRange: MapCoordinatesRange): CanvasPosition {
+    private fun CanvasPosition.applyInverseOrientation(mapCoordinatesRange: MapCoordinatesRange): CanvasPosition {
         return CanvasPosition(
             horizontal * mapCoordinatesRange.longitude.getOrientation() * -1,
             vertical * mapCoordinatesRange.latitude.getOrientation() * -1
@@ -249,20 +249,16 @@ class MapState(
         )
     }
 
-    internal fun ProjectedCoordinates.toCanvasPosition(): CanvasPosition = with(mapProperties) {
-        toCanvasPosition(this@toCanvasPosition)
-    }
+    fun ProjectedCoordinates.toCanvasPosition(): CanvasPosition = mapProperties.toCanvasPosition(this@toCanvasPosition)
 
-    internal fun CanvasPosition.toProjectedCoordinates(): ProjectedCoordinates = with(mapProperties) {
-        toProjectedCoordinates(this@toProjectedCoordinates)
-    }
+    fun CanvasPosition.toProjectedCoordinates(): ProjectedCoordinates = mapProperties.toProjectedCoordinates(this@toProjectedCoordinates)
 
     internal fun setDensity(density: Density) {
         this.density = density
     }
 
     fun setCanvasSize(offset: Offset) {
-        cameraState = cameraState.copy(canvasSize = offset)
+        cameraState = cameraState.copy(canvasSize = offset.asScreenOffset())
     }
 
     fun setZoom(zoom: Float) {

@@ -2,8 +2,8 @@ package com.rafambn.kmap
 
 import com.rafambn.kmap.core.MotionController
 import com.rafambn.kmap.gestures.GestureState
-import com.rafambn.kmap.utils.offsets.DifferentialScreenOffset
-import com.rafambn.kmap.utils.offsets.ScreenOffset
+import com.rafambn.kmap.utils.DifferentialScreenOffset
+import com.rafambn.kmap.utils.ScreenOffset
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
@@ -21,29 +21,29 @@ open class DefaultCanvasGestureListener {
     }
 
     fun onDoubleTap(screenOffset: ScreenOffset) {
-        motionController?.move { zoomByCentered(-1 / 3F, MotionController.CenterLocation.Offset(screenOffset)) }
+        motionController?.move { zoomByCentered(-1 / 3F, screenOffset) }
     }
 
     fun onTwoFingersTap(screenOffset: ScreenOffset) {
-        motionController?.move { zoomByCentered(1 / 3F, MotionController.CenterLocation.Offset(screenOffset)) }
+        motionController?.move { zoomByCentered(1 / 3F, screenOffset) }
     }
 
     fun onLongPress(screenOffset: ScreenOffset) {
     }
 
     fun onTapLongPress(differentialScreenOffset: DifferentialScreenOffset) {
-        motionController?.move { positionBy(MotionController.CenterLocation.Offset(differentialScreenOffset)) }
+        motionController?.move { positionBy(differentialScreenOffset) }
     }
 
     fun onTapSwipe(screenOffset: ScreenOffset, zoom: Float) {
-        motionController?.move { zoomByCentered(zoom, MotionController.CenterLocation.Offset(screenOffset)) }
+        motionController?.move { zoomByCentered(zoom, screenOffset) }
     }
 
     fun onGesture(screenOffset: ScreenOffset, differentialScreenOffset: DifferentialScreenOffset, zoom: Float, rotation: Float) {
         motionController?.move {
-            rotateByCentered(rotation.toDouble(), MotionController.CenterLocation.Offset(screenOffset))
-            zoomByCentered(zoom, MotionController.CenterLocation.Offset(screenOffset))
-            positionBy(MotionController.CenterLocation.Offset(differentialScreenOffset))
+            rotateByCentered(rotation.toDouble(), screenOffset)
+            zoomByCentered(zoom, screenOffset)
+            positionBy(differentialScreenOffset)
         }
     }
 
@@ -52,13 +52,13 @@ open class DefaultCanvasGestureListener {
     }
 
     fun onDrag(differentialScreenOffset: DifferentialScreenOffset) {
-        motionController?.move { positionBy(MotionController.CenterLocation.Offset(differentialScreenOffset)) }
+        motionController?.move { positionBy(differentialScreenOffset) }
     }
 
     fun onHover(screenOffset: ScreenOffset) {
     }
 
     fun onScroll(screenOffset: ScreenOffset, scrollAmount: Float) {
-        motionController?.move { zoomByCentered(scrollAmount, MotionController.CenterLocation.Offset(screenOffset)) }
+        motionController?.move { zoomByCentered(scrollAmount, screenOffset) }
     }
 }

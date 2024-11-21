@@ -1,10 +1,10 @@
 package com.rafambn.kmap.model
 
-import androidx.compose.ui.geometry.Offset
-import com.rafambn.kmap.utils.offsets.CanvasPosition
+import com.rafambn.kmap.utils.CanvasPosition
+import com.rafambn.kmap.utils.ScreenOffset
 
 data class CameraState(
-    val canvasSize: Offset = Offset.Zero,
+    val canvasSize: ScreenOffset = ScreenOffset.Zero,
     val zoom: Float = 0F,
     val angleDegrees: Double = 0.0,
     val rawPosition: CanvasPosition = CanvasPosition.Zero,

@@ -8,8 +8,8 @@ import com.rafambn.kmap.config.characteristics.Latitude
 import com.rafambn.kmap.config.characteristics.Longitude
 import com.rafambn.kmap.config.characteristics.MapCoordinatesRange
 import com.rafambn.kmap.config.characteristics.MapZoomLevelsRange
-import com.rafambn.kmap.utils.offsets.CanvasPosition
-import com.rafambn.kmap.utils.offsets.ProjectedCoordinates
+import com.rafambn.kmap.utils.CanvasPosition
+import com.rafambn.kmap.utils.ProjectedCoordinates
 
 data class SimpleMapProperties(
     override val boundMap: BoundMapBorder = BoundMapBorder(MapBorderType.BOUND, MapBorderType.BOUND),
@@ -19,8 +19,8 @@ data class SimpleMapProperties(
     override val tileSize: Int = 900
 ) : MapProperties {
     override fun toCanvasPosition(projectedCoordinates: ProjectedCoordinates): CanvasPosition = CanvasPosition(
-        projectedCoordinates.horizontal,
-        projectedCoordinates.vertical
+        projectedCoordinates.longitude,
+        projectedCoordinates.latitude
     )
 
     override fun toProjectedCoordinates(canvasPosition: CanvasPosition): ProjectedCoordinates = ProjectedCoordinates(

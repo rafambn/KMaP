@@ -6,8 +6,8 @@ import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.unit.Dp
 import com.rafambn.kmap.utils.TileRenderResult
 import com.rafambn.kmap.utils.Degrees
-import com.rafambn.kmap.utils.offsets.ProjectedCoordinates
-import com.rafambn.kmap.utils.offsets.ScreenOffset
+import com.rafambn.kmap.utils.ProjectedCoordinates
+import com.rafambn.kmap.utils.ScreenOffset
 
 data class MarkerParameters(
     val coordinates: ProjectedCoordinates,

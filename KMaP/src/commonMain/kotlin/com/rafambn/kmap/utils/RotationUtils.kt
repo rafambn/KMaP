@@ -1,6 +1,5 @@
 package com.rafambn.kmap.utils
 
-import com.rafambn.kmap.utils.offsets.CanvasPosition
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin

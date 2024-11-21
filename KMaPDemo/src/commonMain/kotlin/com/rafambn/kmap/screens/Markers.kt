@@ -30,7 +30,7 @@ import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
 import com.rafambn.kmap.marker
 import com.rafambn.kmap.markers
-import com.rafambn.kmap.utils.offsets.ProjectedCoordinates
+import com.rafambn.kmap.utils.ProjectedCoordinates
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import kmap.kmapdemo.generated.resources.pin

@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.core.state.TileCanvasState
 import com.rafambn.kmap.utils.TileRenderResult
 import com.rafambn.kmap.model.TileSpecs
-import com.rafambn.kmap.utils.offsets.CanvasDrawReference
+import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.toIntFloor
 import kotlin.math.pow
 

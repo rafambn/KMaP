@@ -8,8 +8,8 @@ import com.rafambn.kmap.config.characteristics.Latitude
 import com.rafambn.kmap.config.characteristics.Longitude
 import com.rafambn.kmap.config.characteristics.MapCoordinatesRange
 import com.rafambn.kmap.config.characteristics.MapZoomLevelsRange
-import com.rafambn.kmap.utils.offsets.CanvasPosition
-import com.rafambn.kmap.utils.offsets.ProjectedCoordinates
+import com.rafambn.kmap.utils.CanvasPosition
+import com.rafambn.kmap.utils.ProjectedCoordinates
 import kotlin.math.E
 import kotlin.math.PI
 import kotlin.math.atan
@@ -25,8 +25,8 @@ data class OSMMapProperties(
     override val tileSize: Int = 256
 ) : MapProperties {
     override fun toCanvasPosition(projectedCoordinates: ProjectedCoordinates): CanvasPosition = CanvasPosition(
-        projectedCoordinates.horizontal,
-        ln(tan(PI / 4 + (PI * projectedCoordinates.vertical) / 360)) / (PI / 85.051129)
+        projectedCoordinates.longitude,
+        ln(tan(PI / 4 + (PI * projectedCoordinates.latitude) / 360)) / (PI / 85.051129)
     )
 
     override fun toProjectedCoordinates(canvasPosition: CanvasPosition): ProjectedCoordinates = ProjectedCoordinates(

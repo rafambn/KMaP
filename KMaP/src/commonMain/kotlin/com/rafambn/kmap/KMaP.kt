@@ -26,6 +26,9 @@ import com.rafambn.kmap.core.TileCanvas
 import com.rafambn.kmap.core.componentInfo
 import com.rafambn.kmap.core.state.MapState
 import com.rafambn.kmap.gestures.detectMapGestures
+import com.rafambn.kmap.utils.asDifferentialScreenOffset
+import com.rafambn.kmap.utils.asOffset
+import com.rafambn.kmap.utils.asScreenOffset
 import kotlin.math.pow
 
 @Composable
@@ -52,7 +55,7 @@ fun KMaP(
                     content = { it.markerContent.invoke(it.markerParameters) },
                     modifier = Modifier.Companion.componentInfo(
                         MapComponentInfo(
-                            it.markerParameters, it.placementOffset, ComponentType.MARKER
+                            it.markerParameters, it.placementOffset.asOffset(), ComponentType.MARKER
                         )
                     ),
                     measurePolicy = { measurables, constraints ->
@@ -78,7 +81,7 @@ fun KMaP(
             kmapContent.visibleClusters.forEach {
                 Layout(
                     content = { it.clusterContent.invoke(it.clusterParameters, it.size) },
-                    modifier = Modifier.componentInfo(MapComponentInfo(it.clusterParameters, it.placementOffset, ComponentType.CLUSTER)),
+                    modifier = Modifier.componentInfo(MapComponentInfo(it.clusterParameters, it.placementOffset.asOffset(), ComponentType.CLUSTER)),
                     measurePolicy = { measurables, constraints ->
                         if (measurables.isEmpty())
                             return@Layout layout(0, 0) {}
@@ -106,7 +109,7 @@ fun KMaP(
                             getTile = it.getTile,
                             magnifierScale = mapState.magnifierScale,
                             rotationDegrees = mapState.cameraState.angleDegrees.toFloat(),
-                            translation = mapState.cameraState.canvasSize / 2F,
+                            translation = mapState.cameraState.canvasSize.asOffset() / 2F,
                             tileSize = mapState.mapProperties.tileSize,
                             positionOffset = mapState.drawReference,
                             zoomLevel = mapState.zoomLevel,
@@ -134,23 +137,25 @@ fun KMaP(
             .clipToBounds()
             .wrapContentSize()
             .onGloballyPositioned { coordinates ->
-                mapState.setCanvasSize(Offset(
-                    coordinates.size.width.toFloat(),
-                    coordinates.size.height.toFloat()
-                ))
+                mapState.setCanvasSize(
+                    Offset(
+                        coordinates.size.width.toFloat(),
+                        coordinates.size.height.toFloat()
+                    )
+                )
             }
             .pointerInput(PointerEventPass.Main) { //TODO add this to the canvas
                 detectMapGestures(
-                    onTap = { offset -> canvasGestureListener.onTap(offset) },
-                    onDoubleTap = { offset -> canvasGestureListener.onDoubleTap(offset) },
-                    onLongPress = { offset -> canvasGestureListener.onLongPress(offset) },
-                    onTapLongPress = { offset -> canvasGestureListener.onTapLongPress(offset) },
-                    onTapSwipe = { centroid, zoom -> canvasGestureListener.onTapSwipe(centroid, zoom) },
-                    onDrag = { dragAmount -> canvasGestureListener.onDrag(dragAmount) },
-                    onTwoFingersTap = { offset -> canvasGestureListener.onTwoFingersTap(offset) },
-                    onGesture = { centroid, pan, zoom, rotation -> canvasGestureListener.onGesture(centroid, pan, zoom, rotation) },
-                    onHover = { offset -> canvasGestureListener.onHover(offset) },
-                    onScroll = { mouseOffset, scrollAmount -> canvasGestureListener.onScroll(mouseOffset, scrollAmount) },
+                    onTap = { offset -> canvasGestureListener.onTap(offset.asScreenOffset()) },
+                    onDoubleTap = { offset -> canvasGestureListener.onDoubleTap(offset.asScreenOffset()) },
+                    onLongPress = { offset -> canvasGestureListener.onLongPress(offset.asScreenOffset()) },
+                    onTapLongPress = { offset -> canvasGestureListener.onTapLongPress(offset.asDifferentialScreenOffset()) },
+                    onTapSwipe = { centroid, zoom -> canvasGestureListener.onTapSwipe(centroid.asScreenOffset(), zoom) },
+                    onDrag = { dragAmount -> canvasGestureListener.onDrag(dragAmount.asDifferentialScreenOffset()) },
+                    onTwoFingersTap = { offset -> canvasGestureListener.onTwoFingersTap(offset.asScreenOffset()) },
+                    onGesture = { centroid, pan, zoom, rotation -> canvasGestureListener.onGesture(centroid.asScreenOffset(), pan.asDifferentialScreenOffset(), zoom, rotation) },
+                    onHover = { offset -> canvasGestureListener.onHover(offset.asScreenOffset()) },
+                    onScroll = { mouseOffset, scrollAmount -> canvasGestureListener.onScroll(mouseOffset.asScreenOffset(), scrollAmount) },
                     onCtrlGesture = { rotation -> canvasGestureListener.onCtrlGesture(rotation) },
                     currentGestureFlow = canvasGestureListener._currentGestureFlow
                 )

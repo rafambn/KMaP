@@ -1,8 +1,6 @@
 package com.rafambn.kmap.utils
 
 import com.rafambn.kmap.config.characteristics.CoordinatesInterface
-import com.rafambn.kmap.utils.offsets.CanvasPosition
-import com.rafambn.kmap.utils.offsets.ProjectedCoordinates
 import kotlin.math.floor
 
 fun Double.loopInRange(coordinatesRange: CoordinatesInterface): Double =
@@ -16,7 +14,7 @@ fun lerp(start: CanvasPosition, end: CanvasPosition, value: Double): CanvasPosit
     CanvasPosition(lerp(start.horizontal, end.horizontal, value), lerp(start.vertical, end.vertical, value))
 
 fun lerp(start: ProjectedCoordinates, end: ProjectedCoordinates, value: Double): ProjectedCoordinates =
-    ProjectedCoordinates(lerp(start.horizontal, end.horizontal, value), lerp(start.vertical, end.vertical, value))
+    ProjectedCoordinates(lerp(start.longitude, end.longitude, value), lerp(start.latitude, end.latitude, value))
 
 fun Float.toIntFloor(): Int = floor(this).toInt()
 
