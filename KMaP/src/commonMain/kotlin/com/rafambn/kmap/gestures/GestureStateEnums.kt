@@ -17,7 +17,6 @@ enum class GestureChangeState {
  * [GestureState] is used to indicate what is the current state that the gesture is.
  */
 enum class GestureState {
-    START_GESTURE,
     DRAG,
     CTRL,
     MOBILE,
@@ -30,5 +29,5 @@ enum class GestureState {
     WAITING_UP_AFTER_TWO_RELEASE,
     WAITING_UP_AFTER_MOBILE_RELEASE,
     WAITING_DOWN,
-    FINISH_GESTURE
+    SCROLL
 }
