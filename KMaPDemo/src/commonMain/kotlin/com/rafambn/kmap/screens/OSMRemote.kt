@@ -19,7 +19,6 @@ import com.rafambn.kmap.customSources.OSMMapProperties
 import com.rafambn.kmap.customSources.OSMTileSource
 import com.rafambn.kmap.gestures.detectMapGestures
 import com.rafambn.kmap.utils.asDifferentialScreenOffset
-import com.rafambn.kmap.utils.asScreenOffset
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import org.jetbrains.compose.resources.vectorResource
@@ -47,25 +46,25 @@ fun OSMRemoteScreen(
                         onTap = { offset ->
 //                            canvasGestureListener.onTap(offset.asScreenOffset())
                         },
-                        onDoubleTap = { offset -> motionController.move { zoomByCentered(-1 / 3F, offset.asScreenOffset()) } },
+                        onDoubleTap = { offset -> motionController.move { zoomByCentered(-1 / 3F, offset) } },
                         onLongPress = { offset ->
 //                            canvasGestureListener.onLongPress(offset.asScreenOffset())
                         },
                         onTapLongPress = { offset -> motionController.move { positionBy(offset.asDifferentialScreenOffset()) } },
-                        onTapSwipe = { centroid, zoom -> motionController.move { zoomByCentered(zoom, centroid.asScreenOffset()) } },
-                        onDrag = { dragAmount -> motionController.move { positionBy(dragAmount.asDifferentialScreenOffset()) } },
-                        onTwoFingersTap = { offset -> motionController.move { zoomByCentered(1 / 3F, offset.asScreenOffset()) } },
+                        onTapSwipe = { zoom -> motionController.move { zoomBy(zoom) } },
+                        onDrag = { dragAmount -> motionController.move { positionBy(dragAmount) } },
+                        onTwoFingersTap = { offset -> motionController.move { zoomByCentered(1 / 3F, offset) } },
                         onGesture = { centroid, pan, zoom, rotation ->
                             motionController.move {
-                                rotateByCentered(rotation.toDouble(), centroid.asScreenOffset())
-                                zoomByCentered(zoom, centroid.asScreenOffset())
-                                positionBy(pan.asDifferentialScreenOffset())
+                                rotateByCentered(rotation.toDouble(), centroid)
+                                zoomByCentered(zoom, centroid)
+                                positionBy(pan)
                             }
                         },
                         onHover = { offset ->
 //                            canvasGestureListener.onHover(offset.asScreenOffset())
                         },
-                        onScroll = { mouseOffset, scrollAmount -> motionController.move { zoomByCentered(scrollAmount, mouseOffset.asScreenOffset()) } },
+                        onScroll = { mouseOffset, scrollAmount -> motionController.move { zoomByCentered(scrollAmount, mouseOffset) } },
                         onCtrlGesture = { rotation -> motionController.move { rotateBy(rotation.toDouble()) } },
 //                        currentGestureFlow = canvasGestureListener._currentGestureFlow
                     )
