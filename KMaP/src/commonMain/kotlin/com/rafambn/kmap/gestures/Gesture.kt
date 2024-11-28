@@ -56,10 +56,10 @@ suspend fun PointerInputScope.detectMapGestures(
         do {
             event = awaitPointerEventWithTimeout()
         } while (
-            (event.type == PointerEventType.Scroll && onScroll != null) ||
-            (event.type == PointerEventType.Press && (onTap != null || onDoubleTap != null || onLongPress != null ||
-                    onTapLongPress != null || onTapSwipe != null || onDrag != null || onTwoFingersTap != null || onGesture != null || onCtrlGesture != null)) ||
-            (event.type == PointerEventType.Move && onHover != null)
+            !(event.type == PointerEventType.Scroll && onScroll != null) &&
+            !(event.type == PointerEventType.Press && (onTap != null || onDoubleTap != null || onLongPress != null ||
+                    onTapLongPress != null || onTapSwipe != null || onDrag != null || onTwoFingersTap != null || onGesture != null || onCtrlGesture != null)) &&
+            !(event.type == PointerEventType.Move && onHover != null)
         )
 
         when (event.type) {
