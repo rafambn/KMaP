@@ -70,6 +70,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(libs.androidx.navigation.composee)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.kotlinx.coroutines.core)
             implementation(project(":KMaP"))
             implementation(libs.ktor.client.core)
         }
@@ -78,12 +79,14 @@ kotlin {
             implementation(libs.androidx.activityCompose)
             implementation(libs.compose.uitooling)
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.kotlinx.coroutines.android)
         }
         jvmMain.dependencies {
             implementation(compose.desktop.common)
             implementation(compose.desktop.currentOs)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.logback.classic)
+            implementation(libs.kotlinx.coroutines.swing)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)

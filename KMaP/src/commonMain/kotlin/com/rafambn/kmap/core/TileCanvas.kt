@@ -3,7 +3,10 @@ package com.rafambn.kmap.core
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.FilterQuality
@@ -15,15 +18,15 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.core.state.TileCanvasState
-import com.rafambn.kmap.model.ResultTile
+import com.rafambn.kmap.utils.TileRenderResult
 import com.rafambn.kmap.model.TileSpecs
-import com.rafambn.kmap.utils.offsets.CanvasDrawReference
+import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.toIntFloor
 import kotlin.math.pow
 
 @Composable
 internal fun TileCanvas(
-    getTile: suspend (zoom: Int, row: Int, column: Int) -> ResultTile,
+    getTile: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult,
     magnifierScale: Float,
     rotationDegrees: Float,
     translation: Offset,
@@ -32,10 +35,14 @@ internal fun TileCanvas(
     zoomLevel: Int,
     visibleTiles: List<TileSpecs>,
     maxTries: Int = 2,
-    maxCacheTiles: Int = 100 //TODO add options for the user to control
+    maxCacheTiles: Int
 ) {
     val canvasState = remember { TileCanvasState(getTile, maxTries, maxCacheTiles) }
-    canvasState.onStateChange(visibleTiles, zoomLevel)
+    var visibleTilesTracker by remember { mutableStateOf<List<TileSpecs>>(emptyList()) }
+    if (visibleTilesTracker != visibleTiles) {
+        visibleTilesTracker = visibleTiles
+        canvasState.onStateChange(visibleTilesTracker, zoomLevel)
+    }
     val tileLayers = canvasState.tileLayersStateFlow.collectAsState().value
     Canvas(
         modifier = Modifier
@@ -51,10 +58,8 @@ internal fun TileCanvas(
                     tile.imageBitmap?.let {
                         canvas.drawImageRect(image = it,
                             dstOffset = IntOffset(
-                                (tileSize * tile.row * adjustedTileSize + positionOffset.horizontal).dp.toPx()
-                                    .toIntFloor(),
-                                (tileSize * tile.col * adjustedTileSize + positionOffset.vertical).dp.toPx()
-                                    .toIntFloor()
+                                (tileSize * tile.row * adjustedTileSize + positionOffset.horizontal).dp.toPx().toIntFloor(),
+                                (tileSize * tile.col * adjustedTileSize + positionOffset.vertical).dp.toPx().toIntFloor()
                             ),
                             dstSize = IntSize(
                                 (tileSize.dp.toPx() * adjustedTileSize).toIntFloor(),
@@ -71,8 +76,7 @@ internal fun TileCanvas(
                     tile.imageBitmap?.let {
                         canvas.drawImageRect(image = it,
                             dstOffset = IntOffset(
-                                (tileSize * tile.row + positionOffset.horizontal).dp.toPx()
-                                    .toIntFloor(),
+                                (tileSize * tile.row + positionOffset.horizontal).dp.toPx().toIntFloor(),
                                 (tileSize * tile.col + positionOffset.vertical).dp.toPx().toIntFloor()
                             ),
                             dstSize = IntSize(

@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
@@ -26,7 +25,7 @@ import com.rafambn.kmap.core.MotionController
 import com.rafambn.kmap.core.TileCanvas
 import com.rafambn.kmap.core.componentInfo
 import com.rafambn.kmap.core.state.MapState
-import com.rafambn.kmap.gestures.detectMapGestures
+import com.rafambn.kmap.utils.asOffset
 import kotlin.math.pow
 
 @Composable
@@ -34,18 +33,15 @@ fun KMaP(
     modifier: Modifier = Modifier,
     motionController: MotionController,
     mapState: MapState,
-    canvasGestureListener: DefaultCanvasGestureListener = DefaultCanvasGestureListener(),
-    content: KMaPScope.() -> Unit
+    content: KMaPScope.() -> Unit //TODO understand why this reference doesnt change for markers map
 ) {
-    val kmapContent = remember(content) {
-        println("teste")
-        KMaPContent(content) }//TODO improve this code to prevent unnecessary recompositions
     val density = LocalDensity.current
     LaunchedEffect(Unit) {
         motionController.setMap(mapState)
-        canvasGestureListener.setMotionController(motionController)
         mapState.setDensity(density)
     }
+    //TODO improve this code to prevent unnecessary recompositions
+    val kmapContent = KMaPContent(content)
     kmapContent.updateCluster(mapState)
     Layout(
         content = {
@@ -54,8 +50,7 @@ fun KMaP(
                     content = { it.markerContent.invoke(it.markerParameters) },
                     modifier = Modifier.Companion.componentInfo(
                         MapComponentInfo(
-                            it.markerParameters, it.placementOffset, ComponentType
-                                .MARKER
+                            it.markerParameters, it.placementOffset.asOffset(), ComponentType.MARKER
                         )
                     ),
                     measurePolicy = { measurables, constraints ->
@@ -81,7 +76,7 @@ fun KMaP(
             kmapContent.visibleClusters.forEach {
                 Layout(
                     content = { it.clusterContent.invoke(it.clusterParameters, it.size) },
-                    modifier = Modifier.componentInfo(MapComponentInfo(it.clusterParameters, it.placementOffset, ComponentType.CLUSTER)),
+                    modifier = Modifier.componentInfo(MapComponentInfo(it.clusterParameters, it.placementOffset.asOffset(), ComponentType.CLUSTER)),
                     measurePolicy = { measurables, constraints ->
                         if (measurables.isEmpty())
                             return@Layout layout(0, 0) {}
@@ -106,19 +101,21 @@ fun KMaP(
                 Layout(
                     content = {
                         TileCanvas(
-                            it.getTile,
-                            mapState.magnifierScale,
-                            mapState.angleDegrees.toFloat(),
-                            mapState.canvasSize / 2F,
-                            mapState.mapProperties.tileSize,
-                            mapState.drawReference,
-                            mapState.zoomLevel,
-                            mapState.visibleTiles
+                            getTile = it.getTile,
+                            magnifierScale = mapState.magnifierScale,
+                            rotationDegrees = mapState.cameraState.angleDegrees.toFloat(),
+                            translation = mapState.cameraState.canvasSize.asOffset() / 2F,
+                            tileSize = mapState.mapProperties.tileSize,
+                            positionOffset = mapState.drawReference,
+                            zoomLevel = mapState.zoomLevel,
+                            visibleTiles = mapState.visibleTiles,
+                            maxCacheTiles = it.canvasParameters.maxCacheTiles
                         )
                     },
                     modifier = Modifier
                         .fillMaxSize()
-                        .componentInfo(MapComponentInfo(it.canvasParameters, Offset.Zero, ComponentType.CANVAS)),
+                        .componentInfo(MapComponentInfo(it.canvasParameters, Offset.Zero, ComponentType.CANVAS))
+                        .then(it.gestureDetection?.let { Modifier.pointerInput(PointerEventPass.Main) { it(this) } } ?: Modifier),
                     measurePolicy = { measurables, constraints ->
                         val placeable = measurables.first().measure(constraints)
                         layout(placeable.width, placeable.height) {
@@ -136,25 +133,11 @@ fun KMaP(
             .clipToBounds()
             .wrapContentSize()
             .onGloballyPositioned { coordinates ->
-                mapState.canvasSize = Offset(
-                    coordinates.size.width.toFloat(),
-                    coordinates.size.height.toFloat()
-                )
-            }
-            .pointerInput(PointerEventPass.Main) {
-                detectMapGestures(
-                    onTap = { offset -> canvasGestureListener.onTap(offset) },
-                    onDoubleTap = { offset -> canvasGestureListener.onDoubleTap(offset) },
-                    onLongPress = { offset -> canvasGestureListener.onLongPress(offset) },
-                    onTapLongPress = { offset -> canvasGestureListener.onTapLongPress(offset) },
-                    onTapSwipe = { centroid, zoom -> canvasGestureListener.onTapSwipe(centroid, zoom) },
-                    onDrag = { dragAmount -> canvasGestureListener.onDrag(dragAmount) },
-                    onTwoFingersTap = { offset -> canvasGestureListener.onTwoFingersTap(offset) },
-                    onGesture = { centroid, pan, zoom, rotation -> canvasGestureListener.onGesture(centroid, pan, zoom, rotation) },
-                    onHover = { offset -> canvasGestureListener.onHover(offset) },
-                    onScroll = { mouseOffset, scrollAmount -> canvasGestureListener.onScroll(mouseOffset, scrollAmount) },
-                    onCtrlGesture = { rotation -> canvasGestureListener.onCtrlGesture(rotation) },
-                    currentGestureFlow = canvasGestureListener._currentGestureFlow
+                mapState.setCanvasSize(
+                    Offset(
+                        coordinates.size.width.toFloat(),
+                        coordinates.size.height.toFloat()
+                    )
                 )
             }
     ) { measurables, constraints ->
@@ -193,13 +176,13 @@ fun KMaP(
                     translationX = componentOffset.x - componentData.drawPosition.x * it.placeable.width
                     translationY = componentOffset.y - componentData.drawPosition.y * it.placeable.height
                     transformOrigin = TransformOrigin(componentData.drawPosition.x, componentData.drawPosition.y)
-                    if (componentData.scaleWithMap) {
-                        scaleX = 2F.pow(mapState.zoom - componentData.zoomToFix)
-                        scaleY = 2F.pow(mapState.zoom - componentData.zoomToFix)
+                    componentData.zoomToFix?.let { zoom ->
+                        scaleX = 2F.pow(mapState.cameraState.zoom - zoom)
+                        scaleY = 2F.pow(mapState.cameraState.zoom - zoom)
                     }
                     rotationZ =
                         if (componentData.rotateWithMap)
-                            (mapState.angleDegrees + componentData.rotation).toFloat()
+                            (mapState.cameraState.angleDegrees + componentData.rotation).toFloat()
                         else
                             componentData.rotation.toFloat()
                 }
@@ -218,7 +201,7 @@ fun KMaP(
                     transformOrigin = TransformOrigin(componentData.drawPosition.x, componentData.drawPosition.y)
                     rotationZ =
                         if (componentData.rotateWithMap)
-                            (mapState.angleDegrees + componentData.rotation).toFloat()
+                            (mapState.cameraState.angleDegrees + componentData.rotation).toFloat()
                         else
                             componentData.rotation.toFloat()
                 }

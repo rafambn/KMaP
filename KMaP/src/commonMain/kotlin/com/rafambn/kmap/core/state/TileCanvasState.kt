@@ -1,10 +1,10 @@
 package com.rafambn.kmap.core.state
 
 import com.rafambn.kmap.core.TileLayers
-import com.rafambn.kmap.model.ResultTile
 import com.rafambn.kmap.model.Tile
-import com.rafambn.kmap.model.TileResult
+import com.rafambn.kmap.utils.TileRenderResult
 import com.rafambn.kmap.model.TileSpecs
+import com.rafambn.kmap.utils.loopInZoom
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -18,16 +18,16 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 
-class TileCanvasState(
-    private val getTile: suspend (zoom: Int, row: Int, column: Int) -> ResultTile,
+class TileCanvasState( //TODO move this to mapState
+    private val getTile: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult,
     private val maxTries: Int,
     private val maxCacheTiles: Int
 ) {
     private val _tileLayersStateFlow = MutableStateFlow(TileLayers())
     val tileLayersStateFlow = _tileLayersStateFlow.asStateFlow()
-    private val renderedTiles = mutableListOf<Tile>()
+    private var renderedTiles = mutableSetOf<Tile>()
     private val tilesToProcessChannel = Channel<List<TileSpecs>>(capacity = Channel.UNLIMITED)
-    private val workerResultSuccessChannel = Channel<ResultTile>(capacity = Channel.UNLIMITED)
+    private val workerResultSuccessChannel = Channel<TileRenderResult>(capacity = Channel.UNLIMITED)
 
     init {
         CoroutineScope(Dispatchers.Default).tilesKernel(tilesToProcessChannel, workerResultSuccessChannel)
@@ -42,61 +42,112 @@ class TileCanvasState(
                 it.changeLayer(zoomLevel)
                 it.copy()
             }
-        val newFrontLayer = _tileLayersStateFlow.value.frontLayer.toMutableList()
-            .also { if (renderedTiles.size != 0) it.addAll(renderedTiles) }
-            .toSet()
-            .toList()
-            .filter { visibleTiles.contains(it.toTileSpecs()) }
-        val tilesToRender = visibleTiles.filter {
-            !newFrontLayer.contains(it.toTile())
+        val frontLayerCopy = tileLayersStateFlow.value.frontLayer.toList()
+        val renderedTilesCopy = renderedTiles.toList()
+        val newFrontLayer = mutableListOf<Tile>()
+        val tilesToRender = mutableListOf<TileSpecs>()
+        visibleTiles.forEach { tile ->
+            val foundInFrontLayer = frontLayerCopy.find { it == tile }
+            val foundInRenderedTiles = renderedTilesCopy.find { it == TileSpecs(tile.zoom, tile.row.loopInZoom(tile.zoom), tile.col.loopInZoom(tile.zoom)) }
+
+            when {
+                foundInFrontLayer != null -> {
+                    newFrontLayer.add(foundInFrontLayer)
+                }
+                foundInRenderedTiles != null -> {
+                    newFrontLayer.add(Tile(tile.zoom, tile.row, tile.col, foundInRenderedTiles.imageBitmap))
+                }
+                else -> {
+                    tilesToRender.add(tile)
+                }
+            }
         }
-        _tileLayersStateFlow.update {
-            it.copy(frontLayer = newFrontLayer)
-        }
+        _tileLayersStateFlow.update { it.copy(frontLayer = newFrontLayer) }
         tilesToProcessChannel.trySend(tilesToRender)
     }
 
     private fun CoroutineScope.tilesKernel(
         tilesToProcess: ReceiveChannel<List<TileSpecs>>,
-        tilesProcessResult: Channel<ResultTile>
+        tilesProcessResult: Channel<TileRenderResult>
     ) = launch(Dispatchers.Default + SupervisorJob()) {
-        val specsBeingProcessed = mutableSetOf<TileSpecs>()
+        val specsBeingProcessed = mutableListOf<TileSpecs>()
+        val tilesBeingProcessed = mutableListOf<TileSpecs>()
 
         while (isActive) {
             select {
                 tilesToProcess.onReceive { tilesToProcess ->
-                    tilesToProcess.forEach { tileSpecs ->
-                        if (!specsBeingProcessed.contains(tileSpecs)) {
-                            specsBeingProcessed.add(tileSpecs)
-                            worker(tileSpecs, tilesProcessResult)
+                    tilesToProcess.forEach { specs ->
+                        val tileSpecs = TileSpecs(
+                            specs.zoom,
+                            specs.row.loopInZoom(specs.zoom),
+                            specs.col.loopInZoom(specs.zoom)
+                        )
+                        if (!specsBeingProcessed.contains(specs)) {
+                            specsBeingProcessed.add(specs)
+                            if (!tilesBeingProcessed.contains(tileSpecs)) {
+                                tilesBeingProcessed.add(tileSpecs)
+                                worker(tileSpecs, tilesProcessResult)
+                            }
                         }
                     }
                 }
                 tilesProcessResult.onReceive { tileResult ->
-                    when (tileResult.result) {
-                        TileResult.SUCCESS -> {
-                            val tile = tileResult.tile!!
+                    when (tileResult) {
+                        is TileRenderResult.Success -> {
                             if (maxCacheTiles != 0) {
-                                renderedTiles.add(tile)
-                                if (renderedTiles.size > maxCacheTiles)
-                                    renderedTiles.removeAt(0)
-                            }
-                            if (tile.zoom == _tileLayersStateFlow.value.frontLayerLevel) {
-                                _tileLayersStateFlow.update { tileLayers ->
-                                    tileLayers.copy(frontLayer = tileLayers.frontLayer.toMutableList().also { it.add(tile) })
+                                renderedTiles.add(tileResult.tile)
+                                if (renderedTiles.size > maxCacheTiles) {
+                                    val mutableRendered = renderedTiles.toMutableList()
+                                    mutableRendered.removeAt(0)
+                                    renderedTiles = mutableRendered.toMutableSet()
                                 }
                             }
-                            if (tile.zoom == _tileLayersStateFlow.value.backLayerLevel) {
+                            if (tileResult.tile.zoom == _tileLayersStateFlow.value.frontLayerLevel) {
                                 _tileLayersStateFlow.update { tileLayers ->
-                                    tileLayers.copy(backLayer = tileLayers.backLayer.toMutableList().also { it.add(tile) })
+                                    tileLayers.copy(frontLayer = tileLayers.frontLayer.toMutableList().also { tileMutableList ->
+                                        tileMutableList.add(tileResult.tile)
+                                        specsBeingProcessed.remove(tileResult.tile)
+                                        specsBeingProcessed.forEach {
+                                            if (TileSpecs(it.zoom, it.row.loopInZoom(it.zoom), it.col.loopInZoom(it.zoom)) == tileResult.tile)
+                                                tileMutableList.add(Tile(it.zoom, it.row, it.col, tileResult.tile.imageBitmap))
+                                        }
+                                    })
                                 }
                             }
-                            specsBeingProcessed.remove(tile.toTileSpecs())
+                            if (tileResult.tile.zoom == _tileLayersStateFlow.value.backLayerLevel) {
+                                _tileLayersStateFlow.update { tileLayers ->
+                                    tileLayers.copy(backLayer = tileLayers.backLayer.toMutableList().also { tileMutableList ->
+                                        tileMutableList.add(tileResult.tile)
+                                        specsBeingProcessed.remove(tileResult.tile)
+                                        specsBeingProcessed.forEach {
+                                            if (TileSpecs(it.zoom, it.row.loopInZoom(it.zoom), it.col.loopInZoom(it.zoom)) == tileResult.tile)
+                                                tileMutableList.add(Tile(it.zoom, it.row, it.col, tileResult.tile.imageBitmap))
+                                        }
+                                    })
+                                }
+                            }
+                            tilesBeingProcessed.remove(tileResult.tile)
+                            specsBeingProcessed.removeAll {
+                                TileSpecs(
+                                    it.zoom,
+                                    it.row.loopInZoom(it.zoom),
+                                    it.col.loopInZoom(it.zoom)
+                                ) == tileResult.tile
+                            }
                         }
 
-                        TileResult.FAILURE -> {
-                            specsBeingProcessed.remove(tileResult.tile!!.toTileSpecs())
+                        is TileRenderResult.Failure -> {
+                            tilesBeingProcessed.remove(tileResult.specs)
+                            specsBeingProcessed.removeAll {
+                                TileSpecs(
+                                    it.zoom,
+                                    it.row.loopInZoom(it.zoom),
+                                    it.col.loopInZoom(it.zoom)
+                                ) == tileResult.specs
+                            }
                         }
+
+                        else -> {}
                     }
                 }
             }
@@ -105,16 +156,20 @@ class TileCanvasState(
 
     private fun CoroutineScope.worker(
         tileToProcess: TileSpecs,
-        tilesProcessSuccessResult: SendChannel<ResultTile>
+        tilesProcessSuccessResult: SendChannel<TileRenderResult>
     ) = launch(Dispatchers.Default) {
-        var resultTile: ResultTile
         var numberOfTries = 0
         while (numberOfTries < maxTries) {
             try {
-                resultTile = getTile(tileToProcess.zoom, tileToProcess.row, tileToProcess.col)
-                if (resultTile.result == TileResult.SUCCESS) {
-                    tilesProcessSuccessResult.send(resultTile)
-                    break
+                when (val resultTile = getTile(tileToProcess.zoom, tileToProcess.row, tileToProcess.col)) {
+                    is TileRenderResult.Success -> {
+                        tilesProcessSuccessResult.send(resultTile)
+                        break
+                    }
+
+                    is TileRenderResult.Failure -> {
+                        numberOfTries++
+                    }
                 }
             } catch (ex: Exception) {
                 println("Failed to process tile on attempt ${numberOfTries}: $ex")
@@ -123,7 +178,7 @@ class TileCanvasState(
         }
         if (numberOfTries == maxTries) {
             println("Failed to process tile after $maxTries attempts")
-            tilesProcessSuccessResult.send(ResultTile(tileToProcess.toTile(), TileResult.FAILURE))
+            tilesProcessSuccessResult.send(TileRenderResult.Failure(tileToProcess))
         }
     }
 }

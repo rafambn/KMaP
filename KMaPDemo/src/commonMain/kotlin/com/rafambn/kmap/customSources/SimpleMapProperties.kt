@@ -10,34 +10,28 @@ import com.rafambn.kmap.config.characteristics.MapCoordinatesRange
 import com.rafambn.kmap.config.characteristics.MapZoomLevelsRange
 import com.rafambn.kmap.utils.CanvasPosition
 import com.rafambn.kmap.utils.ProjectedCoordinates
-import kotlin.math.E
-import kotlin.math.PI
-import kotlin.math.atan
-import kotlin.math.ln
-import kotlin.math.pow
-import kotlin.math.tan
 
-data class OSMMapProperties(
+data class SimpleMapProperties(
     override val boundMap: BoundMapBorder = BoundMapBorder(MapBorderType.BOUND, MapBorderType.BOUND),
     override val outsideTiles: OutsideTilesType = OutsideTilesType.NONE,
-    override val zoomLevels: MapZoomLevelsRange = OSMZoomLevelsRange(),
-    override val mapCoordinatesRange: MapCoordinatesRange = OSMCoordinatesRange(),
-    override val tileSize: Int = 256
+    override val zoomLevels: MapZoomLevelsRange = SimpleMapZoomLevelsRange(),
+    override val mapCoordinatesRange: MapCoordinatesRange = SimpleMapCoordinatesRange(),
+    override val tileSize: Int = 900
 ) : MapProperties {
     override fun toCanvasPosition(projectedCoordinates: ProjectedCoordinates): CanvasPosition = CanvasPosition(
         projectedCoordinates.longitude,
-        ln(tan(PI / 4 + (PI * projectedCoordinates.latitude) / 360)) / (PI / 85.051129)
+        projectedCoordinates.latitude
     )
 
     override fun toProjectedCoordinates(canvasPosition: CanvasPosition): ProjectedCoordinates = ProjectedCoordinates(
         canvasPosition.horizontal,
-        (atan(E.pow(canvasPosition.vertical * (PI / 85.051129))) - PI / 4) * 360 / PI
+        canvasPosition.vertical
     )
 }
 
-data class OSMZoomLevelsRange(override val max: Int = 19, override val min: Int = 0) : MapZoomLevelsRange
+data class SimpleMapZoomLevelsRange(override val max: Int = 2, override val min: Int = 0) : MapZoomLevelsRange
 
-data class OSMCoordinatesRange(
-    override val latitude: Latitude = Latitude(north = 85.051129, south = -85.051129),
+data class SimpleMapCoordinatesRange(
+    override val latitude: Latitude = Latitude(north = 90.0, south = -90.0),
     override val longitude: Longitude = Longitude(east = 180.0, west = -180.0)
 ) : MapCoordinatesRange

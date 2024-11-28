@@ -2,31 +2,30 @@ package com.rafambn.kmap.customSources
 
 import androidx.compose.ui.graphics.ImageBitmap
 import com.rafambn.kmap.config.characteristics.TileSource
-import com.rafambn.kmap.model.ResultTile
 import com.rafambn.kmap.model.Tile
-import com.rafambn.kmap.model.TileResult
-import com.rafambn.kmap.utils.loopInZoom
+import com.rafambn.kmap.utils.TileRenderResult
+import com.rafambn.kmap.model.TileSpecs
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.header
-import io.ktor.client.statement.readBytes
 import io.ktor.client.statement.readRawBytes
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.decodeToImageBitmap
 
 class OSMTileSource(private val userAgent: String) : TileSource {
     private val client = HttpClient()
+
     @OptIn(ExperimentalResourceApi::class)
-    override suspend fun getTile(zoom: Int, row: Int, column: Int): ResultTile {
+    override suspend fun getTile(zoom: Int, row: Int, column: Int): TileRenderResult {
         val imageBitmap: ImageBitmap
         try {
-            val byteArray = client.get("https://tile.openstreetmap.org/${zoom}/${row.loopInZoom(zoom)}/${column.loopInZoom(zoom)}.png") {
-                        header("User-Agent", userAgent)
-                    }.readRawBytes() //TODO(4) improve loopInZoom
+            val byteArray = client.get("https://tile.openstreetmap.org/$zoom/$row/$column.png") {
+                header("User-Agent", userAgent)
+            }.readRawBytes()
             imageBitmap = byteArray.decodeToImageBitmap()
-            return ResultTile(Tile(zoom, row, column, imageBitmap), TileResult.SUCCESS)
+            return TileRenderResult.Success(Tile(zoom, row, column, imageBitmap))
         } catch (ex: Exception) {
-            return ResultTile(null, TileResult.FAILURE)
+            return TileRenderResult.Failure(TileSpecs(zoom, row, column))
         }
     }
 }

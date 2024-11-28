@@ -12,10 +12,13 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.rafambn.kmap.screens.LayerMapRoot
-import com.rafambn.kmap.screens.MarkerMapRoot
-import com.rafambn.kmap.screens.SimpleMapRoot
-import com.rafambn.kmap.screens.StartRoot
+import com.rafambn.kmap.screens.AnimationScreen
+import com.rafambn.kmap.screens.LayersScreen
+import com.rafambn.kmap.screens.MarkersScreen
+import com.rafambn.kmap.screens.OSMRemoteScreen
+import com.rafambn.kmap.screens.PathScreen
+import com.rafambn.kmap.screens.SimpleMapScreen
+import com.rafambn.kmap.screens.StartScreen
 import com.rafambn.kmap.theme.AppTheme
 
 
@@ -40,116 +43,47 @@ fun App() = AppTheme {
             }
         ) {
             composable<Routes.Start> {
-                StartRoot(
-                    navigateSimpleMap = { navigationController.navigate(Routes.SimpleMap) },
-                    navigateLayers = { navigationController.navigate(Routes.LayerMap) },
-                    navigateMarkers = { navigationController.navigate(Routes.MarkersMap) },
-                    navigatePath = {},
-                    navigateAnimation = {},
-                    navigateOSM = {},
+                StartScreen(
+                    navigateSimpleMap = { navigationController.navigate(Routes.Simple) },
+                    navigateLayers = { navigationController.navigate(Routes.Layers) },
+                    navigateMarkers = { navigationController.navigate(Routes.Markers) },
+                    navigatePath = { navigationController.navigate(Routes.Path) },
+                    navigateAnimation = { navigationController.navigate(Routes.Animation) },
+                    navigateOSM = {  navigationController.navigate(Routes.OSMRemote)},
                     navigateClustering = {},
                     navigateWidgets = {}
                 )
             }
-            composable<Routes.SimpleMap> {
-                SimpleMapRoot(
+            composable<Routes.Simple> {
+                SimpleMapScreen(
                     navigateBack = { navigationController.popBackStack() }
                 )
             }
-            composable<Routes.LayerMap> {
-                LayerMapRoot(
+            composable<Routes.Layers> {
+                LayersScreen(
                     navigateBack = { navigationController.popBackStack() }
                 )
             }
-            composable<Routes.MarkersMap> {
-                MarkerMapRoot(
+            composable<Routes.Markers> {
+                MarkersScreen(
+                    navigateBack = { navigationController.popBackStack() }
+                )
+            }
+            composable<Routes.Path> {
+                PathScreen(
+                    navigateBack = { navigationController.popBackStack() }
+                )
+            }
+            composable<Routes.Animation> {
+                AnimationScreen(
+                    navigateBack = { navigationController.popBackStack() }
+                )
+            }
+            composable<Routes.OSMRemote> {
+                OSMRemoteScreen(
                     navigateBack = { navigationController.popBackStack() }
                 )
             }
         }
     }
 }
-
-//@Composable
-// fun App() = AppTheme {
-//    Surface(modifier = Modifier.fillMaxSize()) {
-//        Box {
-//            val motionController = rememberMotionController()
-//            val mapState = rememberMapState(mapProperties = OSMMapProperties())
-//            KMaP(
-//                modifier = Modifier.align(Alignment.Center).size(300.dp, 600.dp),
-//                motionController = motionController,
-//                mapState = mapState,
-//                canvasGestureListener = DefaultCanvasGestureListener()
-//            ) {
-//                canvas(tileSource = OSMTileSource("com.rafambn.kmap")::getTile)
-//                markers(
-//                    listOf(
-//                        MarkerParameters(
-//                            ProjectedCoordinates(-45.949303, -21.424608),
-//                            drawPosition = DrawPosition.BOTTOM_RIGHT,
-//                            rotateWithMap = true,
-//                            tag = "zika"
-//                        ),
-//                        MarkerParameters(
-//                            ProjectedCoordinates(-46.949303, -21.424608),
-//                            drawPosition = DrawPosition.BOTTOM_RIGHT,
-//                            rotateWithMap = true,
-//                            tag = "zika"
-//                        ),
-//                        MarkerParameters(
-//                            ProjectedCoordinates(180.0, -85.0),
-//                            drawPosition = DrawPosition.BOTTOM_RIGHT,
-//                            rotateWithMap = true,
-//                            tag = "zika"
-//                        ),
-//                    )
-//                ) {
-//                    Image(
-//                        painterResource(Res.drawable.teste),
-//                        "fd",
-//                        Modifier
-//                            .background(Color.Black)
-//                            .size(32.dp)
-//                            .clickable {
-//                                println("fsdfd")
-//                            }
-//                    )
-//                }
-//                markers(
-//                    listOf(
-//                        MarkerParameters(
-//                            ProjectedCoordinates(180.0, 85.0),
-//                            drawPosition = DrawPosition.TOP_RIGHT,
-//                            rotateWithMap = false,
-//                        )
-//                    )
-//                ) {
-//                    val cor = remember { mutableStateOf(Color.Black) }
-//                    val rnd = remember { Random(545) }
-//                    Box(
-//                        Modifier
-//                            .background(cor.value)
-//                            .size(32.dp)
-//                            .clickable {
-//                                cor.value = Color(rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256))
-//                            }
-//                    ) {
-//                    }
-//                }
-//                cluster(ClusterParameters("zika", 50.dp, rotateWithMap = true)) {
-//                    Image(
-//                        painterResource(Res.drawable.teste2),
-//                        "fd",
-//                        Modifier
-//                            .background(Color.Black)
-//                            .size(32.dp)
-//                            .clickable {
-//                                println("fsdfd")
-//                            }
-//                    )
-//                }
-//            }
-//        }
-//    }
-//}
