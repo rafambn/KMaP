@@ -28,7 +28,6 @@ import com.rafambn.kmap.customSources.SimpleMapTileSource
 import com.rafambn.kmap.gestures.detectMapGestures
 import com.rafambn.kmap.utils.ProjectedCoordinates
 import com.rafambn.kmap.utils.asDifferentialScreenOffset
-import com.rafambn.kmap.utils.asScreenOffset
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import kotlinx.coroutines.Dispatchers
@@ -79,13 +78,7 @@ fun AnimationScreen(
             canvas(tileSource = SimpleMapTileSource()::getTile,
                 gestureDetection = {
                     detectMapGestures(
-                        onTap = { offset ->
-//                            canvasGestureListener.onTap(offset.asScreenOffset())
-                        },
                         onDoubleTap = { offset -> motionController.move { zoomByCentered(-1 / 3F, offset) } },
-                        onLongPress = { offset ->
-//                            canvasGestureListener.onLongPress(offset.asScreenOffset())
-                        },
                         onTapLongPress = { offset -> motionController.move { positionBy(offset.asDifferentialScreenOffset()) } },
                         onTapSwipe = { zoom -> motionController.move { zoomBy(zoom) } },
                         onDrag = { dragAmount -> motionController.move { positionBy(dragAmount) } },
@@ -97,12 +90,8 @@ fun AnimationScreen(
                                 positionBy(pan)
                             }
                         },
-                        onHover = { offset ->
-//                            canvasGestureListener.onHover(offset.asScreenOffset())
-                        },
                         onScroll = { mouseOffset, scrollAmount -> motionController.move { zoomByCentered(scrollAmount, mouseOffset) } },
                         onCtrlGesture = { rotation -> motionController.move { rotateBy(rotation.toDouble()) } },
-//                        currentGestureFlow = canvasGestureListener._currentGestureFlow
                     )
                 })
         }
