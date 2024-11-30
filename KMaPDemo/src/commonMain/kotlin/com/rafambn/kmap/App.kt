@@ -13,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.rafambn.kmap.screens.AnimationScreen
+import com.rafambn.kmap.screens.ClusteringScreen
 import com.rafambn.kmap.screens.LayersScreen
 import com.rafambn.kmap.screens.MarkersScreen
 import com.rafambn.kmap.screens.OSMRemoteScreen
@@ -47,11 +48,10 @@ fun App() = AppTheme {
                     navigateSimpleMap = { navigationController.navigate(Routes.Simple) },
                     navigateLayers = { navigationController.navigate(Routes.Layers) },
                     navigateMarkers = { navigationController.navigate(Routes.Markers) },
-                    navigatePath = { navigationController.navigate(Routes.Path) },
+                    navigatePath = { },
                     navigateAnimation = { navigationController.navigate(Routes.Animation) },
-                    navigateOSM = {  navigationController.navigate(Routes.OSMRemote)},
-                    navigateClustering = {},
-                    navigateWidgets = {}
+                    navigateOSM = { navigationController.navigate(Routes.OSMRemote) },
+                    navigateClustering = { navigationController.navigate(Routes.Clustering) },
                 )
             }
             composable<Routes.Simple> {
@@ -81,6 +81,11 @@ fun App() = AppTheme {
             }
             composable<Routes.OSMRemote> {
                 OSMRemoteScreen(
+                    navigateBack = { navigationController.popBackStack() }
+                )
+            }
+            composable<Routes.Clustering> {
+                ClusteringScreen(
                     navigateBack = { navigationController.popBackStack() }
                 )
             }

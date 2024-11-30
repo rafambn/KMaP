@@ -16,8 +16,7 @@ fun StartScreen(
     navigatePath: () -> Unit,
     navigateAnimation: () -> Unit,
     navigateOSM: () -> Unit,
-    navigateClustering: () -> Unit,
-    navigateWidgets: () -> Unit
+    navigateClustering: () -> Unit
 ) {
     val columnItems = listOf(
         Pair(navigateSimpleMap, "SimpleMap"),
@@ -27,14 +26,13 @@ fun StartScreen(
         Pair(navigateAnimation, "Animations"),
         Pair(navigateOSM, "Remote with Open Street Maps"),
         Pair(navigateClustering, "Clustering"),
-        Pair(navigateWidgets, "Widgets"),
     )
     LazyColumn(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         items(columnItems) {
-            Button(onClick = it.first) {
+            Button(onClick = it.first, enabled = it.second != "Paths") {
                 Text(it.second)
             }
         }

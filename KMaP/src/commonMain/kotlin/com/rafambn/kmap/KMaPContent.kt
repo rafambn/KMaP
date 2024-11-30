@@ -23,7 +23,7 @@ class KMaPContent(
         apply(content)
     }
 
-    fun updateCluster(mapState: MapState) {
+    fun updateCluster(mapState: MapState) {//TODO improve this code to account for draw position
         //clear visible markers
         visibleMarkers.clear()
         visibleClusters.clear()

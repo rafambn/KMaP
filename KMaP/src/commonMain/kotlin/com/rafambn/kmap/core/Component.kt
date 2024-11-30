@@ -33,7 +33,7 @@ data class ClusterParameters(
     val clusterThreshold: Dp,
     val alpha: Float = 1F,
     val zIndex: Float = 1F,
-    val drawPosition: DrawPosition = DrawPosition.CENTER,
+    val drawPosition: DrawPosition = DrawPosition.TOP_LEFT,
     val rotateWithMap: Boolean = false,
     val rotation: Degrees = 0.0
 )

@@ -393,7 +393,7 @@ suspend fun PointerInputScope.detectMapGestures(
                             }
 
                             PointerEventType.Move -> {
-                                onTapSwipe?.invoke((event.calculatePan().getDistance()))
+                                onTapSwipe?.invoke(event.changes[0].position.y - event.changes[0].previousPosition.y)
                             }
 
                             PointerEventType.Scroll -> {

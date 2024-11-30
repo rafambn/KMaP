@@ -41,7 +41,7 @@ fun KMaPScope.marker(
 }
 
 fun KMaPScope.markers(
-    markerParameters: MutableList<MarkerParameters>,
+    markerParameters: List<MarkerParameters>,
     markerContent: @Composable (marker: MarkerParameters) -> Unit
 ) {
     if (this is KMaPContent) {
