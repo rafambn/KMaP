@@ -5,6 +5,7 @@ import com.rafambn.kmap.core.Cluster
 import com.rafambn.kmap.core.ClusterComponent
 import com.rafambn.kmap.core.Marker
 import com.rafambn.kmap.core.MarkerComponent
+import com.rafambn.kmap.core.Pather
 import com.rafambn.kmap.core.state.MapState
 import com.rafambn.kmap.utils.ScreenOffset
 import kotlin.math.pow
@@ -18,6 +19,7 @@ class KMaPContent(
     val visibleCanvas = mutableListOf<Canvas>()
     val visibleMarkers = mutableListOf<Marker>()
     val visibleClusters = mutableListOf<Cluster>()
+    val visiblePaths = mutableListOf<Pather>()
 
     init {
         apply(content)

@@ -54,5 +54,6 @@ data class MapComponentInfo(
 enum class ComponentType {
     CANVAS,
     CLUSTER,
-    MARKER
+    MARKER,
+    PATH
 }

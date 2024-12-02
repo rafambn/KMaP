@@ -28,6 +28,12 @@ data class CanvasParameters(
     val maxCacheTiles: Int = 20
 )
 
+data class PathParameters(
+    val tag: String = "",
+    val alpha: Float = 1F,
+    val zIndex: Float = 1F,
+)
+
 data class ClusterParameters(
     val tag: String,
     val clusterThreshold: Dp,
@@ -57,7 +63,12 @@ data class Marker(
 data class Canvas(
     val canvasParameters: CanvasParameters,
     val getTile: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult,
-    val gestureDetection: (suspend PointerInputScope.() -> Unit)?,
+    val gestureDetection: (suspend PointerInputScope.() -> Unit)? = null,
+)
+
+data class Pather(
+    val pathParameters: PathParameters,
+    val gestureDetection: (suspend PointerInputScope.() -> Unit)? = null,
 )
 
 data class Cluster(
