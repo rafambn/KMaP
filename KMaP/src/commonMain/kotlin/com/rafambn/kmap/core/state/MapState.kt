@@ -65,8 +65,6 @@ class MapState(
         }
     val drawReference
         get() = cameraState.rawPosition.toCanvasDrawReference()
-    val pathDrawReference
-        get() = cameraState.rawPosition.toPathCanvasDrawReference()
     val zoomLevel
         get() = cameraState.zoom.toIntFloor()
     val magnifierScale
@@ -146,17 +144,6 @@ class MapState(
         val canvasDrawReference = this.applyOrientation(mapProperties.mapCoordinatesRange)
             .moveToTrueCoordinates(mapProperties.mapCoordinatesRange)
             .scaleToZoom((mapProperties.tileSize * (1 shl zoomLevel)).toFloat())
-            .scaleToMap(
-                1 / mapProperties.mapCoordinatesRange.longitude.span,
-                1 / mapProperties.mapCoordinatesRange.latitude.span
-            )
-        return CanvasDrawReference(canvasDrawReference.horizontal, canvasDrawReference.vertical)
-    }
-
-    private fun CanvasPosition.toPathCanvasDrawReference(): CanvasDrawReference {
-        val canvasDrawReference = this.applyOrientation(mapProperties.mapCoordinatesRange)
-            .moveToTrueCoordinates(mapProperties.mapCoordinatesRange)
-            .scaleToZoom(mapProperties.tileSize.toFloat())
             .scaleToMap(
                 1 / mapProperties.mapCoordinatesRange.longitude.span,
                 1 / mapProperties.mapCoordinatesRange.latitude.span

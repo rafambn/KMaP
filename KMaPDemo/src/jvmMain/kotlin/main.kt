@@ -7,7 +7,7 @@ import com.rafambn.kmap.App
 
 fun main() = application {
     Window(
-        title = "KMaP Demo",
+        title = "Template library with App",
         state = rememberWindowState(width = 800.dp, height = 600.dp),
         onCloseRequest = ::exitApplication,
     ) {

@@ -8,8 +8,6 @@ import com.rafambn.kmap.core.ClusterComponent
 import com.rafambn.kmap.core.ClusterParameters
 import com.rafambn.kmap.core.MarkerComponent
 import com.rafambn.kmap.core.MarkerParameters
-import com.rafambn.kmap.core.Pather
-import com.rafambn.kmap.core.PathParameters
 import com.rafambn.kmap.utils.TileRenderResult
 
 interface KMaPScope //TODO brainStorm a path api
@@ -50,13 +48,5 @@ fun KMaPScope.markers(
         markerParameters.forEach {
             markers.add(MarkerComponent(it, markerContent))
         }
-    }
-}
-
-fun KMaPScope.path(
-    pathParameters: PathParameters,
-) {
-    if (this is KMaPContent) {
-        visiblePaths.add(Pather(pathParameters, null))
     }
 }

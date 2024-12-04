@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.Path
-import androidx.compose.ui.graphics.vector.PathNode
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.KMaP
 import com.rafambn.kmap.canvas
@@ -49,7 +47,7 @@ fun PathScreen(
                                 positionBy(pan)
                             }
                         },
-                        onScroll = { mouseOffset, scrollAmount -> motionController.move { zoomByCentered(scrollAmount/3, mouseOffset) } },
+                        onScroll = { mouseOffset, scrollAmount -> motionController.move { zoomByCentered(scrollAmount, mouseOffset) } },
                         onCtrlGesture = { rotation -> motionController.move { rotateBy(rotation.toDouble()) } },
                     )
                 })
