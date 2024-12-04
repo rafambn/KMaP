@@ -1,4 +1,4 @@
-package com.rafambn.kmap.model
+package com.rafambn.kmap.tiles
 
 import androidx.compose.ui.graphics.ImageBitmap
 

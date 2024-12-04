@@ -1,4 +1,4 @@
-package com.rafambn.kmap.config.characteristics
+package com.rafambn.kmap.mapProperties
 
 interface MapZoomLevelsRange {
     val max: Int

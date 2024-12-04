@@ -1,4 +1,4 @@
-package com.rafambn.kmap.core
+package com.rafambn.kmap.components
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset

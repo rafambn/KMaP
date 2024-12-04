@@ -1,4 +1,4 @@
-package com.rafambn.kmap.config.characteristics
+package com.rafambn.kmap.mapProperties.coordinates
 
 interface CoordinatesInterface {
     val span: Double

@@ -1,9 +1,8 @@
-package com.rafambn.kmap.config
+package com.rafambn.kmap.mapProperties
 
-import com.rafambn.kmap.config.border.BoundMapBorder
-import com.rafambn.kmap.config.border.OutsideTilesType
-import com.rafambn.kmap.config.characteristics.MapCoordinatesRange
-import com.rafambn.kmap.config.characteristics.MapZoomLevelsRange
+import com.rafambn.kmap.mapProperties.border.BoundMapBorder
+import com.rafambn.kmap.mapProperties.border.OutsideTilesType
+import com.rafambn.kmap.mapProperties.coordinates.MapCoordinatesRange
 import com.rafambn.kmap.utils.CanvasPosition
 import com.rafambn.kmap.utils.ProjectedCoordinates
 

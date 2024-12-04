@@ -48,7 +48,6 @@ suspend fun PointerInputScope.detectMapGestures(
         val doubleTapTimeout = viewConfiguration.doubleTapTimeoutMillis
         val touchSlop = viewConfiguration.touchSlop
         var panSlop: Offset
-        val zoomScale = 100F  //TODO verify this scale
 
         var gestureState: GestureState
 
@@ -483,7 +482,7 @@ suspend fun PointerInputScope.detectMapGestures(
                                 val panChange = event.calculatePan()
                                 val centroid = event.calculateCentroid()
                                 if (centroid != Offset.Unspecified)
-                                    onGesture?.invoke(centroid.asScreenOffset(), panChange.asDifferentialScreenOffset(), zoomChange / zoomScale, rotationChange)
+                                    onGesture?.invoke(centroid.asScreenOffset(), panChange.asDifferentialScreenOffset(), zoomChange, rotationChange)
                             }
 
                             PointerEventType.Scroll -> {

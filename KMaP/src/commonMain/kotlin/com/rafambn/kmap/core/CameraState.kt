@@ -1,4 +1,4 @@
-package com.rafambn.kmap.model
+package com.rafambn.kmap.core
 
 import com.rafambn.kmap.utils.CanvasPosition
 import com.rafambn.kmap.utils.ScreenOffset

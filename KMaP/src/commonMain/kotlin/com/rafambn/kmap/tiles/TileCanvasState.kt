@@ -1,9 +1,5 @@
-package com.rafambn.kmap.core.state
+package com.rafambn.kmap.tiles
 
-import com.rafambn.kmap.core.TileLayers
-import com.rafambn.kmap.model.Tile
-import com.rafambn.kmap.utils.TileRenderResult
-import com.rafambn.kmap.model.TileSpecs
 import com.rafambn.kmap.utils.loopInZoom
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

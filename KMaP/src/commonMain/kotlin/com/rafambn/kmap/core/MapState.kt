@@ -1,4 +1,4 @@
-package com.rafambn.kmap.core.state
+package com.rafambn.kmap.core
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -8,13 +8,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Density
-import com.rafambn.kmap.config.MapProperties
-import com.rafambn.kmap.config.border.MapBorderType
-import com.rafambn.kmap.config.border.OutsideTilesType
-import com.rafambn.kmap.config.characteristics.MapCoordinatesRange
-import com.rafambn.kmap.model.BoundingBox
-import com.rafambn.kmap.model.CameraState
-import com.rafambn.kmap.model.TileSpecs
+import com.rafambn.kmap.mapProperties.MapProperties
+import com.rafambn.kmap.mapProperties.border.MapBorderType
+import com.rafambn.kmap.mapProperties.border.OutsideTilesType
+import com.rafambn.kmap.mapProperties.coordinates.MapCoordinatesRange
+import com.rafambn.kmap.tiles.TileSpecs
 import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.CanvasPosition
 import com.rafambn.kmap.utils.DifferentialScreenOffset

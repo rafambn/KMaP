@@ -1,14 +1,14 @@
-package com.rafambn.kmap
+package com.rafambn.kmap.core
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.input.pointer.PointerInputScope
-import com.rafambn.kmap.core.Canvas
-import com.rafambn.kmap.core.CanvasParameters
-import com.rafambn.kmap.core.ClusterComponent
-import com.rafambn.kmap.core.ClusterParameters
-import com.rafambn.kmap.core.MarkerComponent
-import com.rafambn.kmap.core.MarkerParameters
-import com.rafambn.kmap.utils.TileRenderResult
+import com.rafambn.kmap.components.Canvas
+import com.rafambn.kmap.components.CanvasParameters
+import com.rafambn.kmap.components.ClusterComponent
+import com.rafambn.kmap.components.ClusterParameters
+import com.rafambn.kmap.components.MarkerComponent
+import com.rafambn.kmap.components.MarkerParameters
+import com.rafambn.kmap.tiles.TileRenderResult
 
 interface KMaPScope //TODO brainStorm a path api
 

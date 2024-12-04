@@ -1,4 +1,4 @@
-package com.rafambn.kmap.config.border
+package com.rafambn.kmap.mapProperties.border
 
 enum class OutsideTilesType {
     NONE,

@@ -1,7 +1,4 @@
-package com.rafambn.kmap.utils
-
-import com.rafambn.kmap.model.Tile
-import com.rafambn.kmap.model.TileSpecs
+package com.rafambn.kmap.tiles
 
 interface TileRenderResult {
     data class Success(val tile: Tile) : TileRenderResult

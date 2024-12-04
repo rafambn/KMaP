@@ -1,6 +1,5 @@
-package com.rafambn.kmap.core
+package com.rafambn.kmap.tiles
 
-import com.rafambn.kmap.model.Tile
 import kotlin.concurrent.Volatile
 
 data class TileLayers(

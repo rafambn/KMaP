@@ -1,4 +1,4 @@
-package com.rafambn.kmap.core
+package com.rafambn.kmap.tiles
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
@@ -17,9 +17,6 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import com.rafambn.kmap.core.state.TileCanvasState
-import com.rafambn.kmap.utils.TileRenderResult
-import com.rafambn.kmap.model.TileSpecs
 import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.toIntFloor
 import kotlin.math.pow

@@ -1,11 +1,10 @@
-package com.rafambn.kmap
+package com.rafambn.kmap.core
 
-import com.rafambn.kmap.core.Canvas
-import com.rafambn.kmap.core.Cluster
-import com.rafambn.kmap.core.ClusterComponent
-import com.rafambn.kmap.core.Marker
-import com.rafambn.kmap.core.MarkerComponent
-import com.rafambn.kmap.core.state.MapState
+import com.rafambn.kmap.components.Canvas
+import com.rafambn.kmap.components.Cluster
+import com.rafambn.kmap.components.ClusterComponent
+import com.rafambn.kmap.components.Marker
+import com.rafambn.kmap.components.MarkerComponent
 import com.rafambn.kmap.utils.ScreenOffset
 import kotlin.math.pow
 import kotlin.math.sqrt

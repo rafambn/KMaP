@@ -1,4 +1,4 @@
-package com.rafambn.kmap
+package com.rafambn.kmap.core
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,16 +15,14 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import com.rafambn.kmap.core.CanvasParameters
-import com.rafambn.kmap.core.ClusterParameters
-import com.rafambn.kmap.core.Component
-import com.rafambn.kmap.core.ComponentType
-import com.rafambn.kmap.core.MapComponentInfo
-import com.rafambn.kmap.core.MarkerParameters
-import com.rafambn.kmap.core.MotionController
-import com.rafambn.kmap.core.TileCanvas
-import com.rafambn.kmap.core.componentInfo
-import com.rafambn.kmap.core.state.MapState
+import com.rafambn.kmap.components.CanvasParameters
+import com.rafambn.kmap.components.ClusterParameters
+import com.rafambn.kmap.components.Component
+import com.rafambn.kmap.components.ComponentType
+import com.rafambn.kmap.components.MapComponentInfo
+import com.rafambn.kmap.components.MarkerParameters
+import com.rafambn.kmap.tiles.TileCanvas
+import com.rafambn.kmap.components.componentInfo
 import com.rafambn.kmap.utils.asOffset
 import kotlin.math.pow
 
