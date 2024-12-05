@@ -1,6 +1,7 @@
 package com.rafambn.kmap.core
 
 import com.rafambn.kmap.components.Canvas
+import com.rafambn.kmap.components.CanvasComponent
 import com.rafambn.kmap.components.Cluster
 import com.rafambn.kmap.components.ClusterComponent
 import com.rafambn.kmap.components.Marker
@@ -14,12 +15,14 @@ class KMaPContent(
 ) : KMaPScope {
     val markers = mutableListOf<MarkerComponent>()
     val clusters = mutableListOf<ClusterComponent>()
+    val canvas = mutableListOf<CanvasComponent>()
     val visibleCanvas = mutableListOf<Canvas>()
     val visibleMarkers = mutableListOf<Marker>()
     val visibleClusters = mutableListOf<Cluster>()
 
     init {
         apply(content)
+        visibleCanvas.addAll(canvas.map { Canvas(it.canvasParameters, it.getTile, it.gestureDetection) })
     }
 
     fun updateCluster(mapState: MapState) {//TODO improve this code to account for draw position

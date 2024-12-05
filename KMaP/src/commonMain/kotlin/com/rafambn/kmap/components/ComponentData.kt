@@ -3,12 +3,19 @@ package com.rafambn.kmap.components
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.Measurable
+import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.node.ParentDataModifierNode
 import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.unit.Density
 
 fun Modifier.componentInfo(componentInfo: MapComponentInfo) = this.then(ComponentDataElement(componentInfo = componentInfo))
+
+data class Component(
+    val data: Any,
+    val placementOffset: Offset,
+    val placeable: Placeable
+)
 
 private data class ComponentDataElement(
     private val componentInfo: MapComponentInfo
