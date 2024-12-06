@@ -31,10 +31,9 @@ internal fun TileCanvas(
     positionOffset: CanvasDrawReference,
     zoomLevel: Int,
     visibleTiles: List<TileSpecs>,
-    maxTries: Int = 2,
     maxCacheTiles: Int
 ) {
-    val canvasState = remember { TileCanvasState(getTile, maxTries, maxCacheTiles) }
+    val canvasState = remember { TileCanvasState(getTile, maxCacheTiles) }
     var visibleTilesTracker by remember { mutableStateOf<List<TileSpecs>>(emptyList()) }
     if (visibleTilesTracker != visibleTiles) {
         visibleTilesTracker = visibleTiles

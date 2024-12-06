@@ -14,9 +14,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 
-class TileCanvasState( //TODO move this to mapState
+class TileCanvasState(
     private val getTile: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult,
-    private val maxTries: Int,
     private val maxCacheTiles: Int
 ) {
     private val _tileLayersStateFlow = MutableStateFlow(TileLayers())
@@ -50,9 +49,11 @@ class TileCanvasState( //TODO move this to mapState
                 foundInFrontLayer != null -> {
                     newFrontLayer.add(foundInFrontLayer)
                 }
+
                 foundInRenderedTiles != null -> {
                     newFrontLayer.add(Tile(tile.zoom, tile.row, tile.col, foundInRenderedTiles.imageBitmap))
                 }
+
                 else -> {
                     tilesToRender.add(tile)
                 }
@@ -152,29 +153,13 @@ class TileCanvasState( //TODO move this to mapState
 
     private fun CoroutineScope.worker(
         tileToProcess: TileSpecs,
-        tilesProcessSuccessResult: SendChannel<TileRenderResult>
+        tilesProcessResult: SendChannel<TileRenderResult>
     ) = launch(Dispatchers.Default) {
-        var numberOfTries = 0
-        while (numberOfTries < maxTries) {
-            try {
-                when (val resultTile = getTile(tileToProcess.zoom, tileToProcess.row, tileToProcess.col)) {
-                    is TileRenderResult.Success -> {
-                        tilesProcessSuccessResult.send(resultTile)
-                        break
-                    }
-
-                    is TileRenderResult.Failure -> {
-                        numberOfTries++
-                    }
-                }
-            } catch (ex: Exception) {
-                println("Failed to process tile on attempt ${numberOfTries}: $ex")
-                numberOfTries++
-            }
-        }
-        if (numberOfTries == maxTries) {
-            println("Failed to process tile after $maxTries attempts")
-            tilesProcessSuccessResult.send(TileRenderResult.Failure(tileToProcess))
+        try {
+            tilesProcessResult.send(getTile(tileToProcess.zoom, tileToProcess.row, tileToProcess.col))
+        } catch (ex: Exception) {
+            println("Failed to process tile: $ex")
+            tilesProcessResult.send(TileRenderResult.Failure(tileToProcess))
         }
     }
 }
