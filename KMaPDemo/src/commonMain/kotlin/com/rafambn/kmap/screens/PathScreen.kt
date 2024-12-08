@@ -37,7 +37,7 @@ fun PathScreen(
                     detectMapGestures(
                         onDoubleTap = { offset -> motionController.move { zoomByCentered(-1 / 3F, offset) } },
                         onTapLongPress = { offset -> motionController.move { positionBy(offset.asDifferentialScreenOffset()) } },
-                        onTapSwipe = { zoom -> motionController.move { zoomBy(zoom) } },
+                        onTapSwipe = { zoom -> motionController.move { zoomBy(zoom / 100) } },
                         onDrag = { dragAmount -> motionController.move { positionBy(dragAmount) } },
                         onTwoFingersTap = { offset -> motionController.move { zoomByCentered(1 / 3F, offset) } },
                         onGesture = { centroid, pan, zoom, rotation ->

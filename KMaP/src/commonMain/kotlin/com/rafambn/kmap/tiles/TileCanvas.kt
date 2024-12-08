@@ -1,14 +1,15 @@
 package com.rafambn.kmap.tiles
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
@@ -17,31 +18,82 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import com.rafambn.kmap.core.BoundingBox
+import com.rafambn.kmap.core.CameraState
+import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.utils.CanvasDrawReference
+import com.rafambn.kmap.utils.asOffset
+import com.rafambn.kmap.utils.loopInZoom
 import com.rafambn.kmap.utils.toIntFloor
 import kotlin.math.pow
 
 @Composable
 internal fun TileCanvas(
     getTile: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult,
-    magnifierScale: Float,
-    rotationDegrees: Float,
-    translation: Offset,
-    tileSize: Int,
+    cameraState: CameraState,
+    mapProperties: MapProperties,
     positionOffset: CanvasDrawReference,
-    zoomLevel: Int,
-    visibleTiles: List<TileSpecs>,
-    maxCacheTiles: Int
+    boundingBox: BoundingBox,
+    maxCacheTiles: Int,
 ) {
-    val canvasState = remember { TileCanvasState(getTile, maxCacheTiles) }
-    var visibleTilesTracker by remember { mutableStateOf<List<TileSpecs>>(emptyList()) }
-    if (visibleTilesTracker != visibleTiles) {
-        visibleTilesTracker = visibleTiles
-        canvasState.onStateChange(visibleTilesTracker, zoomLevel)
+    val zoomLevel = cameraState.zoom.toIntFloor()
+    val magnifierScale = cameraState.zoom - zoomLevel + 1F
+    val tileSize = mapProperties.tileSize
+    val rotationDegrees = cameraState.angleDegrees.toFloat()
+    val translation = cameraState.canvasSize.asOffset() / 2F
+    val visibleTiles = TileFinder().getVisibleTilesForLevel(
+        boundingBox,
+        zoomLevel,
+        mapProperties.outsideTiles,
+        mapProperties.mapCoordinatesRange
+    )
+    val coroutineScope = rememberCoroutineScope()
+    val tileLayers = remember { TileLayers() }
+    val canvasState = remember { TileRenderer(getTile, maxCacheTiles, coroutineScope) }
+
+    val renderedTilesCache = canvasState.renderedTilesFlow.collectAsState()
+    val visibleTilesTracker by rememberUpdatedState(newValue = visibleTiles)
+    LaunchedEffect(visibleTilesTracker) {
+        if (zoomLevel != tileLayers.frontLayer.level)
+            tileLayers.changeLayer(zoomLevel)
+
+        val newFrontLayer = mutableListOf<Tile>()
+        val tilesToRender = mutableListOf<TileSpecs>()
+        visibleTiles.forEach { tileSpecs ->
+            val foundInFrontLayer = tileLayers.frontLayer.tiles.find { it == tileSpecs }
+            val foundInRenderedTiles = renderedTilesCache.value.find {
+                it == TileSpecs(
+                    tileSpecs.zoom,
+                    tileSpecs.row.loopInZoom(tileSpecs.zoom),
+                    tileSpecs.col.loopInZoom(tileSpecs.zoom)
+                )
+            }
+
+            when {
+                foundInFrontLayer != null -> {
+                    newFrontLayer.add(foundInFrontLayer)
+                }
+
+                foundInRenderedTiles != null -> {
+                    newFrontLayer.add(Tile(tileSpecs.zoom, tileSpecs.row, tileSpecs.col, foundInRenderedTiles.imageBitmap))
+                }
+
+                else -> {
+                    newFrontLayer.add(Tile(tileSpecs.zoom, tileSpecs.row, tileSpecs.col, null))
+                    tilesToRender.add(tileSpecs)
+                }
+            }
+        }
+        tileLayers.updateFrontLayerTiles(newFrontLayer)
+        canvasState.renderTiles(tilesToRender)
     }
-    val tileLayers = canvasState.tileLayersStateFlow.collectAsState().value
+    LaunchedEffect(renderedTilesCache.value){
+        renderedTilesCache.value.forEach {
+            tileLayers.insertNewTileBitmap(it)
+        }
+    }
     Canvas(
-        modifier = Modifier
+        modifier = Modifier.fillMaxSize()
     ) {
         withTransform({
             scale(magnifierScale)
@@ -49,8 +101,8 @@ internal fun TileCanvas(
             translate(translation.x, translation.y)
         }) {
             drawIntoCanvas { canvas ->
-                val adjustedTileSize = 2F.pow(tileLayers.frontLayerLevel - tileLayers.backLayerLevel)
-                for (tile in tileLayers.backLayer.toList()) {
+                val adjustedTileSize = 2F.pow(tileLayers.frontLayer.level - tileLayers.backLayer.level)
+                for (tile in tileLayers.backLayer.tiles.toList()) {
                     tile.imageBitmap?.let {
                         canvas.drawImageRect(image = it,
                             dstOffset = IntOffset(
@@ -68,7 +120,7 @@ internal fun TileCanvas(
                         )
                     }
                 }
-                for (tile in tileLayers.frontLayer.toList()) {
+                for (tile in tileLayers.frontLayer.tiles.toList()) {
                     tile.imageBitmap?.let {
                         canvas.drawImageRect(image = it,
                             dstOffset = IntOffset(

@@ -100,14 +100,11 @@ fun KMaP(
                     content = {
                         TileCanvas(
                             getTile = it.getTile,
-                            magnifierScale = mapState.magnifierScale,
-                            rotationDegrees = mapState.cameraState.angleDegrees.toFloat(),
-                            translation = mapState.cameraState.canvasSize.asOffset() / 2F,
-                            tileSize = mapState.mapProperties.tileSize,
+                            cameraState = mapState.cameraState,
+                            mapProperties = mapState.mapProperties,
                             positionOffset = mapState.drawReference,
-                            zoomLevel = mapState.zoomLevel,
-                            visibleTiles = mapState.visibleTiles,
-                            maxCacheTiles = it.canvasParameters.maxCacheTiles
+                            boundingBox = mapState.getBoundingBox(),
+                            maxCacheTiles = it.canvasParameters.maxCacheTiles,
                         )
                     },
                     modifier = Modifier
