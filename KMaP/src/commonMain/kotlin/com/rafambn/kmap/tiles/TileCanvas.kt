@@ -1,7 +1,6 @@
 package com.rafambn.kmap.tiles
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
@@ -33,6 +32,7 @@ internal fun TileCanvas(
     positionOffset: CanvasDrawReference,
     boundingBox: BoundingBox,
     maxCacheTiles: Int,
+    modifier: Modifier
 ) {
     val zoomLevel = cameraState.zoom.toIntFloor()
     val magnifierScale = cameraState.zoom - zoomLevel + 1F
@@ -86,7 +86,7 @@ internal fun TileCanvas(
         tileLayers.insertNewTileBitmap(it)
     }
     Canvas(
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier
     ) {
         withTransform({
             scale(magnifierScale)

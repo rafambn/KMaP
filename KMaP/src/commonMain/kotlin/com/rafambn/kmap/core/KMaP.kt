@@ -96,30 +96,17 @@ fun KMaP(
                 )
             }
             kmapContent.visibleCanvas.forEach {
-                Layout(
-                    content = {
-                        TileCanvas(
-                            getTile = it.getTile,
-                            cameraState = mapState.cameraState,
-                            mapProperties = mapState.mapProperties,
-                            positionOffset = mapState.drawReference,
-                            boundingBox = mapState.getBoundingBox(),
-                            maxCacheTiles = it.canvasParameters.maxCacheTiles,
-                        )
-                    },
+                TileCanvas(
+                    getTile = it.getTile,
+                    cameraState = mapState.cameraState,
+                    mapProperties = mapState.mapProperties,
+                    positionOffset = mapState.drawReference,
+                    boundingBox = mapState.getBoundingBox(),
+                    maxCacheTiles = it.canvasParameters.maxCacheTiles,
                     modifier = Modifier
                         .fillMaxSize()
                         .componentInfo(MapComponentInfo(it.canvasParameters, Offset.Zero, ComponentType.CANVAS))
                         .then(it.gestureDetection?.let { Modifier.pointerInput(PointerEventPass.Main) { it(this) } } ?: Modifier),
-                    measurePolicy = { measurables, constraints ->
-                        val placeable = measurables.first().measure(constraints)
-                        layout(placeable.width, placeable.height) {
-                            placeable.place(
-                                x = 0,
-                                y = 0
-                            )
-                        }
-                    }
                 )
             }
         },
