@@ -3,12 +3,9 @@ package com.rafambn.kmap.tiles
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.Paint
@@ -25,6 +22,7 @@ import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.asOffset
 import com.rafambn.kmap.utils.loopInZoom
 import com.rafambn.kmap.utils.toIntFloor
+import kotlinx.coroutines.launch
 import kotlin.math.pow
 
 @Composable
@@ -48,49 +46,44 @@ internal fun TileCanvas(
         mapProperties.mapCoordinatesRange
     )
     val coroutineScope = rememberCoroutineScope()
-    val tileLayers = remember { TileLayers() }
+    var tileLayers = remember { TileLayers() }
     val canvasState = remember { TileRenderer(getTile, maxCacheTiles, coroutineScope) }
 
     val renderedTilesCache = canvasState.renderedTilesFlow.collectAsState()
-    val visibleTilesTracker by rememberUpdatedState(newValue = visibleTiles)
-    LaunchedEffect(visibleTilesTracker) {
-        if (zoomLevel != tileLayers.frontLayer.level)
-            tileLayers.changeLayer(zoomLevel)
+    if (zoomLevel != tileLayers.frontLayer.level)
+        tileLayers.changeLayer(zoomLevel)
 
-        val newFrontLayer = mutableListOf<Tile>()
-        val tilesToRender = mutableListOf<TileSpecs>()
-        visibleTiles.forEach { tileSpecs ->
-            val foundInFrontLayer = tileLayers.frontLayer.tiles.find { it == tileSpecs }
-            val foundInRenderedTiles = renderedTilesCache.value.find {
-                it == TileSpecs(
-                    tileSpecs.zoom,
-                    tileSpecs.row.loopInZoom(tileSpecs.zoom),
-                    tileSpecs.col.loopInZoom(tileSpecs.zoom)
-                )
+    val newFrontLayer = mutableListOf<Tile>()
+    val tilesToRender = mutableListOf<TileSpecs>()
+    visibleTiles.forEach { tileSpecs ->
+        val foundInFrontLayer = tileLayers.frontLayer.tiles.find { it == tileSpecs }
+        val foundInRenderedTiles = renderedTilesCache.value.find {
+            it == TileSpecs(
+                tileSpecs.zoom,
+                tileSpecs.row.loopInZoom(tileSpecs.zoom),
+                tileSpecs.col.loopInZoom(tileSpecs.zoom)
+            )
+        }
+
+        when {
+            foundInFrontLayer != null -> {
+                newFrontLayer.add(foundInFrontLayer)
             }
 
-            when {
-                foundInFrontLayer != null -> {
-                    newFrontLayer.add(foundInFrontLayer)
-                }
+            foundInRenderedTiles != null -> {
+                newFrontLayer.add(Tile(tileSpecs.zoom, tileSpecs.row, tileSpecs.col, foundInRenderedTiles.imageBitmap))
+            }
 
-                foundInRenderedTiles != null -> {
-                    newFrontLayer.add(Tile(tileSpecs.zoom, tileSpecs.row, tileSpecs.col, foundInRenderedTiles.imageBitmap))
-                }
-
-                else -> {
-                    newFrontLayer.add(Tile(tileSpecs.zoom, tileSpecs.row, tileSpecs.col, null))
-                    tilesToRender.add(tileSpecs)
-                }
+            else -> {
+                newFrontLayer.add(Tile(tileSpecs.zoom, tileSpecs.row, tileSpecs.col, null))
+                tilesToRender.add(tileSpecs)
             }
         }
-        tileLayers.updateFrontLayerTiles(newFrontLayer)
-        canvasState.renderTiles(tilesToRender)
     }
-    LaunchedEffect(renderedTilesCache.value){
-        renderedTilesCache.value.forEach {
-            tileLayers.insertNewTileBitmap(it)
-        }
+    tileLayers.updateFrontLayerTiles(newFrontLayer)
+    coroutineScope.launch { canvasState.renderTiles(tilesToRender) }
+    renderedTilesCache.value.forEach {
+        tileLayers.insertNewTileBitmap(it)
     }
     Canvas(
         modifier = Modifier.fillMaxSize()
