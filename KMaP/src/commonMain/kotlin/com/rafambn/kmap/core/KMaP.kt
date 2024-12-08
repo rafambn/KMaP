@@ -9,7 +9,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
@@ -157,7 +156,7 @@ fun KMaP(
                     alpha = componentData.alpha
                     translationX = componentOffset.x - componentData.drawPosition.x * it.placeable.width
                     translationY = componentOffset.y - componentData.drawPosition.y * it.placeable.height
-                    transformOrigin = TransformOrigin(componentData.drawPosition.x, componentData.drawPosition.y)
+                    transformOrigin = componentData.drawPosition.asTransformOrigin()
                     componentData.zoomToFix?.let { zoom ->
                         scaleX = 2F.pow(mapState.cameraState.zoom - zoom)
                         scaleY = 2F.pow(mapState.cameraState.zoom - zoom)
@@ -180,7 +179,7 @@ fun KMaP(
                     alpha = componentData.alpha
                     translationX = componentOffset.x - componentData.drawPosition.x * it.placeable.width
                     translationY = componentOffset.y - componentData.drawPosition.y * it.placeable.height
-                    transformOrigin = TransformOrigin(componentData.drawPosition.x, componentData.drawPosition.y)
+                    transformOrigin = componentData.drawPosition.asTransformOrigin()
                     rotationZ =
                         if (componentData.rotateWithMap)
                             (mapState.cameraState.angleDegrees + componentData.rotation).toFloat()
