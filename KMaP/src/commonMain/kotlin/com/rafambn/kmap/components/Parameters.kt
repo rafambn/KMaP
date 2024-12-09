@@ -10,7 +10,7 @@ data class MarkerParameters(
     val tag: String = "",
     val alpha: Float = 1F,
     val drawPosition: DrawPosition = DrawPosition.TOP_LEFT,
-    val zIndex: Float = 2F,
+    val zIndex: Float = 1F,
     val zoomToFix: Float? = null,
     val rotateWithMap: Boolean = false,
     val rotation: Degrees = 0.0
@@ -19,7 +19,7 @@ data class MarkerParameters(
 data class CanvasParameters(
     val tag: String = "",
     val alpha: Float = 1F,
-    val zIndex: Float = 1F,
+    val zIndex: Float = 0F,
     val maxCacheTiles: Int = 20
 )
 

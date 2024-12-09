@@ -1,20 +1,14 @@
 package com.rafambn.kmap.core
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import com.rafambn.kmap.components.CanvasParameters
 import com.rafambn.kmap.components.ClusterParameters
 import com.rafambn.kmap.components.Component
 import com.rafambn.kmap.components.ComponentType
@@ -39,6 +33,27 @@ fun KMaP(
     }
     //TODO improve this code to prevent unnecessary recompositions
     val kmapContent = KMaPContent(content)
+    kmapContent.visibleCanvas.forEach {
+        TileCanvas(
+            getTile = it.getTile,
+            cameraState = mapState.cameraState,
+            mapProperties = mapState.mapProperties,
+            positionOffset = mapState.drawReference,
+            boundingBox = mapState.getBoundingBox(),
+            canvasParameters = it.canvasParameters,
+            gestureDetector = it.gestureDetection,
+            modifier = modifier
+                .onGloballyPositioned { coordinates ->
+                    mapState.setCanvasSize(
+                        Offset(
+                            coordinates.size.width.toFloat(),
+                            coordinates.size.height.toFloat()
+                        )
+                    )
+                },
+        )
+    }
+
     kmapContent.updateCluster(mapState)
     Layout(
         content = {
@@ -94,23 +109,8 @@ fun KMaP(
                     }
                 )
             }
-            kmapContent.visibleCanvas.forEach {
-                TileCanvas(
-                    getTile = it.getTile,
-                    cameraState = mapState.cameraState,
-                    mapProperties = mapState.mapProperties,
-                    positionOffset = mapState.drawReference,
-                    boundingBox = mapState.getBoundingBox(),
-                    maxCacheTiles = it.canvasParameters.maxCacheTiles,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .componentInfo(MapComponentInfo(it.canvasParameters, Offset.Zero, ComponentType.CANVAS))
-                        .then(it.gestureDetection?.let { Modifier.pointerInput(PointerEventPass.Main) { it(this) } } ?: Modifier),
-                )
-            }
         },
         modifier
-            .background(Color.Gray)
             .clipToBounds()
             .wrapContentSize()
             .onGloballyPositioned { coordinates ->
@@ -122,10 +122,6 @@ fun KMaP(
                 )
             }
     ) { measurables, constraints ->
-        val canvasComponent = measurables
-            .filter { it.componentInfo.type == ComponentType.CANVAS }
-            .map { Component(it.componentInfo.data, it.componentInfo.placementOffset, it.measure(constraints)) }
-
         val markersComponent = measurables
             .filter { it.componentInfo.type == ComponentType.MARKER }
             .map { Component(it.componentInfo.data, it.componentInfo.placementOffset, it.measure(constraints)) }
@@ -135,16 +131,6 @@ fun KMaP(
             .map { Component(it.componentInfo.data, it.componentInfo.placementOffset, it.measure(constraints)) }
 
         layout(constraints.maxWidth, constraints.maxHeight) {
-            canvasComponent.forEach {
-                val componentData = it.data as CanvasParameters
-                it.placeable.placeWithLayer(
-                    x = 0,
-                    y = 0,
-                    zIndex = componentData.zIndex
-                ) {
-                    alpha = componentData.alpha
-                }
-            }
             markersComponent.forEach {
                 val componentData = it.data as MarkerParameters
                 val componentOffset = it.placementOffset

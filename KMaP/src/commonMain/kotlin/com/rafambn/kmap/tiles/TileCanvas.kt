@@ -1,19 +1,28 @@
 package com.rafambn.kmap.tiles
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerInputScope
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
+import com.rafambn.kmap.components.CanvasParameters
 import com.rafambn.kmap.core.BoundingBox
 import com.rafambn.kmap.core.CameraState
 import com.rafambn.kmap.mapProperties.MapProperties
@@ -26,13 +35,14 @@ import kotlin.math.pow
 
 @Composable
 internal fun TileCanvas(
-    getTile: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult,
     cameraState: CameraState,
     mapProperties: MapProperties,
     positionOffset: CanvasDrawReference,
     boundingBox: BoundingBox,
-    maxCacheTiles: Int,
-    modifier: Modifier
+    modifier: Modifier,
+    canvasParameters: CanvasParameters,
+    getTile: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult,
+    gestureDetector: (suspend PointerInputScope.() -> Unit)?
 ) {
     val zoomLevel = cameraState.zoom.toIntFloor()
     val magnifierScale = cameraState.zoom - zoomLevel + 1F
@@ -47,7 +57,7 @@ internal fun TileCanvas(
     )
     val coroutineScope = rememberCoroutineScope()
     var tileLayers = remember { TileLayers() }
-    val canvasState = remember { TileRenderer(getTile, maxCacheTiles, coroutineScope) }
+    val canvasState = remember { TileRenderer(getTile, canvasParameters.maxCacheTiles, coroutineScope) }
 
     val renderedTilesCache = canvasState.renderedTilesFlow.collectAsState()
     if (zoomLevel != tileLayers.frontLayer.level)
@@ -85,53 +95,58 @@ internal fun TileCanvas(
     renderedTilesCache.value.forEach {
         tileLayers.insertNewTileBitmap(it)
     }
-    Canvas(
+    Layout(
         modifier = modifier
-    ) {
-        withTransform({
-            scale(magnifierScale)
-            rotate(rotationDegrees)
-            translate(translation.x, translation.y)
-        }) {
-            drawIntoCanvas { canvas ->
-                val adjustedTileSize = 2F.pow(tileLayers.frontLayer.level - tileLayers.backLayer.level)
-                for (tile in tileLayers.backLayer.tiles.toList()) {
-                    tile.imageBitmap?.let {
-                        canvas.drawImageRect(image = it,
-                            dstOffset = IntOffset(
-                                (tileSize * tile.row * adjustedTileSize + positionOffset.horizontal).dp.toPx().toIntFloor(),
-                                (tileSize * tile.col * adjustedTileSize + positionOffset.vertical).dp.toPx().toIntFloor()
-                            ),
-                            dstSize = IntSize(
-                                (tileSize.dp.toPx() * adjustedTileSize).toIntFloor(),
-                                (tileSize.dp.toPx() * adjustedTileSize).toIntFloor()
-                            ),
-                            paint = Paint().apply {
-                                isAntiAlias = false
-                                filterQuality = FilterQuality.High
-                            }
+            .then(gestureDetector?.let { Modifier.pointerInput(PointerEventPass.Main) { it(this) } } ?: Modifier)
+            .graphicsLayer {
+                alpha = canvasParameters.alpha
+                clip = true
+            }
+            .zIndex(canvasParameters.zIndex)
+            .drawBehind {
+                withTransform({
+                    scale(magnifierScale)
+                    rotate(rotationDegrees)
+                    translate(translation.x, translation.y)
+                }) {
+                    drawIntoCanvas { canvas ->
+                        drawTiles(
+                            tileLayers.backLayer.tiles,
+                            tileSize,
+                            positionOffset,
+                            2F.pow(tileLayers.frontLayer.level - tileLayers.backLayer.level),
+                            canvas
                         )
-                    }
-                }
-                for (tile in tileLayers.frontLayer.tiles.toList()) {
-                    tile.imageBitmap?.let {
-                        canvas.drawImageRect(image = it,
-                            dstOffset = IntOffset(
-                                (tileSize * tile.row + positionOffset.horizontal).dp.toPx().toIntFloor(),
-                                (tileSize * tile.col + positionOffset.vertical).dp.toPx().toIntFloor()
-                            ),
-                            dstSize = IntSize(
-                                tileSize.dp.toPx().toIntFloor(),
-                                tileSize.dp.toPx().toIntFloor()
-                            ),
-                            paint = Paint().apply {
-                                isAntiAlias = false
-                                filterQuality = FilterQuality.High
-                            }
+                        drawTiles(
+                            tileLayers.frontLayer.tiles,
+                            tileSize,
+                            positionOffset,
+                            1F,
+                            canvas
                         )
                     }
                 }
             }
+    ) { _, constraints ->
+        layout(constraints.maxWidth, constraints.maxHeight) {}
+    }
+}
+
+private fun DrawScope.drawTiles(tiles: List<Tile>, tileSize: Int, positionOffset: CanvasDrawReference, scaleAdjustment: Float = 1F, canvas: Canvas) {
+    tiles.forEach { tile ->
+        tile.imageBitmap?.let {
+            canvas.drawImageRect(
+                image = it,
+                dstOffset = IntOffset(
+                    (tileSize * tile.row * scaleAdjustment + positionOffset.horizontal).dp.toPx().toIntFloor(),
+                    (tileSize * tile.col * scaleAdjustment + positionOffset.vertical).dp.toPx().toIntFloor()
+                ),
+                dstSize = IntSize((tileSize.dp.toPx() * scaleAdjustment).toIntFloor(), (tileSize.dp.toPx() * scaleAdjustment).toIntFloor()),
+                paint = Paint().apply {
+                    isAntiAlias = false
+                    filterQuality = FilterQuality.High
+                }
+            )
         }
     }
 }
