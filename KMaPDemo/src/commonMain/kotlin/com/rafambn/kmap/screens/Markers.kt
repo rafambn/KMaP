@@ -22,7 +22,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.core.KMaP
-import com.rafambn.kmap.core.canvas
 import com.rafambn.kmap.core.DrawPosition
 import com.rafambn.kmap.components.MarkerParameters
 import com.rafambn.kmap.core.rememberMotionController
@@ -30,8 +29,6 @@ import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
 import com.rafambn.kmap.gestures.detectMapGestures
-import com.rafambn.kmap.core.marker
-import com.rafambn.kmap.core.markers
 import com.rafambn.kmap.utils.CanvasPosition
 import com.rafambn.kmap.utils.ProjectedCoordinates
 import com.rafambn.kmap.utils.asDifferentialScreenOffset

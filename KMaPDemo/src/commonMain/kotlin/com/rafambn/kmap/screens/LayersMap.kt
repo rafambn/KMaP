@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Slider
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -16,7 +15,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.core.KMaP
-import com.rafambn.kmap.core.canvas
 import com.rafambn.kmap.mapProperties.TileSource
 import com.rafambn.kmap.components.CanvasParameters
 import com.rafambn.kmap.core.rememberMotionController
@@ -40,9 +38,6 @@ fun LayersScreen(
         val motionController = rememberMotionController()
         val mapState = rememberMapState(mapProperties = SimpleMapProperties())
         var sliderPosition by remember { mutableStateOf(0f) }
-        val canvasParameter by derivedStateOf {
-            CanvasParameters(alpha = sliderPosition)
-        }
 
         KMaP(
             modifier = Modifier.fillMaxSize(),
@@ -71,7 +66,7 @@ fun LayersScreen(
                 }
             )
             canvas(
-                canvasParameters = canvasParameter,
+                canvasParameters = CanvasParameters(alpha = sliderPosition),
                 tileSource = LayerMapTileSource()::getTile
             )
         }

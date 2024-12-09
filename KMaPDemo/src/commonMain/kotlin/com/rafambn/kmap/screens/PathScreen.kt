@@ -9,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.core.KMaP
-import com.rafambn.kmap.core.canvas
 import com.rafambn.kmap.core.rememberMotionController
 import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
