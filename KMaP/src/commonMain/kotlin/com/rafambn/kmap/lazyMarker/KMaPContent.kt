@@ -15,15 +15,11 @@ class KMaPContent(
 ) : KMaPScope {
 
     val markers = mutableListOf<MarkerComponent>()
-    val clusters = mutableListOf<ClusterComponent>()
+    val cluster = mutableListOf<ClusterComponent>()
     val canvas = mutableListOf<CanvasComponent>()
 
     init {
         apply(content)
-    }
-
-    override fun cluster(clusterParameters: ClusterParameters, clusterContent: @Composable (cluster: ClusterParameters, size: Int) -> Unit) {
-        clusters.add(ClusterComponent(clusterParameters, clusterContent))
     }
 
     override fun canvas(
@@ -42,6 +38,10 @@ class KMaPContent(
         markerParameters.forEach {
             markers.add(MarkerComponent(it, markerContent))
         }
+    }
+
+    override fun cluster(clusterParameters: ClusterParameters, clusterContent: @Composable (cluster: ClusterParameters, size: Int) -> Unit) {
+        cluster.add(ClusterComponent(clusterParameters, clusterContent))
     }
 }
 

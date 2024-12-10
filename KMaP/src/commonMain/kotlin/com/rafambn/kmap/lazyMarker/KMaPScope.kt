@@ -10,10 +10,6 @@ import com.rafambn.kmap.tiles.TileRenderResult
 
 @LazyScopeMarker
 interface KMaPScope {
-    fun cluster(
-        clusterParameters: ClusterParameters,
-        clusterContent: @Composable (cluster: ClusterParameters, size: Int) -> Unit
-    )
 
     fun canvas(
         canvasParameters: CanvasParameters = CanvasParameters(),
@@ -29,5 +25,10 @@ interface KMaPScope {
     fun markers(
         markerParameters: List<MarkerParameters>,
         markerContent: @Composable (marker: MarkerParameters) -> Unit
+    )
+
+    fun cluster(
+        clusterParameters: ClusterParameters,
+        clusterContent: @Composable (cluster: ClusterParameters, size: Int) -> Unit
     )
 } //TODO brainStorm a path api

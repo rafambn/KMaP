@@ -7,29 +7,28 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.referentialEqualityPolicy
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import com.rafambn.kmap.components.CanvasComponent
-import com.rafambn.kmap.components.CanvasParameters
+import com.rafambn.kmap.components.MarkerParameters
 import com.rafambn.kmap.core.MapState
 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun rememberItemProviderLambda(content: KMaPScope.() -> Unit, mapState: MapState): () -> ItemProvider {
+fun rememberComponentProviderLambda(content: KMaPScope.() -> Unit, mapState: MapState): () -> ComponentProvider {
     val latestContent = rememberUpdatedState(content)
 
     return remember(mapState) {
         val kMaPContentState = derivedStateOf(referentialEqualityPolicy()) {
             KMaPContent(latestContent.value)
         }
-        val itemProviderState = derivedStateOf(referentialEqualityPolicy()) {
-            ItemProvider(kMaPContentState.value)
+        val kmapProviderState = derivedStateOf(referentialEqualityPolicy()) {
+            ComponentProvider(kMaPContentState.value)
         }
-        itemProviderState::value
+        kmapProviderState::value
     }
 }
 
-@ExperimentalFoundationApi
-class ItemProvider(
+@OptIn(ExperimentalFoundationApi::class)
+class ComponentProvider(
     private val kmapContent: KMaPContent
 ) : LazyLayoutItemProvider {
 
@@ -44,6 +43,11 @@ class ItemProvider(
     }
 
     val canvasList get() = kmapContent.canvas
+
+    fun getParameters(index: Int): MarkerParameters {
+        val item = kmapContent.markers[index]
+        return item.markerParameters
+    }
 
 //    fun getItemIndexesInRange(boundaries: BoundingBox): List<Int> {
 //        val result = mutableListOf<Int>()

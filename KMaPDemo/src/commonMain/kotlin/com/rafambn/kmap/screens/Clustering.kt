@@ -126,21 +126,21 @@ fun ClusteringScreen(
                     color = Color.White
                 )
             }
-            cluster(
-                ClusterParameters(
-                    tag = "Tag 1",
-                    clusterThreshold = 50.dp,
-                    drawPosition = DrawPosition.CENTER,
-                )
-            ) { _, _ ->
-                Text(
-                    text = "Cluster tag 1",
-                    modifier = Modifier
-                        .background(Color.Green)
-                        .padding(16.dp),
-                    color = Color.White
-                )
-            }
+//            cluster(
+//                ClusterParameters(
+//                    tag = "Tag 1",
+//                    clusterThreshold = 50.dp,
+//                    drawPosition = DrawPosition.CENTER,
+//                )
+//            ) { _, _ ->
+//                Text(
+//                    text = "Cluster tag 1",
+//                    modifier = Modifier
+//                        .background(Color.Green)
+//                        .padding(16.dp),
+//                    color = Color.White
+//                )
+//            }
         }
         Image(
             imageVector = vectorResource(Res.drawable.back_arrow),

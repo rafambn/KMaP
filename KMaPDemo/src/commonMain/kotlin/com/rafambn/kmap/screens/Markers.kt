@@ -191,7 +191,7 @@ fun MarkersScreen(
                 markersList.add(
                     MarkerParameters(
                         ProjectedCoordinates(90.0, 0.0),
-                        drawPosition = DrawPosition.TOP_RIGHT,
+                        drawPosition = DrawPosition.BOTTOM_CENTER,
                         tag = "Removable marker"
                     )
                 )
