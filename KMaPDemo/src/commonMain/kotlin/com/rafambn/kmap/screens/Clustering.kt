@@ -64,17 +64,17 @@ fun ClusteringScreen(
                     MarkerParameters(
                         ProjectedCoordinates(0.0, 0.0),
                         drawPosition = DrawPosition.CENTER,
-                        tag = "Tag 1"
+                        clusterId = 1
                     ),
                     MarkerParameters(
                         ProjectedCoordinates(18.0, 0.0),
                         drawPosition = DrawPosition.CENTER,
-                        tag = "Tag 1"
+                        clusterId = 1
                     )
                 )
             ) {
                 Text(
-                    text = it.tag,
+                    text = "Tag 1",
                     modifier = Modifier
                         .background(Color.Blue)
                         .padding(16.dp),
@@ -85,11 +85,11 @@ fun ClusteringScreen(
                 MarkerParameters(
                     ProjectedCoordinates(0.0, 3.0),
                     drawPosition = DrawPosition.CENTER,
-                    tag = "Tag 1"
+                    clusterId = 1
                 )
             ) {
                 Text(
-                    text = it.tag,
+                    text = "Tag 1",
                     modifier = Modifier
                         .background(Color.Red)
                         .padding(16.dp),
@@ -100,11 +100,11 @@ fun ClusteringScreen(
                 MarkerParameters(
                     ProjectedCoordinates(15.0, -20.0),
                     drawPosition = DrawPosition.CENTER,
-                    tag = "Tag 2"
+                    clusterId = 2
                 )
             ) {
                 Text(
-                    text = it.tag,
+                    text = "Tag 2",
                     modifier = Modifier
                         .background(Color.Red)
                         .padding(16.dp),
@@ -115,32 +115,28 @@ fun ClusteringScreen(
                 MarkerParameters(
                     ProjectedCoordinates(0.0, -20.0),
                     drawPosition = DrawPosition.CENTER,
-                    tag = "Tag 1"
+                    clusterId = 1
                 )
             ) {
                 Text(
-                    text = it.tag,
+                    text = "Tag 1",
                     modifier = Modifier
                         .background(Color.Blue)
                         .padding(16.dp),
                     color = Color.White
                 )
             }
-//            cluster(
-//                ClusterParameters(
-//                    tag = "Tag 1",
-//                    clusterThreshold = 50.dp,
-//                    drawPosition = DrawPosition.CENTER,
-//                )
-//            ) { _, _ ->
-//                Text(
-//                    text = "Cluster tag 1",
-//                    modifier = Modifier
-//                        .background(Color.Green)
-//                        .padding(16.dp),
-//                    color = Color.White
-//                )
-//            }
+            cluster(
+                ClusterParameters(id = 1,)
+            ) { _,->
+                Text(
+                    text = "Cluster tag 1",
+                    modifier = Modifier
+                        .background(Color.Green)
+                        .padding(16.dp),
+                    color = Color.White
+                )
+            }
         }
         Image(
             imageVector = vectorResource(Res.drawable.back_arrow),

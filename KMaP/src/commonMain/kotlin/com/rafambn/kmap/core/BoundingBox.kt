@@ -11,12 +11,17 @@ data class BoundingBox(
     val bottomLeft: CanvasPosition
 )
 
-data class ViewPort(
+data class ViewPort( //TODO merge this 2 classes
     val origin: ScreenOffset,
     val size: Size,
 )
 
-fun ViewPort.isViewPortIntersecting(other: ViewPort): Boolean {
+fun getViewPort(drawPosition: DrawPosition, width: Float, height: Float, offset: ScreenOffset): ViewPort = ViewPort(
+    offset - ScreenOffset(width * drawPosition.x, height * drawPosition.y),
+    Size(width, height)
+)
+
+fun ViewPort.isViewPortIntersecting(other: ViewPort): Boolean {//TODO maybe modify to account for rotation
     val rect1Left = origin.x
     val rect1Top = origin.y
     val rect1Right = rect1Left + size.width

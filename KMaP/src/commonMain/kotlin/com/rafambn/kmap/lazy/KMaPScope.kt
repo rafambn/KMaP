@@ -29,6 +29,6 @@ interface KMaPScope {
 
     fun cluster(
         clusterParameters: ClusterParameters,
-        clusterContent: @Composable (cluster: ClusterParameters, size: Int) -> Unit
+        clusterContent: @Composable (cluster: ClusterParameters) -> Unit
     )
 } //TODO brainStorm a path api

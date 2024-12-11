@@ -7,7 +7,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.referentialEqualityPolicy
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import com.rafambn.kmap.components.MarkerParameters
+import com.rafambn.kmap.components.Parameters
 import com.rafambn.kmap.core.MapState
 
 @Composable
@@ -30,17 +30,32 @@ class ComponentProvider(
     private val kmapContent: KMaPContent
 ) : LazyLayoutItemProvider {
 
+    //Because you can't place a composable twice, you can't measure a cluster composable and put it in multiple places
+    //but you can double the amount of composable in the lazy layout and map the second half to the cluster of the marker
+    //this way if i want to to cluster indexes 5 and 7 i measure index 5*2 getting the cluster of of marker index == 5
     override val itemCount
-        get() = kmapContent.markers.size
+        get() = kmapContent.markers.size * 2
 
+    val markersCount
+        get() = kmapContent.markers.size
 
     @Composable
     override fun Item(index: Int, key: Any) {
         val item = kmapContent.markers.getOrNull(index)
-        item?.markerContent?.invoke(item.markerParameters)
+        if (item == null) {
+            val cluster = kmapContent.cluster.find { it.clusterParameters.id == kmapContent.markers[index / 2].markerParameters.clusterId }
+            cluster?.clusterContent(cluster.clusterParameters)
+        } else
+            item.markerContent(item.markerParameters)
     }
 
     val canvasList get() = kmapContent.canvas
 
-    fun getParameters(index: Int): MarkerParameters = kmapContent.markers[index].markerParameters
+    fun getParameters(index: Int): Parameters {
+        val item = kmapContent.markers.getOrNull(index)
+        return if (item == null)
+            kmapContent.cluster.find { it.clusterParameters.id == kmapContent.markers[index / 2].markerParameters.clusterId }!!.clusterParameters
+        else
+            item.markerParameters
+    }
 }

@@ -10,16 +10,14 @@ internal class MeasuredComponentProvider(
     private val measureScope: LazyLayoutMeasureScope,
 ) {
     private val childConstraints = Constraints(
-        maxWidth =  Constraints.Infinity,
+        maxWidth = Constraints.Infinity,
         maxHeight = Constraints.Infinity
     )
-    fun getAndMeasure(index: Int): MeasuredComponent {
-        val placeables = measureScope.measure(index, childConstraints)
-        val parameters = componentProvider.getParameters(index)
 
-        return MeasuredComponent(
-            placeables = placeables,
-            parameters = parameters
+    fun getAndMeasure(index: Int): MeasuredComponent =
+        MeasuredComponent(
+            index = index,
+            placeables = measureScope.measure(index, childConstraints),
+            parameters = componentProvider.getParameters(index)
         )
-    }
 }

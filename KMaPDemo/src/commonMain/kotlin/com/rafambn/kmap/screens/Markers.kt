@@ -76,7 +76,6 @@ fun MarkersScreen(
                 MarkerParameters(
                     ProjectedCoordinates(-0.0, -0.0),
                     drawPosition = DrawPosition.TOP_RIGHT,
-                    tag = "Fixed size"
                 )
             ) {
                 Text(
@@ -92,7 +91,6 @@ fun MarkersScreen(
                     ProjectedCoordinates(-0.0, -10.0),
                     drawPosition = DrawPosition.TOP_RIGHT,
                     zoomToFix = 1F,
-                    tag = "Scale with zoom"
                 )
             ) {
                 Text(
@@ -109,7 +107,6 @@ fun MarkersScreen(
                     drawPosition = DrawPosition.TOP_RIGHT,
                     rotateWithMap = true,
                     rotation = -45.0,
-                    tag = "Rotate with map and custom start angle"
                 )
             ) {
                 Text(
@@ -124,7 +121,6 @@ fun MarkersScreen(
                 MarkerParameters(
                     ProjectedCoordinates(-90.0, 0.0),
                     drawPosition = DrawPosition.TOP_RIGHT,
-                    tag = "Clickable"
                 )
             ) {
                 val cor = remember { mutableStateOf(Color.Black) }
@@ -160,7 +156,6 @@ fun MarkersScreen(
                 MarkerParameters(
                     draggableMarkerPos,
                     drawPosition = DrawPosition.TOP_RIGHT,
-                    tag = "Draggable marker"
                 )
             ) {
                 Text(
@@ -192,7 +187,6 @@ fun MarkersScreen(
                     MarkerParameters(
                         ProjectedCoordinates(90.0, 0.0),
                         drawPosition = DrawPosition.BOTTOM_CENTER,
-                        tag = "Removable marker"
                     )
                 )
             },

@@ -40,7 +40,7 @@ class KMaPContent(
         }
     }
 
-    override fun cluster(clusterParameters: ClusterParameters, clusterContent: @Composable (cluster: ClusterParameters, size: Int) -> Unit) {
+    override fun cluster(clusterParameters: ClusterParameters, clusterContent: @Composable (cluster: ClusterParameters) -> Unit) {
         cluster.add(ClusterComponent(clusterParameters, clusterContent))
     }
 }
