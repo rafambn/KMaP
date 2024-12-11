@@ -1,4 +1,4 @@
-package com.rafambn.kmap.lazyMarker
+package com.rafambn.kmap.lazy
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.layout.LazyLayoutItemProvider
@@ -10,8 +10,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import com.rafambn.kmap.components.MarkerParameters
 import com.rafambn.kmap.core.MapState
 
-
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun rememberComponentProviderLambda(content: KMaPScope.() -> Unit, mapState: MapState): () -> ComponentProvider {
     val latestContent = rememberUpdatedState(content)
@@ -44,27 +42,5 @@ class ComponentProvider(
 
     val canvasList get() = kmapContent.canvas
 
-    fun getParameters(index: Int): MarkerParameters {
-        val item = kmapContent.markers[index]
-        return item.markerParameters
-    }
-
-//    fun getItemIndexesInRange(boundaries: BoundingBox): List<Int> {
-//        val result = mutableListOf<Int>()
-//
-//        kmapContent.value.forEachIndexed { index, itemContent ->
-//            val listItem = itemContent.item
-//            if (listItem.x in boundaries.fromX..boundaries.toX &&
-//                listItem.y in boundaries.fromY..boundaries.toY
-//            ) {
-//                result.add(index)
-//            }
-//        }
-//
-//        return result
-//    }
-//
-//    fun getItem(index: Int): ListItem? {
-//        return itemsState.value.getOrNull(index)?.item
-//    }
+    fun getParameters(index: Int): MarkerParameters = kmapContent.markers[index].markerParameters
 }

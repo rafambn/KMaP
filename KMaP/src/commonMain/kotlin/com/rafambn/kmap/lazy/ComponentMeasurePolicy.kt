@@ -1,67 +1,100 @@
-package com.rafambn.kmap.lazyMarker
+package com.rafambn.kmap.lazy
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.lazy.layout.LazyLayoutMeasureScope
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.input.pointer.PointerInputScope
-import com.rafambn.kmap.components.CanvasComponent
-import com.rafambn.kmap.components.CanvasParameters
-import com.rafambn.kmap.components.ClusterComponent
-import com.rafambn.kmap.components.ClusterParameters
-import com.rafambn.kmap.components.MarkerComponent
-import com.rafambn.kmap.components.MarkerParameters
-import com.rafambn.kmap.tiles.TileRenderResult
+import androidx.compose.runtime.remember
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.layout.MeasureResult
+import androidx.compose.ui.layout.Placeable
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.constrainHeight
+import androidx.compose.ui.unit.constrainWidth
+import androidx.compose.ui.util.fastForEach
+import com.rafambn.kmap.core.MapState
+import com.rafambn.kmap.core.ViewPort
+import com.rafambn.kmap.core.isViewPortIntersecting
+import com.rafambn.kmap.utils.ScreenOffset
 
-class KMaPContent(
-    content: KMaPScope.() -> Unit,
-) : KMaPScope {
+@ExperimentalFoundationApi
+@Composable
+fun rememberComponentMeasurePolicy(
+    componentProviderLambda: () -> ComponentProvider,
+    mapState: MapState,
+) = remember<LazyLayoutMeasureScope.(Constraints) -> MeasureResult>(
+    mapState,
+) {
+    { containerConstraints ->
+        val componentProvider = componentProviderLambda()
 
-    val markers = mutableListOf<MarkerComponent>()
-    val cluster = mutableListOf<ClusterComponent>()
-    val canvas = mutableListOf<CanvasComponent>()
+        val itemsCount = componentProvider.itemCount
 
-    init {
-        apply(content)
-    }
+        val measuredItemProvider = MeasuredComponentProvider(componentProvider,this)
 
-    override fun canvas(
-        canvasParameters: CanvasParameters,
-        tileSource: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult,
-        gestureDetection: (suspend PointerInputScope.() -> Unit)?
-    ) {
-        canvas.add(CanvasComponent(canvasParameters, tileSource, gestureDetection))
-    }
-
-    override fun marker(markerParameters: MarkerParameters, markerContent: @Composable (marker: MarkerParameters) -> Unit) {
-        markers.add(MarkerComponent(markerParameters, markerContent))
-    }
-
-    override fun markers(markerParameters: List<MarkerParameters>, markerContent: @Composable (marker: MarkerParameters) -> Unit) {
-        markerParameters.forEach {
-            markers.add(MarkerComponent(it, markerContent))
-        }
-    }
-
-    override fun cluster(clusterParameters: ClusterParameters, clusterContent: @Composable (cluster: ClusterParameters, size: Int) -> Unit) {
-        cluster.add(ClusterComponent(clusterParameters, clusterContent))
+        measureComponent(
+            itemsCount = itemsCount,
+            measuredItemProvider = measuredItemProvider,
+            mapState = mapState,
+            constraints = containerConstraints,
+            layout = { width, height, placement ->
+                layout(
+                    containerConstraints.constrainWidth(width),
+                    containerConstraints.constrainHeight(height),
+                    emptyMap(),
+                    placement
+                )
+            }
+        )
     }
 }
 
-//class KMaPContent(
-//    content: KMaPScope.() -> Unit,
-//) : KMaPScope {
-//    val markers = mutableListOf<MarkerComponent>()
-//    val clusters = mutableListOf<ClusterComponent>()
-//    val canvas = mutableListOf<CanvasComponent>()
-//    val visibleCanvas = mutableListOf<Canvas>()
-//    val visibleMarkers = mutableListOf<Marker>()
-//    val visibleClusters = mutableListOf<Cluster>()
-//
-//    init {
-//        apply(content)
-//        visibleCanvas.addAll(canvas.map { Canvas(it.canvasParameters, it.getTile, it.gestureDetection) })
-//    }
-//}
-//
-//    fun updateCluster(mapState: MapState) {//TODO improve this code to account for draw position
+internal fun measureComponent(
+    itemsCount: Int,
+    measuredItemProvider: MeasuredComponentProvider,
+    mapState: MapState,
+    constraints: Constraints,
+    layout: (Int, Int, Placeable.PlacementScope.() -> Unit) -> MeasureResult
+): MeasureResult {
+    val layoutWidth = constraints.maxWidth
+    val layoutHeight = constraints.maxHeight
+
+    if (itemsCount <= 0) {
+        return layout(layoutWidth, layoutHeight) {}
+    } else {
+
+        val visibleItems = ArrayDeque<MeasuredComponent>()
+
+        val measuredItem = mutableListOf<MeasuredComponent>()
+
+        for (index in 0 until itemsCount) {
+            measuredItem.add(measuredItemProvider.getAndMeasure(index))
+        }
+
+        val mapViewPort = mapState.viewPort
+        measuredItem.forEach {
+            it.offset = with(mapState) {
+                it.parameters.coordinates.toCanvasPosition().toScreenOffset()
+            }
+            val itemDrawPosition = ScreenOffset(it.maxWidth * it.parameters.drawPosition.x, it.maxHeight * it.parameters.drawPosition.y)
+            val itemViewPort = ViewPort(
+                it.offset - itemDrawPosition,
+                Size(it.maxWidth.toFloat(), it.maxHeight.toFloat())
+            )
+            if (mapViewPort.isViewPortIntersecting(itemViewPort))
+                visibleItems.add(it)
+        }
+
+
+        return layout(layoutWidth, layoutHeight) {
+            visibleItems.fastForEach {
+                it.place(this, it.offset, it.parameters, mapState.cameraState.angleDegrees, mapState.cameraState.zoom)
+            }
+        }
+    }
+}
+
+
+//    fun updateCluster(mapState: MapState) {
 //        //clear visible markers
 //        visibleMarkers.clear()
 //        visibleClusters.clear()

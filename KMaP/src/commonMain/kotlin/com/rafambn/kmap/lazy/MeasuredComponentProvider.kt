@@ -1,4 +1,4 @@
-package com.rafambn.kmap.lazyMarker
+package com.rafambn.kmap.lazy
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.layout.LazyLayoutMeasureScope
