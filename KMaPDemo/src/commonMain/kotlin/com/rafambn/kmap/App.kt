@@ -22,7 +22,6 @@ import com.rafambn.kmap.screens.SimpleMapScreen
 import com.rafambn.kmap.screens.StartScreen
 import com.rafambn.kmap.theme.AppTheme
 
-
 @Composable
 fun App() = AppTheme {
     Surface(modifier = Modifier.fillMaxSize()) {
@@ -92,3 +91,5 @@ fun App() = AppTheme {
         }
     }
 }
+
+expect val scrollScale: Int

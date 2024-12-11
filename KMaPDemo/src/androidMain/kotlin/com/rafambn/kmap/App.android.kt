@@ -24,3 +24,5 @@ class AppActivity : ComponentActivity() {
         }
     }
 }
+
+actual val scrollScale = 1

@@ -29,6 +29,7 @@ import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
 import com.rafambn.kmap.gestures.detectMapGestures
+import com.rafambn.kmap.scrollScale
 import com.rafambn.kmap.utils.CanvasPosition
 import com.rafambn.kmap.utils.ProjectedCoordinates
 import com.rafambn.kmap.utils.asDifferentialScreenOffset
@@ -68,7 +69,7 @@ fun MarkersScreen(
                                 positionBy(pan)
                             }
                         },
-                        onScroll = { mouseOffset, scrollAmount -> motionController.move { zoomByCentered(scrollAmount, mouseOffset) } },
+                        onScroll = { mouseOffset, scrollAmount -> motionController.move { zoomByCentered(scrollAmount/ scrollScale, mouseOffset) } },
                         onCtrlGesture = { rotation -> motionController.move { rotateBy(rotation.toDouble()) } },
                     )
                 })

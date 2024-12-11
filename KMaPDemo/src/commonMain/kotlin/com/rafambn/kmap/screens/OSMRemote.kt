@@ -17,6 +17,7 @@ import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.OSMMapProperties
 import com.rafambn.kmap.customSources.OSMTileSource
 import com.rafambn.kmap.gestures.detectMapGestures
+import com.rafambn.kmap.scrollScale
 import com.rafambn.kmap.utils.asDifferentialScreenOffset
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
@@ -54,7 +55,7 @@ fun OSMRemoteScreen(
                                 positionBy(pan)
                             }
                         },
-                        onScroll = { mouseOffset, scrollAmount -> motionController.move { zoomByCentered(scrollAmount, mouseOffset) } },
+                        onScroll = { mouseOffset, scrollAmount -> motionController.move { zoomByCentered(scrollAmount / scrollScale, mouseOffset) } },
                         onCtrlGesture = { rotation -> motionController.move { rotateBy(rotation.toDouble()) } },
                     )
                 })
