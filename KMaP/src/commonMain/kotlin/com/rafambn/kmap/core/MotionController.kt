@@ -3,7 +3,6 @@ package com.rafambn.kmap.core
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.util.lerp
-import com.rafambn.kmap.core.state.MapState
 import com.rafambn.kmap.utils.CanvasPosition
 import com.rafambn.kmap.utils.DifferentialScreenOffset
 import com.rafambn.kmap.utils.ProjectedCoordinates

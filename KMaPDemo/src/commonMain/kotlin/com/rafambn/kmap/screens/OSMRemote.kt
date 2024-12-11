@@ -8,13 +8,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.rafambn.kmap.KMaP
-import com.rafambn.kmap.canvas
-import com.rafambn.kmap.config.border.BoundMapBorder
-import com.rafambn.kmap.config.border.MapBorderType
-import com.rafambn.kmap.config.border.OutsideTilesType
+import com.rafambn.kmap.core.KMaP
+import com.rafambn.kmap.mapProperties.border.BoundMapBorder
+import com.rafambn.kmap.mapProperties.border.MapBorderType
+import com.rafambn.kmap.mapProperties.border.OutsideTilesType
 import com.rafambn.kmap.core.rememberMotionController
-import com.rafambn.kmap.core.state.rememberMapState
+import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.OSMMapProperties
 import com.rafambn.kmap.customSources.OSMTileSource
 import com.rafambn.kmap.gestures.detectMapGestures
@@ -43,15 +42,9 @@ fun OSMRemoteScreen(
             canvas(tileSource = OSMTileSource("com.rafambn.kmapdemoapp")::getTile,
                 gestureDetection = {
                     detectMapGestures(
-                        onTap = { offset ->
-//                            canvasGestureListener.onTap(offset.asScreenOffset())
-                        },
                         onDoubleTap = { offset -> motionController.move { zoomByCentered(-1 / 3F, offset) } },
-                        onLongPress = { offset ->
-//                            canvasGestureListener.onLongPress(offset.asScreenOffset())
-                        },
                         onTapLongPress = { offset -> motionController.move { positionBy(offset.asDifferentialScreenOffset()) } },
-                        onTapSwipe = { zoom -> motionController.move { zoomBy(zoom) } },
+                        onTapSwipe = { zoom -> motionController.move { zoomBy(zoom / 100) } },
                         onDrag = { dragAmount -> motionController.move { positionBy(dragAmount) } },
                         onTwoFingersTap = { offset -> motionController.move { zoomByCentered(1 / 3F, offset) } },
                         onGesture = { centroid, pan, zoom, rotation ->
@@ -61,12 +54,8 @@ fun OSMRemoteScreen(
                                 positionBy(pan)
                             }
                         },
-                        onHover = { offset ->
-//                            canvasGestureListener.onHover(offset.asScreenOffset())
-                        },
                         onScroll = { mouseOffset, scrollAmount -> motionController.move { zoomByCentered(scrollAmount, mouseOffset) } },
                         onCtrlGesture = { rotation -> motionController.move { rotateBy(rotation.toDouble()) } },
-//                        currentGestureFlow = canvasGestureListener._currentGestureFlow
                     )
                 })
         }

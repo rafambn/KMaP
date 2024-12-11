@@ -1,8 +1,8 @@
 package com.rafambn.kmap.customSources
 
-import com.rafambn.kmap.config.characteristics.TileSource
-import com.rafambn.kmap.model.Tile
-import com.rafambn.kmap.utils.TileRenderResult
+import com.rafambn.kmap.mapProperties.TileSource
+import com.rafambn.kmap.tiles.Tile
+import com.rafambn.kmap.tiles.TileRenderResult
 import kmap.kmapdemo.generated.resources.Res
 import org.jetbrains.compose.resources.decodeToImageBitmap
 

@@ -1,6 +1,6 @@
 package com.rafambn.kmap.utils
 
-import com.rafambn.kmap.config.characteristics.CoordinatesInterface
+import com.rafambn.kmap.mapProperties.coordinates.CoordinatesInterface
 import kotlin.math.floor
 
 fun Double.loopInRange(coordinatesRange: CoordinatesInterface): Double =

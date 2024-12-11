@@ -23,4 +23,7 @@ sealed interface Routes {
 
     @Serializable
     data object OSMRemote
+
+    @Serializable
+    data object Clustering
 }

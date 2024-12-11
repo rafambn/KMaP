@@ -10,7 +10,7 @@ class DrawPosition(x: Float, y: Float) {
         if (it != y) println("Warning: y was coerced to the range [0, 1]")
     }
 
-    fun toTransformOrigin(): TransformOrigin = TransformOrigin(x, y)
+    fun asTransformOrigin(): TransformOrigin = TransformOrigin(x, y)
 
     companion object {
         val CENTER = DrawPosition(0.5F, 0.5F)

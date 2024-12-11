@@ -1,13 +1,13 @@
 package com.rafambn.kmap.customSources
 
-import com.rafambn.kmap.config.MapProperties
-import com.rafambn.kmap.config.border.BoundMapBorder
-import com.rafambn.kmap.config.border.MapBorderType
-import com.rafambn.kmap.config.border.OutsideTilesType
-import com.rafambn.kmap.config.characteristics.Latitude
-import com.rafambn.kmap.config.characteristics.Longitude
-import com.rafambn.kmap.config.characteristics.MapCoordinatesRange
-import com.rafambn.kmap.config.characteristics.MapZoomLevelsRange
+import com.rafambn.kmap.mapProperties.MapProperties
+import com.rafambn.kmap.mapProperties.border.BoundMapBorder
+import com.rafambn.kmap.mapProperties.border.MapBorderType
+import com.rafambn.kmap.mapProperties.border.OutsideTilesType
+import com.rafambn.kmap.mapProperties.coordinates.Latitude
+import com.rafambn.kmap.mapProperties.coordinates.Longitude
+import com.rafambn.kmap.mapProperties.coordinates.MapCoordinatesRange
+import com.rafambn.kmap.mapProperties.MapZoomLevelsRange
 import com.rafambn.kmap.utils.CanvasPosition
 import com.rafambn.kmap.utils.ProjectedCoordinates
 

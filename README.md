@@ -7,10 +7,13 @@ hide: toc
 ## **Map everything with KMaP**: A flexible and powerful compose multiplatform mapping library
 
 <div style="text-align: center;">
-  <img src="assets/KMaP-Logo.svg" alt="KMaP-Logo" width="200" height="200">
+  <img src="/mkdocs/docs/assets/KMaP-Logo.svg" alt="KMaP-Logo" width="200" height="200">
 </div>
 
 ## Checkout the demo app on wasm target: [**KMaP Demo**](https://kmap.rafambn.com/kmapdemo/).
+## Checkout the documentation also: [**KMaP Page**](https://kmap.rafambn.com/).
+
+[//]: # (!!! note "Current version [here]&#40;https://github.com/rafambn/kmap/releases&#41;.")
 
 ### Key Features
 
