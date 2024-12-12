@@ -35,7 +35,7 @@ fun KMaP(
             cameraState = mapState.cameraState,
             mapProperties = mapState.mapProperties,
             positionOffset = mapState.drawReference,
-            boundingBox = mapState.boundingBox,
+            viewPort = mapState.viewPort,
             canvasParameters = it.canvasParameters,
             gestureDetector = it.gestureDetection,
             modifier = modifier

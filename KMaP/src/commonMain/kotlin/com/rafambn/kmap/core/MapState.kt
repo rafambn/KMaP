@@ -6,7 +6,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.Density
 import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.border.MapBorderType
@@ -32,7 +31,7 @@ fun rememberMapState(
 }
 
 class MapState(
-    internal val mapProperties: MapProperties //TODO(3) add source future -- online, db, cache or mapFile
+    internal val mapProperties: MapProperties
 ) {
     //Map controllers
     private var density: Density = Density(1F)
@@ -66,20 +65,17 @@ class MapState(
         get() = cameraState.zoom - zoomLevel + 1F
 
     //Utility functions
-    val boundingBox
-        get() = BoundingBox(
-            ScreenOffset.Zero.toCanvasPosition(),
-            ScreenOffset(cameraState.canvasSize.x, 0F).toCanvasPosition(),
-            cameraState.canvasSize.toCanvasPosition(),
-            ScreenOffset(0F, cameraState.canvasSize.y).toCanvasPosition(),
-        )
-
-    val viewPort
-        get() = ViewPort(
-            ScreenOffset.Zero,
-            Size(cameraState.canvasSize.x, cameraState.canvasSize.y)
-        )
-
+    val viewPort: ViewPort
+        get() {
+            val canvasPosition = cameraState.canvasSize.toCanvasPosition()
+            val zero = ScreenOffset.Zero.toCanvasPosition()
+            return ViewPort(
+                left = zero.horizontal.toFloat(),
+                top = zero.vertical.toFloat(),
+                right = canvasPosition.horizontal.toFloat(),
+                bottom = canvasPosition.vertical.toFloat()
+            )
+        }
 
     private fun CanvasPosition.coerceInMap(): CanvasPosition {
         val x = if (mapProperties.boundMap.horizontal == MapBorderType.BOUND)

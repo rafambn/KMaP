@@ -1,36 +1,31 @@
 package com.rafambn.kmap.core
 
-import androidx.compose.ui.geometry.Size
 import com.rafambn.kmap.utils.CanvasPosition
 import com.rafambn.kmap.utils.ScreenOffset
 
-data class BoundingBox(
-    val topLeft: CanvasPosition,
-    val topRight: CanvasPosition,
-    val bottomRight: CanvasPosition,
-    val bottomLeft: CanvasPosition
+data class ViewPort(
+    val left: Float,
+    val top: Float,
+    val right: Float,
+    val bottom: Float,
 )
 
-data class ViewPort( //TODO merge this 2 classes
-    val origin: ScreenOffset,
-    val size: Size,
-)
-
-fun getViewPort(drawPosition: DrawPosition, width: Float, height: Float, offset: ScreenOffset): ViewPort = ViewPort(
-    offset - ScreenOffset(width * drawPosition.x, height * drawPosition.y),
-    Size(width, height)
-)
-
-fun ViewPort.isViewPortIntersecting(other: ViewPort): Boolean {//TODO maybe modify to account for rotation
-    val rect1Left = origin.x
-    val rect1Top = origin.y
-    val rect1Right = rect1Left + size.width
-    val rect1Bottom = rect1Top + size.height
-
-    val rect2Left = other.origin.x
-    val rect2Top = other.origin.y
-    val rect2Right = rect2Left + other.size.width
-    val rect2Bottom = rect2Top + other.size.height
-
-    return !(rect1Right < rect2Left || rect1Left > rect2Right || rect1Bottom < rect2Top || rect1Top > rect2Bottom)
+fun getViewPort(drawPosition: DrawPosition, width: Float, height: Float, offset: ScreenOffset): ViewPort {
+    val topLeft = offset - ScreenOffset(width * drawPosition.x, height * drawPosition.y)
+    return ViewPort(
+        topLeft.x,
+        topLeft.y,
+        topLeft.x + width,
+        topLeft.y + height
+    )
 }
+
+fun ViewPort.isViewPortIntersecting(other: ViewPort): Boolean = !(right < other.right || left > other.left || bottom < other.bottom || top > other.top)
+
+fun ViewPort.topLeft(): CanvasPosition = CanvasPosition(left.toDouble(), top.toDouble())
+
+fun ViewPort.topRight(): CanvasPosition = CanvasPosition(right.toDouble(), top.toDouble())
+
+fun ViewPort.bottomLeft(): CanvasPosition = CanvasPosition(left.toDouble(), bottom.toDouble())
+
+fun ViewPort.bottomRight(): CanvasPosition = CanvasPosition(right.toDouble(), bottom.toDouble())

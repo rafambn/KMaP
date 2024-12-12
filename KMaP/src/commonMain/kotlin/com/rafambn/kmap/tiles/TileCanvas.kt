@@ -23,8 +23,8 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.rafambn.kmap.components.CanvasParameters
-import com.rafambn.kmap.core.BoundingBox
 import com.rafambn.kmap.core.CameraState
+import com.rafambn.kmap.core.ViewPort
 import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.asOffset
@@ -38,7 +38,7 @@ internal fun TileCanvas(
     cameraState: CameraState,
     mapProperties: MapProperties,
     positionOffset: CanvasDrawReference,
-    boundingBox: BoundingBox,
+    viewPort: ViewPort,
     modifier: Modifier,
     canvasParameters: CanvasParameters,
     getTile: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult,
@@ -50,7 +50,7 @@ internal fun TileCanvas(
     val rotationDegrees = cameraState.angleDegrees.toFloat()
     val translation = cameraState.canvasSize.asOffset() / 2F
     val visibleTiles = TileFinder().getVisibleTilesForLevel(
-        boundingBox,
+        viewPort,
         zoomLevel,
         mapProperties.outsideTiles,
         mapProperties.mapCoordinatesRange
