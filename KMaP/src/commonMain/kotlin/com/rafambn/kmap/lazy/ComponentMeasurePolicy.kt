@@ -12,7 +12,6 @@ import com.rafambn.kmap.components.MarkerParameters
 import com.rafambn.kmap.core.MapState
 import com.rafambn.kmap.core.getViewPort
 import com.rafambn.kmap.core.isViewPortIntersecting
-import com.rafambn.kmap.utils.ScreenOffset
 
 @ExperimentalFoundationApi
 @Composable
@@ -119,7 +118,7 @@ private fun clusterComponents(
             visited.add(measuredComponent)
             val intersecting = measuredComponents.filter { it.viewPort.isViewPortIntersecting(measuredComponent.viewPort) && !visited.contains(it) }
             if (intersecting.isNotEmpty())
-                expandCluster(measuredComponent, intersecting, clusters, visited, measuredItemProvider, markersCount)
+                expandCluster(measuredComponent, intersecting, clusters, visited, measuredItemProvider,markersCount)
             else
                 nonClustered.add(measuredComponent)
         }
@@ -136,13 +135,13 @@ private fun expandCluster(
     markersCount: Int,
 ) {
     var size = 1
-    var avgOffset = ScreenOffset(measuredComponent.viewPort.left, measuredComponent.viewPort.top)
+    var avgOffset = measuredComponent.viewPort.origin
     val queue = intersecting.toMutableList()
     while (queue.isNotEmpty()) {
         val current = queue.removeAt(0)
         visited.add(current)
         size++
-        avgOffset += ScreenOffset(current.viewPort.left, current.viewPort.top)
+        avgOffset += current.viewPort.origin
     }
     val cluster = measuredItemProvider.getAndMeasure(measuredComponent.index + markersCount)
     cluster.offset = avgOffset / size.toFloat()
