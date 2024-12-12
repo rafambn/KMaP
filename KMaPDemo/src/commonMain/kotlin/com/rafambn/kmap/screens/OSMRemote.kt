@@ -16,9 +16,7 @@ import com.rafambn.kmap.core.rememberMotionController
 import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.OSMMapProperties
 import com.rafambn.kmap.customSources.OSMTileSource
-import com.rafambn.kmap.gestures.detectMapGestures
-import com.rafambn.kmap.scrollScale
-import com.rafambn.kmap.utils.asDifferentialScreenOffset
+import com.rafambn.kmap.getGestureDetector
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import org.jetbrains.compose.resources.vectorResource
@@ -40,25 +38,10 @@ fun OSMRemoteScreen(
             motionController = motionController,
             mapState = mapState,
         ) {
-            canvas(tileSource = OSMTileSource("com.rafambn.kmapdemoapp")::getTile,
-                gestureDetection = {
-                    detectMapGestures(
-                        onDoubleTap = { offset -> motionController.move { zoomByCentered(-1 / 3F, offset) } },
-                        onTapLongPress = { offset -> motionController.move { positionBy(offset.asDifferentialScreenOffset()) } },
-                        onTapSwipe = { zoom -> motionController.move { zoomBy(zoom / 100) } },
-                        onDrag = { dragAmount -> motionController.move { positionBy(dragAmount) } },
-                        onTwoFingersTap = { offset -> motionController.move { zoomByCentered(1 / 3F, offset) } },
-                        onGesture = { centroid, pan, zoom, rotation ->
-                            motionController.move {
-                                rotateByCentered(rotation.toDouble(), centroid)
-                                zoomByCentered(zoom, centroid)
-                                positionBy(pan)
-                            }
-                        },
-                        onScroll = { mouseOffset, scrollAmount -> motionController.move { zoomByCentered(scrollAmount / scrollScale, mouseOffset) } },
-                        onCtrlGesture = { rotation -> motionController.move { rotateBy(rotation.toDouble()) } },
-                    )
-                })
+            canvas(
+                tileSource = OSMTileSource("com.rafambn.kmapdemoapp")::getTile,
+                gestureDetection = getGestureDetector(motionController)
+            )
         }
         Image(
             imageVector = vectorResource(Res.drawable.back_arrow),

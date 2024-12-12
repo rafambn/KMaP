@@ -9,9 +9,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.rafambn.kmap.core.MotionController
+import com.rafambn.kmap.gestures.detectMapGestures
 import com.rafambn.kmap.screens.AnimationScreen
 import com.rafambn.kmap.screens.ClusteringScreen
 import com.rafambn.kmap.screens.LayersScreen
@@ -21,6 +24,7 @@ import com.rafambn.kmap.screens.PathScreen
 import com.rafambn.kmap.screens.SimpleMapScreen
 import com.rafambn.kmap.screens.StartScreen
 import com.rafambn.kmap.theme.AppTheme
+import com.rafambn.kmap.utils.asDifferentialScreenOffset
 
 @Composable
 fun App() = AppTheme {
@@ -93,3 +97,24 @@ fun App() = AppTheme {
 }
 
 expect val scrollScale: Int
+
+expect val gestureScale: Int
+
+fun getGestureDetector(motionController: MotionController): suspend PointerInputScope.() -> Unit = {
+    detectMapGestures(
+        onDoubleTap = { offset -> motionController.move { zoomByCentered(-1 / 3F, offset) } },
+        onTapLongPress = { offset -> motionController.move { positionBy(offset.asDifferentialScreenOffset()) } },
+        onTapSwipe = { zoom -> motionController.move { zoomBy(zoom / 100) } },
+        onDrag = { dragAmount -> motionController.move { positionBy(dragAmount) } },
+        onTwoFingersTap = { offset -> motionController.move { zoomByCentered(1 / 3F, offset) } },
+        onGesture = { centroid, pan, zoom, rotation ->
+            motionController.move {
+                rotateByCentered(rotation.toDouble(), centroid)
+                zoomByCentered(zoom / gestureScale, centroid)
+                positionBy(pan)
+            }
+        },
+        onScroll = { mouseOffset, scrollAmount -> motionController.move { zoomByCentered(scrollAmount / scrollScale, mouseOffset) } },
+        onCtrlGesture = { rotation -> motionController.move { rotateBy(rotation.toDouble()) } },
+    )
+}
