@@ -46,7 +46,7 @@ internal fun TileCanvas(
     gestureDetector: (suspend PointerInputScope.() -> Unit)?
 ) {
     val zoomLevel = cameraState.zoom.toIntFloor()
-    val magnifierScale = cameraState.zoom - zoomLevel + 1F
+    val magnifierScale = cameraState.zoom - zoomLevel
     val tileSize = mapProperties.tileSize
     val rotationDegrees = cameraState.angleDegrees.toFloat()
     val translation = cameraState.canvasSize.asOffset() / 2F
@@ -108,7 +108,7 @@ internal fun TileCanvas(
                 withTransform({
                     translate(translation.x, translation.y)
                     rotate(rotationDegrees, Offset.Zero)
-                    scale(magnifierScale, Offset.Zero)
+                    scale(2F.pow(magnifierScale), Offset.Zero)
                 }) {
                     drawIntoCanvas { canvas ->
                         drawTiles(

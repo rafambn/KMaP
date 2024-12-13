@@ -3,6 +3,7 @@ package com.rafambn.kmap.path
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
@@ -21,6 +22,7 @@ import com.rafambn.kmap.components.PathParameters
 import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.asOffset
 import com.rafambn.kmap.utils.toIntFloor
+import kotlin.math.pow
 
 @Composable
 internal fun PathCanvas(
@@ -47,12 +49,9 @@ internal fun PathCanvas(
             .zIndex(pathParameters.zIndex)
             .drawBehind {
                 withTransform({
-                    scale(magnifierScale)
-                    rotate(rotationDegrees)
-                    translate(
-                        (translation.x + positionOffset.horizontal).toFloat(),
-                        (translation.y + positionOffset.vertical).toFloat()
-                    )
+                    translate(translation.x, translation.y)
+                    rotate(rotationDegrees, Offset.Zero)
+                    scale(2F.pow(cameraState.zoom), Offset.Zero)
                 }) {
                     drawIntoCanvas { canvas ->
                         drawPath(
