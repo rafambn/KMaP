@@ -6,6 +6,7 @@ import com.rafambn.kmap.components.CanvasParameters
 import com.rafambn.kmap.components.ClusterParameters
 import com.rafambn.kmap.components.MarkerParameters
 import com.rafambn.kmap.components.Parameters
+import com.rafambn.kmap.components.PathParameters
 import com.rafambn.kmap.core.ViewPort
 import com.rafambn.kmap.utils.Degrees
 import com.rafambn.kmap.utils.ScreenOffset
@@ -33,6 +34,7 @@ class MeasuredComponent(
         repeat(placeablesCount) { index ->
             when(parameters){
                 is CanvasParameters -> {}
+                is PathParameters -> {}
                 is ClusterParameters -> {
                     placeables[index].placeWithLayer(
                         x = 0,

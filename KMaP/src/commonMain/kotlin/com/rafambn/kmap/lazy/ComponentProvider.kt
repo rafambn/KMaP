@@ -51,6 +51,8 @@ class ComponentProvider(
 
     val canvasList get() = kmapContent.canvas
 
+    val pathList get() = kmapContent.paths
+
     fun getParameters(index: Int): Parameters {
         val item = kmapContent.markers.getOrNull(index)
         return if (item == null)

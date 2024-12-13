@@ -6,6 +6,7 @@ import androidx.compose.ui.input.pointer.PointerInputScope
 import com.rafambn.kmap.components.CanvasParameters
 import com.rafambn.kmap.components.ClusterParameters
 import com.rafambn.kmap.components.MarkerParameters
+import com.rafambn.kmap.components.PathParameters
 import com.rafambn.kmap.tiles.TileRenderResult
 
 @LazyScopeMarker
@@ -31,4 +32,6 @@ interface KMaPScope {
         clusterParameters: ClusterParameters,
         clusterContent: @Composable (cluster: ClusterParameters) -> Unit
     )
-} //TODO brainStorm a path api
+
+    fun path(pathParameters: PathParameters)
+}

@@ -19,3 +19,5 @@ data class CanvasComponent(
     val getTile: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult,
     val gestureDetection: (suspend PointerInputScope.() -> Unit)? = null,
 )
+
+data class PathComponent(val pathParameters: PathParameters)

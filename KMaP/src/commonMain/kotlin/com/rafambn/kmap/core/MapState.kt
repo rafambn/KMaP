@@ -32,7 +32,7 @@ fun rememberMapState(
 }
 
 class MapState(
-    internal val mapProperties: MapProperties //TODO(3) add source future -- online, db, cache or mapFile
+    internal val mapProperties: MapProperties
 ) {
     //Map controllers
     private var density: Density = Density(1F)

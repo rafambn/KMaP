@@ -13,6 +13,7 @@ import com.rafambn.kmap.tiles.TileCanvas
 import com.rafambn.kmap.lazy.KMaPScope
 import com.rafambn.kmap.lazy.rememberComponentProviderLambda
 import com.rafambn.kmap.lazy.rememberComponentMeasurePolicy
+import com.rafambn.kmap.path.PathCanvas
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -61,4 +62,14 @@ fun KMaP(
         prefetchState = null,
         measurePolicy = measurePolicy
     )
+
+    itemProvider.invoke().pathList.forEach {
+        PathCanvas(
+            cameraState = mapState.cameraState,
+            mapProperties = mapState.mapProperties,
+            positionOffset = mapState.drawReference,
+            pathParameters = it.pathParameters,
+            modifier = modifier
+        )
+    }
 }

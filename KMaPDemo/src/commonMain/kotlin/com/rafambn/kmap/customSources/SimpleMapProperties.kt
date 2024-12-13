@@ -33,5 +33,5 @@ data class SimpleMapZoomLevelsRange(override val max: Int = 2, override val min:
 
 data class SimpleMapCoordinatesRange(
     override val latitude: Latitude = Latitude(north = 90.0, south = -90.0),
-    override val longitude: Longitude = Longitude(east = 180.0, west = -180.0)
+    override val longitude: Longitude = Longitude(east = 180.0, west = -180.0)//TODO map breaks if east = 0.0
 ) : MapCoordinatesRange

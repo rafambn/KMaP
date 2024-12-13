@@ -32,7 +32,7 @@ fun StartScreen(
         verticalArrangement = Arrangement.Center
     ) {
         items(columnItems) {
-            Button(onClick = it.first, enabled = it.second != "Paths") {
+            Button(onClick = it.first) {
                 Text(it.second)
             }
         }

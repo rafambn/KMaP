@@ -8,6 +8,8 @@ import com.rafambn.kmap.components.ClusterComponent
 import com.rafambn.kmap.components.ClusterParameters
 import com.rafambn.kmap.components.MarkerComponent
 import com.rafambn.kmap.components.MarkerParameters
+import com.rafambn.kmap.components.PathComponent
+import com.rafambn.kmap.components.PathParameters
 import com.rafambn.kmap.tiles.TileRenderResult
 
 class KMaPContent(
@@ -17,6 +19,7 @@ class KMaPContent(
     val markers = mutableListOf<MarkerComponent>()
     val cluster = mutableListOf<ClusterComponent>()
     val canvas = mutableListOf<CanvasComponent>()
+    val paths = mutableListOf<PathComponent>()
 
     init {
         apply(content)
@@ -42,5 +45,9 @@ class KMaPContent(
 
     override fun cluster(clusterParameters: ClusterParameters, clusterContent: @Composable (cluster: ClusterParameters) -> Unit) {
         cluster.add(ClusterComponent(clusterParameters, clusterContent))
+    }
+
+    override fun path(pathParameters: PathParameters) {
+        paths.add(PathComponent(pathParameters))
     }
 }
