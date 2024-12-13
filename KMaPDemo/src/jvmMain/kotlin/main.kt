@@ -8,7 +8,7 @@ import com.rafambn.kmap.App
 fun main() = application {
     Window(
         title = "KMaP Demo",
-        state = rememberWindowState(width = 800.dp, height = 600.dp),
+        state = rememberWindowState(width = 816.dp, height = 839.dp),
         onCloseRequest = ::exitApplication,
     ) {
         window.minimumSize = Dimension(350, 600)

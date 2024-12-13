@@ -28,8 +28,8 @@ fun OSMRemoteScreen(
     val motionController = rememberMotionController()
     val mapState = rememberMapState(
         mapProperties = OSMMapProperties(
-            boundMap = BoundMapBorder(horizontal = MapBorderType.LOOP, vertical = MapBorderType.LOOP),
-            outsideTiles = OutsideTilesType.LOOP
+            boundMap = BoundMapBorder(horizontal = MapBorderType.BOUND, vertical = MapBorderType.BOUND),
+            outsideTiles = OutsideTilesType.NONE
         )
     )
     Box {
