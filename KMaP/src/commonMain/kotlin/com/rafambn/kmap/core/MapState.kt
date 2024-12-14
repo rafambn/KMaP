@@ -109,7 +109,10 @@ class MapState(
 
     fun DifferentialScreenOffset.toTilePoint(): TilePoint =
         (this.asCanvasPosition() / density.density.toDouble())
-            .scaleToZoom(1 / (mapProperties.tileSize * magnifierScale * (1 shl zoomLevel)))
+            .scaleToZoom(
+                (1 / (mapProperties.tileSize.width * magnifierScale * (1 shl zoomLevel))).toDouble(),
+                (1 / (mapProperties.tileSize.height * magnifierScale * (1 shl zoomLevel))).toDouble()
+            )
             .rotate(-cameraState.angleDegrees.toRadians())
             .scaleToMap(
                 mapProperties.coordinatesRange.longitude.span,
@@ -124,13 +127,19 @@ class MapState(
             1 / mapProperties.coordinatesRange.latitude.span
         )
         .rotate(cameraState.angleDegrees.toRadians())
-        .scaleToZoom(mapProperties.tileSize * magnifierScale * (1 shl zoomLevel))
+        .scaleToZoom(
+            (mapProperties.tileSize.width * magnifierScale * (1 shl zoomLevel)).toDouble(),
+            (mapProperties.tileSize.height * magnifierScale * (1 shl zoomLevel)).toDouble()
+        )
         .times(density.density.toDouble()).asScreenOffset()
         .minus(cameraState.canvasSize / 2F)
 
     private fun TilePoint.toCanvasDrawReference(): CanvasDrawReference = this.applyOrientation(mapProperties.coordinatesRange)
         .moveToTrueCoordinates(mapProperties.coordinatesRange)
-        .scaleToZoom((mapProperties.tileSize * (1 shl zoomLevel)).toFloat())
+        .scaleToZoom(
+            (mapProperties.tileSize.width * (1 shl zoomLevel)).toDouble(),
+            (mapProperties.tileSize.height * (1 shl zoomLevel)).toDouble()
+        )
         .scaleToMap(
             1 / mapProperties.coordinatesRange.longitude.span,
             1 / mapProperties.coordinatesRange.latitude.span
@@ -138,7 +147,8 @@ class MapState(
         .asCanvasDrawReference()
 
     //Transformation functions
-    private fun TilePoint.scaleToZoom(zoomScale: Float): TilePoint = TilePoint(horizontal * zoomScale, vertical * zoomScale)
+    private fun TilePoint.scaleToZoom(horizontal: Double, vertical: Double): TilePoint =
+        TilePoint(this.horizontal * horizontal, this.vertical * vertical)
 
     private fun TilePoint.moveToTrueCoordinates(coordinatesRange: CoordinatesRange): TilePoint = TilePoint(
         horizontal - coordinatesRange.longitude.span / 2,
