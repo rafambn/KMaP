@@ -2,12 +2,12 @@ package com.rafambn.kmap.components
 
 import com.rafambn.kmap.core.DrawPosition
 import com.rafambn.kmap.utils.Degrees
-import com.rafambn.kmap.utils.ProjectedCoordinates
+import com.rafambn.kmap.utils.Coordinates
 
 sealed interface Parameters
 
 data class MarkerParameters(
-    val coordinates: ProjectedCoordinates,
+    val coordinates: Coordinates,
     val alpha: Float = 1F,
     val drawPosition: DrawPosition = DrawPosition.TOP_LEFT,
     val zIndex: Float = 1F,

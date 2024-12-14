@@ -21,7 +21,7 @@ import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
 import com.rafambn.kmap.getGestureDetector
-import com.rafambn.kmap.utils.ProjectedCoordinates
+import com.rafambn.kmap.utils.Coordinates
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import org.jetbrains.compose.resources.vectorResource
@@ -46,12 +46,12 @@ fun ClusteringScreen(
             markers(
                 listOf(
                     MarkerParameters(
-                        ProjectedCoordinates(0.0, 0.0),
+                        Coordinates(0.0, 0.0),
                         drawPosition = DrawPosition.CENTER,
                         clusterId = 1
                     ),
                     MarkerParameters(
-                        ProjectedCoordinates(18.0, 0.0),
+                        Coordinates(18.0, 0.0),
                         drawPosition = DrawPosition.CENTER,
                         clusterId = 1
                     )
@@ -67,7 +67,7 @@ fun ClusteringScreen(
             }
             marker(
                 MarkerParameters(
-                    ProjectedCoordinates(0.0, 3.0),
+                    Coordinates(0.0, 3.0),
                     drawPosition = DrawPosition.CENTER,
                     clusterId = 1
                 )
@@ -82,7 +82,7 @@ fun ClusteringScreen(
             }
             marker(
                 MarkerParameters(
-                    ProjectedCoordinates(15.0, -20.0),
+                    Coordinates(15.0, -20.0),
                     drawPosition = DrawPosition.CENTER,
                     clusterId = 2
                 )
@@ -97,7 +97,7 @@ fun ClusteringScreen(
             }
             marker(
                 MarkerParameters(
-                    ProjectedCoordinates(0.0, -20.0),
+                    Coordinates(0.0, -20.0),
                     drawPosition = DrawPosition.CENTER,
                     clusterId = 1
                 )

@@ -2,18 +2,17 @@ package com.rafambn.kmap.mapProperties
 
 import com.rafambn.kmap.mapProperties.border.BoundMapBorder
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
-import com.rafambn.kmap.mapProperties.coordinates.MapCoordinatesRange
-import com.rafambn.kmap.utils.CanvasPosition
-import com.rafambn.kmap.utils.ProjectedCoordinates
+import com.rafambn.kmap.utils.TilePoint
+import com.rafambn.kmap.utils.Coordinates
 
 interface MapProperties {
     val boundMap: BoundMapBorder
     val outsideTiles: OutsideTilesType
-    val zoomLevels: MapZoomLevelsRange
-    val mapCoordinatesRange: MapCoordinatesRange
+    val zoomLevels: ZoomLevelRange
+    val coordinatesRange: CoordinatesRange
     val tileSize: Int
 
-    fun toCanvasPosition(projectedCoordinates: ProjectedCoordinates): CanvasPosition
+    fun toTilePoint(coordinates: Coordinates): TilePoint
 
-    fun toProjectedCoordinates(canvasPosition: CanvasPosition): ProjectedCoordinates
+    fun toCoordinates(tilePoint: TilePoint): Coordinates
 }

@@ -67,7 +67,7 @@ internal fun measureComponent(
         measuredComponents.forEach { measuredComponent ->
             require(measuredComponent.parameters is MarkerParameters)
             measuredComponent.offset = with(mapState) {
-                measuredComponent.parameters.coordinates.toCanvasPosition().toScreenOffset()
+                measuredComponent.parameters.coordinates.toTilePoint().toScreenOffset()
             }
             measuredComponent.viewPort = getViewPort(
                 measuredComponent.parameters.drawPosition,

@@ -2,8 +2,8 @@ package com.rafambn.kmap.tiles
 
 import com.rafambn.kmap.core.BoundingBox
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
-import com.rafambn.kmap.mapProperties.coordinates.MapCoordinatesRange
-import com.rafambn.kmap.utils.CanvasPosition
+import com.rafambn.kmap.mapProperties.CoordinatesRange
+import com.rafambn.kmap.utils.TilePoint
 import com.rafambn.kmap.utils.toIntFloor
 import kotlin.math.pow
 
@@ -13,7 +13,7 @@ class TileFinder {
         viewPort: BoundingBox,
         zoomLevel: Int,
         outsideTilesType: OutsideTilesType,
-        coordinatesRange: MapCoordinatesRange
+        coordinatesRange: CoordinatesRange
     ): List<TileSpecs> {
         val topLeftTile = getXYTile(
             viewPort.topLeft.applyInverseOrientation(coordinatesRange),
@@ -70,17 +70,17 @@ class TileFinder {
         return visibleTileSpecs
     }
 
-    private fun getXYTile(position: CanvasPosition, zoomLevel: Int, mapSize: MapCoordinatesRange): Pair<Int, Int> {
+    private fun getXYTile(position: TilePoint, zoomLevel: Int, mapSize: CoordinatesRange): Pair<Int, Int> {
         return Pair(
-            ((position.horizontal - mapSize.longitude.getMin()) / mapSize.longitude.span * (1 shl zoomLevel)).toIntFloor(),
-            ((position.vertical - mapSize.latitude.getMin()) / mapSize.latitude.span * (1 shl zoomLevel)).toIntFloor()
+            ((position.horizontal - mapSize.longitude.min) / mapSize.longitude.span * (1 shl zoomLevel)).toIntFloor(),
+            ((position.vertical - mapSize.latitude.min) / mapSize.latitude.span * (1 shl zoomLevel)).toIntFloor()
         )
     }
 
-    private fun CanvasPosition.applyInverseOrientation(mapCoordinatesRange: MapCoordinatesRange): CanvasPosition {
-        return CanvasPosition(
-            horizontal * mapCoordinatesRange.longitude.getOrientation() * -1,
-            vertical * mapCoordinatesRange.latitude.getOrientation() * -1
+    private fun TilePoint.applyInverseOrientation(coordinatesRange: CoordinatesRange): TilePoint {
+        return TilePoint(
+            horizontal * coordinatesRange.longitude.orientation * -1,
+            vertical * coordinatesRange.latitude.orientation * -1
         )
     }
 }

@@ -1,14 +1,14 @@
 package com.rafambn.kmap.core
 
 import androidx.compose.ui.geometry.Size
-import com.rafambn.kmap.utils.CanvasPosition
+import com.rafambn.kmap.utils.TilePoint
 import com.rafambn.kmap.utils.ScreenOffset
 
 data class BoundingBox(
-    val topLeft: CanvasPosition,
-    val topRight: CanvasPosition,
-    val bottomRight: CanvasPosition,
-    val bottomLeft: CanvasPosition
+    val topLeft: TilePoint,
+    val topRight: TilePoint,
+    val bottomRight: TilePoint,
+    val bottomLeft: TilePoint
 )
 
 data class ViewPort( //TODO merge this 2 classes

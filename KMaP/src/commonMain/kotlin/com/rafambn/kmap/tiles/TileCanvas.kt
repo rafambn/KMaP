@@ -53,7 +53,7 @@ internal fun TileCanvas(
         boundingBox,
         zoomLevel,
         mapProperties.outsideTiles,
-        mapProperties.mapCoordinatesRange
+        mapProperties.coordinatesRange
     )
     val coroutineScope = rememberCoroutineScope()
     var tileLayers = remember { TileLayers() }
