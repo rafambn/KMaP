@@ -62,3 +62,26 @@ fun DifferentialScreenOffset.asCanvasPosition() = TilePoint(this.x.toDouble(), t
 
 fun ScreenOffset.asOffset() = Offset(this.x, this.y)
 fun ScreenOffset.asDifferentialScreenOffset() = DifferentialScreenOffset(this.x, this.y)
+
+fun transformReference(
+    pointX: Double,
+    pointY: Double,
+    sourceRangeX: Pair<Double, Double>,
+    sourceRangeY: Pair<Double, Double>,
+    targetRangeX: Pair<Double, Double>,
+    targetRangeY: Pair<Double, Double>
+): Pair<Double, Double> {
+
+    val sourceWidth = sourceRangeX.second - sourceRangeX.first
+    val sourceHeight = sourceRangeY.second - sourceRangeY.first
+    val targetWidth = targetRangeX.second - targetRangeX.first
+    val targetHeight = targetRangeY.second - targetRangeY.first
+
+    val normalizedX = (pointX - sourceRangeX.first) / sourceWidth
+    val normalizedY = (pointY - sourceRangeY.first) / sourceHeight
+
+    val transformedX = normalizedX * targetWidth + targetRangeX.first
+    val transformedY = normalizedY * targetHeight + targetRangeY.first
+
+    return Pair(transformedX, transformedY)
+}

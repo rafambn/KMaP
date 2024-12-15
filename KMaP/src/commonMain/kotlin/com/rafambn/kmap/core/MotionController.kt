@@ -153,7 +153,7 @@ class MotionController {
                         val previousOffset = center.toTilePoint().toScreenOffset()
                         val previousPosition = center.toTilePoint()
                         mapState!!.setZoom(zoom)
-                        centerPositionAtOffset(previousPosition, previousOffset)
+                        centerPointAtOffset(previousPosition, previousOffset)
                     }
                 }
 
@@ -161,7 +161,7 @@ class MotionController {
                     with(mapState!!) {
                         val position = center.toTilePoint()
                         mapState!!.setZoom(zoom)
-                        centerPositionAtOffset(position, center)
+                        centerPointAtOffset(position, center)
                     }
                 }
 
@@ -169,7 +169,7 @@ class MotionController {
                     with(mapState!!) {
                         val previousOffset = center.toScreenOffset()
                         mapState!!.setZoom(zoom)
-                        centerPositionAtOffset(center, previousOffset)
+                        centerPointAtOffset(center, previousOffset)
                     }
                 }
             }
@@ -182,7 +182,7 @@ class MotionController {
                         val previousOffset = center.toTilePoint().toScreenOffset()
                         val previousPosition = center.toTilePoint()
                         mapState!!.setZoom(mapState!!.cameraState.zoom + zoom)
-                        centerPositionAtOffset(previousPosition, previousOffset)
+                        centerPointAtOffset(previousPosition, previousOffset)
                     }
                 }
 
@@ -190,7 +190,7 @@ class MotionController {
                     with(mapState!!) {
                         val position = center.toTilePoint()
                         mapState!!.setZoom(mapState!!.cameraState.zoom + zoom)
-                        centerPositionAtOffset(position, center)
+                        centerPointAtOffset(position, center)
                     }
                 }
 
@@ -198,7 +198,7 @@ class MotionController {
                     with(mapState!!) {
                         val previousOffset = center.toScreenOffset()
                         mapState!!.setZoom(mapState!!.cameraState.zoom + zoom)
-                        centerPositionAtOffset(center, previousOffset)
+                        centerPointAtOffset(center, previousOffset)
                     }
                 }
             }
@@ -219,7 +219,7 @@ class MotionController {
                         val previousOffset = center.toTilePoint().toScreenOffset()
                         val previousPosition = center.toTilePoint()
                         mapState!!.setAngle(degrees)
-                        centerPositionAtOffset(previousPosition, previousOffset)
+                        centerPointAtOffset(previousPosition, previousOffset)
                     }
                 }
 
@@ -227,7 +227,7 @@ class MotionController {
                     with(mapState!!) {
                         val position = center.toTilePoint()
                         mapState!!.setAngle(degrees)
-                        centerPositionAtOffset(position, center)
+                        centerPointAtOffset(position, center)
                     }
                 }
 
@@ -235,7 +235,7 @@ class MotionController {
                     with(mapState!!) {
                         val previousOffset = center.toScreenOffset()
                         mapState!!.setAngle(degrees)
-                        centerPositionAtOffset(center, previousOffset)
+                        centerPointAtOffset(center, previousOffset)
                     }
                 }
             }
@@ -248,7 +248,7 @@ class MotionController {
                         val previousOffset = center.toTilePoint().toScreenOffset()
                         val previousPosition = center.toTilePoint()
                         mapState!!.setAngle(degrees + mapState!!.cameraState.angleDegrees)
-                        centerPositionAtOffset(previousPosition, previousOffset)
+                        centerPointAtOffset(previousPosition, previousOffset)
                     }
                 }
 
@@ -256,7 +256,7 @@ class MotionController {
                     with(mapState!!) {
                         val position = center.toTilePoint()
                         mapState!!.setAngle(degrees + mapState!!.cameraState.angleDegrees)
-                        centerPositionAtOffset(position, center)
+                        centerPointAtOffset(position, center)
                     }
                 }
 
@@ -264,7 +264,7 @@ class MotionController {
                     with(mapState!!) {
                         val previousOffset = center.toScreenOffset()
                         mapState!!.setAngle(degrees + mapState!!.cameraState.angleDegrees)
-                        centerPositionAtOffset(center, previousOffset)
+                        centerPointAtOffset(center, previousOffset)
                     }
                 }
             }
@@ -392,7 +392,7 @@ class MotionController {
             decayValue(decayRate, duration) {
                 mapState!!.setZoom(lerp(startZoom, zoom, it.toFloat()))
                 with(mapState!!) {
-                    centerPositionAtOffset(centerPosition, centerOffset)
+                    centerPointAtOffset(centerPosition, centerOffset)
                 }
             }
         }
@@ -440,7 +440,7 @@ class MotionController {
             decayValue(decayRate, duration) {
                 mapState!!.setZoom(lerp(startZoom, endZoom, it.toFloat()))
                 with(mapState!!) {
-                    centerPositionAtOffset(centerPosition, centerOffset)
+                    centerPointAtOffset(centerPosition, centerOffset)
                 }
             }
         }
@@ -510,7 +510,7 @@ class MotionController {
             decayValue(decayRate, duration) {
                 mapState!!.setAngle(lerp(startAngle, degrees, it))
                 with(mapState!!) {
-                    centerPositionAtOffset(centerPosition, centerOffset)
+                    centerPointAtOffset(centerPosition, centerOffset)
                 }
             }
         }
@@ -558,7 +558,7 @@ class MotionController {
             decayValue(decayRate, duration) {
                 mapState!!.setAngle(lerp(startAngle, endAngle, it))
                 with(mapState!!) {
-                    centerPositionAtOffset(centerPosition, centerOffset)
+                    centerPointAtOffset(centerPosition, centerOffset)
                 }
             }
         }

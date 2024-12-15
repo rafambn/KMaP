@@ -118,7 +118,7 @@ private fun clusterComponents(
             visited.add(measuredComponent)
             val intersecting = measuredComponents.filter { it.viewPort.isViewPortIntersecting(measuredComponent.viewPort) && !visited.contains(it) }
             if (intersecting.isNotEmpty())
-                expandCluster(measuredComponent, intersecting, clusters, visited, measuredItemProvider,markersCount)
+                expandCluster(measuredComponent, intersecting, clusters, visited, measuredItemProvider, markersCount)
             else
                 nonClustered.add(measuredComponent)
         }

@@ -6,6 +6,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.Paint
@@ -53,7 +54,7 @@ internal fun TileCanvas(
         boundingBox,
         zoomLevel,
         mapProperties.outsideTiles,
-        mapProperties.coordinatesRange
+        mapProperties.tileSize
     )
     val coroutineScope = rememberCoroutineScope()
     var tileLayers = remember { TileLayers() }
@@ -105,9 +106,9 @@ internal fun TileCanvas(
             .zIndex(canvasParameters.zIndex)
             .drawBehind {
                 withTransform({
-                    scale(magnifierScale)
-                    rotate(rotationDegrees)
                     translate(translation.x, translation.y)
+                    rotate(rotationDegrees, Offset.Zero)
+                    scale(magnifierScale, Offset.Zero)
                 }) {
                     drawIntoCanvas { canvas ->
                         drawTiles(

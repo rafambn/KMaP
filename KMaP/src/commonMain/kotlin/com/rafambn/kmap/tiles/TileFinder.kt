@@ -2,7 +2,6 @@ package com.rafambn.kmap.tiles
 
 import com.rafambn.kmap.core.BoundingBox
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
-import com.rafambn.kmap.mapProperties.CoordinatesRange
 import com.rafambn.kmap.utils.TilePoint
 import com.rafambn.kmap.utils.toIntFloor
 import kotlin.math.pow
@@ -13,27 +12,27 @@ class TileFinder {
         viewPort: BoundingBox,
         zoomLevel: Int,
         outsideTilesType: OutsideTilesType,
-        coordinatesRange: CoordinatesRange
+        tileDimension: TileDimension
     ): List<TileSpecs> {
         val topLeftTile = getXYTile(
-            viewPort.topLeft.applyInverseOrientation(coordinatesRange),
+            viewPort.topLeft,
             zoomLevel,
-            coordinatesRange
+            tileDimension
         )
         val topRightTile = getXYTile(
-            viewPort.topRight.applyInverseOrientation(coordinatesRange),
+            viewPort.topRight,
             zoomLevel,
-            coordinatesRange
+            tileDimension
         )
         val bottomRightTile = getXYTile(
-            viewPort.bottomRight.applyInverseOrientation(coordinatesRange),
+            viewPort.bottomRight,
             zoomLevel,
-            coordinatesRange
+            tileDimension
         )
         val bottomLeftTile = getXYTile(
-            viewPort.bottomLeft.applyInverseOrientation(coordinatesRange),
+            viewPort.bottomLeft,
             zoomLevel,
-            coordinatesRange
+            tileDimension
         )
         val horizontalTileIntRange =
             IntRange(
@@ -70,17 +69,8 @@ class TileFinder {
         return visibleTileSpecs
     }
 
-    private fun getXYTile(position: TilePoint, zoomLevel: Int, mapSize: CoordinatesRange): Pair<Int, Int> {
-        return Pair(
-            ((position.horizontal - mapSize.longitude.min) / mapSize.longitude.span * (1 shl zoomLevel)).toIntFloor(),
-            ((position.vertical - mapSize.latitude.min) / mapSize.latitude.span * (1 shl zoomLevel)).toIntFloor()
-        )
-    }
-
-    private fun TilePoint.applyInverseOrientation(coordinatesRange: CoordinatesRange): TilePoint {
-        return TilePoint(
-            horizontal * coordinatesRange.longitude.orientation * -1,
-            vertical * coordinatesRange.latitude.orientation * -1
-        )
-    }
+    private fun getXYTile(position: TilePoint, zoomLevel: Int, tileDimension: TileDimension): Pair<Int, Int> = Pair(
+        (position.horizontal / tileDimension.width * (1 shl zoomLevel)).toIntFloor(),
+        (position.vertical / tileDimension.height * (1 shl zoomLevel)).toIntFloor()
+    )
 }

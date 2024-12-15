@@ -17,7 +17,7 @@ data class SimpleMapProperties(
     override val outsideTiles: OutsideTilesType = OutsideTilesType.NONE,
     override val zoomLevels: ZoomLevelRange = SimpleZoomLevelRange(),
     override val coordinatesRange: CoordinatesRange = SimpleCoordinatesRange(),
-    override val tileSize: TileDimension = TileDimension(900,900)
+    override val tileSize: TileDimension = TileDimension(900, 900)
 ) : MapProperties {
     override fun toTilePoint(coordinates: Coordinates): TilePoint = TilePoint(
         coordinates.longitude,
@@ -34,5 +34,5 @@ data class SimpleZoomLevelRange(override val max: Int = 2, override val min: Int
 
 data class SimpleCoordinatesRange(
     override val latitude: Latitude = Latitude(north = 90.0, south = -90.0),
-    override val longitude: Longitude = Longitude(east = 180.0, west = -180.0)
+    override val longitude: Longitude = Longitude(west = -180.0, east = 180.0)
 ) : CoordinatesRange

@@ -29,7 +29,6 @@ import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
 import com.rafambn.kmap.getGestureDetector
-import com.rafambn.kmap.utils.TilePoint
 import com.rafambn.kmap.utils.Coordinates
 import com.rafambn.kmap.utils.asDifferentialScreenOffset
 import kmap.kmapdemo.generated.resources.Res
@@ -47,7 +46,7 @@ fun MarkersScreen(
         val motionController = rememberMotionController()
         val mapState = rememberMapState(mapProperties = SimpleMapProperties())
         val markersList = remember { mutableStateListOf<MarkerParameters>() }
-        var draggableMarkerPos by remember { mutableStateOf(Coordinates(90.0, -20.0)) }
+        var draggableMarkerPos by remember { mutableStateOf(Coordinates(-90.0, 20.0)) }
         KMaP(
             modifier = Modifier.align(Alignment.Center).fillMaxSize(),
             motionController = motionController,
@@ -59,7 +58,7 @@ fun MarkersScreen(
             )
             marker(
                 MarkerParameters(
-                    Coordinates(-0.0, -0.0),
+                    Coordinates(0.0, 0.0),
                     drawPosition = DrawPosition.TOP_RIGHT,
                 )
             ) {
@@ -73,7 +72,7 @@ fun MarkersScreen(
             }
             marker(
                 MarkerParameters(
-                    Coordinates(-0.0, -10.0),
+                    Coordinates(0.0, 10.0),
                     drawPosition = DrawPosition.TOP_RIGHT,
                     zoomToFix = 1F,
                 )
@@ -88,7 +87,7 @@ fun MarkersScreen(
             }
             marker(
                 MarkerParameters(
-                    Coordinates(-0.0, 20.0),
+                    Coordinates(0.0, -20.0),
                     drawPosition = DrawPosition.TOP_RIGHT,
                     rotateWithMap = true,
                     rotation = -45.0,
@@ -104,7 +103,7 @@ fun MarkersScreen(
             }
             marker(
                 MarkerParameters(
-                    Coordinates(-90.0, 0.0),
+                    Coordinates(90.0, 0.0),
                     drawPosition = DrawPosition.TOP_RIGHT,
                 )
             ) {
@@ -150,16 +149,11 @@ fun MarkersScreen(
                         .padding(16.dp)
                         .pointerInput(Unit) {
                             detectDragGestures { change, dragAmount ->
-                                change.consume()
-                                val canvasDelta: TilePoint
                                 with(mapState) {
-                                    canvasDelta = dragAmount.asDifferentialScreenOffset().toTilePoint()
+                                    change.consume()
+                                    draggableMarkerPos =
+                                        (draggableMarkerPos.toTilePoint() - dragAmount.asDifferentialScreenOffset().toTilePoint()).toCoordinates()
                                 }
-                                val coordinatesDelta: Coordinates = SimpleMapProperties().toCoordinates(canvasDelta)
-                                draggableMarkerPos = Coordinates(
-                                    draggableMarkerPos.longitude - coordinatesDelta.longitude,
-                                    draggableMarkerPos.latitude - coordinatesDelta.latitude
-                                )
                             }
                         },
                     color = Color.White
@@ -170,7 +164,7 @@ fun MarkersScreen(
             onClick = {
                 markersList.add(
                     MarkerParameters(
-                        Coordinates(90.0, 0.0),
+                        Coordinates(-90.0, 0.0),
                         drawPosition = DrawPosition.BOTTOM_CENTER,
                     )
                 )

@@ -6,6 +6,9 @@ import kotlin.math.floor
 fun Double.loopInRange(coordinatesRange: CardinalRange): Double =
     (this - coordinatesRange.min).mod(coordinatesRange.span) + coordinatesRange.min
 
+fun Double.loopInRange(tileConstraints: Double): Double =
+    this.mod(tileConstraints)
+
 fun Int.loopInZoom(zoomLevel: Int): Int = this.mod(1 shl zoomLevel)
 
 fun lerp(start: Double, end: Double, value: Double): Double = start + (end - start) * value
