@@ -1,6 +1,6 @@
 package com.rafambn.kmap.customSources
 
-import com.rafambn.kmap.mapProperties.TileSource
+import com.rafambn.kmap.tiles.TileSource
 import com.rafambn.kmap.tiles.Tile
 import com.rafambn.kmap.tiles.TileRenderResult
 import kmap.kmapdemo.generated.resources.Res

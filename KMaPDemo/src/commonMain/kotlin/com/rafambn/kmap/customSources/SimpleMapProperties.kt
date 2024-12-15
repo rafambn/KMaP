@@ -4,34 +4,35 @@ import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.border.BoundMapBorder
 import com.rafambn.kmap.mapProperties.border.MapBorderType
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
-import com.rafambn.kmap.mapProperties.coordinates.Latitude
-import com.rafambn.kmap.mapProperties.coordinates.Longitude
-import com.rafambn.kmap.mapProperties.coordinates.MapCoordinatesRange
-import com.rafambn.kmap.mapProperties.MapZoomLevelsRange
-import com.rafambn.kmap.utils.CanvasPosition
-import com.rafambn.kmap.utils.ProjectedCoordinates
+import com.rafambn.kmap.mapProperties.CoordinatesRange
+import com.rafambn.kmap.mapProperties.Latitude
+import com.rafambn.kmap.mapProperties.Longitude
+import com.rafambn.kmap.mapProperties.ZoomLevelRange
+import com.rafambn.kmap.tiles.TileDimension
+import com.rafambn.kmap.utils.TilePoint
+import com.rafambn.kmap.utils.Coordinates
 
 data class SimpleMapProperties(
     override val boundMap: BoundMapBorder = BoundMapBorder(MapBorderType.BOUND, MapBorderType.BOUND),
     override val outsideTiles: OutsideTilesType = OutsideTilesType.NONE,
-    override val zoomLevels: MapZoomLevelsRange = SimpleMapZoomLevelsRange(),
-    override val mapCoordinatesRange: MapCoordinatesRange = SimpleMapCoordinatesRange(),
-    override val tileSize: Int = 900
+    override val zoomLevels: ZoomLevelRange = SimpleZoomLevelRange(),
+    override val coordinatesRange: CoordinatesRange = SimpleCoordinatesRange(),
+    override val tileSize: TileDimension = TileDimension(900, 900)
 ) : MapProperties {
-    override fun toCanvasPosition(projectedCoordinates: ProjectedCoordinates): CanvasPosition = CanvasPosition(
-        projectedCoordinates.longitude,
-        projectedCoordinates.latitude
+    override fun toTilePoint(coordinates: Coordinates): TilePoint = TilePoint(
+        coordinates.longitude,
+        coordinates.latitude
     )
 
-    override fun toProjectedCoordinates(canvasPosition: CanvasPosition): ProjectedCoordinates = ProjectedCoordinates(
-        canvasPosition.horizontal,
-        canvasPosition.vertical
+    override fun toCoordinates(tilePoint: TilePoint): Coordinates = Coordinates(
+        tilePoint.horizontal,
+        tilePoint.vertical
     )
 }
 
-data class SimpleMapZoomLevelsRange(override val max: Int = 2, override val min: Int = 0) : MapZoomLevelsRange
+data class SimpleZoomLevelRange(override val max: Int = 2, override val min: Int = 0) : ZoomLevelRange
 
-data class SimpleMapCoordinatesRange(
+data class SimpleCoordinatesRange(
     override val latitude: Latitude = Latitude(north = 90.0, south = -90.0),
-    override val longitude: Longitude = Longitude(east = 180.0, west = -180.0)//TODO map breaks if east = 0.0
-) : MapCoordinatesRange
+    override val longitude: Longitude = Longitude(west = -180.0, east = 180.0)//TODO map breaks if east = 0.0
+) : CoordinatesRange

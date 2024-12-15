@@ -16,24 +16,24 @@ data class ScreenOffset(val x: Float, val y: Float) : Reference {
     }
 }
 
-data class CanvasPosition(val horizontal: Double, val vertical: Double) : Reference {
-    operator fun plus(reference: CanvasPosition) = CanvasPosition(horizontal + reference.horizontal, vertical + reference.vertical)
-    operator fun unaryMinus() = CanvasPosition(-horizontal, -vertical)
-    operator fun minus(reference: CanvasPosition) = CanvasPosition(horizontal - reference.horizontal, vertical - reference.vertical)
-    operator fun times(value: Number) = CanvasPosition(horizontal * value.toDouble(), vertical * value.toDouble())
-    operator fun div(value: Number) = CanvasPosition(horizontal / value.toDouble(), vertical / value.toDouble())
+data class TilePoint(val horizontal: Double, val vertical: Double) : Reference {
+    operator fun plus(reference: TilePoint) = TilePoint(horizontal + reference.horizontal, vertical + reference.vertical)
+    operator fun unaryMinus() = TilePoint(-horizontal, -vertical)
+    operator fun minus(reference: TilePoint) = TilePoint(horizontal - reference.horizontal, vertical - reference.vertical)
+    operator fun times(value: Number) = TilePoint(horizontal * value.toDouble(), vertical * value.toDouble())
+    operator fun div(value: Number) = TilePoint(horizontal / value.toDouble(), vertical / value.toDouble())
 
     companion object {
-        val Zero: CanvasPosition = CanvasPosition(0.0, 0.0)
+        val Zero: TilePoint = TilePoint(0.0, 0.0)
     }
 }
 
-data class ProjectedCoordinates(val longitude: Double, val latitude: Double) : Reference {
-    operator fun plus(reference: ProjectedCoordinates) = ProjectedCoordinates(longitude + reference.longitude, latitude + reference.latitude)
-    operator fun unaryMinus() = ProjectedCoordinates(-longitude, -latitude)
-    operator fun minus(reference: ProjectedCoordinates) = ProjectedCoordinates(longitude - reference.longitude, latitude - reference.latitude)
-    operator fun times(value: Number) = ProjectedCoordinates(longitude * value.toDouble(), latitude * value.toDouble())
-    operator fun div(value: Number) = ProjectedCoordinates(longitude / value.toDouble(), latitude / value.toDouble())
+data class Coordinates(val longitude: Double, val latitude: Double) : Reference {
+    operator fun plus(reference: Coordinates) = Coordinates(longitude + reference.longitude, latitude + reference.latitude)
+    operator fun unaryMinus() = Coordinates(-longitude, -latitude)
+    operator fun minus(reference: Coordinates) = Coordinates(longitude - reference.longitude, latitude - reference.latitude)
+    operator fun times(value: Number) = Coordinates(longitude * value.toDouble(), latitude * value.toDouble())
+    operator fun div(value: Number) = Coordinates(longitude / value.toDouble(), latitude / value.toDouble())
 }
 
 data class CanvasDrawReference(val horizontal: Double, val vertical: Double) : Reference {
@@ -52,12 +52,36 @@ data class DifferentialScreenOffset(val x: Float, val y: Float) : Reference {
     operator fun div(value: Number) = DifferentialScreenOffset(x / value.toFloat(), y / value.toFloat())
 }
 
-fun CanvasPosition.asScreenOffset() = ScreenOffset(this.horizontal.toFloat(), this.vertical.toFloat())
-fun Offset.asScreenOffset() = ScreenOffset(this.x, this.y)
+fun TilePoint.asScreenOffset() = ScreenOffset(this.horizontal.toFloat(), this.vertical.toFloat())
+fun TilePoint.asCanvasDrawReference() = CanvasDrawReference(this.horizontal, this.vertical)
 
-fun DifferentialScreenOffset.asCanvasPosition() = CanvasPosition(this.x.toDouble(), this.y.toDouble())
+fun Offset.asScreenOffset() = ScreenOffset(this.x, this.y)
+fun Offset.asDifferentialScreenOffset() = DifferentialScreenOffset(this.x, this.y)
+
+fun DifferentialScreenOffset.asCanvasPosition() = TilePoint(this.x.toDouble(), this.y.toDouble())
 
 fun ScreenOffset.asOffset() = Offset(this.x, this.y)
-
-fun Offset.asDifferentialScreenOffset() = DifferentialScreenOffset(this.x, this.y)
 fun ScreenOffset.asDifferentialScreenOffset() = DifferentialScreenOffset(this.x, this.y)
+
+fun transformReference(
+    pointX: Double,
+    pointY: Double,
+    sourceRangeX: Pair<Double, Double>,
+    sourceRangeY: Pair<Double, Double>,
+    targetRangeX: Pair<Double, Double>,
+    targetRangeY: Pair<Double, Double>
+): Pair<Double, Double> {
+
+    val sourceWidth = sourceRangeX.second - sourceRangeX.first
+    val sourceHeight = sourceRangeY.second - sourceRangeY.first
+    val targetWidth = targetRangeX.second - targetRangeX.first
+    val targetHeight = targetRangeY.second - targetRangeY.first
+
+    val normalizedX = (pointX - sourceRangeX.first) / sourceWidth
+    val normalizedY = (pointY - sourceRangeY.first) / sourceHeight
+
+    val transformedX = normalizedX * targetWidth + targetRangeX.first
+    val transformedY = normalizedY * targetHeight + targetRangeY.first
+
+    return Pair(transformedX, transformedY)
+}

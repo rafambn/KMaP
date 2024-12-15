@@ -15,7 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.core.KMaP
-import com.rafambn.kmap.mapProperties.TileSource
+import com.rafambn.kmap.tiles.TileSource
 import com.rafambn.kmap.components.CanvasParameters
 import com.rafambn.kmap.core.rememberMotionController
 import com.rafambn.kmap.core.rememberMapState

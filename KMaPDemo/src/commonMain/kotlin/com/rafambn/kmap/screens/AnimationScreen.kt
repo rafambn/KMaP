@@ -25,7 +25,7 @@ import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
 import com.rafambn.kmap.getGestureDetector
-import com.rafambn.kmap.utils.ProjectedCoordinates
+import com.rafambn.kmap.utils.Coordinates
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import kotlinx.coroutines.Dispatchers
@@ -50,18 +50,18 @@ fun AnimationScreen(
         job = scope.launch {
             motionController.animate {
                 withContext(Dispatchers.Main) { description = "Panning" }
-                positionTo(ProjectedCoordinates(0.0, 0.0))
-                positionTo(ProjectedCoordinates(180.0, 90.0))
-                positionTo(ProjectedCoordinates(45.0, 0.0))
+                positionTo(Coordinates(0.0, 0.0))
+                positionTo(Coordinates(180.0, 90.0))
+                positionTo(Coordinates(45.0, 0.0))
                 withContext(Dispatchers.Main) { description = "Zooming by 1 level" }
                 zoomBy(1F)
                 zoomBy(-1F)
                 withContext(Dispatchers.Main) { description = "Zooming centered on (0.0, 0.0)" }
-                zoomToCentered(1F, ProjectedCoordinates(0.0, 0.0))
+                zoomToCentered(1F, Coordinates(0.0, 0.0))
                 withContext(Dispatchers.Main) { description = "Rotating around screen center" }
                 rotateBy(360.0)
                 withContext(Dispatchers.Main) { description = "Rotating centered on (0.0, 0.0)" }
-                rotateByCentered(-360.0, ProjectedCoordinates(0.0, 0.0))
+                rotateByCentered(-360.0, Coordinates(0.0, 0.0))
                 withContext(Dispatchers.Main) { description = "No Animation" }
             }
         }

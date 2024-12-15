@@ -1,7 +1,7 @@
 package com.rafambn.kmap.customSources
 
 import androidx.compose.ui.graphics.ImageBitmap
-import com.rafambn.kmap.mapProperties.TileSource
+import com.rafambn.kmap.tiles.TileSource
 import com.rafambn.kmap.tiles.Tile
 import com.rafambn.kmap.tiles.TileRenderResult
 import com.rafambn.kmap.tiles.TileSpecs

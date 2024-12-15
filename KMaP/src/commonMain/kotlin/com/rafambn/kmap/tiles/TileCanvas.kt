@@ -54,7 +54,7 @@ internal fun TileCanvas(
         boundingBox,
         zoomLevel,
         mapProperties.outsideTiles,
-        mapProperties.mapCoordinatesRange
+        mapProperties.tileSize
     )
     val coroutineScope = rememberCoroutineScope()
     var tileLayers = remember { TileLayers() }
@@ -133,16 +133,19 @@ internal fun TileCanvas(
     }
 }
 
-private fun DrawScope.drawTiles(tiles: List<Tile>, tileSize: Int, positionOffset: CanvasDrawReference, scaleAdjustment: Float = 1F, canvas: Canvas) {
+private fun DrawScope.drawTiles(tiles: List<Tile>, tileSize: TileDimension, positionOffset: CanvasDrawReference, scaleAdjustment: Float = 1F, canvas: Canvas) {
     tiles.forEach { tile ->
         tile.imageBitmap?.let {
             canvas.drawImageRect(
                 image = it,
                 dstOffset = IntOffset(
-                    (tileSize * tile.row * scaleAdjustment + positionOffset.horizontal).dp.toPx().toIntFloor(),
-                    (tileSize * tile.col * scaleAdjustment + positionOffset.vertical).dp.toPx().toIntFloor()
+                    (tileSize.width * tile.row * scaleAdjustment + positionOffset.horizontal).dp.toPx().toIntFloor(),
+                    (tileSize.height * tile.col * scaleAdjustment + positionOffset.vertical).dp.toPx().toIntFloor()
                 ),
-                dstSize = IntSize((tileSize.dp.toPx() * scaleAdjustment).toIntFloor(), (tileSize.dp.toPx() * scaleAdjustment).toIntFloor()),
+                dstSize = IntSize(
+                    (tileSize.width.dp.toPx() * scaleAdjustment).toIntFloor(),
+                    (tileSize.height.dp.toPx() * scaleAdjustment).toIntFloor()
+                ),
                 paint = Paint().apply {
                     isAntiAlias = false
                     filterQuality = FilterQuality.High

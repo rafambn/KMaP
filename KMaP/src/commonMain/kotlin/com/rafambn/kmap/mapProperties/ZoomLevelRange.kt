@@ -1,6 +1,6 @@
 package com.rafambn.kmap.mapProperties
 
-interface MapZoomLevelsRange {
+interface ZoomLevelRange {
     val max: Int
     val min: Int
 

@@ -67,7 +67,7 @@ internal fun measureComponent(
         measuredComponents.forEach { measuredComponent ->
             require(measuredComponent.parameters is MarkerParameters)
             measuredComponent.offset = with(mapState) {
-                measuredComponent.parameters.coordinates.toCanvasPosition().toScreenOffset()
+                measuredComponent.parameters.coordinates.toTilePoint().toScreenOffset()
             }
             measuredComponent.viewPort = getViewPort(
                 measuredComponent.parameters.drawPosition,
@@ -118,7 +118,7 @@ private fun clusterComponents(
             visited.add(measuredComponent)
             val intersecting = measuredComponents.filter { it.viewPort.isViewPortIntersecting(measuredComponent.viewPort) && !visited.contains(it) }
             if (intersecting.isNotEmpty())
-                expandCluster(measuredComponent, intersecting, clusters, visited, measuredItemProvider,markersCount)
+                expandCluster(measuredComponent, intersecting, clusters, visited, measuredItemProvider, markersCount)
             else
                 nonClustered.add(measuredComponent)
         }

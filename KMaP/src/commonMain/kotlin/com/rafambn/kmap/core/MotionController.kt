@@ -3,9 +3,9 @@ package com.rafambn.kmap.core
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.util.lerp
-import com.rafambn.kmap.utils.CanvasPosition
+import com.rafambn.kmap.utils.TilePoint
 import com.rafambn.kmap.utils.DifferentialScreenOffset
-import com.rafambn.kmap.utils.ProjectedCoordinates
+import com.rafambn.kmap.utils.Coordinates
 import com.rafambn.kmap.utils.lerp
 import com.rafambn.kmap.utils.Reference
 import com.rafambn.kmap.utils.ScreenOffset
@@ -117,22 +117,24 @@ class MotionController {
         override fun positionTo(center: Reference) {
             when (center) {
                 is ScreenOffset -> with(mapState!!) {
-                    mapState!!.setRawPosition(center.toCanvasPosition())
+                    mapState!!.setRawPosition(center.toTilePoint())
                 }
-
-                is CanvasPosition -> mapState!!.setRawPosition(center)
-                is ProjectedCoordinates -> mapState!!.projection = center
+                is TilePoint -> mapState!!.setRawPosition(center)
+                is Coordinates -> with(mapState!!) {
+                    mapState!!.setRawPosition(center.toTilePoint())
+                }
             }
         }
 
         override fun positionBy(center: Reference) {
             when (center) {
                 is DifferentialScreenOffset -> with(mapState!!) {
-                    mapState!!.setRawPosition(center.toCanvasPosition() + mapState!!.cameraState.rawPosition)
+                    mapState!!.setRawPosition(center.toTilePoint() + mapState!!.cameraState.tilePoint)
                 }
-
-                is CanvasPosition -> mapState!!.setRawPosition(mapState!!.cameraState.rawPosition + center)
-                is ProjectedCoordinates -> mapState!!.projection += center
+                is TilePoint -> mapState!!.setRawPosition(mapState!!.cameraState.tilePoint + center)
+                is Coordinates -> with(mapState!!) {
+                    mapState!!.setRawPosition(center.toTilePoint() + mapState!!.cameraState.tilePoint)
+                }
             }
         }
 
@@ -146,28 +148,28 @@ class MotionController {
 
         override fun zoomToCentered(zoom: Float, center: Reference) {
             when (center) {
-                is ProjectedCoordinates -> {
+                is Coordinates -> {
                     with(mapState!!) {
-                        val previousOffset = center.toCanvasPosition().toScreenOffset()
-                        val previousPosition = center.toCanvasPosition()
+                        val previousOffset = center.toTilePoint().toScreenOffset()
+                        val previousPosition = center.toTilePoint()
                         mapState!!.setZoom(zoom)
-                        centerPositionAtOffset(previousPosition, previousOffset)
+                        centerPointAtOffset(previousPosition, previousOffset)
                     }
                 }
 
                 is ScreenOffset -> {
                     with(mapState!!) {
-                        val position = center.toCanvasPosition()
+                        val position = center.toTilePoint()
                         mapState!!.setZoom(zoom)
-                        centerPositionAtOffset(position, center)
+                        centerPointAtOffset(position, center)
                     }
                 }
 
-                is CanvasPosition -> {
+                is TilePoint -> {
                     with(mapState!!) {
                         val previousOffset = center.toScreenOffset()
                         mapState!!.setZoom(zoom)
-                        centerPositionAtOffset(center, previousOffset)
+                        centerPointAtOffset(center, previousOffset)
                     }
                 }
             }
@@ -175,28 +177,28 @@ class MotionController {
 
         override fun zoomByCentered(zoom: Float, center: Reference) {
             when (center) {
-                is ProjectedCoordinates -> {
+                is Coordinates -> {
                     with(mapState!!) {
-                        val previousOffset = center.toCanvasPosition().toScreenOffset()
-                        val previousPosition = center.toCanvasPosition()
+                        val previousOffset = center.toTilePoint().toScreenOffset()
+                        val previousPosition = center.toTilePoint()
                         mapState!!.setZoom(mapState!!.cameraState.zoom + zoom)
-                        centerPositionAtOffset(previousPosition, previousOffset)
+                        centerPointAtOffset(previousPosition, previousOffset)
                     }
                 }
 
                 is ScreenOffset -> {
                     with(mapState!!) {
-                        val position = center.toCanvasPosition()
+                        val position = center.toTilePoint()
                         mapState!!.setZoom(mapState!!.cameraState.zoom + zoom)
-                        centerPositionAtOffset(position, center)
+                        centerPointAtOffset(position, center)
                     }
                 }
 
-                is CanvasPosition -> {
+                is TilePoint -> {
                     with(mapState!!) {
                         val previousOffset = center.toScreenOffset()
                         mapState!!.setZoom(mapState!!.cameraState.zoom + zoom)
-                        centerPositionAtOffset(center, previousOffset)
+                        centerPointAtOffset(center, previousOffset)
                     }
                 }
             }
@@ -212,28 +214,28 @@ class MotionController {
 
         override fun rotateToCentered(degrees: Double, center: Reference) {
             when (center) {
-                is ProjectedCoordinates -> {
+                is Coordinates -> {
                     with(mapState!!) {
-                        val previousOffset = center.toCanvasPosition().toScreenOffset()
-                        val previousPosition = center.toCanvasPosition()
+                        val previousOffset = center.toTilePoint().toScreenOffset()
+                        val previousPosition = center.toTilePoint()
                         mapState!!.setAngle(degrees)
-                        centerPositionAtOffset(previousPosition, previousOffset)
+                        centerPointAtOffset(previousPosition, previousOffset)
                     }
                 }
 
                 is ScreenOffset -> {
                     with(mapState!!) {
-                        val position = center.toCanvasPosition()
+                        val position = center.toTilePoint()
                         mapState!!.setAngle(degrees)
-                        centerPositionAtOffset(position, center)
+                        centerPointAtOffset(position, center)
                     }
                 }
 
-                is CanvasPosition -> {
+                is TilePoint -> {
                     with(mapState!!) {
                         val previousOffset = center.toScreenOffset()
                         mapState!!.setAngle(degrees)
-                        centerPositionAtOffset(center, previousOffset)
+                        centerPointAtOffset(center, previousOffset)
                     }
                 }
             }
@@ -241,28 +243,28 @@ class MotionController {
 
         override fun rotateByCentered(degrees: Double, center: Reference) {
             when (center) {
-                is ProjectedCoordinates -> {
+                is Coordinates -> {
                     with(mapState!!) {
-                        val previousOffset = center.toCanvasPosition().toScreenOffset()
-                        val previousPosition = center.toCanvasPosition()
+                        val previousOffset = center.toTilePoint().toScreenOffset()
+                        val previousPosition = center.toTilePoint()
                         mapState!!.setAngle(degrees + mapState!!.cameraState.angleDegrees)
-                        centerPositionAtOffset(previousPosition, previousOffset)
+                        centerPointAtOffset(previousPosition, previousOffset)
                     }
                 }
 
                 is ScreenOffset -> {
                     with(mapState!!) {
-                        val position = center.toCanvasPosition()
+                        val position = center.toTilePoint()
                         mapState!!.setAngle(degrees + mapState!!.cameraState.angleDegrees)
-                        centerPositionAtOffset(position, center)
+                        centerPointAtOffset(position, center)
                     }
                 }
 
-                is CanvasPosition -> {
+                is TilePoint -> {
                     with(mapState!!) {
                         val previousOffset = center.toScreenOffset()
                         mapState!!.setAngle(degrees + mapState!!.cameraState.angleDegrees)
-                        centerPositionAtOffset(center, previousOffset)
+                        centerPointAtOffset(center, previousOffset)
                     }
                 }
             }
@@ -275,21 +277,21 @@ class MotionController {
                 throw IllegalArgumentException("decay rate must be greater than 0")
             if (duration <= 0)
                 throw IllegalArgumentException("duration must be greater than 0")
-            val startPosition = mapState!!.cameraState.rawPosition
+            val startPosition = mapState!!.cameraState.tilePoint
             val endPosition = when (center) {
-                is ProjectedCoordinates -> {
+                is Coordinates -> {
                     with(mapState!!) {
-                        center.toCanvasPosition()
+                        center.toTilePoint()
                     }
                 }
 
                 is ScreenOffset -> {
                     with(mapState!!) {
-                        center.toCanvasPosition()
+                        center.toTilePoint()
                     }
                 }
 
-                is CanvasPosition -> center
+                is TilePoint -> center
 
                 else -> throw IllegalArgumentException("Unknown reference type")
             }
@@ -303,23 +305,23 @@ class MotionController {
                 throw IllegalArgumentException("decay rate must be greater than 0")
             if (duration <= 0)
                 throw IllegalArgumentException("duration must be greater than 0")
-            val startPosition = mapState!!.cameraState.rawPosition
+            val startPosition = mapState!!.cameraState.tilePoint
             val endPosition = when (center) {
-                is ProjectedCoordinates -> {
+                is Coordinates -> {
                     with(mapState!!) {
-                        center.toCanvasPosition()
+                        center.toTilePoint()
                     }
                 }
 
                 is DifferentialScreenOffset -> {
                     with(mapState!!) {
-                        center.toCanvasPosition()
+                        center.toTilePoint()
                     }
                 }
 
-                is CanvasPosition -> center
+                is TilePoint -> center
                 else -> throw IllegalArgumentException("Unknown reference type")
-            } + mapState!!.cameraState.rawPosition
+            } + mapState!!.cameraState.tilePoint
             decayValue(decayRate, duration) {
                 mapState!!.setRawPosition(lerp(startPosition, endPosition, it))
             }
@@ -355,31 +357,31 @@ class MotionController {
                 throw IllegalArgumentException("duration must be greater than 0")
             val startZoom = mapState!!.cameraState.zoom
             val centerPosition = when (center) {
-                is ProjectedCoordinates -> {
+                is Coordinates -> {
                     with(mapState!!) {
-                        center.toCanvasPosition()
+                        center.toTilePoint()
                     }
                 }
 
                 is ScreenOffset -> {
                     with(mapState!!) {
-                        center.toCanvasPosition()
+                        center.toTilePoint()
                     }
                 }
 
-                is CanvasPosition -> center
+                is TilePoint -> center
                 else -> throw IllegalArgumentException("Unknown reference type")
             }
             val centerOffset = when (center) {
-                is ProjectedCoordinates -> {
+                is Coordinates -> {
                     with(mapState!!) {
-                        center.toCanvasPosition().toScreenOffset()
+                        center.toTilePoint().toScreenOffset()
                     }
                 }
 
                 is ScreenOffset -> center
 
-                is CanvasPosition -> {
+                is TilePoint -> {
                     with(mapState!!) {
                         center.toScreenOffset()
                     }
@@ -390,7 +392,7 @@ class MotionController {
             decayValue(decayRate, duration) {
                 mapState!!.setZoom(lerp(startZoom, zoom, it.toFloat()))
                 with(mapState!!) {
-                    centerPositionAtOffset(centerPosition, centerOffset)
+                    centerPointAtOffset(centerPosition, centerOffset)
                 }
             }
         }
@@ -403,31 +405,31 @@ class MotionController {
             val startZoom = mapState!!.cameraState.zoom
             val endZoom = mapState!!.cameraState.zoom + zoom
             val centerPosition = when (center) {
-                is ProjectedCoordinates -> {
+                is Coordinates -> {
                     with(mapState!!) {
-                        center.toCanvasPosition()
+                        center.toTilePoint()
                     }
                 }
 
                 is ScreenOffset -> {
                     with(mapState!!) {
-                        center.toCanvasPosition()
+                        center.toTilePoint()
                     }
                 }
 
-                is CanvasPosition -> center
+                is TilePoint -> center
                 else -> throw IllegalArgumentException("Unknown reference type")
             }
             val centerOffset = when (center) {
-                is ProjectedCoordinates -> {
+                is Coordinates -> {
                     with(mapState!!) {
-                        center.toCanvasPosition().toScreenOffset()
+                        center.toTilePoint().toScreenOffset()
                     }
                 }
 
                 is ScreenOffset -> center
 
-                is CanvasPosition -> {
+                is TilePoint -> {
                     with(mapState!!) {
                         center.toScreenOffset()
                     }
@@ -438,7 +440,7 @@ class MotionController {
             decayValue(decayRate, duration) {
                 mapState!!.setZoom(lerp(startZoom, endZoom, it.toFloat()))
                 with(mapState!!) {
-                    centerPositionAtOffset(centerPosition, centerOffset)
+                    centerPointAtOffset(centerPosition, centerOffset)
                 }
             }
         }
@@ -473,31 +475,31 @@ class MotionController {
                 throw IllegalArgumentException("duration must be greater than 0")
             val startAngle = mapState!!.cameraState.angleDegrees
             val centerPosition = when (center) {
-                is ProjectedCoordinates -> {
+                is Coordinates -> {
                     with(mapState!!) {
-                        center.toCanvasPosition()
+                        center.toTilePoint()
                     }
                 }
 
                 is ScreenOffset -> {
                     with(mapState!!) {
-                        center.toCanvasPosition()
+                        center.toTilePoint()
                     }
                 }
 
-                is CanvasPosition -> center
+                is TilePoint -> center
                 else -> throw IllegalArgumentException("Unknown reference type")
             }
             val centerOffset = when (center) {
-                is ProjectedCoordinates -> {
+                is Coordinates -> {
                     with(mapState!!) {
-                        center.toCanvasPosition().toScreenOffset()
+                        center.toTilePoint().toScreenOffset()
                     }
                 }
 
                 is ScreenOffset -> center
 
-                is CanvasPosition -> {
+                is TilePoint -> {
                     with(mapState!!) {
                         center.toScreenOffset()
                     }
@@ -508,7 +510,7 @@ class MotionController {
             decayValue(decayRate, duration) {
                 mapState!!.setAngle(lerp(startAngle, degrees, it))
                 with(mapState!!) {
-                    centerPositionAtOffset(centerPosition, centerOffset)
+                    centerPointAtOffset(centerPosition, centerOffset)
                 }
             }
         }
@@ -521,31 +523,31 @@ class MotionController {
             val startAngle = mapState!!.cameraState.angleDegrees
             val endAngle = mapState!!.cameraState.angleDegrees + degrees
             val centerPosition = when (center) {
-                is ProjectedCoordinates -> {
+                is Coordinates -> {
                     with(mapState!!) {
-                        center.toCanvasPosition()
+                        center.toTilePoint()
                     }
                 }
 
                 is ScreenOffset -> {
                     with(mapState!!) {
-                        center.toCanvasPosition()
+                        center.toTilePoint()
                     }
                 }
 
-                is CanvasPosition -> center
+                is TilePoint -> center
                 else -> throw IllegalArgumentException("Unknown reference type")
             }
             val centerOffset = when (center) {
-                is ProjectedCoordinates -> {
+                is Coordinates -> {
                     with(mapState!!) {
-                        center.toCanvasPosition().toScreenOffset()
+                        center.toTilePoint().toScreenOffset()
                     }
                 }
 
                 is ScreenOffset -> center
 
-                is CanvasPosition -> {
+                is TilePoint -> {
                     with(mapState!!) {
                         center.toScreenOffset()
                     }
@@ -556,7 +558,7 @@ class MotionController {
             decayValue(decayRate, duration) {
                 mapState!!.setAngle(lerp(startAngle, endAngle, it))
                 with(mapState!!) {
-                    centerPositionAtOffset(centerPosition, centerOffset)
+                    centerPointAtOffset(centerPosition, centerOffset)
                 }
             }
         }
