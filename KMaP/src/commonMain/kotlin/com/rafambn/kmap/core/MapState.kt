@@ -35,7 +35,6 @@ fun rememberMapState(
 class MapState(
     internal val mapProperties: MapProperties
 ) {
-    //Map controllers
     private var density: Density = Density(1F)
 
     //User define min/max zoom
@@ -51,8 +50,8 @@ class MapState(
     //State variables
     var cameraState by mutableStateOf(
         CameraState(
-            tilePoint = TilePoint.Zero,
-            coordinates = TilePoint.Zero.toCoordinates()
+            tilePoint = TilePoint(mapProperties.tileSize.width / 2.0, mapProperties.tileSize.height / 2.0),
+            coordinates = TilePoint(mapProperties.tileSize.width / 2.0, mapProperties.tileSize.height / 2.0).toCoordinates()
         )
     )
 
@@ -97,33 +96,25 @@ class MapState(
         setRawPosition(cameraState.tilePoint + tilePoint - offset.toTilePoint())
     }
 
-    //Conversion Functions
     fun ScreenOffset.toTilePoint(): TilePoint =
         (cameraState.canvasSize / 2F - this).asDifferentialScreenOffset().toTilePoint() + cameraState.tilePoint
 
-    fun DifferentialScreenOffset.toTilePoint(): TilePoint =
-        (this.asCanvasPosition() / density.density.toDouble())
-            .scaleToZoom(
-                (1 / (mapProperties.tileSize.width * magnifierScale * (1 shl zoomLevel))).toDouble(),
-                (1 / (mapProperties.tileSize.height * magnifierScale * (1 shl zoomLevel))).toDouble()
-            )
-            .rotate(-cameraState.angleDegrees.toRadians())
-            .scaleToMap(
-                mapProperties.tileSize.width.toDouble(),
-                mapProperties.tileSize.height.toDouble()
-            )
-            .unaryMinus()
+    fun DifferentialScreenOffset.toTilePoint(): TilePoint = this
+        .asCanvasPosition()
+        .div(density.density.toDouble())
+        .scale(
+            (mapProperties.tileSize.width.toDouble() / (mapProperties.tileSize.width * magnifierScale * (1 shl zoomLevel))).toDouble(),
+            (mapProperties.tileSize.height.toDouble() / (mapProperties.tileSize.height * magnifierScale * (1 shl zoomLevel))).toDouble()
+        )
+        .rotate(-cameraState.angleDegrees.toRadians())
+        .unaryMinus()
 
     fun TilePoint.toScreenOffset(): ScreenOffset = (this - cameraState.tilePoint)
         .unaryMinus()
-        .scaleToMap(
-            1 / mapProperties.tileSize.width.toDouble(),
-            1 / mapProperties.tileSize.height.toDouble()
-        )
         .rotate(cameraState.angleDegrees.toRadians())
-        .scaleToZoom(
-            (mapProperties.tileSize.width * magnifierScale * (1 shl zoomLevel)).toDouble(),
-            (mapProperties.tileSize.height * magnifierScale * (1 shl zoomLevel)).toDouble()
+        .scale(
+            mapProperties.tileSize.width * magnifierScale * (1 shl zoomLevel) / mapProperties.tileSize.width.toDouble(),
+            mapProperties.tileSize.height * magnifierScale * (1 shl zoomLevel) / mapProperties.tileSize.height.toDouble()
         )
         .times(density.density.toDouble())
         .asScreenOffset()
@@ -131,22 +122,14 @@ class MapState(
         .unaryMinus()
 
     private fun TilePoint.toCanvasDrawReference(): CanvasDrawReference = this
-        .scaleToZoom(
-            (mapProperties.tileSize.width * (1 shl zoomLevel)).toDouble(),
-            (mapProperties.tileSize.height * (1 shl zoomLevel)).toDouble()
-        )
-        .scaleToMap(
-            1 / mapProperties.tileSize.width.toDouble(),
-            1 / mapProperties.tileSize.height.toDouble()
+        .scale(
+            mapProperties.tileSize.width * (1 shl zoomLevel) / mapProperties.tileSize.width.toDouble(),
+            mapProperties.tileSize.height * (1 shl zoomLevel) / mapProperties.tileSize.height.toDouble()
         )
         .unaryMinus()
         .asCanvasDrawReference()
 
-    //Transformation functions
-    private fun TilePoint.scaleToZoom(horizontal: Double, vertical: Double): TilePoint =
-        TilePoint(this.horizontal * horizontal, this.vertical * vertical)
-
-    private fun TilePoint.scaleToMap(horizontal: Double, vertical: Double): TilePoint =
+    private fun TilePoint.scale(horizontal: Double, vertical: Double): TilePoint =
         TilePoint(this.horizontal * horizontal, this.vertical * vertical)
 
     fun Coordinates.toTilePoint(): TilePoint {
