@@ -17,7 +17,7 @@ import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
 import com.rafambn.kmap.getGestureDetector
-import com.rafambn.kmap.utils.ProjectedCoordinates
+import com.rafambn.kmap.utils.Coordinates
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import org.jetbrains.compose.resources.vectorResource
@@ -41,12 +41,9 @@ fun PathScreen(
 
             path(
                 PathParameters(
-                    origin = ProjectedCoordinates(0.0, 0.0),
+                    origin = Coordinates(0.0, 0.0),
                     path = PathData {
-                      val dsd =  with(mapState) {
-                            ProjectedCoordinates(0.0, 0.0).toCanvasPosition()
-                        }
-                        moveTo(dsd.horizontal.toFloat(), dsd.vertical.toFloat())
+                        moveTo(0F, 0F)
                         lineTo(100F, 100F)
                         lineTo(200F, 200F)
                         lineTo(100F, 200F)

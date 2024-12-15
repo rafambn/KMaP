@@ -33,7 +33,7 @@ data class ClusterParameters(
 ) : Parameters
 
 data class PathParameters(
-    val origin: ProjectedCoordinates,
+    val origin: Coordinates,
     val path: Path,
     val zIndex: Float = 1F,
     val alpha: Float = 1F,
