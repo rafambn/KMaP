@@ -66,10 +66,9 @@ fun KMaP(
     itemProvider.invoke().pathList.forEach {
         PathCanvas(
             cameraState = mapState.cameraState,
-            mapProperties = mapState.mapProperties,
-            positionOffset = mapState.drawReference,
             pathParameters = it.pathParameters,
-            modifier = modifier
+            modifier = modifier,
+            mapState = mapState
         )
     }
 }

@@ -24,6 +24,7 @@ import com.rafambn.kmap.utils.rotate
 import com.rafambn.kmap.utils.toIntFloor
 import com.rafambn.kmap.utils.toRadians
 import com.rafambn.kmap.utils.transformReference
+import kotlin.math.pow
 
 @Composable
 fun rememberMapState(
@@ -60,8 +61,6 @@ class MapState(
         get() = cameraState.tilePoint.toCanvasDrawReference()
     private val zoomLevel
         get() = cameraState.zoom.toIntFloor()
-    private val magnifierScale
-        get() = cameraState.zoom - zoomLevel + 1F
 
     //Utility functions
     val boundingBox
@@ -103,8 +102,8 @@ class MapState(
         .asCanvasPosition()
         .div(density.density.toDouble())
         .scale(
-            (mapProperties.tileSize.width.toDouble() / (mapProperties.tileSize.width * magnifierScale * (1 shl zoomLevel))).toDouble(),
-            (mapProperties.tileSize.height.toDouble() / (mapProperties.tileSize.height * magnifierScale * (1 shl zoomLevel))).toDouble()
+            (mapProperties.tileSize.width.toDouble() / (mapProperties.tileSize.width * 2F.pow(cameraState.zoom))).toDouble(),
+            (mapProperties.tileSize.height.toDouble() / (mapProperties.tileSize.height * 2F.pow(cameraState.zoom))).toDouble()
         )
         .rotate(-cameraState.angleDegrees.toRadians())
         .unaryMinus()
@@ -113,8 +112,8 @@ class MapState(
         .unaryMinus()
         .rotate(cameraState.angleDegrees.toRadians())
         .scale(
-            mapProperties.tileSize.width * magnifierScale * (1 shl zoomLevel) / mapProperties.tileSize.width.toDouble(),
-            mapProperties.tileSize.height * magnifierScale * (1 shl zoomLevel) / mapProperties.tileSize.height.toDouble()
+            mapProperties.tileSize.width * 2F.pow(cameraState.zoom)/ mapProperties.tileSize.width.toDouble(),
+            mapProperties.tileSize.height * 2F.pow(cameraState.zoom) / mapProperties.tileSize.height.toDouble()
         )
         .times(density.density.toDouble())
         .asScreenOffset()

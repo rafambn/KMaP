@@ -7,6 +7,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.PathData
 import androidx.compose.ui.graphics.vector.toPath
 import androidx.compose.ui.unit.dp
@@ -38,10 +43,9 @@ fun PathScreen(
                 tileSource = SimpleMapTileSource()::getTile,
                 gestureDetection = getGestureDetector(motionController)
             )
-
             path(
                 PathParameters(
-                    origin = Coordinates(0.0, 0.0),
+                    origin = Coordinates(130.0, 0.0),
                     path = PathData {
                         moveTo(0F, 0F)
                         lineTo(100F, 100F)
@@ -49,7 +53,13 @@ fun PathScreen(
                         lineTo(100F, 200F)
                         lineTo(100F, 100F)
                     }.toPath(),
-                    zoomToFix = 0F
+                    color = Color.Red,
+                    style = Stroke(
+                        width = 0.04F,
+                        cap = StrokeCap.Round,
+                        join = StrokeJoin.Round,
+                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+                    )
                 )
             )
         }
