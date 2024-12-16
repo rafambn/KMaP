@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.zIndex
 import com.rafambn.kmap.core.CameraState
 import com.rafambn.kmap.components.PathParameters
@@ -29,6 +30,7 @@ internal fun PathCanvas(
     with(mapState) {
         offset = pathParameters.origin.toTilePoint().toScreenOffset()
     }
+    val densityScale = LocalDensity.current.density
     Layout(
         modifier = modifier
 //            .then(gestureDetector?.let { Modifier.pointerInput(PointerEventPass.Main) { it(this) } } ?: Modifier)
@@ -41,7 +43,7 @@ internal fun PathCanvas(
                 withTransform({
                     translate(offset.x.toFloat(), offset.y.toFloat())
                     rotate(rotationDegrees, Offset.Zero)
-                    scale(2F.pow(cameraState.zoom), Offset.Zero)
+                    scale(2F.pow(cameraState.zoom) * densityScale, Offset.Zero)
                 }) {
                     drawIntoCanvas { canvas ->
                         drawPath(

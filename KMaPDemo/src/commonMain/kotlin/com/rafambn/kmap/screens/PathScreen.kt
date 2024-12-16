@@ -45,7 +45,7 @@ fun PathScreen(
             )
             path(
                 PathParameters(
-                    origin = Coordinates(130.0, 0.0),
+                    origin = Coordinates(0.0, 0.0),
                     path = PathData {
                         moveTo(0F, 0F)
                         lineTo(100F, 100F)
@@ -55,7 +55,7 @@ fun PathScreen(
                     }.toPath(),
                     color = Color.Red,
                     style = Stroke(
-                        width = 0.04F,
+                        width = 4F,
                         cap = StrokeCap.Round,
                         join = StrokeJoin.Round,
                         pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
