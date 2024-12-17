@@ -1,16 +1,20 @@
 package com.rafambn.kmap.lazy
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.input.pointer.PointerInputScope
 import com.rafambn.kmap.components.CanvasComponent
-import com.rafambn.kmap.components.CanvasParameters
 import com.rafambn.kmap.components.ClusterComponent
 import com.rafambn.kmap.components.ClusterParameters
 import com.rafambn.kmap.components.MarkerComponent
 import com.rafambn.kmap.components.MarkerParameters
 import com.rafambn.kmap.components.PathComponent
-import com.rafambn.kmap.components.PathParameters
 import com.rafambn.kmap.tiles.TileRenderResult
+import com.rafambn.kmap.utils.Coordinates
 
 class KMaPContent(
     content: KMaPScope.() -> Unit,
@@ -26,11 +30,13 @@ class KMaPContent(
     }
 
     override fun canvas(
-        canvasParameters: CanvasParameters,
+        alpha: Float,
+        zIndex: Float,
+        maxCacheTiles: Int,
         tileSource: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult,
         gestureDetection: (suspend PointerInputScope.() -> Unit)?
     ) {
-        canvas.add(CanvasComponent(canvasParameters, tileSource, gestureDetection))
+        canvas.add(CanvasComponent(alpha, zIndex, maxCacheTiles, tileSource, gestureDetection))
     }
 
     override fun marker(markerParameters: MarkerParameters, markerContent: @Composable (marker: MarkerParameters) -> Unit) {
@@ -47,7 +53,29 @@ class KMaPContent(
         cluster.add(ClusterComponent(clusterParameters, clusterContent))
     }
 
-    override fun path(pathParameters: PathParameters) {
-        paths.add(PathComponent(pathParameters))
+    override fun path(
+        origin: Coordinates,
+        path: Path,
+        color: Color,
+        zIndex: Float,
+        alpha: Float,
+        style: DrawStyle,
+        colorFilter: ColorFilter?,
+        blendMode: BlendMode,
+        gestureDetection: (suspend PointerInputScope.() -> Unit)?
+    ) {
+        paths.add(
+            PathComponent(
+                origin,
+                path,
+                color,
+                zIndex,
+                alpha,
+                style,
+                colorFilter,
+                blendMode,
+                gestureDetection
+            )
+        )
     }
 }

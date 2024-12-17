@@ -32,13 +32,11 @@ fun KMaP(
 
     itemProvider.invoke().canvasList.forEach {
         TileCanvas(
-            getTile = it.getTile,
             cameraState = mapState.cameraState,
             mapProperties = mapState.mapProperties,
             positionOffset = mapState.drawReference,
             boundingBox = mapState.boundingBox,
-            canvasParameters = it.canvasParameters,
-            gestureDetector = it.gestureDetection,
+            canvasComponent = it,
             modifier = modifier
                 .onGloballyPositioned { coordinates ->
                     mapState.setCanvasSize(
@@ -66,7 +64,7 @@ fun KMaP(
     itemProvider.invoke().pathList.forEach {
         PathCanvas(
             cameraState = mapState.cameraState,
-            pathParameters = it.pathParameters,
+            pathComponent = it,
             modifier = modifier,
             mapState = mapState
         )

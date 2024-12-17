@@ -16,14 +16,13 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import com.rafambn.kmap.components.CanvasParameters
+import com.rafambn.kmap.components.CanvasComponent
 import com.rafambn.kmap.core.BoundingBox
 import com.rafambn.kmap.core.CameraState
 import com.rafambn.kmap.mapProperties.MapProperties
@@ -41,9 +40,7 @@ internal fun TileCanvas(
     positionOffset: CanvasDrawReference,
     boundingBox: BoundingBox,
     modifier: Modifier,
-    canvasParameters: CanvasParameters,
-    getTile: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult,
-    gestureDetector: (suspend PointerInputScope.() -> Unit)?
+    canvasComponent: CanvasComponent,
 ) {
     val zoomLevel = cameraState.zoom.toIntFloor()
     val magnifierScale = cameraState.zoom - zoomLevel
@@ -58,7 +55,7 @@ internal fun TileCanvas(
     )
     val coroutineScope = rememberCoroutineScope()
     var tileLayers = remember { TileLayers() }
-    val canvasState = remember { TileRenderer(getTile, canvasParameters.maxCacheTiles, coroutineScope) }
+    val canvasState = remember { TileRenderer(canvasComponent.getTile, canvasComponent.maxCacheTiles, coroutineScope) }
 
     val renderedTilesCache = canvasState.renderedTilesFlow.collectAsState()
     if (zoomLevel != tileLayers.frontLayer.level)
@@ -98,12 +95,12 @@ internal fun TileCanvas(
     }
     Layout(
         modifier = modifier
-            .then(gestureDetector?.let { Modifier.pointerInput(PointerEventPass.Main) { it(this) } } ?: Modifier)
+            .then(canvasComponent.gestureDetector?.let { Modifier.pointerInput(PointerEventPass.Main) { it(this) } } ?: Modifier)
             .graphicsLayer {
-                alpha = canvasParameters.alpha
+                alpha = canvasComponent.alpha
                 clip = true
             }
-            .zIndex(canvasParameters.zIndex)
+            .zIndex(canvasComponent.zIndex)
             .drawBehind {
                 withTransform({
                     translate(translation.x, translation.y)

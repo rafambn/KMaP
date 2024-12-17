@@ -8,11 +8,13 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.zIndex
+import com.rafambn.kmap.components.PathComponent
 import com.rafambn.kmap.core.CameraState
-import com.rafambn.kmap.components.PathParameters
 import com.rafambn.kmap.core.MapState
 import com.rafambn.kmap.utils.ScreenOffset
 import kotlin.math.pow
@@ -21,22 +23,21 @@ import kotlin.math.pow
 internal fun PathCanvas(
     cameraState: CameraState,
     modifier: Modifier,
-    pathParameters: PathParameters,
+    pathComponent: PathComponent,
     mapState: MapState
-//    gestureDetector: (suspend PointerInputScope.() -> Unit)? //TODO add input scope
 ) {
     val rotationDegrees = cameraState.angleDegrees.toFloat()
     val offset: ScreenOffset
     with(mapState) {
-        offset = pathParameters.origin.toTilePoint().toScreenOffset()
+        offset = pathComponent.origin.toTilePoint().toScreenOffset()
     }
     val densityScale = LocalDensity.current.density
     Layout(
         modifier = modifier
-//            .then(gestureDetector?.let { Modifier.pointerInput(PointerEventPass.Main) { it(this) } } ?: Modifier)
-            .zIndex(pathParameters.zIndex)
+            .then(pathComponent.gestureDetector?.let { Modifier.pointerInput(PointerEventPass.Main) { it(this) } } ?: Modifier)
+            .zIndex(pathComponent.zIndex)
             .graphicsLayer {
-                alpha = pathParameters.alpha
+                alpha = pathComponent.alpha
                 clip = true
             }
             .drawBehind {
@@ -47,11 +48,11 @@ internal fun PathCanvas(
                 }) {
                     drawIntoCanvas { canvas ->
                         drawPath(
-                            path = pathParameters.path,
-                            color = pathParameters.color,
-                            colorFilter = pathParameters.colorFilter,
-                            blendMode = pathParameters.blendMode,
-                            style = pathParameters.style
+                            path = pathComponent.path,
+                            color = pathComponent.color,
+                            colorFilter = pathComponent.colorFilter,
+                            blendMode = pathComponent.blendMode,
+                            style = pathComponent.style
                         )
                     }
                 }
