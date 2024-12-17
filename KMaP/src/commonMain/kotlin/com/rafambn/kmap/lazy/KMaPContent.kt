@@ -39,18 +39,18 @@ class KMaPContent(
         canvas.add(CanvasComponent(alpha, zIndex, maxCacheTiles, tileSource, gestureDetection))
     }
 
-    override fun marker(markerParameters: MarkerParameters, markerContent: @Composable (marker: MarkerParameters) -> Unit) {
-        markers.add(MarkerComponent(markerParameters, markerContent))
+    override fun marker(markerParameters: MarkerParameters, markerContent: @Composable () -> Unit) {
+        markers.add(MarkerComponent(markerParameters, { markerContent() }))
     }
 
-    override fun markers(markerParameters: List<MarkerParameters>, markerContent: @Composable (marker: MarkerParameters) -> Unit) {
-        markerParameters.forEach {
-            markers.add(MarkerComponent(it, markerContent))
+    override fun markers(markerParameters: List<MarkerParameters>, markerContent: @Composable (index: Int) -> Unit) {
+        markerParameters.forEachIndexed { index, it ->
+            markers.add(MarkerComponent(it, { markerContent(index) }))
         }
     }
 
-    override fun cluster(clusterParameters: ClusterParameters, clusterContent: @Composable (cluster: ClusterParameters) -> Unit) {
-        cluster.add(ClusterComponent(clusterParameters, clusterContent))
+    override fun cluster(clusterParameters: ClusterParameters, clusterContent: @Composable () -> Unit) {
+        cluster.add(ClusterComponent(clusterParameters, { clusterContent() }))
     }
 
     override fun path(

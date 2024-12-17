@@ -14,12 +14,12 @@ import com.rafambn.kmap.utils.Coordinates
 
 data class MarkerComponent(
     val markerParameters: MarkerParameters,
-    val markerContent: @Composable (marker: MarkerParameters) -> Unit
+    val markerContent: @Composable () -> Unit
 )
 
 data class ClusterComponent(
     val clusterParameters: ClusterParameters,
-    val clusterContent: @Composable (cluster: ClusterParameters) -> Unit
+    val clusterContent: @Composable () -> Unit
 )
 
 data class CanvasComponent(

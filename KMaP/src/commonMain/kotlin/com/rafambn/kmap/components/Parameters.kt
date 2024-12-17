@@ -6,7 +6,7 @@ import com.rafambn.kmap.utils.Coordinates
 
 sealed interface Parameters
 
-data class MarkerParameters(
+open class MarkerParameters(
     val coordinates: Coordinates,
     val alpha: Float = 1F,
     val drawPosition: DrawPosition = DrawPosition.TOP_LEFT,
@@ -17,7 +17,7 @@ data class MarkerParameters(
     val clusterId: Int? = null
 ) : Parameters
 
-data class ClusterParameters(
+open class ClusterParameters(
     val id: Int,
     val alpha: Float = 1F,
     val zIndex: Float = 2F,

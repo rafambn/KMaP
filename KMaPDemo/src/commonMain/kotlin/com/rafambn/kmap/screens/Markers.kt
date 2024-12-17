@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -19,8 +18,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
@@ -32,6 +29,8 @@ import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
 import com.rafambn.kmap.getGestureDetector
+import com.rafambn.kmap.lazy.marker
+import com.rafambn.kmap.lazy.markers
 import com.rafambn.kmap.utils.Coordinates
 import com.rafambn.kmap.utils.asDifferentialScreenOffset
 import kmap.kmapdemo.generated.resources.Res
@@ -60,7 +59,7 @@ fun MarkersScreen(
                 gestureDetection = getGestureDetector(motionController)
             )
             marker(
-                MarkerParameters(
+                marker = MarkerParameters(
                     Coordinates(0.0, 0.0),
                     drawPosition = DrawPosition.TOP_RIGHT,
                 )
@@ -74,7 +73,7 @@ fun MarkersScreen(
                 )
             }
             marker(
-                MarkerParameters(
+                marker = MarkerParameters(
                     Coordinates(0.0, 10.0),
                     drawPosition = DrawPosition.TOP_RIGHT,
                     zoomToFix = 1F,
@@ -89,7 +88,7 @@ fun MarkersScreen(
                 )
             }
             marker(
-                MarkerParameters(
+                marker = MarkerParameters(
                     Coordinates(0.0, -20.0),
                     drawPosition = DrawPosition.TOP_RIGHT,
                     rotateWithMap = true,
@@ -105,7 +104,7 @@ fun MarkersScreen(
                 )
             }
             marker(
-                MarkerParameters(
+                marker = MarkerParameters(
                     Coordinates(90.0, 0.0),
                     drawPosition = DrawPosition.TOP_RIGHT,
                 )
@@ -130,7 +129,7 @@ fun MarkersScreen(
                     color = Color.Red
                 )
             }
-            markers(markersList) {
+            markers(markers = markersList) {
                 Image(
                     painter = painterResource(Res.drawable.pin),
                     contentDescription = "Removable marker",
@@ -140,13 +139,13 @@ fun MarkersScreen(
                 )
             }
             marker(
-                MarkerParameters(
+                marker = MarkerParameters(
                     draggableMarkerPos,
                     drawPosition = DrawPosition.TOP_RIGHT,
                 )
             ) {
                 Text(
-                    text = "Draggable marker",
+                    text = "Draggable marker  ${it.coordinates}",
                     modifier = Modifier
                         .background(Color.Black)
                         .padding(16.dp)

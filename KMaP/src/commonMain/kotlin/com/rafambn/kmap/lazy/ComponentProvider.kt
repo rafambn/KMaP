@@ -44,9 +44,9 @@ class ComponentProvider(
         val item = kmapContent.markers.getOrNull(index)
         if (item == null) {
             val cluster = kmapContent.cluster.find { it.clusterParameters.id == kmapContent.markers[index / 2].markerParameters.clusterId }
-            cluster?.clusterContent(cluster.clusterParameters)
+            cluster?.clusterContent()
         } else
-            item.markerContent(item.markerParameters)
+            item.markerContent()
     }
 
     val canvasList get() = kmapContent.canvas

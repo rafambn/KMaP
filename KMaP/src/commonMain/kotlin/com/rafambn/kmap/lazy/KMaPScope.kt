@@ -1,6 +1,5 @@
 package com.rafambn.kmap.lazy
 
-import androidx.compose.foundation.lazy.LazyScopeMarker
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
@@ -15,7 +14,6 @@ import com.rafambn.kmap.components.MarkerParameters
 import com.rafambn.kmap.tiles.TileRenderResult
 import com.rafambn.kmap.utils.Coordinates
 
-@LazyScopeMarker
 interface KMaPScope {
 
     fun canvas(
@@ -28,17 +26,17 @@ interface KMaPScope {
 
     fun marker(
         markerParameters: MarkerParameters,
-        markerContent: @Composable (marker: MarkerParameters) -> Unit
+        markerContent: @Composable () -> Unit
     )
 
     fun markers(
         markerParameters: List<MarkerParameters>,
-        markerContent: @Composable (marker: MarkerParameters) -> Unit
+        markerContent: @Composable (index: Int) -> Unit
     )
 
     fun cluster(
         clusterParameters: ClusterParameters,
-        clusterContent: @Composable (cluster: ClusterParameters) -> Unit
+        clusterContent: @Composable () -> Unit
     )
 
     fun path(
@@ -52,4 +50,31 @@ interface KMaPScope {
         blendMode: BlendMode = DefaultBlendMode,
         gestureDetection: (suspend PointerInputScope.() -> Unit)? = null
     )
+}
+
+inline fun <T : MarkerParameters> KMaPScope.markers(
+    markers: List<T>,
+    crossinline itemContent: @Composable (item: T) -> Unit
+) = markers(
+    markerParameters = markers
+) {
+    itemContent(markers[it])
+}
+
+inline fun <T : MarkerParameters> KMaPScope.marker(
+    marker: T,
+    crossinline itemContent: @Composable (item: T) -> Unit
+) = marker(
+    markerParameters = marker
+) {
+    itemContent(marker)
+}
+
+inline fun <T : ClusterParameters> KMaPScope.cluster(
+    cluster: T,
+    crossinline itemContent: @Composable (item: T) -> Unit
+) = cluster(
+    clusterParameters = cluster
+) {
+    itemContent(cluster)
 }

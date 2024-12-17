@@ -26,7 +26,6 @@ import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import org.jetbrains.compose.resources.vectorResource
 
-
 @Composable
 fun ClusteringScreen(
     navigateBack: () -> Unit
@@ -112,7 +111,7 @@ fun ClusteringScreen(
             }
             cluster(
                 ClusterParameters(id = 1)
-            ) { _ ->
+            ) {
                 Text(
                     text = "Cluster tag 1",
                     modifier = Modifier
