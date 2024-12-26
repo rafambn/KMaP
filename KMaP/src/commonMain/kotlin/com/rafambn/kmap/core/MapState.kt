@@ -27,7 +27,7 @@ import com.rafambn.kmap.utils.transformReference
 import kotlin.math.pow
 
 @Composable
-fun rememberMapState(
+fun rememberMapState( //TODO add saveable
     mapProperties: MapProperties
 ): MapState = remember {
     MapState(mapProperties)
