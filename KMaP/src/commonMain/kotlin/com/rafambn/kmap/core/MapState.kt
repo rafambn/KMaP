@@ -29,7 +29,8 @@ import com.rafambn.kmap.utils.transformReference
 import kotlin.math.pow
 
 @Composable
-fun rememberMapState( //TODO add saveable
+fun rememberMapState(
+    //TODO add saveable
     mapProperties: MapProperties,
     zoomLevelPreference: ZoomLevelRange? = null,
     density: Density = LocalDensity.current,
@@ -100,7 +101,7 @@ class MapState(
     private fun Float.coerceZoom(): Float = this.coerceIn(zoomLevelPreference.min.toFloat(), zoomLevelPreference.max.toFloat())
 
     fun centerPointAtOffset(tilePoint: TilePoint, offset: ScreenOffset) {
-        setRawPosition(cameraState.tilePoint + tilePoint - offset.toTilePoint())
+        setPosition(cameraState.tilePoint + tilePoint - offset.toTilePoint())
     }
 
     fun ScreenOffset.toTilePoint(): TilePoint =
@@ -177,7 +178,7 @@ class MapState(
         cameraState = cameraState.copy(angleDegrees = angle)
     }
 
-    fun setRawPosition(position: TilePoint) {
+    fun setPosition(position: TilePoint) {
         val coercedPoint = position.coerceInMap()
         cameraState = cameraState.copy(
             tilePoint = coercedPoint,

@@ -2,7 +2,7 @@ package com.rafambn.kmap.utils
 
 import androidx.compose.ui.geometry.Offset
 
-interface Reference
+sealed interface Reference
 
 data class ScreenOffset(val x: Float, val y: Float) : Reference {
     operator fun plus(reference: ScreenOffset) = ScreenOffset(x + reference.x, y + reference.y)
@@ -34,14 +34,10 @@ data class Coordinates(val longitude: Double, val latitude: Double) : Reference 
     operator fun minus(reference: Coordinates) = Coordinates(longitude - reference.longitude, latitude - reference.latitude)
     operator fun times(value: Number) = Coordinates(longitude * value.toDouble(), latitude * value.toDouble())
     operator fun div(value: Number) = Coordinates(longitude / value.toDouble(), latitude / value.toDouble())
-}
 
-data class CanvasDrawReference(val horizontal: Double, val vertical: Double) : Reference {
-    fun plus(other: CanvasDrawReference) = CanvasDrawReference(horizontal + other.horizontal, vertical + other.vertical)
-    fun unaryMinus() = CanvasDrawReference(-horizontal, -vertical)
-    fun minus(other: CanvasDrawReference) = CanvasDrawReference(horizontal - other.horizontal, vertical - other.vertical)
-    fun times(operand: Double) = CanvasDrawReference(horizontal * operand, vertical * operand)
-    fun div(operand: Double) = CanvasDrawReference(horizontal / operand, vertical / operand)
+    companion object {
+        val Zero: Coordinates = Coordinates(0.0, 0.0)
+    }
 }
 
 data class DifferentialScreenOffset(val x: Float, val y: Float) : Reference {
@@ -50,6 +46,17 @@ data class DifferentialScreenOffset(val x: Float, val y: Float) : Reference {
     operator fun minus(reference: DifferentialScreenOffset) = DifferentialScreenOffset(x - reference.x, y - reference.y)
     operator fun times(value: Number) = DifferentialScreenOffset(x * value.toFloat(), y * value.toFloat())
     operator fun div(value: Number) = DifferentialScreenOffset(x / value.toFloat(), y / value.toFloat())
+    companion object {
+        val Zero: DifferentialScreenOffset = DifferentialScreenOffset(0F, 0F)
+    }
+}
+
+data class CanvasDrawReference(val horizontal: Double, val vertical: Double) {
+    fun plus(other: CanvasDrawReference) = CanvasDrawReference(horizontal + other.horizontal, vertical + other.vertical)
+    fun unaryMinus() = CanvasDrawReference(-horizontal, -vertical)
+    fun minus(other: CanvasDrawReference) = CanvasDrawReference(horizontal - other.horizontal, vertical - other.vertical)
+    fun times(operand: Double) = CanvasDrawReference(horizontal * operand, vertical * operand)
+    fun div(operand: Double) = CanvasDrawReference(horizontal / operand, vertical / operand)
 }
 
 fun TilePoint.asScreenOffset() = ScreenOffset(this.horizontal.toFloat(), this.vertical.toFloat())

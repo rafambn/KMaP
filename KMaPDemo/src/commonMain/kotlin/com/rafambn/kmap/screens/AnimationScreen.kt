@@ -1,5 +1,6 @@
 package com.rafambn.kmap.screens
 
+import androidx.compose.animation.core.TweenSpec
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -46,20 +47,22 @@ fun AnimationScreen(
         job?.cancel()
 
         job = scope.launch {
-           mapState.motionController.animate {
+            mapState.motionController.animate {
                 withContext(Dispatchers.Main) { description = "Panning" }
-                positionTo(Coordinates(0.0, 0.0))
-                positionTo(Coordinates(180.0, 90.0))
-                positionTo(Coordinates(45.0, 0.0))
+                positionTo(Coordinates(0.0, 0.0), TweenSpec(2000))
+                positionTo(Coordinates(180.0, 90.0), TweenSpec(2000))
+                positionTo(Coordinates(45.0, 0.0), TweenSpec(2000))
                 withContext(Dispatchers.Main) { description = "Zooming by 1 level" }
-                zoomBy(1F)
-                zoomBy(-1F)
+                zoomBy(1F, TweenSpec(2000))
+                zoomBy(-1F, TweenSpec(2000))
                 withContext(Dispatchers.Main) { description = "Zooming centered on (0.0, 0.0)" }
-                zoomToCentered(1F, Coordinates(0.0, 0.0))
+                zoomToCentered(1F, Coordinates(0.0, 0.0), TweenSpec(2000))
                 withContext(Dispatchers.Main) { description = "Rotating around screen center" }
-                rotateBy(360.0)
+                rotateBy(360.0, TweenSpec(2000))
                 withContext(Dispatchers.Main) { description = "Rotating centered on (0.0, 0.0)" }
-                rotateByCentered(-360.0, Coordinates(0.0, 0.0))
+            }
+            mapState.motionController.animate {
+                rotateByCentered(-360.0, Coordinates(0.0, 0.0), TweenSpec(2000))
                 withContext(Dispatchers.Main) { description = "No Animation" }
             }
         }
