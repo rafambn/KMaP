@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.ZoomLevelRange
@@ -30,19 +31,22 @@ import kotlin.math.pow
 @Composable
 fun rememberMapState( //TODO add saveable
     mapProperties: MapProperties,
-    zoomLevelPreference: ZoomLevelRange? = null
+    zoomLevelPreference: ZoomLevelRange? = null,
+    density: Density = LocalDensity.current,
 ): MapState = remember {
     MapState(
         mapProperties = mapProperties,
-        zoomLevelPreference = zoomLevelPreference
+        zoomLevelPreference = zoomLevelPreference,
+        density = density,
     )
 }
 
 class MapState(
     internal val mapProperties: MapProperties,
-    zoomLevelPreference: ZoomLevelRange? = null
+    zoomLevelPreference: ZoomLevelRange? = null,
+    var density: Density = Density(1F),
 ) {
-    private var density: Density = Density(1F)
+    val motionController = MotionController(this)
 
     //User define min/max zoom
     var zoomLevelPreference = zoomLevelPreference ?: mapProperties.zoomLevels
@@ -159,10 +163,6 @@ class MapState(
             Pair(mapProperties.coordinatesRange.latitude.north, mapProperties.coordinatesRange.latitude.south),
         )
         return Coordinates(scaledTileCoordinates.first, scaledTileCoordinates.second)
-    }
-
-    internal fun setDensity(density: Density) {
-        this.density = density
     }
 
     fun setCanvasSize(offset: Offset) {

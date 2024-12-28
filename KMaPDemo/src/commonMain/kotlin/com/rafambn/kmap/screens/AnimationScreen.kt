@@ -20,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.core.KMaP
-import com.rafambn.kmap.core.rememberMotionController
 import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
@@ -38,7 +37,6 @@ import org.jetbrains.compose.resources.vectorResource
 fun AnimationScreen(
     navigateBack: () -> Unit
 ) {
-    val motionController = rememberMotionController()
     val mapState = rememberMapState(mapProperties = SimpleMapProperties())
     var description by remember { mutableStateOf("No Animation") }
     val scope = rememberCoroutineScope()
@@ -48,7 +46,7 @@ fun AnimationScreen(
         job?.cancel()
 
         job = scope.launch {
-            motionController.animate {
+           mapState.motionController.animate {
                 withContext(Dispatchers.Main) { description = "Panning" }
                 positionTo(Coordinates(0.0, 0.0))
                 positionTo(Coordinates(180.0, 90.0))
@@ -70,12 +68,11 @@ fun AnimationScreen(
     Box {
         KMaP(
             modifier = Modifier.fillMaxSize(),
-            motionController = motionController,
             mapState = mapState,
         ) {
             canvas(
                 tileSource = SimpleMapTileSource()::getTile,
-                gestureDetection = getGestureDetector(motionController)
+                gestureDetection = getGestureDetector(mapState.motionController)
             )
         }
         Image(

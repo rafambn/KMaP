@@ -24,7 +24,6 @@ import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.core.KMaP
 import com.rafambn.kmap.core.DrawPosition
 import com.rafambn.kmap.components.MarkerParameters
-import com.rafambn.kmap.core.rememberMotionController
 import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
@@ -45,18 +44,16 @@ fun MarkersScreen(
     navigateBack: () -> Unit
 ) {
     Box {
-        val motionController = rememberMotionController()
         val mapState = rememberMapState(mapProperties = SimpleMapProperties())
         val markersList = remember { mutableStateListOf<MarkerParameters>() }
         var draggableMarkerPos by remember { mutableStateOf(Coordinates(-90.0, 20.0)) }
         KMaP(
             modifier = Modifier.align(Alignment.Center).fillMaxSize(),
-            motionController = motionController,
             mapState = mapState,
         ) {
             canvas(
                 tileSource = SimpleMapTileSource()::getTile,
-                gestureDetection = getGestureDetector(motionController)
+                gestureDetection = getGestureDetector(mapState.motionController)
             )
             marker(
                 marker = MarkerParameters(

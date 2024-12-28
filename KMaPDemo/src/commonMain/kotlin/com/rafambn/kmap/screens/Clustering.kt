@@ -16,7 +16,6 @@ import com.rafambn.kmap.core.KMaP
 import com.rafambn.kmap.components.ClusterParameters
 import com.rafambn.kmap.core.DrawPosition
 import com.rafambn.kmap.components.MarkerParameters
-import com.rafambn.kmap.core.rememberMotionController
 import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
@@ -30,17 +29,15 @@ import org.jetbrains.compose.resources.vectorResource
 fun ClusteringScreen(
     navigateBack: () -> Unit
 ) {
-    val motionController = rememberMotionController()
     val mapState = rememberMapState(mapProperties = SimpleMapProperties())
     Box {
         KMaP(
             modifier = Modifier.fillMaxSize(),
-            motionController = motionController,
             mapState = mapState,
         ) {
             canvas(
                 tileSource = SimpleMapTileSource()::getTile,
-                gestureDetection = getGestureDetector(motionController)
+                gestureDetection = getGestureDetector(mapState.motionController)
             )
             markers(
                 listOf(

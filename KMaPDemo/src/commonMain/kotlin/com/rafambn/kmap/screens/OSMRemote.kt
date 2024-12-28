@@ -12,7 +12,6 @@ import com.rafambn.kmap.core.KMaP
 import com.rafambn.kmap.mapProperties.border.BoundMapBorder
 import com.rafambn.kmap.mapProperties.border.MapBorderType
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
-import com.rafambn.kmap.core.rememberMotionController
 import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.OSMMapProperties
 import com.rafambn.kmap.customSources.OSMTileSource
@@ -25,7 +24,6 @@ import org.jetbrains.compose.resources.vectorResource
 fun OSMRemoteScreen(
     navigateBack: () -> Unit
 ) {
-    val motionController = rememberMotionController()
     val mapState = rememberMapState(
         mapProperties = OSMMapProperties(
             boundMap = BoundMapBorder(horizontal = MapBorderType.BOUND, vertical = MapBorderType.BOUND),
@@ -35,12 +33,11 @@ fun OSMRemoteScreen(
     Box {
         KMaP(
             modifier = Modifier.fillMaxSize(),
-            motionController = motionController,
             mapState = mapState,
         ) {
             canvas(
                 tileSource = OSMTileSource("com.rafambn.kmapdemoapp")::getTile,
-                gestureDetection = getGestureDetector(motionController)
+                gestureDetection = getGestureDetector(mapState.motionController)
             )
         }
         Image(

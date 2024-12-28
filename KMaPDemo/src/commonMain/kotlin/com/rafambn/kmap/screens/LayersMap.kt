@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.core.KMaP
 import com.rafambn.kmap.tiles.TileSource
-import com.rafambn.kmap.core.rememberMotionController
 import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
@@ -33,18 +32,16 @@ fun LayersScreen(
     navigateBack: () -> Unit
 ) {
     Box {
-        val motionController = rememberMotionController()
         val mapState = rememberMapState(mapProperties = SimpleMapProperties())
         var sliderPosition by remember { mutableStateOf(0f) }
 
         KMaP(
             modifier = Modifier.fillMaxSize(),
-            motionController = motionController,
             mapState = mapState,
         ) {
             canvas(
                 tileSource = SimpleMapTileSource()::getTile,
-                gestureDetection = getGestureDetector(motionController)
+                gestureDetection = getGestureDetector(mapState.motionController)
             )
             canvas(
                 alpha = sliderPosition,
