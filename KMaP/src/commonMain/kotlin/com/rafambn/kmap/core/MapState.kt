@@ -9,6 +9,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.Density
 import com.rafambn.kmap.mapProperties.MapProperties
+import com.rafambn.kmap.mapProperties.ZoomLevelRange
 import com.rafambn.kmap.mapProperties.border.MapBorderType
 import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.TilePoint
@@ -28,24 +29,27 @@ import kotlin.math.pow
 
 @Composable
 fun rememberMapState( //TODO add saveable
-    mapProperties: MapProperties
+    mapProperties: MapProperties,
+    zoomLevelPreference: ZoomLevelRange? = null
 ): MapState = remember {
-    MapState(mapProperties)
+    MapState(
+        mapProperties = mapProperties,
+        zoomLevelPreference = zoomLevelPreference
+    )
 }
 
 class MapState(
-    internal val mapProperties: MapProperties
+    internal val mapProperties: MapProperties,
+    zoomLevelPreference: ZoomLevelRange? = null
 ) {
     private var density: Density = Density(1F)
 
     //User define min/max zoom
-    var maxZoomPreference = mapProperties.zoomLevels.max
+    var zoomLevelPreference = zoomLevelPreference ?: mapProperties.zoomLevels
         set(value) {
-            field = value.coerceIn(mapProperties.zoomLevels.min, mapProperties.zoomLevels.max)
-        }
-    var minZoomPreference = mapProperties.zoomLevels.min
-        set(value) {
-            field = value.coerceIn(mapProperties.zoomLevels.min, mapProperties.zoomLevels.max)
+            if (value.max > mapProperties.zoomLevels.max || value.min < mapProperties.zoomLevels.min)
+                throw IllegalArgumentException("zoom level is out of bounds")
+            field = value
         }
 
     //State variables
@@ -89,7 +93,7 @@ class MapState(
         return TilePoint(x, y)
     }
 
-    private fun Float.coerceZoom(): Float = this.coerceIn(minZoomPreference.toFloat(), maxZoomPreference.toFloat())
+    private fun Float.coerceZoom(): Float = this.coerceIn(zoomLevelPreference.min.toFloat(), zoomLevelPreference.max.toFloat())
 
     fun centerPointAtOffset(tilePoint: TilePoint, offset: ScreenOffset) {
         setRawPosition(cameraState.tilePoint + tilePoint - offset.toTilePoint())
@@ -112,7 +116,7 @@ class MapState(
         .unaryMinus()
         .rotate(cameraState.angleDegrees.toRadians())
         .scale(
-            mapProperties.tileSize.width * 2F.pow(cameraState.zoom)/ mapProperties.tileSize.width.toDouble(),
+            mapProperties.tileSize.width * 2F.pow(cameraState.zoom) / mapProperties.tileSize.width.toDouble(),
             mapProperties.tileSize.height * 2F.pow(cameraState.zoom) / mapProperties.tileSize.height.toDouble()
         )
         .times(density.density.toDouble())
