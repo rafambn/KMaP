@@ -53,7 +53,7 @@ class MapState(
     var zoomLevelPreference = zoomLevelPreference ?: mapProperties.zoomLevels
         set(value) {
             if (value.max > mapProperties.zoomLevels.max || value.min < mapProperties.zoomLevels.min)
-                throw IllegalArgumentException("zoom level is out of bounds")
+                throw IllegalArgumentException("Zoom level is out of bounds")
             field = value
         }
 

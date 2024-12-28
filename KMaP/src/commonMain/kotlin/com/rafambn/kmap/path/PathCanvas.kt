@@ -8,8 +8,6 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.zIndex
@@ -34,7 +32,7 @@ internal fun PathCanvas(
     val densityScale = LocalDensity.current.density
     Layout(
         modifier = modifier
-            .then(pathComponent.gestureDetector?.let { Modifier.pointerInput(PointerEventPass.Main) { it(this) } } ?: Modifier)
+//            .then(pathComponent.gestureDetector?.let { Modifier.pointerInput(PointerEventPass.Main) { it(this) } } ?: Modifier)//TODO add path gesture
             .zIndex(pathComponent.zIndex)
             .graphicsLayer {
                 alpha = pathComponent.alpha
