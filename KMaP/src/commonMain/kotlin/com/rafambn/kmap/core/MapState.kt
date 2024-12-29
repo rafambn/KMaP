@@ -3,7 +3,8 @@ package com.rafambn.kmap.core
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.mapSaver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -30,22 +31,26 @@ import kotlin.math.pow
 
 @Composable
 fun rememberMapState(
-    //TODO add saveable
     mapProperties: MapProperties,
     zoomLevelPreference: ZoomLevelRange? = null,
     density: Density = LocalDensity.current,
-): MapState = remember {
-    MapState(
-        mapProperties = mapProperties,
-        zoomLevelPreference = zoomLevelPreference,
-        density = density,
-    )
-}
+): MapState = rememberSaveable(
+    saver = MapState.saver(mapProperties),
+    init = {
+        MapState(
+            mapProperties = mapProperties,
+            zoomLevelPreference = zoomLevelPreference,
+            density = density,
+            cameraState = null
+        )
+    }
+)
 
 class MapState(
     internal val mapProperties: MapProperties,
     zoomLevelPreference: ZoomLevelRange? = null,
     var density: Density = Density(1F),
+    cameraState: CameraState? = null
 ) {
     val motionController = MotionController(this)
 
@@ -59,7 +64,7 @@ class MapState(
 
     //State variables
     var cameraState by mutableStateOf(
-        CameraState(
+        cameraState ?: CameraState(
             tilePoint = TilePoint(mapProperties.tileSize.width / 2.0, mapProperties.tileSize.height / 2.0),
             coordinates = TilePoint(mapProperties.tileSize.width / 2.0, mapProperties.tileSize.height / 2.0).toCoordinates()
         )
@@ -183,6 +188,41 @@ class MapState(
         cameraState = cameraState.copy(
             tilePoint = coercedPoint,
             coordinates = coercedPoint.toCoordinates()
+        )
+    }
+
+    companion object {
+        fun saver(mapProperties: MapProperties) = mapSaver(
+            save = { mapState ->
+                mapOf(
+                    "zoomLevelPreference" to Pair(mapState.zoomLevelPreference.min, mapState.zoomLevelPreference.max),
+                    "density" to mapState.density.density,
+                    "canvasSize" to Pair(mapState.cameraState.canvasSize.x, mapState.cameraState.canvasSize.y),
+                    "zoom" to mapState.cameraState.zoom,
+                    "angleDegrees" to mapState.cameraState.angleDegrees,
+                    "coordinates" to Pair(mapState.cameraState.coordinates.longitude, mapState.cameraState.coordinates.latitude),
+                    "tilePoint" to Pair(mapState.cameraState.tilePoint.horizontal, mapState.cameraState.tilePoint.vertical),
+                )
+            },
+            restore = { map ->
+                MapState(
+                    mapProperties = mapProperties,
+                    zoomLevelPreference = (map["zoomLevelPreference"] as Pair<*, *>).let {
+                        object : ZoomLevelRange {
+                            override val max: Int = it.second as Int
+                            override val min: Int = it.first as Int
+                        }
+                    },
+                    density = Density(map["density"] as Float),
+                    cameraState = CameraState(
+                        canvasSize = (map["canvasSize"] as Pair<*, *>).let { ScreenOffset(it.first as Float, it.second as Float) },
+                        zoom = map["zoom"] as Float,
+                        angleDegrees = map["angleDegrees"] as Double,
+                        coordinates = (map["coordinates"] as Pair<*, *>).let { Coordinates(it.first as Double, it.second as Double) },
+                        tilePoint = (map["tilePoint"] as Pair<*, *>).let { TilePoint(it.first as Double, it.second as Double) },
+                    )
+                )
+            }
         )
     }
 }

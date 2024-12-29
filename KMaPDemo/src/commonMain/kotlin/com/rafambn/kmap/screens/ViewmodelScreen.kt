@@ -10,7 +10,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
+import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.rafambn.kmap.core.KMaP
 import com.rafambn.kmap.core.MapState
@@ -49,9 +52,16 @@ fun ViewmodelScreen(
     }
 }
 
-class MyViewmodel: ViewModel() {
-    val mapState = MapState(
-        mapProperties = SimpleMapProperties(),
-        zoomLevelPreference = null
+class MyViewmodel(savedStateHandle: SavedStateHandle) : ViewModel() {
+    @OptIn(SavedStateHandleSaveableApi::class)
+    val mapState = savedStateHandle.saveable(
+        key = "mapState",
+        saver = MapState.saver(SimpleMapProperties()),
+        init = {
+            MapState(
+                mapProperties = SimpleMapProperties(),
+                zoomLevelPreference = null
+            )
+        }
     )
 }
