@@ -16,7 +16,8 @@ fun StartScreen(
     navigatePath: () -> Unit,
     navigateAnimation: () -> Unit,
     navigateOSM: () -> Unit,
-    navigateClustering: () -> Unit
+    navigateClustering: () -> Unit,
+    navigateSavedStateHandle: () -> Unit,
 ) {
     val columnItems = listOf(
         Pair(navigateSimpleMap, "SimpleMap"),
@@ -26,6 +27,8 @@ fun StartScreen(
         Pair(navigateAnimation, "Animations"),
         Pair(navigateOSM, "Remote with Open Street Maps"),
         Pair(navigateClustering, "Clustering"),
+        Pair(navigateClustering, "Clustering"),
+        Pair(navigateSavedStateHandle, "SavedStateHandle with ViewModel"),
     )
     LazyColumn(
         horizontalAlignment = Alignment.CenterHorizontally,

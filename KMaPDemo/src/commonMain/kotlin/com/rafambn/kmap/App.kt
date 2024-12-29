@@ -23,6 +23,7 @@ import com.rafambn.kmap.screens.OSMRemoteScreen
 import com.rafambn.kmap.screens.PathScreen
 import com.rafambn.kmap.screens.SimpleMapScreen
 import com.rafambn.kmap.screens.StartScreen
+import com.rafambn.kmap.screens.ViewmodelScreen
 import com.rafambn.kmap.theme.AppTheme
 import com.rafambn.kmap.utils.asDifferentialScreenOffset
 
@@ -55,6 +56,7 @@ fun App() = AppTheme {
                     navigateAnimation = { navigationController.navigate(Routes.Animation) },
                     navigateOSM = { navigationController.navigate(Routes.OSMRemote) },
                     navigateClustering = { navigationController.navigate(Routes.Clustering) },
+                    navigateSavedStateHandle = { navigationController.navigate(Routes.SavedStateHandle) },
                 )
             }
             composable<Routes.Simple> {
@@ -89,6 +91,11 @@ fun App() = AppTheme {
             }
             composable<Routes.Clustering> {
                 ClusteringScreen(
+                    navigateBack = { navigationController.popBackStack() }
+                )
+            }
+            composable<Routes.SavedStateHandle> {
+                ViewmodelScreen(
                     navigateBack = { navigationController.popBackStack() }
                 )
             }
