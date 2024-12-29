@@ -1,15 +1,15 @@
 package com.rafambn.kmap.tiles
 
-import com.rafambn.kmap.core.BoundingBox
+import androidx.compose.ui.geometry.Offset
+import com.rafambn.kmap.core.ViewPort
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
-import com.rafambn.kmap.utils.TilePoint
 import com.rafambn.kmap.utils.toIntFloor
 import kotlin.math.pow
 
 class TileFinder {
 
     fun getVisibleTilesForLevel(
-        viewPort: BoundingBox,
+        viewPort: ViewPort,
         zoomLevel: Int,
         outsideTilesType: OutsideTilesType,
         tileDimension: TileDimension
@@ -69,8 +69,8 @@ class TileFinder {
         return visibleTileSpecs
     }
 
-    private fun getXYTile(position: TilePoint, zoomLevel: Int, tileDimension: TileDimension): Pair<Int, Int> = Pair(
-        (position.horizontal / tileDimension.width * (1 shl zoomLevel)).toIntFloor(),
-        (position.vertical / tileDimension.height * (1 shl zoomLevel)).toIntFloor()
+    private fun getXYTile(position: Offset, zoomLevel: Int, tileDimension: TileDimension): Pair<Int, Int> = Pair(
+        (position.x / tileDimension.width * (1 shl zoomLevel)).toIntFloor(),
+        (position.y / tileDimension.height * (1 shl zoomLevel)).toIntFloor()
     )
 }

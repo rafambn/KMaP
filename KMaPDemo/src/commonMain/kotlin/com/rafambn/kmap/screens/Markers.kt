@@ -142,7 +142,7 @@ fun MarkersScreen(
                 )
             ) {
                 Text(
-                    text = "Draggable marker  ${it.coordinates}",
+                    text = "Draggable marker Coordinates(${it.coordinates.longitude.toInt()}, ${it.coordinates.latitude.toInt()})",
                     modifier = Modifier
                         .background(Color.Black)
                         .padding(16.dp)

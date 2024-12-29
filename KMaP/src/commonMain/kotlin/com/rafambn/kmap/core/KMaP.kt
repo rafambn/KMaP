@@ -27,7 +27,7 @@ fun KMaP(
             cameraState = mapState.cameraState,
             mapProperties = mapState.mapProperties,
             positionOffset = mapState.drawReference,
-            boundingBox = mapState.boundingBox,
+            viewPort = mapState.viewPort,
             canvasComponent = it,
             modifier = modifier
                 .onGloballyPositioned { coordinates ->

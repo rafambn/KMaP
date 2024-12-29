@@ -4,6 +4,9 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.layout.LazyLayoutMeasureScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.unit.Constraints
@@ -11,7 +14,8 @@ import androidx.compose.ui.util.fastForEach
 import com.rafambn.kmap.components.MarkerParameters
 import com.rafambn.kmap.core.MapState
 import com.rafambn.kmap.core.getViewPort
-import com.rafambn.kmap.core.isViewPortIntersecting
+import com.rafambn.kmap.utils.asOffset
+import com.rafambn.kmap.utils.asScreenOffset
 
 @ExperimentalFoundationApi
 @Composable
@@ -63,7 +67,10 @@ internal fun measureComponent(
             measuredComponents.add(measuredItemProvider.getAndMeasure(index))
         }
 
-        val mapViewPort = mapState.viewPort
+        val mapViewPort = Rect(
+            Offset.Zero,
+            Size(mapState.cameraState.canvasSize.x, mapState.cameraState.canvasSize.y)
+        )
         measuredComponents.forEach { measuredComponent ->
             require(measuredComponent.parameters is MarkerParameters)
             measuredComponent.offset = with(mapState) {
@@ -73,9 +80,9 @@ internal fun measureComponent(
                 measuredComponent.parameters.drawPosition,
                 measuredComponent.maxWidth.toFloat(),
                 measuredComponent.maxHeight.toFloat(),
-                measuredComponent.offset
+                measuredComponent.offset.asOffset()
             )
-            if (mapViewPort.isViewPortIntersecting(measuredComponent.viewPort)) {
+            if (mapViewPort.overlaps(measuredComponent.viewPort)) {
                 if (measuredComponent.parameters.clusterId != null) {
                     val map = itemsThatCanClusterMap[measuredComponent.parameters.clusterId]
                     map?.let {
@@ -116,7 +123,7 @@ private fun clusterComponents(
     for (measuredComponent in measuredComponents) {
         if (measuredComponent !in visited) {
             visited.add(measuredComponent)
-            val intersecting = measuredComponents.filter { it.viewPort.isViewPortIntersecting(measuredComponent.viewPort) && !visited.contains(it) }
+            val intersecting = measuredComponents.filter { it.viewPort.overlaps(measuredComponent.viewPort) && !visited.contains(it) }
             if (intersecting.isNotEmpty())
                 expandCluster(measuredComponent, intersecting, clusters, visited, measuredItemProvider, markersCount)
             else
@@ -135,15 +142,15 @@ private fun expandCluster(
     markersCount: Int,
 ) {
     var size = 1
-    var avgOffset = measuredComponent.viewPort.origin
+    var avgOffset = measuredComponent.viewPort.topLeft
     val queue = intersecting.toMutableList()
     while (queue.isNotEmpty()) {
         val current = queue.removeAt(0)
         visited.add(current)
         size++
-        avgOffset += current.viewPort.origin
+        avgOffset += current.viewPort.topLeft
     }
     val cluster = measuredItemProvider.getAndMeasure(measuredComponent.index + markersCount)
-    cluster.offset = avgOffset / size.toFloat()
+    cluster.offset = (avgOffset / size.toFloat()).asScreenOffset()
     clusters.add(cluster)
 }

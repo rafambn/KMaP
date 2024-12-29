@@ -6,7 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import com.rafambn.kmap.mapProperties.MapProperties
@@ -72,19 +72,19 @@ class MapState(
         get() = cameraState.zoom.toIntFloor()
 
     //Utility functions
-    val boundingBox
-        get() = BoundingBox(
-            ScreenOffset.Zero.toTilePoint(),
-            ScreenOffset(cameraState.canvasSize.x, 0F).toTilePoint(),
-            cameraState.canvasSize.toTilePoint(),
-            ScreenOffset(0F, cameraState.canvasSize.y).toTilePoint(),
-        )
-
     val viewPort
-        get() = ViewPort(
-            ScreenOffset.Zero,
-            Size(cameraState.canvasSize.x, cameraState.canvasSize.y)
-        )
+        get() = {
+            val topLeft = ScreenOffset.Zero.toTilePoint()
+            val topRight = ScreenOffset(cameraState.canvasSize.x, 0F).toTilePoint()
+            val bottomLeft = ScreenOffset(0F, cameraState.canvasSize.y).toTilePoint()
+            val bottomRight = cameraState.canvasSize.toTilePoint()
+            Rect(
+                minOf(topLeft.horizontal, topRight.horizontal, bottomLeft.horizontal, bottomRight.horizontal).toFloat(),
+                minOf(topLeft.vertical, topRight.vertical, bottomLeft.vertical, bottomRight.vertical).toFloat(),
+                maxOf(topLeft.horizontal, topRight.horizontal, bottomLeft.horizontal, bottomRight.horizontal).toFloat(),
+                maxOf(topLeft.vertical, topRight.vertical, bottomLeft.vertical, bottomRight.vertical).toFloat()
+            )
+        }.invoke()
 
     private fun TilePoint.coerceInMap(): TilePoint {
         val x = if (mapProperties.boundMap.horizontal == MapBorderType.BOUND)
