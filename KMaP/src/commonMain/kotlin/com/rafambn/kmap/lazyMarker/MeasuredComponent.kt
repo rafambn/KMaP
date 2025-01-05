@@ -1,4 +1,4 @@
-package com.rafambn.kmap.lazy
+package com.rafambn.kmap.lazyMarker
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect

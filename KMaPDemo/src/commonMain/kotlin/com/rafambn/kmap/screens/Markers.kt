@@ -28,8 +28,8 @@ import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
 import com.rafambn.kmap.getGestureDetector
-import com.rafambn.kmap.lazy.marker
-import com.rafambn.kmap.lazy.markers
+import com.rafambn.kmap.lazyMarker.marker
+import com.rafambn.kmap.lazyMarker.markers
 import com.rafambn.kmap.utils.Coordinates
 import com.rafambn.kmap.utils.asDifferentialScreenOffset
 import kmap.kmapdemo.generated.resources.Res

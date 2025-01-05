@@ -39,5 +39,5 @@ data class PathComponent(
     val style: DrawStyle = Fill,
     val colorFilter: ColorFilter? = null,
     val blendMode: BlendMode = DefaultBlendMode,
-    val gestureDetector: (suspend PointerInputScope.() -> Unit)? = null,
+//    val gestureDetector: (suspend PointerInputScope.() -> Unit)? = null,
 )

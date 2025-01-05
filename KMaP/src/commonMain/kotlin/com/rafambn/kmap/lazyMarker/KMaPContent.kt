@@ -1,4 +1,4 @@
-package com.rafambn.kmap.lazy
+package com.rafambn.kmap.lazyMarker
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.BlendMode
@@ -62,7 +62,7 @@ class KMaPContent(
         style: DrawStyle,
         colorFilter: ColorFilter?,
         blendMode: BlendMode,
-        gestureDetection: (suspend PointerInputScope.() -> Unit)?
+//        gestureDetection: (suspend PointerInputScope.() -> Unit)?
     ) {
         paths.add(
             PathComponent(
@@ -74,7 +74,7 @@ class KMaPContent(
                 style,
                 colorFilter,
                 blendMode,
-                gestureDetection
+//                gestureDetection
             )
         )
     }

@@ -1,4 +1,4 @@
-package com.rafambn.kmap.lazy
+package com.rafambn.kmap.lazyMarker
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.BlendMode
@@ -48,7 +48,7 @@ interface KMaPScope {
         style: DrawStyle = Fill,
         colorFilter: ColorFilter? = null,
         blendMode: BlendMode = DefaultBlendMode,
-        gestureDetection: (suspend PointerInputScope.() -> Unit)? = null
+//        gestureDetection: (suspend PointerInputScope.() -> Unit)? = null
     )
 }
 

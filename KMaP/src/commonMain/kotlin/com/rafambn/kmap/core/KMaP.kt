@@ -8,9 +8,9 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.onGloballyPositioned
 import com.rafambn.kmap.tiles.TileCanvas
-import com.rafambn.kmap.lazy.KMaPScope
-import com.rafambn.kmap.lazy.rememberComponentProviderLambda
-import com.rafambn.kmap.lazy.rememberComponentMeasurePolicy
+import com.rafambn.kmap.lazyMarker.KMaPScope
+import com.rafambn.kmap.lazyMarker.rememberComponentProviderLambda
+import com.rafambn.kmap.lazyMarker.rememberComponentMeasurePolicy
 import com.rafambn.kmap.path.PathCanvas
 
 @OptIn(ExperimentalFoundationApi::class)
