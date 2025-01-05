@@ -144,8 +144,6 @@ fun MarkersScreen(
                 Text(
                     text = "Draggable marker Coordinates(${it.coordinates.longitude.toInt()}, ${it.coordinates.latitude.toInt()})",
                     modifier = Modifier
-                        .background(Color.Black)
-                        .padding(16.dp)
                         .pointerInput(Unit) {
                             detectDragGestures { change, dragAmount ->
                                 with(mapState) {
@@ -154,7 +152,9 @@ fun MarkersScreen(
                                         (draggableMarkerPos.toTilePoint() - dragAmount.asDifferentialScreenOffset().toTilePoint()).toCoordinates()
                                 }
                             }
-                        },
+                        }
+                        .background(Color.Black)
+                        .padding(16.dp),
                     color = Color.White
                 )
             }

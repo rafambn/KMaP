@@ -172,6 +172,8 @@ class MapState(
     }
 
     fun setCanvasSize(offset: Offset) {
+        if (offset.asScreenOffset() == cameraState.canvasSize)
+            return
         cameraState = cameraState.copy(canvasSize = offset.asScreenOffset())
     }
 

@@ -27,7 +27,6 @@ fun StartScreen(
         Pair(navigateAnimation, "Animations"),
         Pair(navigateOSM, "Remote with Open Street Maps"),
         Pair(navigateClustering, "Clustering"),
-        Pair(navigateClustering, "Clustering"),
         Pair(navigateSavedStateHandle, "SavedStateHandle with ViewModel"),
     )
     LazyColumn(

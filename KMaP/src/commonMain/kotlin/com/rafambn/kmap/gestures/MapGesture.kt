@@ -31,7 +31,7 @@ suspend fun PointerInputScope.detectMapGestures(
     onLongPress: ((screenOffset: ScreenOffset) -> Unit)? = null,
     onTapLongPress: ((screenOffset: ScreenOffset) -> Unit)? = null,
     onTapSwipe: ((zoom: Float) -> Unit)? = null,
-    onDrag: ((screenOffsetDiff: DifferentialScreenOffset) -> Unit)? = null,
+    onDrag: ((screenOffsetDiff: DifferentialScreenOffset) -> Unit)? = null,//TODO merge drag on mobile and move to common use
 
     // mobile use
     onTwoFingersTap: ((screenOffset: ScreenOffset) -> Unit)? = null,
