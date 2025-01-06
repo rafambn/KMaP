@@ -1,6 +1,3 @@
----
-hide: toc
----
 
 # Overview
 
