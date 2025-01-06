@@ -40,12 +40,12 @@ data class Coordinates(val longitude: Double, val latitude: Double) : Reference 
     }
 }
 
-data class DifferentialScreenOffset(val x: Float, val y: Float) : Reference {
-    operator fun plus(reference: DifferentialScreenOffset) = DifferentialScreenOffset(x + reference.x, y + reference.y)
-    operator fun unaryMinus() = DifferentialScreenOffset(-x, -y)
-    operator fun minus(reference: DifferentialScreenOffset) = DifferentialScreenOffset(x - reference.x, y - reference.y)
-    operator fun times(value: Number) = DifferentialScreenOffset(x * value.toFloat(), y * value.toFloat())
-    operator fun div(value: Number) = DifferentialScreenOffset(x / value.toFloat(), y / value.toFloat())
+data class DifferentialScreenOffset(val dx: Float, val dy: Float) : Reference {
+    operator fun plus(reference: DifferentialScreenOffset) = DifferentialScreenOffset(dx + reference.dx, dy + reference.dy)
+    operator fun unaryMinus() = DifferentialScreenOffset(-dx, -dy)
+    operator fun minus(reference: DifferentialScreenOffset) = DifferentialScreenOffset(dx - reference.dx, dy - reference.dy)
+    operator fun times(value: Number) = DifferentialScreenOffset(dx * value.toFloat(), dy * value.toFloat())
+    operator fun div(value: Number) = DifferentialScreenOffset(dx / value.toFloat(), dy / value.toFloat())
     companion object {
         val Zero: DifferentialScreenOffset = DifferentialScreenOffset(0F, 0F)
     }
@@ -65,7 +65,7 @@ fun TilePoint.asCanvasDrawReference() = CanvasDrawReference(this.horizontal, thi
 fun Offset.asScreenOffset() = ScreenOffset(this.x, this.y)
 fun Offset.asDifferentialScreenOffset() = DifferentialScreenOffset(this.x, this.y)
 
-fun DifferentialScreenOffset.asCanvasPosition() = TilePoint(this.x.toDouble(), this.y.toDouble())
+fun DifferentialScreenOffset.asCanvasPosition() = TilePoint(this.dx.toDouble(), this.dy.toDouble())
 
 fun ScreenOffset.asOffset() = Offset(this.x, this.y)
 fun ScreenOffset.asDifferentialScreenOffset() = DifferentialScreenOffset(this.x, this.y)
