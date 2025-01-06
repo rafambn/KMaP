@@ -10,5 +10,3 @@ fun main() {
         App()
     }
 }
-
-actual val scrollScale = 500
