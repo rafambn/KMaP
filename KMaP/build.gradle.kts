@@ -1,34 +1,22 @@
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.multiplatform)
     alias(libs.plugins.compose)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.android.library)
-    id("maven-publish")
 }
 
-group = "com.rafambn.kmap"
+group = "com.rafambn"
 version = "0.1.0"
 
 kotlin {
     withSourcesJar(publish = false)
     jvmToolchain(11)
-    androidTarget {
-        compilations.all {
-            compileTaskProvider {
-                compilerOptions {
-                    jvmTarget.set(JvmTarget.JVM_11)
-                    freeCompilerArgs.add("-Xjdk-release=${JavaVersion.VERSION_11}")
-                }
-            }
-        }
-    }
 
+    androidTarget{ publishLibraryVariants("release") }
     jvm()
-
-    js {
+    js(IR) {
         browser {
             webpackTask {
                 mainOutputFileName = "KMaP.js"
@@ -36,13 +24,11 @@ kotlin {
         }
         binaries.executable()
     }
-
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         browser()
         binaries.executable()
     }
-
     listOf(
         iosX64(),
         iosArm64(),
@@ -73,21 +59,10 @@ kotlin {
 }
 
 android {
-    namespace = "com.rafambn.kmap"
+    namespace = "com.rafambn"
     compileSdk = 35
 
     defaultConfig {
         minSdk = 24
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-}
-
-publishing {
-    repositories {
-        maven {
-        }
     }
 }

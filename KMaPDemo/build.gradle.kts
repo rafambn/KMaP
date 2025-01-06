@@ -13,24 +13,13 @@ plugins {
 
 kotlin {
     jvmToolchain(11)
-    androidTarget {
-        compilations.all {
-            compileTaskProvider {
-                compilerOptions {
-                    jvmTarget.set(JvmTarget.JVM_11)
-                    freeCompilerArgs.add("-Xjdk-release=${JavaVersion.VERSION_11}")
-                }
-            }
-        }
-    }
 
+    androidTarget()
     jvm()
-
     js {
         browser()
         binaries.executable()
     }
-
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         browser {
@@ -41,8 +30,6 @@ kotlin {
         }
         binaries.executable()
     }
-
-
     listOf(
         iosX64(),
         iosArm64(),
@@ -100,7 +87,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.rafambn.kmapdemo"
+    namespace = "com.rafambn"
     compileSdk = 35
 
     defaultConfig {
@@ -109,7 +96,7 @@ android {
 
         applicationId = "com.rafambn.kmapdemo"
         versionCode = 1
-        versionName = "1.0.0"
+        versionName = "0.1.0"
     }
 }
 
