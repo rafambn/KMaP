@@ -26,4 +26,7 @@ sealed interface Routes {
 
     @Serializable
     data object Clustering
+
+    @Serializable
+    data object SavedStateHandle
 }

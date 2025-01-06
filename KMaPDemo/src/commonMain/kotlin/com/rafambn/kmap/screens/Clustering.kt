@@ -16,58 +16,38 @@ import com.rafambn.kmap.core.KMaP
 import com.rafambn.kmap.components.ClusterParameters
 import com.rafambn.kmap.core.DrawPosition
 import com.rafambn.kmap.components.MarkerParameters
-import com.rafambn.kmap.core.rememberMotionController
 import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
-import com.rafambn.kmap.gestures.detectMapGestures
-import com.rafambn.kmap.utils.ProjectedCoordinates
-import com.rafambn.kmap.utils.asDifferentialScreenOffset
+import com.rafambn.kmap.getGestureDetector
+import com.rafambn.kmap.utils.Coordinates
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import org.jetbrains.compose.resources.vectorResource
-
 
 @Composable
 fun ClusteringScreen(
     navigateBack: () -> Unit
 ) {
-    val motionController = rememberMotionController()
     val mapState = rememberMapState(mapProperties = SimpleMapProperties())
     Box {
         KMaP(
             modifier = Modifier.fillMaxSize(),
-            motionController = motionController,
             mapState = mapState,
         ) {
-            canvas(tileSource = SimpleMapTileSource()::getTile,
-                gestureDetection = {
-                    detectMapGestures(
-                        onDoubleTap = { offset -> motionController.move { zoomByCentered(-1 / 3F, offset) } },
-                        onTapLongPress = { offset -> motionController.move { positionBy(offset.asDifferentialScreenOffset()) } },
-                        onTapSwipe = { zoom -> motionController.move { zoomBy(zoom / 100) } },
-                        onDrag = { dragAmount -> motionController.move { positionBy(dragAmount) } },
-                        onTwoFingersTap = { offset -> motionController.move { zoomByCentered(1 / 3F, offset) } },
-                        onGesture = { centroid, pan, zoom, rotation ->
-                            motionController.move {
-                                rotateByCentered(rotation.toDouble(), centroid)
-                                zoomByCentered(zoom, centroid)
-                                positionBy(pan)
-                            }
-                        },
-                        onScroll = { mouseOffset, scrollAmount -> motionController.move { zoomByCentered(scrollAmount, mouseOffset) } },
-                        onCtrlGesture = { rotation -> motionController.move { rotateBy(rotation.toDouble()) } },
-                    )
-                })
+            canvas(
+                tileSource = SimpleMapTileSource()::getTile,
+                gestureDetection = getGestureDetector(mapState.motionController)
+            )
             markers(
                 listOf(
                     MarkerParameters(
-                        ProjectedCoordinates(0.0, 0.0),
+                        Coordinates(0.0, 0.0),
                         drawPosition = DrawPosition.CENTER,
                         clusterId = 1
                     ),
                     MarkerParameters(
-                        ProjectedCoordinates(18.0, 0.0),
+                        Coordinates(18.0, 0.0),
                         drawPosition = DrawPosition.CENTER,
                         clusterId = 1
                     )
@@ -83,7 +63,7 @@ fun ClusteringScreen(
             }
             marker(
                 MarkerParameters(
-                    ProjectedCoordinates(0.0, 3.0),
+                    Coordinates(0.0, 3.0),
                     drawPosition = DrawPosition.CENTER,
                     clusterId = 1
                 )
@@ -98,7 +78,7 @@ fun ClusteringScreen(
             }
             marker(
                 MarkerParameters(
-                    ProjectedCoordinates(15.0, -20.0),
+                    Coordinates(15.0, -20.0),
                     drawPosition = DrawPosition.CENTER,
                     clusterId = 2
                 )
@@ -113,7 +93,7 @@ fun ClusteringScreen(
             }
             marker(
                 MarkerParameters(
-                    ProjectedCoordinates(0.0, -20.0),
+                    Coordinates(0.0, -20.0),
                     drawPosition = DrawPosition.CENTER,
                     clusterId = 1
                 )
@@ -127,8 +107,8 @@ fun ClusteringScreen(
                 )
             }
             cluster(
-                ClusterParameters(id = 1,)
-            ) { _,->
+                ClusterParameters(id = 1)
+            ) {
                 Text(
                     text = "Cluster tag 1",
                     modifier = Modifier

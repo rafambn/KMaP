@@ -1,6 +1,4 @@
-package com.rafambn.kmap.mapProperties
-
-import com.rafambn.kmap.tiles.TileRenderResult
+package com.rafambn.kmap.tiles
 
 interface TileSource {
     suspend fun getTile(zoom: Int, row: Int, column: Int): TileRenderResult

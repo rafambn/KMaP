@@ -13,12 +13,12 @@ fun Radians.toDegrees(): Degrees = this * 180 / PI
 
 fun Degrees.modulo(): Degrees = this.mod(180.0)
 
-fun CanvasPosition.rotate(radians: Radians): CanvasPosition = CanvasPosition(
+fun TilePoint.rotate(radians: Radians): TilePoint = TilePoint(
     this.horizontal * cos(radians) - this.vertical * sin(radians),
     this.horizontal * sin(radians) + this.vertical * cos(radians)
 )
 
-fun CanvasPosition.rotateCentered(centerOffset: CanvasPosition, radians: Radians): CanvasPosition = CanvasPosition(
+fun TilePoint.rotateCentered(centerOffset: TilePoint, radians: Radians): TilePoint = TilePoint(
     centerOffset.horizontal + (horizontal - centerOffset.horizontal) * cos(radians) - (vertical - centerOffset.vertical) * sin(
         radians
     ),

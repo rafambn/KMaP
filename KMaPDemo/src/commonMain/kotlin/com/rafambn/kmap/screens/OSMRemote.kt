@@ -12,12 +12,10 @@ import com.rafambn.kmap.core.KMaP
 import com.rafambn.kmap.mapProperties.border.BoundMapBorder
 import com.rafambn.kmap.mapProperties.border.MapBorderType
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
-import com.rafambn.kmap.core.rememberMotionController
 import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.OSMMapProperties
 import com.rafambn.kmap.customSources.OSMTileSource
-import com.rafambn.kmap.gestures.detectMapGestures
-import com.rafambn.kmap.utils.asDifferentialScreenOffset
+import com.rafambn.kmap.getGestureDetector
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import org.jetbrains.compose.resources.vectorResource
@@ -26,38 +24,21 @@ import org.jetbrains.compose.resources.vectorResource
 fun OSMRemoteScreen(
     navigateBack: () -> Unit
 ) {
-    val motionController = rememberMotionController()
     val mapState = rememberMapState(
         mapProperties = OSMMapProperties(
-            boundMap = BoundMapBorder(horizontal = MapBorderType.LOOP, vertical = MapBorderType.LOOP),
-            outsideTiles = OutsideTilesType.LOOP
+            boundMap = BoundMapBorder(horizontal = MapBorderType.BOUND, vertical = MapBorderType.BOUND),
+            outsideTiles = OutsideTilesType.NONE
         )
     )
     Box {
         KMaP(
             modifier = Modifier.fillMaxSize(),
-            motionController = motionController,
             mapState = mapState,
         ) {
-            canvas(tileSource = OSMTileSource("com.rafambn.kmapdemoapp")::getTile,
-                gestureDetection = {
-                    detectMapGestures(
-                        onDoubleTap = { offset -> motionController.move { zoomByCentered(-1 / 3F, offset) } },
-                        onTapLongPress = { offset -> motionController.move { positionBy(offset.asDifferentialScreenOffset()) } },
-                        onTapSwipe = { zoom -> motionController.move { zoomBy(zoom / 100) } },
-                        onDrag = { dragAmount -> motionController.move { positionBy(dragAmount) } },
-                        onTwoFingersTap = { offset -> motionController.move { zoomByCentered(1 / 3F, offset) } },
-                        onGesture = { centroid, pan, zoom, rotation ->
-                            motionController.move {
-                                rotateByCentered(rotation.toDouble(), centroid)
-                                zoomByCentered(zoom, centroid)
-                                positionBy(pan)
-                            }
-                        },
-                        onScroll = { mouseOffset, scrollAmount -> motionController.move { zoomByCentered(scrollAmount, mouseOffset) } },
-                        onCtrlGesture = { rotation -> motionController.move { rotateBy(rotation.toDouble()) } },
-                    )
-                })
+            canvas(
+                tileSource = OSMTileSource("com.rafambn.kmapdemoapp")::getTile,
+                gestureDetection = getGestureDetector(mapState.motionController)
+            )
         }
         Image(
             imageVector = vectorResource(Res.drawable.back_arrow),

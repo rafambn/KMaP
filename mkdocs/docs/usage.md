@@ -2,57 +2,69 @@
 
 Here is a basic implementation of KMaP where it uses the OpenStreetMaps tile generation to show the map on the screen.
 
-The following Kotlin code demonstrates how to set up a motion controller and map state using the KMaP component. 
+You can encounter a demoApp on the [KMaP Repo](https://github.com/rafambn/KMaP). 
 
 ```kotlin
-val motionController = rememberMotionController()
-val mapState = rememberMapState(mapProperties = OSMMapProperties())
 KMaP(
     modifier = Modifier.size(300.dp, 600.dp),
-    motionController = motionController,
     mapState = mapState,
-    canvasGestureListener = DefaultCanvasGestureListener()
 ) {
-    canvas(tileSource =  OSMTileSource::getTile)
+    canvas(
+        tileSource = OSMMapTileSource()::getTile,
+        gestureDetection = {
+            detectMapGestures(
+                onDrag = { dragAmount -> motionController.move { positionBy(dragAmount) } },
+                onScroll = { mouseOffset, scrollAmount ->
+                    motionController.move { zoomByCentered(scrollAmount, mouseOffset) }
+                },
+                onCtrlGesture = { rotation -> motionController.move { rotateBy(rotation.toDouble()) } },
+            )
+        }
+    )
 }
 ```
 
 ## How it Works
 
-There are 4 components of the KMaP: MotionController, MapState, CanvasGestureListener and the Canvas.
+There are 4 components of the KMaP: MotionController, MapState, Tile Canvas, LazyMarkers and the Path Canvas .
 
-* **MotionController**: Handle the movement of the map like zooming, panning, and rotating for either user input or app input.
+* **MotionController**: Handle the movement of the map like zooming, panning, and rotating for either user or app input.
 * **MapState**: Control all properties of the map and defines the visible tiles for canvas rendering.
-* **CanvasGestureListener**: Takes user inputs and process it to perform an action on the MotionController.
-* **Canvas**: Render the visible tiles provide by the MapState based on a define the tile source, in this case above,
-using OSMTileSource::getTile built-in function.
+* **Tile Canvas**: Render the visible tiles provide by the MapState based on a define the tile source, in this case above,
+using OSMTileSource::getTile example function.
+* **Lazy Markers**: Render all visible markers lazily while clustering them if wanted.
+* **Path Canvas**: Render all provided path's.
 
 
 ## MapState
 
-This is where all the magic happen. It expects an implementation MapProperties interface that will tell how the map will
+This is where almost all the important stuff is. It expects an implementation MapProperties interface that will tell how the map will
 behave for example: tile size, zoom level and projection transformation function.
 ```kotlin
 interface MapProperties {
     val boundMap: BoundMapBorder
     val outsideTiles: OutsideTilesType
-    val zoomLevels: MapZoomLevelsRange
-    val mapCoordinatesRange: MapCoordinatesRange
-    val tileSize: Int
+    val zoomLevels: ZoomLevelRange
+    val coordinatesRange: CoordinatesRange
+    val tileSize: TileDimension
 
-    fun toCanvasPosition(projectedCoordinates: ProjectedCoordinates): CanvasPosition
+    fun toTilePoint(coordinates: Coordinates): TilePoint
 
-    fun toProjectedCoordinates(canvasPosition: CanvasPosition): ProjectedCoordinates
+    fun toCoordinates(tilePoint: TilePoint): Coordinates
 }
 ```
-It will hold the angle, zoom, position variables and calculate the visible tiles so that each canvas could render its 
+It will also hold the angle, zoom, position variables that can be used by the user display map info.
+The MapState also calculate the visible tiles so that each canvas could render its
 own images.
-
-## GestureListener
-
-This open class is a basic implementation for handling user input, on the canvas only, like tap's, drag's and hover's, 
-and will interface with the MotionController to perform the desired action. If the developer desires it can override 
-this class and add its own custom actions while retaining if wanted the other functionalities.
+```kotlin
+data class CameraState(
+    val canvasSize: ScreenOffset = ScreenOffset.Zero,
+    val zoom: Float = 0F,
+    val angleDegrees: Double = 0.0,
+    val coordinates: Coordinates,
+    internal val tilePoint: TilePoint
+)
+```
 
 ## MotionController
 
@@ -60,53 +72,61 @@ It's responsible for handling the movement of the map like zooming, panning, and
 
 It has 3 movement options:
 
-* Set: This will set the map parameters with the provided values
-* Scroll: This will add/remove the provided values from the map parameters
+* Move: This will set/add/remove the provided values on the map parameters
 * Animate: This will animate the map parameters to the provided value
 
-While Set and Scroll are Synchronous the Animate is Async and thus must be launched from a coroutine.
+While Move are Synchronous the Animate is Async and thus must be launched from a coroutine.
 
 ### Center Location
 
-Before seeing how to set, scroll and animate you have to be aware of the CenterLocation. It's a sealed class of the Motion Controller
+Before seeing how to move and animate you have to be aware of the CenterLocation. It's a sealed class of the Motion Controller
 that indicates reference points on the screen.
 
 ```kotlin
+sealed interface Reference
+
 sealed class CenterLocation {
-    data class Position(val position: CanvasPosition) : CenterLocation()
-    data class Coordinates(val projectedCoordinates: ProjectedCoordinates) : CenterLocation()
-    data class Offset(val offset: ScreenOffset) : CenterLocation()
+    data class TilePoint(val horizontal: Double, val vertical: Double) : Reference
+    data class Coordinates(val longitude: Double, val latitude: Double) : Reference
+    data class ScreenOffset(val x: Float, val y: Float) : Reference
+    data class DifferentialScreenOffset(val dx: Float, val dy: Float) : Reference
 }
 ```
 
-* Position represents a coordinates of the map without applying the projection
+* TilePoint represents a pixel on the map without projection
 * Coordinates represents a coordinates of the map
-* Offset represents a screen offset with 0 - 0 located on the top left part of the screen
+* ScreenOffset represents a screen offset with 0 - 0 located on the top left part of the screen
+* DifferentialScreenOffset is the same as ScreenOffset but is differential
 
-### Set and Scroll
+### Move
 
-Set and Scroll has its own scoped interface so it can only perform the following actions
+Move has its own scoped interface so it can only perform the following actions
 
 ```kotlin
 interface MoveInterface {
-        fun center(center: CenterLocation)
-        fun zoom(zoom: Float)
-        fun zoomCentered(zoom: Float, center: CenterLocation)
-        fun angle(degrees: Double)
-        fun rotateCentered(degrees: Double, center: CenterLocation)
-    }
+  fun positionTo(center: Reference)
+  fun positionBy(center: Reference)
+  fun zoomTo(zoom: Float)
+  fun zoomBy(zoom: Float)
+  fun zoomToCentered(zoom: Float, center: Reference)
+  fun zoomByCentered(zoom: Float, center: Reference)
+  fun rotateTo(degrees: Double)
+  fun rotateBy(degrees: Double)
+  fun rotateToCentered(degrees: Double, center: Reference)
+  fun rotateByCentered(degrees: Double, center: Reference)
+}
 ```
 
 Here are some example for how to Set with MotionController. *See the comments to fully understand what each line does
 
 ``` yaml
-motionController.set { 
-   center(CenterLocation.Offset(ScreenOffset.Zero))  # (1)!
-   center(CenterLocation.Position(CanvasPosition.Zero)) # (2)!
-   center(CenterLocation.Coordinates(ProjectedCoordinates.Zero)) # (3)!
-   zoom(5F) # (4)!
-   zoomCentered(7F, CenterLocation.Position(CanvasPosition.Zero)) # (5)!
-   rotateCentered(45.0, CenterLocation.Offset(ScreenOffset.Zero)) # (6)!
+mapState.motionController.move {
+    positionTo(ScreenOffset.Zero)  # (1)!
+    positionTo(TilePoint.Zero) # (2)!
+    positionTo(Coordinates.Zero) # (3)!
+    zoomBy(5F) # (4)!
+    zoomToCentered(7F, TilePoint.Zero) # (5)!
+    rotateByCentered(45.0, ScreenOffset.Zero) # (6)!
 }
 ```
 
@@ -122,68 +142,78 @@ motionController.set {
 Now here is the scoped interface with the functions that can be implemented with Animate and an example
 
 ```kotlin
-interface AnimationInterface {
-    suspend fun positionTo(center: CenterLocation, decayRate: Double = 5.0, duration: MilliSeconds = 1000)
-    suspend fun positionBy(center: CenterLocation, decayRate: Double = 5.0, duration: MilliSeconds = 1000)
-    suspend fun zoomTo(zoom: Float, decayRate: Double = 5.0, duration: MilliSeconds = 1000)
-    suspend fun zoomBy(zoom: Float, decayRate: Double = 5.0, duration: MilliSeconds = 1000)
-    suspend fun zoomToCentered(zoom: Float, center: CenterLocation, decayRate: Double = 5.0, duration: MilliSeconds = 1000)
-    suspend fun zoomByCentered(zoom: Float, center: CenterLocation, decayRate: Double = 5.0, duration: MilliSeconds = 1000)
-    suspend fun angleTo(degrees: Double, decayRate: Double = 5.0, duration: MilliSeconds = 1000)
-    suspend fun angleBy(degrees: Double, decayRate: Double = 5.0, duration: MilliSeconds = 1000)
-    suspend fun rotateToCentered(degrees: Double, center: CenterLocation, decayRate: Double = 5.0, duration: MilliSeconds = 1000)
-    suspend fun rotateByCentered(degrees: Double, center: CenterLocation, decayRate: Double = 5.0, duration: MilliSeconds = 1000)
+interface AnimateInterface {
+    suspend fun positionTo(center: Reference, animationSpec: AnimationSpec<Float> = SpringSpec())
+    suspend fun positionBy(center: Reference, animationSpec: AnimationSpec<Float> = SpringSpec())
+    suspend fun zoomTo(zoom: Float, animationSpec: AnimationSpec<Float> = SpringSpec())
+    suspend fun zoomBy(zoom: Float, animationSpec: AnimationSpec<Float> = SpringSpec())
+    suspend fun zoomToCentered(zoom: Float, center: Reference, animationSpec: AnimationSpec<Float> = SpringSpec())
+    suspend fun zoomByCentered(zoom: Float, center: Reference, animationSpec: AnimationSpec<Float> = SpringSpec())
+    suspend fun rotateTo(degrees: Double, animationSpec: AnimationSpec<Float> = SpringSpec())
+    suspend fun rotateBy(degrees: Double, animationSpec: AnimationSpec<Float> = SpringSpec())
+    suspend fun rotateToCentered(degrees: Double, center: Reference, animationSpec: AnimationSpec<Float> = SpringSpec())
+    suspend fun rotateByCentered(degrees: Double, center: Reference, animationSpec: AnimationSpec<Float> = SpringSpec())
 }
 ```
 
-Animate has similar scoped functions to set and scroll with a key difference. While Set and scroll have separated function for 
-moving to a place and moving by an amount, animate doesn't instead this difference can be seen in the scoped function key works to and by.
+Animate has similar scoped functions to move with a key difference, it adds an animationSpec where you can define how the animation will be performed.
 
 ``` kotlin
-CoroutineScope(Dispatchers.Default).launch {
-    motionController.animate {
-        positionTo(CenterLocation.Offset(Offset(5F,5F)))
-        positionBy(CenterLocation.Offset(Offset(10F, 10F)))
+scope.launch {
+        mapState.motionController.animate {
+        positionTo(Coordinates(0.0, 0.0), TweenSpec(2000))
+        positionTo(Coordinates(180.0, 90.0), TweenSpec(2000))
+        positionTo(Coordinates(45.0, 0.0), TweenSpec(2000))
+        zoomBy(1F, TweenSpec(2000))
+        zoomBy(-1F, TweenSpec(2000))
+        zoomToCentered(1F, Coordinates(0.0, 0.0), TweenSpec(2000))
+        rotateBy(360.0, TweenSpec(2000))
+    }
+    mapState.motionController.animate {
+        rotateByCentered(-360.0, Coordinates(0.0, 0.0), TweenSpec(2000))
     }
 }
 ```
 
-### **Behavior**
-
-Because the Motion controller is initiated before the KMaP composable it creates scenarios in witch you mighty execute some 
-movement without the KMaP response. So to fix this all Synchronous functions, off type Set and Scroll, are placed in a
-queue, in the order you coded, and the last coroutine job declared is also stored to be executed when the composable comes
-to be. When this happens the Motion Controller will execute all Set's and Scroll's first them the Animate Job.
-
-After this initial phase, the movement will be executed on demand with a single difference that is if an Animate job is
-executing, and you Set or Scroll that this job will be cancelled and your Synchronous function will be executed.
-
 ## Canvas
 
 The Canvas function usable in the KMaP scope is just a wrapper on the native canvas so that we can handle the render 
-process the only thing you need to do its provide the source tile implementing the following api.
+process needing you to provide the source tile implementing the following api.
 
 ```kotlin
 interface TileSource {
-    suspend fun getTile(zoom: Int, row: Int, column: Int): ResultTile
+    suspend fun getTile(zoom: Int, row: Int, column: Int): TileRenderResult
 }
 ```
 
 With this simple trick you can render any tilled map you want. Maybe you want a free map off the world with OSM, or don't 
 like to use Google library but want to use its tiles, or render it on the device, or read from a local files for your 
-Skyrim map (I'm old sorry) with this you can do it all. 
+Skyrim map (I'm old sorry xD) with this you can do it all.
+
+If wanted you can also provide a gesture detection that will be input in a pointer scope internally.
+
+```kotlin
+{
+    detectMapGestures(
+        onDoubleTap = { offset -> motionController.move { zoomByCentered(-1 / 3F, offset) } },
+        onTapLongPress = { offset -> motionController.move { positionBy(offset.asDifferentialScreenOffset()) } },
+        onTapSwipe = { zoom -> motionController.move { zoomBy(zoom / 100) } },
+        onDrag = { dragAmount -> motionController.move { positionBy(dragAmount) } },
+        onTwoFingersTap = { offset -> motionController.move { zoomByCentered(1 / 3F, offset) } },
+        onGesture = { centroid, pan, zoom, rotation ->
+            motionController.move {
+                rotateByCentered(rotation.toDouble(), centroid)
+                zoomByCentered(zoom / gestureScale, centroid)
+                positionBy(pan)
+            }
+        },
+        onScroll = { mouseOffset, scrollAmount -> motionController.move { zoomByCentered(scrollAmount / scrollScale, mouseOffset) } },
+        onCtrlGesture = { rotation -> motionController.move { rotateBy(rotation.toDouble()) } },
+    )
+}
+```
 
 See https://wiki.openstreetmap.org/wiki/Slippy_map for better understand how it works.
-
-### Built-in Sources
-
-* OSM Mapnik
-
-### Offline
-
-For offline use you can either read from a .map file or a repo and render it with MapsForge or create your own renderer.
-
-Future versions will have both built-in
 
 ## Markers
 
@@ -194,65 +224,62 @@ composable instead this way you draw whatever you want. Declare it on the KMaP S
 markers(
     listOf(
         MarkerParameters(
-            ProjectedCoordinates(-45.949303, -21.424608),
+            Coordinates(-45.949303, -21.424608),
             drawPosition = DrawPosition.BOTTOM_RIGHT,
             rotateWithMap = true,
-            tag = "marker1"
         ),
         MarkerParameters(
-            ProjectedCoordinates(-46.949303, -21.424608),
+            Coordinates(-46.949303, -21.424608),
             drawPosition = DrawPosition.BOTTOM_RIGHT,
             rotateWithMap = true,
-            tag = "marker1"
         )
     )
 ) {
     Image(
-        painterResource(Res.drawable.test),
-        "",
-        Modifier
-            .background(Color.Black)
-            .size(32.dp)
+        painter = painterResource(Res.drawable.pin),
+        contentDescription = "Removable marker",
+        modifier = Modifier
             .clickable {
                 println("you clicked on the marker")
             }
+            .background(Color.Black)
+            .size(32.dp)
     )
 }
 ```
 
-Use the markers() API to draw a list of markers with the provided composable, you can set up how many you want with this.
+Use the markers() API to draw a list of markers with the provided composable, you can set up a bunch of them with this.
 There is a lot of options on how to handle your marker. Fell free to toy with them. Bellow is the data class that store 
 the options and its default values.
 
 ```kotlin
-data class MarkerParameters(
-    val coordinates: ProjectedCoordinates,
-    val tag: String = "",
+open class MarkerParameters(
+    val coordinates: Coordinates,
     val alpha: Float = 1F,
     val drawPosition: DrawPosition = DrawPosition.TOP_LEFT,
     val zIndex: Float = 2F,
-    val scaleWithMap: Boolean = false,
-    val zoomToFix: Float = 0F,
+    val zoomToFix: Float? = null,
     val rotateWithMap: Boolean = false,
-    val rotation: Degrees = 0.0
-)
+    val rotation: Degrees = 0.0,
+    val clusterId: Int? = null
+) : Parameters
 ```
 
 ## Clusters
 
-With cluster, you can merge markers if they are overlying for example. Declare it on the KMaP scope with the tag of the markers you want to cluster for it to work.
+With cluster, you can merge markers if they are overlying for example. Declare it on the KMaP scope with the clusterId
+of the markers you want to cluster for it to work.
 
 ```kotlin
-cluster(ClusterParameters("marker1", 50.dp)) {
-    Image(
-        painterResource(Res.drawable.test2),
-        "",
-        Modifier
-            .background(Color.Black)
-            .size(32.dp)
-            .clickable {
-                println("you clicked a cluster")
-            }
+cluster(
+    ClusterParameters(id = 1)
+) {
+    Text(
+        text = "Cluster tag 1",
+        modifier = Modifier
+            .background(Color.Green)
+            .padding(16.dp),
+        color = Color.White
     )
 }
 ```
@@ -261,13 +288,35 @@ Cluster composable do not behave the same as the markers so you have to provide 
 Here is the data class with the options.
 
 ```kotlin
-data class ClusterParameters(
-    val tag: String,
-    val clusterThreshold: Dp,
+open class ClusterParameters(
+    val id: Int,
     val alpha: Float = 1F,
-    val zIndex: Float = 1F,
-    val drawPosition: DrawPosition = DrawPosition.CENTER,
+    val zIndex: Float = 2F,
     val rotateWithMap: Boolean = false,
     val rotation: Degrees = 0.0
+) : Parameters
+```
+
+## Path Canvas (under development)
+
+The path canvas ia a mix of a canvas and markers. For each declared path it will create a composable of the size of the map and will draw the path on it.
+
+```kotlin
+path(
+    origin = Coordinates(0.0, 0.0),
+    path = PathData {
+        moveTo(0F, 0F)
+        lineTo(100F, 100F)
+        lineTo(200F, 200F)
+        lineTo(100F, 200F)
+        lineTo(100F, 100F)
+    }.toPath(),
+    color = Color.Red,
+    style = Stroke(
+        width = 4F,
+        cap = StrokeCap.Round,
+        join = StrokeJoin.Round,
+        pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+    )
 )
 ```

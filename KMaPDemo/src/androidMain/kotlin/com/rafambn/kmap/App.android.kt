@@ -24,3 +24,7 @@ class AppActivity : ComponentActivity() {
         }
     }
 }
+
+actual val scrollScale = 1
+
+actual val gestureScale = 100
