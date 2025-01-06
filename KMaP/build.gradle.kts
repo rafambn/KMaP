@@ -6,19 +6,21 @@ plugins {
     alias(libs.plugins.compose)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.android.library)
+    id("maven-publish")
 }
 
 group = "com.rafambn.kmap"
 version = "0.1.0"
 
 kotlin {
-    jvmToolchain(21)
+    withSourcesJar(publish = false)
+    jvmToolchain(11)
     androidTarget {
         compilations.all {
             compileTaskProvider {
                 compilerOptions {
-                    jvmTarget.set(JvmTarget.JVM_17)
-                    freeCompilerArgs.add("-Xjdk-release=${JavaVersion.VERSION_17}")
+                    jvmTarget.set(JvmTarget.JVM_11)
+                    freeCompilerArgs.add("-Xjdk-release=${JavaVersion.VERSION_11}")
                 }
             }
         }
@@ -78,7 +80,14 @@ android {
         minSdk = 24
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+        }
     }
 }

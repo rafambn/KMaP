@@ -12,13 +12,13 @@ plugins {
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(11)
     androidTarget {
         compilations.all {
             compileTaskProvider {
                 compilerOptions {
-                    jvmTarget.set(JvmTarget.JVM_21)
-                    freeCompilerArgs.add("-Xjdk-release=${JavaVersion.VERSION_21}")
+                    jvmTarget.set(JvmTarget.JVM_11)
+                    freeCompilerArgs.add("-Xjdk-release=${JavaVersion.VERSION_11}")
                 }
             }
         }
