@@ -1,6 +1,5 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalDistributionDsl
 
 plugins {
@@ -12,25 +11,14 @@ plugins {
 }
 
 kotlin {
-    jvmToolchain(21)
-    androidTarget {
-        compilations.all {
-            compileTaskProvider {
-                compilerOptions {
-                    jvmTarget.set(JvmTarget.JVM_21)
-                    freeCompilerArgs.add("-Xjdk-release=${JavaVersion.VERSION_21}")
-                }
-            }
-        }
-    }
+    jvmToolchain(11)
 
+    androidTarget()
     jvm()
-
     js {
         browser()
         binaries.executable()
     }
-
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         browser {
@@ -41,8 +29,6 @@ kotlin {
         }
         binaries.executable()
     }
-
-
     listOf(
         iosX64(),
         iosArm64(),
@@ -72,6 +58,7 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.coroutines.core)
             implementation(project(":KMaP"))
+//            implementation(libs.kmap)
             implementation(libs.ktor.client.core)
         }
         androidMain.dependencies {
@@ -100,7 +87,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.rafambn.kmapdemo"
+    namespace = "com.rafambn"
     compileSdk = 35
 
     defaultConfig {
@@ -109,7 +96,7 @@ android {
 
         applicationId = "com.rafambn.kmapdemo"
         versionCode = 1
-        versionName = "1.0.0"
+        versionName = "0.1.0"
     }
 }
 

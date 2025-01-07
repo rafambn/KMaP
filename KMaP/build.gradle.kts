@@ -1,46 +1,39 @@
+import com.vanniktech.maven.publish.JavadocJar
+import com.vanniktech.maven.publish.KotlinMultiplatform
+import com.vanniktech.maven.publish.SonatypeHost
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.multiplatform)
     alias(libs.plugins.compose)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.android.library)
+    id("com.vanniktech.maven.publish") version "0.30.0"
 }
 
-group = "com.rafambn.kmap"
+group = "com.rafambn"
 version = "0.1.0"
 
 kotlin {
-    jvmToolchain(21)
-    androidTarget {
-        compilations.all {
-            compileTaskProvider {
-                compilerOptions {
-                    jvmTarget.set(JvmTarget.JVM_17)
-                    freeCompilerArgs.add("-Xjdk-release=${JavaVersion.VERSION_17}")
-                }
-            }
-        }
-    }
+    jvmToolchain(11)
 
+    androidTarget{ publishLibraryVariants("release") }
     jvm()
-
-    js {
+    js(IR) {
         browser {
             webpackTask {
                 mainOutputFileName = "KMaP.js"
             }
         }
+        nodejs()
         binaries.executable()
     }
-
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         browser()
+        nodejs()
         binaries.executable()
     }
-
     listOf(
         iosX64(),
         iosArm64(),
@@ -71,14 +64,56 @@ kotlin {
 }
 
 android {
-    namespace = "com.rafambn.kmap"
+    namespace = "com.rafambn"
     compileSdk = 35
 
     defaultConfig {
         minSdk = 24
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+}
+
+mavenPublishing {
+    coordinates(
+        groupId = "com.rafambn",
+        artifactId = "KMaP",
+        version = "0.1.0"
+    )
+
+// Configure POM metadata for the published artifact
+    pom {
+        name.set("KMaP")
+        description.set("A flexible and powerful compose multiplatform mapping library.")
+        url.set("https://kmap.rafambn.com")
+
+        licenses {
+            license {
+                name.set("Apache License, Version 2.0")
+                url.set("https://www.apache.org/licenses/LICENSE-2.0")
+            }
+        }
+        developers {
+            developer {
+                id.set("rafambn")
+                name.set("Rafael Mendonca")
+                email.set("rafambn@gmail.com")
+            }
+        }
+        scm {
+            url.set("https://github.com/rafambn/KMaP")
+        }
     }
+
+// Configure publishing to Maven Central
+    publishToMavenCentral(host = SonatypeHost.CENTRAL_PORTAL, automaticRelease = false)
+
+// Enable GPG signing for all publications
+    signAllPublications()
+
+    configure(
+        KotlinMultiplatform(
+            javadocJar = JavadocJar.Empty(),
+            sourcesJar = true,
+            androidVariantsToPublish = listOf("release"),
+        )
+    )
 }

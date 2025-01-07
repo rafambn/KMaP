@@ -15,8 +15,6 @@ hide: toc
 ### Key Features
 
 - **Cross-Platform Compatibility**: Use a single KMaP Composable in your common code for a consistent user experience across all platforms.
-
-[//]: # (- **Customizable Map Styles**: Ability to customize the appearance of maps, including colors, labels, and themes.)
 - **Interactive Elements**: Features like zooming, panning, and rotating maps.
 - **Marker and Popup Support**: Adding markers, popups, and tooltips to maps for enhanced interactivity.
 - **Layer Management**: Support for multiple layers.
@@ -26,6 +24,8 @@ hide: toc
 - **Performance**: Efficient rendering and handling of large datasets.
 - **Easy Integration**: Seamlessly integrate KMaP into your existing compose projects.
 - **Customizable**: Tailor the map's behavior to fit your needs.
+
+[//]: # (- **Customizable Map Styles**: Ability to customize the appearance of maps, including colors, labels, and themes.)
 
 ### Usage Example
 

@@ -12,6 +12,7 @@ ktorVersion = "3.0.3"
 logback = "1.5.7"
 androidx-lifecycle = "2.8.4"
 androidx-navigation = "2.8.0-alpha11"
+kmap = "0.1.0"
 
 [libraries]
 
@@ -30,6 +31,7 @@ ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "kto
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktorVersion" }
 ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktorVersion" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+kmap = { module = "com.rafambn:KMaP", version.ref = "kmap" }
 
 [plugins]
 
