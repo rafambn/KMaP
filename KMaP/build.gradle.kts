@@ -1,3 +1,6 @@
+import com.vanniktech.maven.publish.JavadocJar
+import com.vanniktech.maven.publish.KotlinMultiplatform
+import com.vanniktech.maven.publish.SonatypeHost
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
@@ -5,13 +8,13 @@ plugins {
     alias(libs.plugins.compose)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.android.library)
+    id("com.vanniktech.maven.publish") version "0.30.0"
 }
 
 group = "com.rafambn"
 version = "0.1.0"
 
 kotlin {
-    withSourcesJar(publish = false)
     jvmToolchain(11)
 
     androidTarget{ publishLibraryVariants("release") }
@@ -22,11 +25,13 @@ kotlin {
                 mainOutputFileName = "KMaP.js"
             }
         }
+        nodejs()
         binaries.executable()
     }
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         browser()
+        nodejs()
         binaries.executable()
     }
     listOf(
@@ -65,4 +70,50 @@ android {
     defaultConfig {
         minSdk = 24
     }
+}
+
+mavenPublishing {
+    coordinates(
+        groupId = "com.rafambn",
+        artifactId = "KMaP",
+        version = "0.1.0"
+    )
+
+// Configure POM metadata for the published artifact
+    pom {
+        name.set("KMaP")
+        description.set("A flexible and powerful compose multiplatform mapping library.")
+        url.set("https://kmap.rafambn.com")
+
+        licenses {
+            license {
+                name.set("Apache License, Version 2.0")
+                url.set("https://www.apache.org/licenses/LICENSE-2.0")
+            }
+        }
+        developers {
+            developer {
+                id.set("rafambn")
+                name.set("Rafael Mendonca")
+                email.set("rafambn@gmail.com")
+            }
+        }
+        scm {
+            url.set("https://github.com/rafambn/KMaP")
+        }
+    }
+
+// Configure publishing to Maven Central
+    publishToMavenCentral(host = SonatypeHost.CENTRAL_PORTAL, automaticRelease = false)
+
+// Enable GPG signing for all publications
+    signAllPublications()
+
+    configure(
+        KotlinMultiplatform(
+            javadocJar = JavadocJar.Empty(),
+            sourcesJar = true,
+            androidVariantsToPublish = listOf("release"),
+        )
+    )
 }
