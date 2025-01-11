@@ -1,0 +1,17 @@
+name: Cleanup Deployments
+
+on:
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      deployments: write
+    steps:
+      - name: Delete deployments
+        uses: strumwolf/delete-deployment-environment@v2
+        with:
+          token: ${{ secrets.PERSONAL_TOKEN }}
+          environment: github-pages
+          onlyRemoveDeployments: true
