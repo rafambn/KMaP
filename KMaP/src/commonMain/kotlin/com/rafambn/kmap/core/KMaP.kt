@@ -3,6 +3,7 @@ package com.rafambn.kmap.core
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.layout.LazyLayout
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
@@ -21,6 +22,7 @@ fun KMaP(
     content: KMaPScope.() -> Unit
 ) {
     val itemProvider = rememberComponentProviderLambda(content, mapState)
+    val coroutineScope = rememberCoroutineScope()
 
     itemProvider.invoke().canvasList.forEach {
         TileCanvas(
@@ -44,6 +46,7 @@ fun KMaP(
     val measurePolicy = rememberComponentMeasurePolicy(
         componentProviderLambda = itemProvider,
         mapState = mapState,
+        coroutineScope = coroutineScope
     )
 
     LazyLayout(

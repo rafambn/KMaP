@@ -11,7 +11,7 @@ open class MarkerParameters(
     val alpha: Float = 1F,
     val drawPosition: DrawPosition = DrawPosition.TOP_LEFT,
     val zIndex: Float = 2F,
-    val zoomToFix: Float? = null,
+    val zoomToFix: Float? = null, //TODO add option to zoom range
     val rotateWithMap: Boolean = false,
     val rotation: Degrees = 0.0,
     val clusterId: Int? = null

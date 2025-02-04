@@ -21,6 +21,7 @@ import com.rafambn.kmap.screens.LayersScreen
 import com.rafambn.kmap.screens.MarkersScreen
 import com.rafambn.kmap.screens.OSMRemoteScreen
 import com.rafambn.kmap.screens.PathScreen
+import com.rafambn.kmap.screens.PerformanceTestScreen
 import com.rafambn.kmap.screens.SimpleMapScreen
 import com.rafambn.kmap.screens.StartScreen
 import com.rafambn.kmap.screens.ViewmodelScreen
@@ -57,6 +58,7 @@ fun App() = AppTheme {
                     navigateOSM = { navigationController.navigate(Routes.OSMRemote) },
                     navigateClustering = { navigationController.navigate(Routes.Clustering) },
                     navigateSavedStateHandle = { navigationController.navigate(Routes.SavedStateHandle) },
+                    navigatePerformance = { navigationController.navigate(Routes.PerformanceTest) },
                 )
             }
             composable<Routes.Simple> {
@@ -96,6 +98,11 @@ fun App() = AppTheme {
             }
             composable<Routes.SavedStateHandle> {
                 ViewmodelScreen(
+                    navigateBack = { navigationController.popBackStack() }
+                )
+            }
+            composable<Routes.PerformanceTest> {
+                PerformanceTestScreen(
                     navigateBack = { navigationController.popBackStack() }
                 )
             }
