@@ -15,7 +15,7 @@ group = "com.rafambn"
 version = "0.1.0"
 
 kotlin {
-    jvmToolchain(11)
+    jvmToolchain(17)
 
     androidTarget{ publishLibraryVariants("release") }
     jvm()

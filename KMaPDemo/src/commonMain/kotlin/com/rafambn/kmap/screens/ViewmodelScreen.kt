@@ -12,9 +12,13 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
 import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.rafambn.kmap.core.KMaP
 import com.rafambn.kmap.core.MapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
@@ -28,12 +32,12 @@ import org.jetbrains.compose.resources.vectorResource
 fun ViewmodelScreen(
     navigateBack: () -> Unit
 ) {
-    val viewmodel = viewModel<MyViewmodel>()
+    val viewmodel = viewModel<MyViewmodel>(factory = MyViewmodel.Factory)
     val density = LocalDensity.current
     LaunchedEffect(Unit) {
         viewmodel.mapState.density = density
     }
-    Box{
+    Box {
         KMaP(
             modifier = Modifier.fillMaxSize(),
             mapState = viewmodel.mapState,
@@ -64,4 +68,12 @@ class MyViewmodel(savedStateHandle: SavedStateHandle) : ViewModel() {
             )
         }
     )
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                MyViewmodel(savedStateHandle = createSavedStateHandle())
+            }
+        }
+    }
 }
