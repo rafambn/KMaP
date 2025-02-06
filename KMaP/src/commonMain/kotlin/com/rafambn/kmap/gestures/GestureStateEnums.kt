@@ -5,9 +5,7 @@ package com.rafambn.kmap.gestures
  * [GestureState] is used to indicate what is the current state that the gesture is.
  */
 enum class GestureState {
-    DRAG,
-    CTRL,
-    MOBILE,
+    GESTURE,
     TAP_SWIPE,
     HOVER,
     WAITING_UP,

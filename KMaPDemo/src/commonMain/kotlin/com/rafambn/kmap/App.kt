@@ -112,7 +112,6 @@ fun getGestureDetector(motionController: MotionController): suspend PointerInput
         onDoubleTap = { offset -> motionController.move { zoomByCentered(-1 / 3F, offset) } },
         onTapLongPress = { offset -> motionController.move { positionBy(offset.asDifferentialScreenOffset()) } },
         onTapSwipe = { zoom -> motionController.move { zoomBy(zoom / 100) } },
-        onDrag = { dragAmount -> motionController.move { positionBy(dragAmount) } },
         onTwoFingersTap = { offset -> motionController.move { zoomByCentered(1 / 3F, offset) } },
         onGesture = { centroid, pan, zoom, rotation ->
             motionController.move {
@@ -122,6 +121,5 @@ fun getGestureDetector(motionController: MotionController): suspend PointerInput
             }
         },
         onScroll = { mouseOffset, scrollAmount -> motionController.move { zoomByCentered(scrollAmount / scrollScale, mouseOffset) } },
-        onCtrlGesture = { rotation -> motionController.move { rotateBy(rotation.toDouble()) } },
     )
 }
