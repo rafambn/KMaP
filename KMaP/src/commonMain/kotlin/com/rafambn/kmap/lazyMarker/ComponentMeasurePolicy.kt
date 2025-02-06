@@ -81,7 +81,9 @@ internal fun measureComponent(
             measuredComponent.maxHeight.toFloat(),
             measuredComponent.offset.asOffset()
         )
-        if (mapViewPort.overlaps(measuredComponent.viewPort)) {//TODO expand test for rotating markers
+        //TODO expand test for rotating markers
+        if (measuredComponent.parameters.zoomParameters.zoomVisibilityRange.contains(mapState.cameraState.zoom) &&
+            mapViewPort.overlaps(measuredComponent.viewPort)) {
             if (measuredComponent.parameters.clusterId != null) {
                 val map = itemsThatCanClusterMap[measuredComponent.parameters.clusterId]
                 map?.let {

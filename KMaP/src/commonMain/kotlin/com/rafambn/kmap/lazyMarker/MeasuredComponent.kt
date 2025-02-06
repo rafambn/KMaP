@@ -60,7 +60,7 @@ class MeasuredComponent(
                         translationX = placeOffset.x - parameters.drawPosition.x * placeables[index].width
                         translationY = placeOffset.y - parameters.drawPosition.y * placeables[index].height
                         transformOrigin = parameters.drawPosition.asTransformOrigin()
-                        parameters.zoomToFix?.let { zoom ->
+                        parameters.zoomParameters.zoomToFix?.let { zoom ->
                             scaleX = 2F.pow(cameraZoom - zoom)
                             scaleY = 2F.pow(cameraZoom - zoom)
                         }
