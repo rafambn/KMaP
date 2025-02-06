@@ -55,57 +55,55 @@ internal fun measureComponent(
     layout: (Placeable.PlacementScope.() -> Unit) -> MeasureResult
 ): MeasureResult {
 
-    if (markersCount <= 0) {
+    if (markersCount <= 0)
         return layout {}
-    } else {
 
-        val visibleItems = mutableListOf<MeasuredComponent>()
-        val itemsThatCanClusterMap = mutableMapOf<Int, List<MeasuredComponent>>()
-        val measuredComponents = mutableListOf<MeasuredComponent>()
+    val visibleItems = mutableListOf<MeasuredComponent>()
+    val itemsThatCanClusterMap = mutableMapOf<Int, List<MeasuredComponent>>()
+    val measuredComponents = mutableListOf<MeasuredComponent>()
 
-        for (index in 0 until markersCount) {
-            measuredComponents.add(measuredItemProvider.getAndMeasure(index))
+    for (index in 0 until markersCount) {
+        measuredComponents.add(measuredItemProvider.getAndMeasure(index))
+    }
+
+    val mapViewPort = Rect(
+        Offset.Zero,
+        Size(mapState.cameraState.canvasSize.x, mapState.cameraState.canvasSize.y)
+    )
+    measuredComponents.forEach { measuredComponent ->
+        require(measuredComponent.parameters is MarkerParameters)
+        measuredComponent.offset = with(mapState) {
+            measuredComponent.parameters.coordinates.toTilePoint().toScreenOffset()
         }
-
-        val mapViewPort = Rect(
-            Offset.Zero,
-            Size(mapState.cameraState.canvasSize.x, mapState.cameraState.canvasSize.y)
+        measuredComponent.viewPort = getViewPort(
+            measuredComponent.parameters.drawPosition,
+            measuredComponent.maxWidth.toFloat(),
+            measuredComponent.maxHeight.toFloat(),
+            measuredComponent.offset.asOffset()
         )
-        measuredComponents.forEach { measuredComponent ->
-            require(measuredComponent.parameters is MarkerParameters)
-            measuredComponent.offset = with(mapState) {
-                measuredComponent.parameters.coordinates.toTilePoint().toScreenOffset()
-            }
-            measuredComponent.viewPort = getViewPort(
-                measuredComponent.parameters.drawPosition,
-                measuredComponent.maxWidth.toFloat(),
-                measuredComponent.maxHeight.toFloat(),
-                measuredComponent.offset.asOffset()
-            )
-            if (mapViewPort.overlaps(measuredComponent.viewPort)) {//TODO expand test for rotating markers
-                if (measuredComponent.parameters.clusterId != null) {
-                    val map = itemsThatCanClusterMap[measuredComponent.parameters.clusterId]
-                    map?.let {
-                        itemsThatCanClusterMap[measuredComponent.parameters.clusterId] = it + measuredComponent
-                    } ?: run {
-                        itemsThatCanClusterMap.put(measuredComponent.parameters.clusterId, listOf(measuredComponent))
-                    }
-                } else
-                    visibleItems.add(measuredComponent)
-            }
-            measuredComponent.parameters
+        if (mapViewPort.overlaps(measuredComponent.viewPort)) {//TODO expand test for rotating markers
+            if (measuredComponent.parameters.clusterId != null) {
+                val map = itemsThatCanClusterMap[measuredComponent.parameters.clusterId]
+                map?.let {
+                    itemsThatCanClusterMap[measuredComponent.parameters.clusterId] = it + measuredComponent
+                } ?: run {
+                    itemsThatCanClusterMap.put(measuredComponent.parameters.clusterId, listOf(measuredComponent))
+                }
+            } else
+                visibleItems.add(measuredComponent)
         }
-        itemsThatCanClusterMap.forEach {
-            clusterComponents(it.value, measuredItemProvider, markersCount) { nonClusteredComponent, clusters ->
-                visibleItems.addAll(nonClusteredComponent)
-                visibleItems.addAll(clusters)
-            }
+        measuredComponent.parameters
+    }
+    itemsThatCanClusterMap.forEach {
+        clusterComponents(it.value, measuredItemProvider, markersCount) { nonClusteredComponent, clusters ->
+            visibleItems.addAll(nonClusteredComponent)
+            visibleItems.addAll(clusters)
         }
+    }
 
-        return layout {
-            visibleItems.fastForEach {
-                it.place(this, it.offset, it.parameters, mapState.cameraState.angleDegrees, mapState.cameraState.zoom)
-            }
+    return layout {
+        visibleItems.fastForEach {
+            it.place(this, it.offset, it.parameters, mapState.cameraState.angleDegrees, mapState.cameraState.zoom)
         }
     }
 }
