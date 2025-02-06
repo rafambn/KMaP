@@ -37,14 +37,13 @@ fun PerformanceTestScreen(
         val mapState = rememberMapState(mapProperties = SimpleMapProperties())
         val markersList = remember {
             val temp = mutableStateListOf<MarkerParameters>()
-            repeat(20000) {
+            repeat(2000) {
                 temp.add(
                     MarkerParameters(
                         coordinates = Coordinates(
                             longitude = Random.nextDouble(-180.0, 180.0),
                             latitude = Random.nextDouble(-90.0, 90.0)
-                        ),
-                        clusterId = 1
+                        )
                     )
                 )
             }
@@ -67,17 +66,17 @@ fun PerformanceTestScreen(
                     color = Color.White
                 )
             }
-            cluster(
-                ClusterParameters(id = 1)
-            ) {
-                Text(
-                    text = "Cluster tag 1",
-                    modifier = Modifier
-                        .background(Color.Green)
-                        .padding(16.dp),
-                    color = Color.White
-                )
-            }
+//            cluster(
+//                ClusterParameters(id = 1)
+//            ) {
+//                Text(
+//                    text = "Cluster tag 1",
+//                    modifier = Modifier
+//                        .background(Color.Green)
+//                        .padding(16.dp),
+//                    color = Color.White
+//                )
+//            }
         }
         Image(
             imageVector = vectorResource(Res.drawable.back_arrow),

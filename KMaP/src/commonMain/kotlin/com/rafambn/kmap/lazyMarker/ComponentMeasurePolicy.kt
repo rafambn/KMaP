@@ -14,6 +14,7 @@ import androidx.compose.ui.util.fastForEach
 import com.rafambn.kmap.components.MarkerParameters
 import com.rafambn.kmap.core.MapState
 import com.rafambn.kmap.core.getViewPort
+import com.rafambn.kmap.dsds
 import com.rafambn.kmap.utils.asOffset
 import com.rafambn.kmap.utils.asScreenOffset
 import kotlinx.coroutines.CoroutineScope
@@ -35,88 +36,75 @@ fun rememberComponentMeasurePolicy(
 
         val measuredItemProvider = MeasuredComponentProvider(componentProvider, this)
 
-        measureComponent(
-            markersCount = markersCount,
-            measuredItemProvider = measuredItemProvider,
-            mapState = mapState,
-            coroutineScope = coroutineScope,
-            layout = { placement ->
-                layout(
-                    containerConstraints.maxWidth,
-                    containerConstraints.maxHeight,
-                    emptyMap(),
-                    placement
-                )
-            }
-        )
-    }
-}
+        if (markersCount <= 0) {
+            layout(
+                containerConstraints.maxWidth,
+                containerConstraints.maxHeight,
+                emptyMap()
+            ) {}
+        } else {
+            println("1 -- ${Clock.System.now()}")
+            val visibleItems = mutableListOf<MeasuredComponent>()
+            val itemsThatCanClusterMap = mutableMapOf<Int, List<MeasuredComponent>>()
+            val measuredComponents = mutableListOf<MeasuredComponent>()
 
-internal fun measureComponent(
-    markersCount: Int,
-    measuredItemProvider: MeasuredComponentProvider,
-    mapState: MapState,
-    layout: (Placeable.PlacementScope.() -> Unit) -> MeasureResult,
-    coroutineScope: CoroutineScope
-): MeasureResult {
+            println("2 -- ${Clock.System.now()}")
+            measuredComponents.addAll(dsds(measuredItemProvider, markersCount, coroutineScope))
+//            for (index in 0 until markersCount) {
+//                measuredComponents.add(measuredItemProvider.getAndMeasure(index))
+//            }
 
-    if (markersCount <= 0)
-        return layout {}
+            println("3 -- ${Clock.System.now()}")
+            val mapViewPort = Rect(
+                Offset.Zero,
+                Size(mapState.cameraState.canvasSize.x, mapState.cameraState.canvasSize.y)
+            )
 
-    println("1 -- ${Clock.System.now()}")
-    val visibleItems = mutableListOf<MeasuredComponent>()
-    val itemsThatCanClusterMap = mutableMapOf<Int, List<MeasuredComponent>>()
-    val measuredComponents = mutableListOf<MeasuredComponent>()
-
-    println("2 -- ${Clock.System.now()}")
-    for (index in 0 until markersCount) {
-        measuredComponents.add(measuredItemProvider.getAndMeasure(index))
-    }
-
-    println("3 -- ${Clock.System.now()}")
-    val mapViewPort = Rect(
-        Offset.Zero,
-        Size(mapState.cameraState.canvasSize.x, mapState.cameraState.canvasSize.y)
-    )
-
-    println("4 -- ${Clock.System.now()}")
-    measuredComponents.forEach { measuredComponent ->
-        require(measuredComponent.parameters is MarkerParameters)
-        measuredComponent.offset = with(mapState) {
-            measuredComponent.parameters.coordinates.toTilePoint().toScreenOffset()
-        }
-        measuredComponent.viewPort = getViewPort(
-            measuredComponent.parameters.drawPosition,
-            measuredComponent.maxWidth.toFloat(),
-            measuredComponent.maxHeight.toFloat(),
-            measuredComponent.offset.asOffset()
-        )
-        if (mapViewPort.overlaps(measuredComponent.viewPort)) {//TODO expand test for rotating markers
-            if (measuredComponent.parameters.clusterId != null) {
-                val map = itemsThatCanClusterMap[measuredComponent.parameters.clusterId]
-                map?.let {
-                    itemsThatCanClusterMap[measuredComponent.parameters.clusterId] = it + measuredComponent
-                } ?: run {
-                    itemsThatCanClusterMap.put(measuredComponent.parameters.clusterId, listOf(measuredComponent))
+            println("4 -- ${Clock.System.now()}")
+            measuredComponents.forEach { measuredComponent ->
+                require(measuredComponent.parameters is MarkerParameters)
+                measuredComponent.offset = with(mapState) {
+                    measuredComponent.parameters.coordinates.toTilePoint().toScreenOffset()
                 }
-            } else
-                visibleItems.add(measuredComponent)
-        }
-        measuredComponent.parameters
-    }
+                measuredComponent.viewPort = getViewPort(
+                    measuredComponent.parameters.drawPosition,
+                    measuredComponent.maxWidth.toFloat(),
+                    measuredComponent.maxHeight.toFloat(),
+                    measuredComponent.offset.asOffset()
+                )
+                if (mapViewPort.overlaps(measuredComponent.viewPort)) {//TODO expand test for rotating markers
+                    if (measuredComponent.parameters.clusterId != null) {
+                        val map = itemsThatCanClusterMap[measuredComponent.parameters.clusterId]
+                        map?.let {
+                            itemsThatCanClusterMap[measuredComponent.parameters.clusterId] = it + measuredComponent
+                        } ?: run {
+                            itemsThatCanClusterMap.put(measuredComponent.parameters.clusterId, listOf(measuredComponent))
+                        }
+                    } else
+                        visibleItems.add(measuredComponent)
+                }
+                measuredComponent.parameters
+            }
 
-    println("5 -- ${Clock.System.now()}")
-    itemsThatCanClusterMap.forEach {
-        clusterComponents(it.value, measuredItemProvider, markersCount) { nonClusteredComponent, clusters ->
-            visibleItems.addAll(nonClusteredComponent)
-            visibleItems.addAll(clusters)
-        }
-    }
+            println("5 -- ${Clock.System.now()}")
+            itemsThatCanClusterMap.forEach {
+                clusterComponents(it.value, measuredItemProvider, markersCount) { nonClusteredComponent, clusters ->
+                    visibleItems.addAll(nonClusteredComponent)
+                    visibleItems.addAll(clusters)
+                }
+            }
 
-    println("6 -- ${Clock.System.now()}")
-    return layout {
-        visibleItems.fastForEach {
-            it.place(this, it.offset, it.parameters, mapState.cameraState.angleDegrees, mapState.cameraState.zoom)
+            println("6 -- ${Clock.System.now()}")
+
+            layout(
+                containerConstraints.maxWidth,
+                containerConstraints.maxHeight,
+                emptyMap()
+            ) {
+                visibleItems.fastForEach {
+                    it.place(this, it.offset, it.parameters, mapState.cameraState.angleDegrees, mapState.cameraState.zoom)
+                }
+            }
         }
     }
 }
