@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.rafambn.kmap.components.ClusterParameters
 import com.rafambn.kmap.components.MarkerParameters
 import com.rafambn.kmap.core.KMaP
 import com.rafambn.kmap.core.rememberMapState
@@ -42,7 +43,8 @@ fun PerformanceTestScreen(
                         coordinates = Coordinates(
                             longitude = Random.nextDouble(-180.0, 180.0),
                             latitude = Random.nextDouble(-90.0, 90.0)
-                        )
+                        ),
+                        clusterId = 1
                     )
                 )
             }
@@ -61,6 +63,17 @@ fun PerformanceTestScreen(
                     text = "Fixed size",
                     modifier = Modifier
                         .background(Color.Black)
+                        .padding(16.dp),
+                    color = Color.White
+                )
+            }
+            cluster(
+                ClusterParameters(id = 1)
+            ) {
+                Text(
+                    text = "Cluster tag 1",
+                    modifier = Modifier
+                        .background(Color.Green)
                         .padding(16.dp),
                     color = Color.White
                 )

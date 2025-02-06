@@ -30,6 +30,7 @@ import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.asOffset
 import com.rafambn.kmap.utils.loopInZoom
 import com.rafambn.kmap.utils.toIntFloor
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.math.pow
 
@@ -89,7 +90,7 @@ internal fun TileCanvas(
         }
     }
     tileLayers.updateFrontLayerTiles(newFrontLayer)
-    coroutineScope.launch { canvasState.renderTiles(tilesToRender) }
+    coroutineScope.launch(Dispatchers.Default) { canvasState.renderTiles(tilesToRender) }
     renderedTilesCache.value.forEach {
         tileLayers.insertNewTileBitmap(it)
     }
