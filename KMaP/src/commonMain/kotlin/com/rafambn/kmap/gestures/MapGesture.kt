@@ -15,6 +15,8 @@ import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.isCtrlPressed
 import androidx.compose.ui.input.pointer.isOutOfBounds
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.center
+import androidx.compose.ui.unit.toOffset
 import com.rafambn.kmap.utils.DifferentialScreenOffset
 import com.rafambn.kmap.utils.ScreenOffset
 import com.rafambn.kmap.utils.asDifferentialScreenOffset
@@ -31,16 +33,14 @@ suspend fun PointerInputScope.detectMapGestures(
     onLongPress: ((screenOffset: ScreenOffset) -> Unit)? = null,
     onTapLongPress: ((screenOffset: ScreenOffset) -> Unit)? = null,
     onTapSwipe: ((zoom: Float) -> Unit)? = null,
-    onDrag: ((screenOffsetDiff: DifferentialScreenOffset) -> Unit)? = null,//TODO merge drag on mobile and move to common use
+    onGesture: ((screenOffset: ScreenOffset, screenOffsetDiff: DifferentialScreenOffset, zoom: Float, rotation: Float) -> Unit)? = null,
 
     // mobile use
     onTwoFingersTap: ((screenOffset: ScreenOffset) -> Unit)? = null,
-    onGesture: ((screenOffset: ScreenOffset, screenOffsetDiff: DifferentialScreenOffset, zoom: Float, rotation: Float) -> Unit)? = null,
 
     // jvm/web use
     onHover: ((screenOffset: ScreenOffset) -> Unit)? = null,
     onScroll: ((screenOffset: ScreenOffset, scrollAmount: Float) -> Unit)? = null,
-    onCtrlGesture: ((rotation: Float) -> Unit)? = null
 ) = coroutineScope {
     awaitEachGesture {
         //Parameters
@@ -57,7 +57,7 @@ suspend fun PointerInputScope.detectMapGestures(
         } while (
             !(event.type == PointerEventType.Scroll && onScroll != null) &&
             !(event.type == PointerEventType.Press && (onTap != null || onDoubleTap != null || onLongPress != null ||
-                    onTapLongPress != null || onTapSwipe != null || onDrag != null || onTwoFingersTap != null || onGesture != null || onCtrlGesture != null)) &&
+                    onTapLongPress != null || onTapSwipe != null || onTwoFingersTap != null || onGesture != null)) &&
             !(event.type == PointerEventType.Move && onHover != null)
         )
 
@@ -75,10 +75,7 @@ suspend fun PointerInputScope.detectMapGestures(
             }
 
             PointerEventType.Press -> {
-                gestureState = if (event.keyboardModifiers.isCtrlPressed && onCtrlGesture != null) {
-                    GestureState.CTRL
-                } else
-                    GestureState.WAITING_UP
+                gestureState = GestureState.WAITING_UP
             }
 
             PointerEventType.Move -> {
@@ -102,12 +99,8 @@ suspend fun PointerInputScope.detectMapGestures(
 
                         when (event.type) {
                             PointerEventType.Press -> {
-                                if (onCtrlGesture != null && event.keyboardModifiers.isCtrlPressed) {
-                                    gestureState = GestureState.CTRL
-                                    break
-                                }
-                                if (onTap != null || onDoubleTap != null || onLongPress != null || onTapLongPress != null || onTapSwipe != null ||
-                                    onDrag != null || onTwoFingersTap != null || onGesture != null
+                                if (onTap != null || onDoubleTap != null || onLongPress != null || onTapLongPress != null ||
+                                    onTapSwipe != null || onTwoFingersTap != null || onGesture != null
                                 ) {
                                     event.changes.forEach { it.consume() }
                                     gestureState = GestureState.WAITING_UP
@@ -153,7 +146,8 @@ suspend fun PointerInputScope.detectMapGestures(
                                     }
 
                                     event.changes.forEach { it.consume() }
-                                    gestureState = if (onTwoFingersTap != null) GestureState.WAITING_UP_AFTER_TWO_PRESS else GestureState.MOBILE
+                                    gestureState =
+                                        if (onTwoFingersTap != null) GestureState.WAITING_UP_AFTER_TWO_PRESS else GestureState.GESTURE
                                     break
                                 }
 
@@ -175,12 +169,8 @@ suspend fun PointerInputScope.detectMapGestures(
                                 PointerEventType.Move -> {
                                     panSlop += event.calculatePan()
                                     event.changes.forEach { it.consume() }
-                                    if (onCtrlGesture != null && event.keyboardModifiers.isCtrlPressed && panSlop.getDistance() > touchSlop) {
-                                        gestureState = GestureState.CTRL
-                                        break
-                                    }
-                                    if (onDrag != null && panSlop.getDistance() > touchSlop) {
-                                        gestureState = GestureState.DRAG
+                                    if (onGesture != null && panSlop.getDistance() > touchSlop) {
+                                        gestureState = GestureState.GESTURE
                                         break
                                     }
                                 }
@@ -200,46 +190,6 @@ suspend fun PointerInputScope.detectMapGestures(
                             event.changes.forEach { it.consume() }
                             onLongPress?.invoke(event.changes[0].position.asScreenOffset())
                             return@awaitEachGesture
-                        }
-                    } while (!event.changes.all { it.isOutOfBounds(size, extendedTouchPadding) })
-                }
-
-                GestureState.CTRL -> {
-                    do {
-                        event = awaitPointerEventWithTimeout()
-
-                        when (event.type) {
-                            PointerEventType.Release -> {
-                                event.changes.forEach { it.consume() }
-                                return@awaitEachGesture
-                            }
-
-                            PointerEventType.Move -> {
-                                if (event.keyboardModifiers.isCtrlPressed) {
-                                    handleGestureWithCtrl(event.changes.first { it.pressed }, size / 2) { rotationChange ->
-                                        event.changes.first { it.pressed }.consume()
-                                        onCtrlGesture?.invoke(rotationChange)
-                                    }
-                                } else {
-                                    event.changes.forEach { it.consume() }
-                                    if (onDrag != null) {
-                                        gestureState = GestureState.DRAG
-                                        break
-                                    } else
-                                        return@awaitEachGesture
-                                }
-                            }
-
-                            PointerEventType.Scroll -> {
-                                onScroll?.let { scrollLambda ->
-                                    event.changes.forEach {
-                                        if (it.scrollDelta.y != 0F) {
-                                            it.consume()
-                                            scrollLambda.invoke(it.position.asScreenOffset(), it.scrollDelta.y)
-                                        }
-                                    }
-                                }
-                            }
                         }
                     } while (!event.changes.all { it.isOutOfBounds(size, extendedTouchPadding) })
                 }
@@ -334,53 +284,6 @@ suspend fun PointerInputScope.detectMapGestures(
                     } while (!event.changes.all { it.isOutOfBounds(size, extendedTouchPadding) })
                 }
 
-                GestureState.DRAG -> {
-                    do {
-                        event = awaitPointerEventWithTimeout()
-
-                        when (event.type) {
-                            PointerEventType.Release -> {
-                                event.changes.forEach { it.consume() }
-                                return@awaitEachGesture
-                            }
-
-                            PointerEventType.Press -> {
-                                if (onGesture != null) {
-                                    gestureState = GestureState.MOBILE
-                                    break
-                                }
-                            }
-
-                            PointerEventType.Move -> {
-                                if (event.keyboardModifiers.isCtrlPressed) {
-                                    if (onCtrlGesture != null) {
-                                        gestureState = GestureState.CTRL
-                                        break
-                                    }
-                                } else {
-                                    onDrag?.invoke(event.calculatePan().asDifferentialScreenOffset())
-                                    if (onDrag != null) {
-                                        gestureState = GestureState.DRAG
-                                        break
-                                    } else
-                                        return@awaitEachGesture
-                                }
-                            }
-
-                            PointerEventType.Scroll -> {
-                                onScroll?.let { scrollLambda ->
-                                    event.changes.forEach {
-                                        if (it.scrollDelta.y != 0F) {
-                                            it.consume()
-                                            scrollLambda.invoke(it.position.asScreenOffset(), it.scrollDelta.y)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    } while (!event.changes.all { it.isOutOfBounds(size, extendedTouchPadding) })
-                }
-
                 GestureState.TAP_SWIPE -> {
                     do {
                         event = awaitPointerEventWithTimeout()
@@ -430,7 +333,7 @@ suspend fun PointerInputScope.detectMapGestures(
                                         panSlop += event.calculatePan()
                                         event.changes.forEach { it.consume() }
                                         if (panSlop.getDistance() > touchSlop) {
-                                            gestureState = GestureState.MOBILE
+                                            gestureState = GestureState.GESTURE
                                             break
                                         }
                                     }
@@ -449,40 +352,57 @@ suspend fun PointerInputScope.detectMapGestures(
                             }
                         } catch (_: PointerEventTimeoutCancellationException) {
                             if (onGesture != null) {
-                                gestureState = GestureState.MOBILE
+                                gestureState = GestureState.GESTURE
                                 break
                             }
                         }
                     } while (!event.changes.all { it.isOutOfBounds(size, extendedTouchPadding) })
                 }
 
-                GestureState.MOBILE -> {
+                GestureState.GESTURE -> {
                     do {
                         event = awaitPointerEventWithTimeout()
 
                         when (event.type) {
                             PointerEventType.Release -> {
-                                if (onDrag != null) {
-                                    event.changes.forEach { it.consume() }
-                                    gestureState = GestureState.DRAG
-                                    break
-                                } else if (event.changes.size == 1 && !event.changes[0].pressed)
+                                if (event.changes.size == 1 && !event.changes[0].pressed)
                                     return@awaitEachGesture
                             }
 
                             PointerEventType.Move -> {
-                                val eventZoomCentroid = event.calculateCentroidSize()
-                                val previousEventZoomCentroid = event.calculateCentroidSize(false)
-                                var zoomChange = eventZoomCentroid - previousEventZoomCentroid
-                                if (eventZoomCentroid == 0f || previousEventZoomCentroid == 0f)
-                                    zoomChange = 0.0F
+                                if (event.keyboardModifiers.isCtrlPressed) {
+                                    if (event.keyboardModifiers.isCtrlPressed) {
+                                        handleGestureWithCtrl(event.changes.first { it.pressed }, size / 2) { rotationChange ->
+                                            event.changes.filter { it.pressed }.forEach { it.consume() }
+                                            onGesture?.invoke(
+                                                this.size.center.toOffset().asScreenOffset(),
+                                                DifferentialScreenOffset.Zero,
+                                                0F,
+                                                rotationChange
+                                            )
+                                        }
+                                    }
+                                } else {
+                                    val eventZoomCentroid = event.calculateCentroidSize()
+                                    val previousEventZoomCentroid = event.calculateCentroidSize(false)
+                                    var zoomChange = eventZoomCentroid - previousEventZoomCentroid
+                                    if (eventZoomCentroid == 0f || previousEventZoomCentroid == 0f)
+                                        zoomChange = 0.0F
 
-                                val rotationChange = event.calculateRotation()
+                                    val rotationChange = event.calculateRotation()
 
-                                val panChange = event.calculatePan()
-                                val centroid = event.calculateCentroid()
-                                if (centroid != Offset.Unspecified)
-                                    onGesture?.invoke(centroid.asScreenOffset(), panChange.asDifferentialScreenOffset(), zoomChange, rotationChange)
+                                    val panChange = event.calculatePan()
+                                    val centroid = event.calculateCentroid()
+                                    if (centroid != Offset.Unspecified) {
+                                        event.changes.filter { it.pressed }.forEach { it.consume() }
+                                        onGesture?.invoke(
+                                            centroid.asScreenOffset(),
+                                            panChange.asDifferentialScreenOffset(),
+                                            zoomChange,
+                                            rotationChange
+                                        )
+                                    }
+                                }
                             }
 
                             PointerEventType.Scroll -> {

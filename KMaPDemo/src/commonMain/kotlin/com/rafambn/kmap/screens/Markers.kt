@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.core.KMaP
 import com.rafambn.kmap.core.DrawPosition
 import com.rafambn.kmap.components.MarkerParameters
+import com.rafambn.kmap.components.MarkerZoomParameter
 import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
@@ -73,11 +74,26 @@ fun MarkersScreen(
                 marker = MarkerParameters(
                     Coordinates(0.0, 10.0),
                     drawPosition = DrawPosition.TOP_RIGHT,
-                    zoomToFix = 1F,
+                    zoomParameters = MarkerZoomParameter(zoomToFix = 1F),
                 )
             ) {
                 Text(
                     text = "Scale with zoom",
+                    modifier = Modifier
+                        .background(Color.Black)
+                        .padding(16.dp),
+                    color = Color.White
+                )
+            }
+            marker(
+                marker = MarkerParameters(
+                    Coordinates(0.0, 30.0),
+                    drawPosition = DrawPosition.TOP_RIGHT,
+                    zoomParameters = MarkerZoomParameter(zoomVisibilityRange = 0F..0.5F),
+                )
+            ) {
+                Text(
+                    text = "Visible range 0 to 0.5",
                     modifier = Modifier
                         .background(Color.Black)
                         .padding(16.dp),
