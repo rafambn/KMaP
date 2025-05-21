@@ -8,11 +8,11 @@ plugins {
     alias(libs.plugins.compose)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.android.library)
-    id("com.vanniktech.maven.publish") version "0.30.0"
+    id("com.vanniktech.maven.publish") version "0.32.0"
 }
 
 group = "com.rafambn"
-version = "0.1.0"
+version = "0.2.0"
 
 kotlin {
     jvmToolchain(17)
@@ -76,7 +76,7 @@ mavenPublishing {
     coordinates(
         groupId = "com.rafambn",
         artifactId = "KMaP",
-        version = "0.1.0"
+        version = "0.2.0"
     )
 
 // Configure POM metadata for the published artifact
