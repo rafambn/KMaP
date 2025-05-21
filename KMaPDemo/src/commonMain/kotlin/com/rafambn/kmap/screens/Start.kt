@@ -38,5 +38,8 @@ fun StartScreen(
                 Text(it.second)
             }
         }
+        item {
+            Text("Tiles generated with Azgaar's Fantasy Map Generator")
+        }
     }
 }
