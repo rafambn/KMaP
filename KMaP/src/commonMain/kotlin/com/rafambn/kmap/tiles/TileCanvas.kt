@@ -15,10 +15,7 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -95,21 +92,9 @@ internal fun TileCanvas(
     renderedTilesCache.value.forEach {
         tileLayers.insertNewTileBitmap(it)
     }
-    val viewConfiguration = LocalViewConfiguration.current
     Layout(
         modifier = modifier
-            .then(canvasComponent.gestureDetector?.let {
-                Modifier.sharedPointerInput(
-                    key1 = null, viewConfiguration = viewConfiguration,
-                    block = { it(this) }
-                )
-            } ?: Modifier)
-            .then(canvasComponent.gestureDetector?.let {
-                Modifier.pointerInput(
-                    key1 = null,
-                    block = { it(this) }
-                )
-            } ?: Modifier)
+            .then(canvasComponent.gestureDetector?.let { Modifier.sharedPointerInput(it) } ?: Modifier)
             .graphicsLayer {
                 alpha = canvasComponent.alpha
                 clip = true

@@ -13,46 +13,44 @@ import com.rafambn.kmap.gestures.sharedPointerInput
 @Composable
 fun LayeredComposables() {
     Box {
-        // Bottom Composable
-//        Box(
-//            modifier = Modifier
-//                .size(200.dp)
-//                .background(Color.Blue)
-//                .sharedPointerInput(Unit) {
-//                    awaitPointerEventScope {
-//                        while (true) {
-//                            val event = awaitPointerEvent()
-//                            event.changes.forEach { change ->
-//                                if (event.type == PointerEventType.Move ||
-//                                    event.type == PointerEventType.Enter) {
-//                                    val position = change.position
-//                                    println("Mouse position: x=${position.x}, y=${position.y}")
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//        )
-//
-//        // Top Composable
-//        Box(
-//            modifier = Modifier
-//                .size(100.dp)
-//                .background(Color.Red)
-//                .sharedPointerInput(Unit) {
-//                    awaitPointerEventScope {
-//                        while (true) {
-//                            val event = awaitPointerEvent()
-//                            event.changes.forEach { change ->
-//                                if (event.type == PointerEventType.Move ||
-//                                    event.type == PointerEventType.Enter) {
-//                                    val position = change.position
-//                                    println("teste")
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//        )
+        Box(
+            modifier = Modifier
+                .size(200.dp)
+                .background(Color.Blue)
+                .sharedPointerInput {
+                    awaitPointerEventScope {
+                        while (true) {
+                            val event = awaitPointerEvent()
+                            event.changes.forEach { change ->
+                                if (event.type == PointerEventType.Move ||
+                                    event.type == PointerEventType.Enter) {
+                                    val position = change.position
+                                    println("Mouse position: x=${position.x}, y=${position.y}")
+                                }
+                            }
+                        }
+                    }
+                }
+        )
+
+        // Top Composable
+        Box(
+            modifier = Modifier
+                .size(100.dp)
+                .background(Color.Red)
+                .sharedPointerInput {
+                    awaitPointerEventScope {
+                        while (true) {
+                            val event = awaitPointerEvent()
+                            event.changes.forEach { change ->
+                                if (event.type == PointerEventType.Move ||
+                                    event.type == PointerEventType.Enter) {
+                                    println("teste")
+                                }
+                            }
+                        }
+                    }
+                }
+        )
     }
 }

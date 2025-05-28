@@ -1,28 +1,16 @@
 package com.rafambn.kmap.gestures
 
 import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathMeasure
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.PointerEventTimeoutCancellationException
-import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.PointerInputScope
-import androidx.compose.ui.input.pointer.consumeAllChanges
 import androidx.compose.ui.util.fastAny
-import androidx.compose.ui.util.fastForEach
 import com.rafambn.kmap.core.MapState
 import com.rafambn.kmap.utils.Coordinates
-import com.rafambn.kmap.utils.asScreenOffset
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.withTimeout
-import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * Detects tap, double tap, and long press gestures on a path.
