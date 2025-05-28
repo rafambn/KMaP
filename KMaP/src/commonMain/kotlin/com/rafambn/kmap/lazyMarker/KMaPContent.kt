@@ -62,7 +62,7 @@ class KMaPContent(
         style: DrawStyle,
         colorFilter: ColorFilter?,
         blendMode: BlendMode,
-//        gestureDetection: (suspend PointerInputScope.() -> Unit)?
+        gestureDetection: (suspend PointerInputScope.(path: Path) -> Unit)?
     ) {
         paths.add(
             PathComponent(
@@ -74,7 +74,7 @@ class KMaPContent(
                 style,
                 colorFilter,
                 blendMode,
-//                gestureDetection
+                gestureDetection
             )
         )
     }

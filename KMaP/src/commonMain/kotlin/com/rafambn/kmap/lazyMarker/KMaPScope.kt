@@ -48,7 +48,7 @@ interface KMaPScope {
         style: DrawStyle = Fill,
         colorFilter: ColorFilter? = null,
         blendMode: BlendMode = DefaultBlendMode,
-//        gestureDetection: (suspend PointerInputScope.() -> Unit)? = null
+        gestureDetection: (suspend PointerInputScope.(path: Path) -> Unit)? = null
     )
 }
 
