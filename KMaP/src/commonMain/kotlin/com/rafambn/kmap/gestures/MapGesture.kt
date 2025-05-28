@@ -49,7 +49,7 @@ suspend fun PointerInputScope.detectMapGestures(
         val touchSlop = viewConfiguration.touchSlop
         var panSlop: Offset
 
-        var gestureState: GestureState
+        var mapGestureState: MapGestureState
 
         var event: PointerEvent
         do {
@@ -75,7 +75,7 @@ suspend fun PointerInputScope.detectMapGestures(
             }
 
             PointerEventType.Press -> {
-                gestureState = GestureState.WAITING_UP
+                mapGestureState = MapGestureState.WAITING_UP
             }
 
             PointerEventType.Move -> {
@@ -85,15 +85,15 @@ suspend fun PointerInputScope.detectMapGestures(
                         onHover?.invoke(it.position.asScreenOffset())
                     }
                 }
-                gestureState = GestureState.HOVER
+                mapGestureState = MapGestureState.HOVER
             }
 
             else -> return@awaitEachGesture
         }
 
         do {
-            when (gestureState) {
-                GestureState.HOVER -> {
+            when (mapGestureState) {
+                MapGestureState.HOVER -> {
                     do {
                         event = awaitPointerEventWithTimeout()
 
@@ -103,7 +103,7 @@ suspend fun PointerInputScope.detectMapGestures(
                                     onTapSwipe != null || onTwoFingersTap != null || onGesture != null
                                 ) {
                                     event.changes.forEach { it.consume() }
-                                    gestureState = GestureState.WAITING_UP
+                                    mapGestureState = MapGestureState.WAITING_UP
                                     break
                                 }
                             }
@@ -131,7 +131,7 @@ suspend fun PointerInputScope.detectMapGestures(
                     } while (!event.changes.all { it.isOutOfBounds(size, extendedTouchPadding) })
                 }
 
-                GestureState.WAITING_UP -> {
+                MapGestureState.WAITING_UP -> {
                     var timePassed = 0L
                     panSlop = Offset.Zero
                     do {
@@ -146,8 +146,8 @@ suspend fun PointerInputScope.detectMapGestures(
                                     }
 
                                     event.changes.forEach { it.consume() }
-                                    gestureState =
-                                        if (onTwoFingersTap != null) GestureState.WAITING_UP_AFTER_TWO_PRESS else GestureState.GESTURE
+                                    mapGestureState =
+                                        if (onTwoFingersTap != null) MapGestureState.WAITING_UP_AFTER_TWO_PRESS else MapGestureState.GESTURE
                                     break
                                 }
 
@@ -155,7 +155,7 @@ suspend fun PointerInputScope.detectMapGestures(
                                     if (event.changes.size == 1) {
                                         if (onDoubleTap != null || onTapLongPress != null || onTapSwipe != null) {
                                             event.changes.forEach { it.consume() }
-                                            gestureState = GestureState.WAITING_DOWN
+                                            mapGestureState = MapGestureState.WAITING_DOWN
                                             break
                                         }
                                         if (onTap != null) {
@@ -170,7 +170,7 @@ suspend fun PointerInputScope.detectMapGestures(
                                     panSlop += event.calculatePan()
                                     event.changes.forEach { it.consume() }
                                     if (onGesture != null && panSlop.getDistance() > touchSlop) {
-                                        gestureState = GestureState.GESTURE
+                                        mapGestureState = MapGestureState.GESTURE
                                         break
                                     }
                                 }
@@ -194,7 +194,7 @@ suspend fun PointerInputScope.detectMapGestures(
                     } while (!event.changes.all { it.isOutOfBounds(size, extendedTouchPadding) })
                 }
 
-                GestureState.WAITING_DOWN -> {
+                MapGestureState.WAITING_DOWN -> {
                     var timePassed = 0L
                     panSlop = Offset.Zero
                     do {
@@ -205,11 +205,11 @@ suspend fun PointerInputScope.detectMapGestures(
                             when (event.type) {
                                 PointerEventType.Press -> {
                                     if (onDoubleTap != null || onTapSwipe != null || onTapLongPress != null)
-                                        gestureState = GestureState.WAITING_UP_AFTER_TAP
+                                        mapGestureState = MapGestureState.WAITING_UP_AFTER_TAP
                                     else {
                                         event.changes.forEach { it.consume() }
                                         onTap?.invoke(event.changes[0].position.asScreenOffset())
-                                        gestureState = GestureState.WAITING_UP
+                                        mapGestureState = MapGestureState.WAITING_UP
                                     }
                                     break
                                 }
@@ -244,7 +244,7 @@ suspend fun PointerInputScope.detectMapGestures(
                     } while (!event.changes.all { it.isOutOfBounds(size, extendedTouchPadding) })
                 }
 
-                GestureState.WAITING_UP_AFTER_TAP -> {
+                MapGestureState.WAITING_UP_AFTER_TAP -> {
                     var timePassed = 0L
                     panSlop = Offset.Zero
                     do {
@@ -261,7 +261,7 @@ suspend fun PointerInputScope.detectMapGestures(
                                 PointerEventType.Move -> {
                                     panSlop += event.calculatePan()
                                     if (panSlop.getDistance() > touchSlop && onTapSwipe != null) {
-                                        gestureState = GestureState.TAP_SWIPE
+                                        mapGestureState = MapGestureState.TAP_SWIPE
                                         break
                                     }
                                 }
@@ -284,7 +284,7 @@ suspend fun PointerInputScope.detectMapGestures(
                     } while (!event.changes.all { it.isOutOfBounds(size, extendedTouchPadding) })
                 }
 
-                GestureState.TAP_SWIPE -> {
+                MapGestureState.TAP_SWIPE -> {
                     do {
                         event = awaitPointerEventWithTimeout()
 
@@ -312,7 +312,7 @@ suspend fun PointerInputScope.detectMapGestures(
                     } while (!event.changes.all { it.isOutOfBounds(size, extendedTouchPadding) })
                 }
 
-                GestureState.WAITING_UP_AFTER_TWO_PRESS -> {
+                MapGestureState.WAITING_UP_AFTER_TWO_PRESS -> {
                     var timePassed = 0L
                     panSlop = Offset.Zero
                     do {
@@ -333,7 +333,7 @@ suspend fun PointerInputScope.detectMapGestures(
                                         panSlop += event.calculatePan()
                                         event.changes.forEach { it.consume() }
                                         if (panSlop.getDistance() > touchSlop) {
-                                            gestureState = GestureState.GESTURE
+                                            mapGestureState = MapGestureState.GESTURE
                                             break
                                         }
                                     }
@@ -352,14 +352,14 @@ suspend fun PointerInputScope.detectMapGestures(
                             }
                         } catch (_: PointerEventTimeoutCancellationException) {
                             if (onGesture != null) {
-                                gestureState = GestureState.GESTURE
+                                mapGestureState = MapGestureState.GESTURE
                                 break
                             }
                         }
                     } while (!event.changes.all { it.isOutOfBounds(size, extendedTouchPadding) })
                 }
 
-                GestureState.GESTURE -> {
+                MapGestureState.GESTURE -> {
                     do {
                         event = awaitPointerEventWithTimeout()
 

@@ -1,34 +1,21 @@
 package com.rafambn.kmap.path
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.awaitLongPressOrCancellation
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
-import androidx.compose.foundation.gestures.drag
-import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.changedToUp
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.zIndex
 import com.rafambn.kmap.components.PathComponent
 import com.rafambn.kmap.core.CameraState
 import com.rafambn.kmap.core.MapState
+import com.rafambn.kmap.gestures.sharedPointerInput
 import com.rafambn.kmap.utils.ScreenOffset
-import kotlinx.coroutines.CancellationException
 import kotlin.math.pow
 
 @Composable
@@ -47,18 +34,13 @@ internal fun PathCanvas(
     val bounds = pathComponent.path.getBounds()
     Layout(
         modifier = modifier
-//            .then(pathComponent.gestureDetector?.let { Modifier.pointerInput(Unit) { it(pathComponent.path) } } ?: Modifier)
-            .zIndex(pathComponent.zIndex)
-            .pointerInput(Unit){
-                awaitEachGesture {
-                    try {
-                        val down = awaitFirstDown(requireUnconsumed = false)
-                        val drag = awaitLongPressOrCancellation(down.id)
-                    } catch (c: CancellationException) {
-                        throw c
-                    }
+            .then(
+                pathComponent.gestureDetector?.let {
+                    Modifier.sharedPointerInput { it(pathComponent.path) }
                 }
-            }
+                ?: Modifier
+            )
+            .zIndex(pathComponent.zIndex)
             .graphicsLayer {
                 alpha = pathComponent.alpha
                 clip = true

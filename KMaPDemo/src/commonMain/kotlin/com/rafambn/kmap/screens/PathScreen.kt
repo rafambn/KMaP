@@ -41,7 +41,7 @@ fun PathScreen(
 
         // Create the path
         val pathData = PathData {
-            moveTo(0F, 0F)
+            moveTo(50F, 0F)
             lineTo(100F, 100F)
             lineTo(200F, 200F)
             lineTo(100F, 200F)
