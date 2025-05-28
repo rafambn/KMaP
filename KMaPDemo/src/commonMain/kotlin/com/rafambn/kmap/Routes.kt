@@ -29,4 +29,7 @@ sealed interface Routes {
 
     @Serializable
     data object SavedStateHandle
+
+    @Serializable
+    data object Teste
 }

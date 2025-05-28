@@ -37,7 +37,6 @@ fun PathScreen(
 ) {
     val mapState = rememberMapState(mapProperties = SimpleMapProperties())
     val lastGesture = remember { mutableStateOf("No gesture detected") }
-
     Box {
 
         // Create the path
