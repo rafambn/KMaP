@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -25,6 +26,7 @@ import androidx.compose.ui.zIndex
 import com.rafambn.kmap.components.CanvasComponent
 import com.rafambn.kmap.core.CameraState
 import com.rafambn.kmap.core.ViewPort
+import com.rafambn.kmap.gestures.sharedPointerInput
 import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.asOffset
@@ -93,9 +95,21 @@ internal fun TileCanvas(
     renderedTilesCache.value.forEach {
         tileLayers.insertNewTileBitmap(it)
     }
+    val viewConfiguration = LocalViewConfiguration.current
     Layout(
         modifier = modifier
-            .then(canvasComponent.gestureDetector?.let { Modifier.pointerInput(PointerEventPass.Main) { it(this) } } ?: Modifier)
+            .then(canvasComponent.gestureDetector?.let {
+                Modifier.sharedPointerInput(
+                    key1 = null, viewConfiguration = viewConfiguration,
+                    block = { it(this) }
+                )
+            } ?: Modifier)
+            .then(canvasComponent.gestureDetector?.let {
+                Modifier.pointerInput(
+                    key1 = null,
+                    block = { it(this) }
+                )
+            } ?: Modifier)
             .graphicsLayer {
                 alpha = canvasComponent.alpha
                 clip = true
@@ -130,7 +144,13 @@ internal fun TileCanvas(
     }
 }
 
-private fun DrawScope.drawTiles(tiles: List<Tile>, tileSize: TileDimension, positionOffset: CanvasDrawReference, scaleAdjustment: Float = 1F, canvas: Canvas) {
+private fun DrawScope.drawTiles(
+    tiles: List<Tile>,
+    tileSize: TileDimension,
+    positionOffset: CanvasDrawReference,
+    scaleAdjustment: Float = 1F,
+    canvas: Canvas
+) {
     tiles.forEach { tile ->
         tile.imageBitmap?.let {
             canvas.drawImageRect(
