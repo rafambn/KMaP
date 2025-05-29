@@ -41,7 +41,7 @@ interface KMaPScope {
 
     fun path(
         origin: Coordinates,
-        path: Path,
+        path: Path, //TODO path vector must already be projected
         color: Color,
         zIndex: Float = 1F,
         alpha: Float = 1F,

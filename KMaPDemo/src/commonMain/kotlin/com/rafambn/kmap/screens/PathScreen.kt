@@ -13,6 +13,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -39,13 +40,13 @@ fun PathScreen(
     val lastGesture = remember { mutableStateOf("No gesture detected") }
     Box {
 
-        // Create the path
         val pathData = PathData {
-            moveTo(50F, 0F)
-            lineTo(100F, 100F)
-            lineTo(200F, 200F)
-            lineTo(100F, 200F)
-            lineTo(100F, 100F)
+            moveTo(400F, 400F)
+            lineTo(450F, -450F)
+            lineTo(-450F, 450F)
+            lineTo(-450F, -450F)
+            lineTo(400F, 400F)
+            close()
         }
         val path = pathData.toPath()
         KMaP(
@@ -69,19 +70,19 @@ fun PathScreen(
                 gestureDetection = {
                     detectPathGestures(
                         onTap = {
-                            print("zika")
+                            lastGesture.value = "Tap detected at $it"
+                            println("Tap detected at $it")
                         },
-//                        onDoubleTap = { coordinates ->
-//                            lastGesture.value = "Double tap detected at $coordinates"
-//                            println("Path double tapped at $coordinates")
-//                        },
-//                        onLongPress = { coordinates ->
-//                            lastGesture.value = "Long press detected at $coordinates"
-//                            println("Path long pressed at $coordinates")
-//                        },
+                        onDoubleTap = { coordinates ->
+                            lastGesture.value = "Double tap detected at $coordinates"
+                            println("Double tap detected at $coordinates")
+                        },
+                        onLongPress = { coordinates ->
+                            lastGesture.value = "Long press detected at $coordinates"
+                            println("Long press detected at $coordinates")
+                        },
                         mapState = mapState,
-                        path = path,
-                        threshold = 20f
+                        path = path
                     )
                 }
             )

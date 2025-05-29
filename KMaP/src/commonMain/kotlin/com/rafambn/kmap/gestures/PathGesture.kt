@@ -6,22 +6,17 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathHitTester
 import androidx.compose.ui.graphics.PathMeasure
-import androidx.compose.ui.input.pointer.AwaitPointerEventScope
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventTimeoutCancellationException
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.isOutOfBounds
 import com.rafambn.kmap.core.MapState
+import com.rafambn.kmap.tiles.TileDimension
 import com.rafambn.kmap.utils.ScreenOffset
 import com.rafambn.kmap.utils.asScreenOffset
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 suspend fun PointerInputScope.detectPathGestures(
     onTap: ((ScreenOffset) -> Unit)? = null,
@@ -29,14 +24,13 @@ suspend fun PointerInputScope.detectPathGestures(
     onLongPress: ((ScreenOffset) -> Unit)? = null,
     mapState: MapState,
     path: Path,
-    threshold: Float = 10f
+    threshold: Float = 10f,
 ) = coroutineScope {
-    // Create a PathMeasure for hit testing
     val pathMeasure = PathMeasure()
     pathMeasure.setPath(path, false)
     val pathHitTester = PathHitTester(path, threshold)
 
-    val tester = PathTester(pathHitTester, pathMeasure, threshold)
+    val tester = PathTester(pathHitTester, pathMeasure, threshold, mapState.mapProperties.tileSize)
 
     awaitEachGesture {
         val longPressTimeout = viewConfiguration.longPressTimeoutMillis
@@ -50,17 +44,13 @@ suspend fun PointerInputScope.detectPathGestures(
 
         do {
             event = awaitPointerEventWithTimeout()
-            if (event.type == PointerEventType.Press) {
-                println(event)
-                tester.checkHit(event.changes[0].position)
-            }
         } while (
             !(event.type == PointerEventType.Press && (onTap != null || onDoubleTap != null || onLongPress != null)
                     && event.changes.any { !it.isConsumed && it.pressed && tester.checkHit(it.position) })
         )
 
         pathGestureState = PathGestureState.WAITING_UP
-        //TODO check for consumeds on pathGEsture and MapGesture
+        //TODO check for consumed on pathGesture and MapGesture
         do {
             when (pathGestureState) {
                 PathGestureState.WAITING_UP -> {
@@ -114,9 +104,10 @@ suspend fun PointerInputScope.detectPathGestures(
 
                             when (event.type) {
                                 PointerEventType.Press -> {
-                                    if (onDoubleTap != null)
+                                    if (onDoubleTap != null) {
                                         pathGestureState = PathGestureState.WAITING_UP_AFTER_TAP
-                                    else {
+                                        break
+                                    } else {
                                         event.changes.forEach { it.consume() }
                                         onTap?.invoke(event.changes[0].position.asScreenOffset())
                                     }
@@ -172,120 +163,23 @@ suspend fun PointerInputScope.detectPathGestures(
                 }
             }
         } while (this@coroutineScope.isActive && !event.changes.any { it.isOutOfBounds(size, extendedTouchPadding) })
-
-
-//        val down = awaitFirstDown(pass = PointerEventPass.Initial)
-//
-//        // Check if the down event hit the path
-//        // First check if the point is inside a closed path
-//        val isInsidePath = isPointInsidePath(path, down.position)
-//
-//        // If not inside, check if it's near the path using PathMeasure
-//        val isNearPath = if (!isInsidePath) {
-//            isPointNearPath(pathMeasure, down.position, threshold)
-//        } else {
-//            false // Already inside, no need to check if it's near
-//        }
-//
-//        // Only proceed if the point is inside or near the path
-//        if (!isInsidePath && !isNearPath) {
-//            return@awaitEachGesture
-//        }
-//
-//        // Consume the down event to prevent other gesture detectors from processing it
-//        down.consume()
-//
-//        // Calculate the long press timeout
-//        val longPressTimeout = onLongPress?.let {
-//            viewConfiguration.longPressTimeoutMillis
-//        } ?: (Long.MAX_VALUE / 2)
-//
-//        var upOrCancel: PointerInputChange? = null
-//        try {
-//            // Wait for up or timeout (long press)
-//            upOrCancel = withTimeout(longPressTimeout) {
-//                waitForUpOrCancellation()
-//            }
-//
-//            if (upOrCancel == null) {
-//                // The pointer was canceled
-//                return@awaitEachGesture
-//            } else {
-//                // The pointer was lifted
-//                upOrCancel.consume()
-//
-//                if (onDoubleTap == null) {
-//                    // If double tap is not supported, just invoke the tap callback
-//                    onTap?.invoke(with(mapState) { upOrCancel.position.asScreenOffset().toTilePoint().toCoordinates() })
-//                } else {
-//                    // If double tap is supported, wait for a second tap
-//                    try {
-//                        val secondDown = withTimeout(viewConfiguration.doubleTapTimeoutMillis) {
-//                            awaitFirstDown(pass = PointerEventPass.Initial)
-//                        }
-//
-//                        // Check if the second down event hit the path
-//                        val isSecondInsidePath = isPointInsidePath(path, secondDown.position)
-//                        val isSecondNearPath = if (!isSecondInsidePath) {
-//                            isPointNearPath(pathMeasure, secondDown.position, threshold)
-//                        } else {
-//                            false
-//                        }
-//
-//                        if (!isSecondInsidePath && !isSecondNearPath) {
-//                            // If the second tap didn't hit the path, treat it as a single tap
-//                            onTap?.invoke(with(mapState) { upOrCancel.position.asScreenOffset().toTilePoint().toCoordinates() })
-//                            return@awaitEachGesture
-//                        }
-//
-//                        secondDown.consume()
-//
-//                        try {
-//                            withTimeout(longPressTimeout) {
-//                                val secondUp = waitForUpOrCancellation()
-//                                if (secondUp != null) {
-//                                    secondUp.consume()
-//                                    onDoubleTap?.invoke(with(mapState) { secondUp.position.asScreenOffset().toTilePoint().toCoordinates() })
-//                                } else {
-//                                    // The second pointer was canceled
-//                                    onTap?.invoke(with(mapState) { upOrCancel.position.asScreenOffset().toTilePoint().toCoordinates() })
-//                                }
-//                            }
-//                        } catch (_: PointerEventTimeoutCancellationException) {
-//                            // Long press during the second tap
-//                            onTap?.invoke(with(mapState) { upOrCancel.position.asScreenOffset().toTilePoint().toCoordinates() })
-//                            consumePathEvents()
-//                        }
-//                    } catch (_: PointerEventTimeoutCancellationException) {
-//                        // Timeout waiting for the second tap, so it's a single tap
-//                        onTap?.invoke(with(mapState) { upOrCancel.position.asScreenOffset().toTilePoint().toCoordinates() })
-//                    }
-//                }
-//            }
-//        } catch (_: PointerEventTimeoutCancellationException) {
-//            // Long press
-//            onLongPress?.invoke(with(mapState) { down.position.asScreenOffset().toTilePoint().toCoordinates() })
-//            consumePathEvents()
-//        }
-//    }
     }
 }
 
 class PathTester(
     private val path: PathHitTester,
     private val pathMeasure: PathMeasure,
-    private val threshold: Float
+    private val threshold: Float,
+    private val tileDimension: TileDimension
 ) {
 
     fun checkHit(point: Offset): Boolean {
-        if (isPointInsidePath(path, point)) {
+        val pointTranslated = point.copy((point.x - tileDimension.width.toFloat()) / 2, (point.y - tileDimension.height.toFloat()) / 2)
+        if (isPointInsidePath(path, pointTranslated))
             return true
-        }
-       println("point is not on path")
-        if (isPointNearPath(pathMeasure, point, threshold)) {
+        if (isPointNearPath(pathMeasure, pointTranslated, threshold))
             return true
-        }
-        println("point is not near path")
+
         return false
     }
 
@@ -305,10 +199,8 @@ class PathTester(
 
     private fun findClosestPointOnPath(pathMeasure: PathMeasure, point: Offset): Offset {
         val pathLength = pathMeasure.length
-        val initialPointOnPath = pathMeasure.getPosition(0f) // Assumed safe for initial call
+        val initialPointOnPath = pathMeasure.getPosition(0f)
 
-        println("----------------------")
-        println(pathLength)
         if (pathLength == 0f) {
             return initialPointOnPath
         }
