@@ -12,7 +12,7 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.isOutOfBounds
 import com.rafambn.kmap.core.MapState
-import com.rafambn.kmap.tiles.TileDimension
+import com.rafambn.kmap.components.canvas.tiled.TileDimension
 import com.rafambn.kmap.utils.ScreenOffset
 import com.rafambn.kmap.utils.asScreenOffset
 import kotlinx.coroutines.coroutineScope

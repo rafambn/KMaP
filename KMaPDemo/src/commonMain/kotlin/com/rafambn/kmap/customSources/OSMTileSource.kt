@@ -1,10 +1,10 @@
 package com.rafambn.kmap.customSources
 
 import androidx.compose.ui.graphics.ImageBitmap
-import com.rafambn.kmap.tiles.TileSource
-import com.rafambn.kmap.tiles.Tile
-import com.rafambn.kmap.tiles.TileRenderResult
-import com.rafambn.kmap.tiles.TileSpecs
+import com.rafambn.kmap.components.canvas.tiled.TileSource
+import com.rafambn.kmap.components.canvas.tiled.Tile
+import com.rafambn.kmap.components.canvas.tiled.TileRenderResult
+import com.rafambn.kmap.components.canvas.tiled.TileSpecs
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.header

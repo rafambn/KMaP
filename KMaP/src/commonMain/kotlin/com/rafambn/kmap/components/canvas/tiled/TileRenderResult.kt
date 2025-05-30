@@ -1,4 +1,4 @@
-package com.rafambn.kmap.tiles
+package com.rafambn.kmap.components.canvas.tiled
 
 sealed interface TileRenderResult {
     data class Success(val tile: Tile) : TileRenderResult

@@ -15,13 +15,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.core.KMaP
-import com.rafambn.kmap.tiles.TileSource
+import com.rafambn.kmap.components.canvas.tiled.TileSource
 import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
 import com.rafambn.kmap.getGestureDetector
-import com.rafambn.kmap.tiles.Tile
-import com.rafambn.kmap.tiles.TileRenderResult
+import com.rafambn.kmap.components.canvas.tiled.Tile
+import com.rafambn.kmap.components.canvas.tiled.TileRenderResult
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import org.jetbrains.compose.resources.decodeToImageBitmap

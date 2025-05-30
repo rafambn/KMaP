@@ -8,7 +8,7 @@ import com.rafambn.kmap.mapProperties.CoordinatesRange
 import com.rafambn.kmap.mapProperties.Latitude
 import com.rafambn.kmap.mapProperties.Longitude
 import com.rafambn.kmap.mapProperties.ZoomLevelRange
-import com.rafambn.kmap.tiles.TileDimension
+import com.rafambn.kmap.components.canvas.tiled.TileDimension
 import com.rafambn.kmap.utils.TilePoint
 import com.rafambn.kmap.utils.Coordinates
 import kotlin.math.E

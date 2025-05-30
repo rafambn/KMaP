@@ -1,4 +1,4 @@
-package com.rafambn.kmap.tiles
+package com.rafambn.kmap.components.canvas.tiled
 
 import com.rafambn.kmap.utils.loopInZoom
 import kotlinx.coroutines.CoroutineScope

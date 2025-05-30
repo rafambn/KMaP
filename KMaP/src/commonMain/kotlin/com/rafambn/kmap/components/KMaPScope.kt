@@ -1,18 +1,12 @@
-package com.rafambn.kmap.lazyMarker
+package com.rafambn.kmap.components
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.DrawScope.Companion.DefaultBlendMode
-import androidx.compose.ui.graphics.drawscope.DrawStyle
-import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.input.pointer.PointerInputScope
-import com.rafambn.kmap.components.ClusterParameters
-import com.rafambn.kmap.components.MarkerParameters
-import com.rafambn.kmap.tiles.TileRenderResult
-import com.rafambn.kmap.utils.Coordinates
+import com.rafambn.kmap.components.canvas.tiled.TileRenderResult
+import com.rafambn.kmap.components.marker.ClusterParameters
+import com.rafambn.kmap.components.marker.MarkerParameters
+import com.rafambn.kmap.components.path.PathParameter
 
 interface KMaPScope {
 
@@ -40,14 +34,12 @@ interface KMaPScope {
     )
 
     fun path(
-        origin: Coordinates,
-        path: Path, //TODO path vector must already be projected
-        color: Color,
-        zIndex: Float = 1F,
-        alpha: Float = 1F,
-        style: DrawStyle = Fill,
-        colorFilter: ColorFilter? = null,
-        blendMode: BlendMode = DefaultBlendMode,
+        pathParameter: PathParameter,
+        gestureDetection: (suspend PointerInputScope.(path: Path) -> Unit)? = null
+    )
+
+    fun paths(
+        pathParameter: List<PathParameter>,
         gestureDetection: (suspend PointerInputScope.(path: Path) -> Unit)? = null
     )
 }

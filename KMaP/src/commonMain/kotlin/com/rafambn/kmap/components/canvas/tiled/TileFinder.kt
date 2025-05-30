@@ -1,4 +1,4 @@
-package com.rafambn.kmap.tiles
+package com.rafambn.kmap.components.canvas.tiled
 
 import androidx.compose.ui.geometry.Offset
 import com.rafambn.kmap.core.ViewPort

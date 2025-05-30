@@ -1,4 +1,4 @@
-package com.rafambn.kmap.tiles
+package com.rafambn.kmap.components.canvas.tiled
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import com.rafambn.kmap.components.CanvasComponent
+import com.rafambn.kmap.components.canvas.CanvasComponent
 import com.rafambn.kmap.core.CameraState
 import com.rafambn.kmap.core.ViewPort
 import com.rafambn.kmap.gestures.sharedPointerInput

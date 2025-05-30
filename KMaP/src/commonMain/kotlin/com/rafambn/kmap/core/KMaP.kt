@@ -7,11 +7,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.onGloballyPositioned
-import com.rafambn.kmap.tiles.TileCanvas
-import com.rafambn.kmap.lazyMarker.KMaPScope
-import com.rafambn.kmap.lazyMarker.rememberComponentProviderLambda
-import com.rafambn.kmap.lazyMarker.rememberComponentMeasurePolicy
-import com.rafambn.kmap.path.PathCanvas
+import com.rafambn.kmap.components.canvas.tiled.TileCanvas
+import com.rafambn.kmap.components.KMaPScope
+import com.rafambn.kmap.components.marker.rememberMarkerMeasurePolicy
+import com.rafambn.kmap.components.marker.MarkerProvider
+import com.rafambn.kmap.components.path.PathProvider
+import com.rafambn.kmap.components.path.rememberPathMeasurePolicy
+import com.rafambn.kmap.components.rememberComponentProviderLambda
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -22,7 +24,7 @@ fun KMaP(
 ) {
     val itemProvider = rememberComponentProviderLambda(content, mapState)
 
-    itemProvider.invoke().canvasList.forEach {
+    itemProvider.invoke().canvas.forEach {
         TileCanvas(
             cameraState = mapState.cameraState,
             mapProperties = mapState.mapProperties,
@@ -41,24 +43,27 @@ fun KMaP(
         )
     }
 
-    val measurePolicy = rememberComponentMeasurePolicy(
-        componentProviderLambda = itemProvider,
+    val markerMeasurePolicy = rememberMarkerMeasurePolicy(
+        markerProviderLambda = { MarkerProvider(itemProvider.invoke()) },
+        mapState = mapState,
+    )
+
+    val pathMeasurePolicy = rememberPathMeasurePolicy(
+        pathProviderLambda = { PathProvider(itemProvider.invoke()) },
         mapState = mapState,
     )
 
     LazyLayout(
-        itemProvider = itemProvider,
+        itemProvider = { MarkerProvider(itemProvider.invoke()) },
         modifier = modifier.clipToBounds(),
         prefetchState = null,
-        measurePolicy = measurePolicy
+        measurePolicy = markerMeasurePolicy
     )
 
-    itemProvider.invoke().pathList.forEach {
-        PathCanvas(
-            cameraState = mapState.cameraState,
-            pathComponent = it,
-            modifier = modifier,
-            mapState = mapState
-        )
-    }
+    LazyLayout(
+        itemProvider = { PathProvider(itemProvider.invoke()) },
+        modifier = modifier.clipToBounds(),
+        prefetchState = null,
+        measurePolicy = pathMeasurePolicy
+    )
 }

@@ -1,4 +1,4 @@
-package com.rafambn.kmap.lazyMarker
+package com.rafambn.kmap.components.marker
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.layout.LazyLayoutMeasureScope
@@ -11,7 +11,6 @@ import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.util.fastForEach
-import com.rafambn.kmap.components.MarkerParameters
 import com.rafambn.kmap.core.MapState
 import com.rafambn.kmap.core.getViewPort
 import com.rafambn.kmap.utils.asOffset
@@ -19,20 +18,20 @@ import com.rafambn.kmap.utils.asScreenOffset
 
 @ExperimentalFoundationApi
 @Composable
-fun rememberComponentMeasurePolicy(
-    componentProviderLambda: () -> ComponentProvider,
+fun rememberMarkerMeasurePolicy(
+    markerProviderLambda: () -> MarkerProvider,
     mapState: MapState,
 ) = remember<LazyLayoutMeasureScope.(Constraints) -> MeasureResult>(
     mapState,
 ) {
     { containerConstraints ->
-        val componentProvider = componentProviderLambda()
+        val componentProvider = markerProviderLambda()
 
         val markersCount = componentProvider.markersCount
 
-        val measuredItemProvider = MeasuredComponentProvider(componentProvider, this)
+        val measuredItemProvider = MeasuredMarkerProvider(componentProvider, this)
 
-        measureComponent(
+        measureMarker(
             markersCount = markersCount,
             measuredItemProvider = measuredItemProvider,
             mapState = mapState,
@@ -48,9 +47,9 @@ fun rememberComponentMeasurePolicy(
     }
 }
 
-internal fun measureComponent(
+internal fun measureMarker(
     markersCount: Int,
-    measuredItemProvider: MeasuredComponentProvider,
+    measuredItemProvider: MeasuredMarkerProvider,
     mapState: MapState,
     layout: (Placeable.PlacementScope.() -> Unit) -> MeasureResult
 ): MeasureResult {
@@ -58,19 +57,19 @@ internal fun measureComponent(
     if (markersCount <= 0)
         return layout {}
 
-    val visibleItems = mutableListOf<MeasuredComponent>()
-    val itemsThatCanClusterMap = mutableMapOf<Int, List<MeasuredComponent>>()
-    val measuredComponents = mutableListOf<MeasuredComponent>()
+    val visibleItems = mutableListOf<MeasuredMarker>()
+    val itemsThatCanClusterMap = mutableMapOf<Int, List<MeasuredMarker>>()
+    val measuredMarkers = mutableListOf<MeasuredMarker>()
 
     for (index in 0 until markersCount) {
-        measuredComponents.add(measuredItemProvider.getAndMeasure(index))
+        measuredMarkers.add(measuredItemProvider.getAndMeasure(index))
     }
 
     val mapViewPort = Rect(
         Offset.Zero,
         Size(mapState.cameraState.canvasSize.x, mapState.cameraState.canvasSize.y)
     )
-    measuredComponents.forEach { measuredComponent ->
+    measuredMarkers.forEach { measuredComponent ->
         require(measuredComponent.parameters is MarkerParameters)
         measuredComponent.offset = with(mapState) {
             measuredComponent.parameters.coordinates.toTilePoint().toScreenOffset()
@@ -111,19 +110,19 @@ internal fun measureComponent(
 }
 
 private fun clusterComponents(
-    measuredComponents: List<MeasuredComponent>,
-    measuredItemProvider: MeasuredComponentProvider,
+    measuredMarkers: List<MeasuredMarker>,
+    measuredItemProvider: MeasuredMarkerProvider,
     markersCount: Int,
-    result: (nonClusteredComponent: List<MeasuredComponent>, clusters: List<MeasuredComponent>) -> Unit
+    result: (nonClusteredComponent: List<MeasuredMarker>, clusters: List<MeasuredMarker>) -> Unit
 ) {
-    val visited = mutableSetOf<MeasuredComponent>()
-    val clusters = mutableListOf<MeasuredComponent>()
-    val nonClustered = mutableListOf<MeasuredComponent>()
+    val visited = mutableSetOf<MeasuredMarker>()
+    val clusters = mutableListOf<MeasuredMarker>()
+    val nonClustered = mutableListOf<MeasuredMarker>()
 
-    for (measuredComponent in measuredComponents) {
+    for (measuredComponent in measuredMarkers) {
         if (measuredComponent !in visited) {
             visited.add(measuredComponent)
-            val intersecting = measuredComponents.filter { it.viewPort.overlaps(measuredComponent.viewPort) && !visited.contains(it) }
+            val intersecting = measuredMarkers.filter { it.viewPort.overlaps(measuredComponent.viewPort) && !visited.contains(it) }
             if (intersecting.isNotEmpty())
                 expandCluster(measuredComponent, intersecting, clusters, visited, measuredItemProvider, markersCount)
             else
@@ -134,15 +133,15 @@ private fun clusterComponents(
 }
 
 private fun expandCluster(
-    measuredComponent: MeasuredComponent,
-    intersecting: List<MeasuredComponent>,
-    clusters: MutableList<MeasuredComponent>,
-    visited: MutableSet<MeasuredComponent>,
-    measuredItemProvider: MeasuredComponentProvider,
+    measuredMarker: MeasuredMarker,
+    intersecting: List<MeasuredMarker>,
+    clusters: MutableList<MeasuredMarker>,
+    visited: MutableSet<MeasuredMarker>,
+    measuredItemProvider: MeasuredMarkerProvider,
     markersCount: Int,
 ) {
     var size = 1
-    var avgOffset = measuredComponent.viewPort.topLeft
+    var avgOffset = measuredMarker.viewPort.topLeft
     val queue = intersecting.toMutableList()
     while (queue.isNotEmpty()) {
         val current = queue.removeAt(0)
@@ -150,7 +149,7 @@ private fun expandCluster(
         size++
         avgOffset += current.viewPort.topLeft
     }
-    val cluster = measuredItemProvider.getAndMeasure(measuredComponent.index + markersCount)
+    val cluster = measuredItemProvider.getAndMeasure(measuredMarker.index + markersCount)
     cluster.offset = (avgOffset / size.toFloat()).asScreenOffset()
     clusters.add(cluster)
 }

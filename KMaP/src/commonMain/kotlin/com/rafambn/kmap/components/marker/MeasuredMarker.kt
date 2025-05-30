@@ -1,25 +1,23 @@
-package com.rafambn.kmap.lazyMarker
+package com.rafambn.kmap.components.marker
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.Placeable
-import com.rafambn.kmap.components.ClusterParameters
-import com.rafambn.kmap.components.MarkerParameters
 import com.rafambn.kmap.components.Parameters
 import com.rafambn.kmap.utils.Degrees
 import com.rafambn.kmap.utils.ScreenOffset
 import kotlin.math.pow
 
-class MeasuredComponent(
+class MeasuredMarker(
     val index: Int,
     val placeables: List<Placeable>,
     val parameters: Parameters
 ) {
     val maxWidth: Int = placeables.maxOf { placeable -> placeable.width }
     val maxHeight: Int = placeables.maxOf { placeable -> placeable.height }
-    var offset = ScreenOffset.Zero
-    var viewPort = Rect(Offset.Zero, Size.Zero)
+    var offset = ScreenOffset.Companion.Zero
+    var viewPort = Rect(Offset.Companion.Zero, Size.Companion.Zero)
 
     private val placeablesCount: Int get() = placeables.size
 
