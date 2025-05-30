@@ -3,7 +3,6 @@ package com.rafambn.kmap.components.path
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.layout.LazyLayoutMeasureScope
 import androidx.compose.ui.unit.Constraints
-import com.rafambn.kmap.components.marker.MeasuredMarker
 
 @OptIn(ExperimentalFoundationApi::class)
 internal class MeasuredPathProvider(
@@ -15,8 +14,8 @@ internal class MeasuredPathProvider(
         maxHeight = Constraints.Infinity
     )
 
-    fun getAndMeasure(index: Int): MeasuredMarker =
-        MeasuredMarker(
+    fun getAndMeasure(index: Int): MeasuredPath =
+        MeasuredPath(
             index = index,
             placeables = measureScope.measure(index, childConstraints),
             parameters = componentProvider.getParameters(index)

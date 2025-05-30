@@ -17,7 +17,6 @@ import com.rafambn.kmap.core.MotionController
 import com.rafambn.kmap.gestures.detectMapGestures
 import com.rafambn.kmap.screens.AnimationScreen
 import com.rafambn.kmap.screens.ClusteringScreen
-import com.rafambn.kmap.screens.LayeredComposables
 import com.rafambn.kmap.screens.LayersScreen
 import com.rafambn.kmap.screens.MarkersScreen
 import com.rafambn.kmap.screens.OSMRemoteScreen
@@ -58,11 +57,7 @@ fun App() = AppTheme {
                     navigateOSM = { navigationController.navigate(Routes.OSMRemote) },
                     navigateClustering = { navigationController.navigate(Routes.Clustering) },
                     navigateSavedStateHandle = { navigationController.navigate(Routes.SavedStateHandle) },
-                    teste = { navigationController.navigate(Routes.Teste)}
                 )
-            }
-            composable<Routes.Teste> {
-                LayeredComposables()
             }
             composable<Routes.Simple> {
                 SimpleMapScreen(

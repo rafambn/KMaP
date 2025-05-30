@@ -40,11 +40,11 @@ fun PathScreen(
     Box {
 
         val pathData = PathData {
-            moveTo(400F, 400F)
-            lineTo(450F, -450F)
-            lineTo(-450F, 450F)
-            lineTo(-450F, -450F)
-            lineTo(400F, 400F)
+            moveTo(40F, 40F)
+            lineTo(45F, -45F)
+            lineTo(-45F, 45F)
+            lineTo(-45F, -45F)
+            lineTo(40F, 40F)
             close()
         }
         val path = pathData.toPath()
