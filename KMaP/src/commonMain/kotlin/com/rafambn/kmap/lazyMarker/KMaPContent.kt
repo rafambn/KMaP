@@ -1,7 +1,16 @@
 package com.rafambn.kmap.lazyMarker
 
+import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.PointerInputScope
+import androidx.compose.ui.layout.Layout
 import com.rafambn.kmap.components.Canvas
 import com.rafambn.kmap.components.CanvasParameters
 import com.rafambn.kmap.components.Cluster
@@ -10,6 +19,7 @@ import com.rafambn.kmap.components.Marker
 import com.rafambn.kmap.components.MarkerParameters
 import com.rafambn.kmap.components.Path
 import com.rafambn.kmap.components.PathParameters
+import com.rafambn.kmap.gestures.sharedPointerInput
 import com.rafambn.kmap.tiles.TileRenderResult
 
 class KMaPContent(
@@ -59,8 +69,34 @@ class KMaPContent(
 
     fun path(
         parameters: PathParameters,
-        gestureDetection: (suspend PointerInputScope.() -> Unit)? = null
+        gestureDetection: (suspend PointerInputScope.(path: androidx.compose.ui.graphics.Path) -> Unit)? = null
     ) {
-        paths.add(Path(parameters, gestureDetection))
+        var padding = if (parameters.style is Stroke) parameters.style.width / 2F else 0F
+        padding = maxOf(padding, parameters.clickPadding)
+        paths.add(
+            Path(parameters, gestureDetection){
+                val bounds = parameters.path.getBounds()
+                Layout(
+                    modifier = Modifier
+                        .then(gestureDetection?.let { Modifier.sharedPointerInput { it(parameters.path) } } ?: Modifier)
+                        .alpha(0.5F)//TODO remove later
+                        .background(color = Color.Black)
+                        .drawBehind {
+                            withTransform({ translate(-bounds.left + padding, -bounds.top + padding) }) {
+                                drawIntoCanvas { canvas ->
+                                    drawPath(
+                                        path = parameters.path,
+                                        color = parameters.color,
+                                        colorFilter = parameters.colorFilter,
+                                        blendMode = parameters.blendMode,
+                                        style = parameters.style
+                                    )
+                                }
+                            }
+                        }) { _, constraints ->
+                    layout((bounds.width + padding * 2).toInt(), (bounds.height + padding * 2).toInt()) {}
+                }
+            }
+        )
     }
 }
