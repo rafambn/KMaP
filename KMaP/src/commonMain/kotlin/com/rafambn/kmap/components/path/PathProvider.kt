@@ -19,5 +19,5 @@ class PathProvider(
         kmapContent.paths[index].pathContent()
     }
 
-    fun getParameters(index: Int): Parameters = kmapContent.paths[index].parameters
+    fun getParameters(index: Int): PathParameter = kmapContent.paths[index].parameters
 }

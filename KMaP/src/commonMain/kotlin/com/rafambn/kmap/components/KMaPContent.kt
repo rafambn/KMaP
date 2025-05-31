@@ -5,12 +5,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.withTransform
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.zIndex
@@ -23,7 +22,6 @@ import com.rafambn.kmap.components.marker.MarkerComponent
 import com.rafambn.kmap.components.marker.MarkerParameters
 import com.rafambn.kmap.components.path.PathParameter
 import com.rafambn.kmap.gestures.sharedPointerInput
-import kotlin.math.pow
 
 class KMaPContent(
     content: KMaPScope.() -> Unit,
@@ -63,20 +61,22 @@ class KMaPContent(
     }
 
     override fun path(pathParameter: PathParameter, gestureDetection: (suspend PointerInputScope.(Path) -> Unit)?) {
+        var padding = if (pathParameter.style is Stroke) pathParameter.style.width / 2F else 0F
+        padding = maxOf(padding, pathParameter.detectionThreshold)
         paths.add(
             PathComponent(
-                pathParameter,
-                gestureDetection
+                parameters = pathParameter,
+                padding = padding,
+                gestureDetector = gestureDetection,
             ) {
                 val bounds = pathParameter.path.getBounds()
                 Layout(
                     modifier = Modifier
                         .then(gestureDetection?.let { Modifier.sharedPointerInput { it(pathParameter.path) } } ?: Modifier)
-                        .alpha(0.5F)
+                        .alpha(0.5F)//TODO remove later
                         .background(color = Color.Black)
-                        .zIndex(pathParameter.zIndex)
                         .drawBehind {
-                            withTransform({ translate(-bounds.left, -bounds.top) }) {
+                            withTransform({ translate(-bounds.left + padding, -bounds.top + padding) }) {
                                 drawIntoCanvas { canvas ->
                                     drawPath(
                                         path = pathParameter.path,
@@ -88,7 +88,7 @@ class KMaPContent(
                                 }
                             }
                         }) { _, constraints ->
-                    layout(bounds.width.toInt(), bounds.height.toInt()) {}
+                    layout((bounds.width + padding * 2).toInt(), (bounds.height + padding * 2).toInt()) {}
                 }
             }
         )

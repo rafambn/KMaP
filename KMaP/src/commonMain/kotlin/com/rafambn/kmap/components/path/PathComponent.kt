@@ -7,6 +7,7 @@ import com.rafambn.kmap.components.Component
 
 data class PathComponent(
     val parameters: PathParameter,
+    val padding: Float,
     val gestureDetector: (suspend PointerInputScope.(path: Path) -> Unit)? = null,
     val pathContent: @Composable () -> Unit
 ) : Component

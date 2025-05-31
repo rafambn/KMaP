@@ -4,11 +4,14 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.layout.LazyLayoutMeasureScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.util.fastForEach
 import com.rafambn.kmap.core.MapState
+import com.rafambn.kmap.utils.Coordinates
+import com.rafambn.kmap.utils.TilePoint
 
 @ExperimentalFoundationApi
 @Composable
@@ -51,16 +54,32 @@ internal fun measurePath(
     if (pathCount <= 0)
         return layout {}
 
-    val visibleItems = mutableListOf<MeasuredPath>()
     val measuredPaths = mutableListOf<MeasuredPath>()
 
-    for (index in 0 until pathCount) {
-        measuredPaths.add(measuredItemProvider.getAndMeasure(index))
+    repeat(pathCount) { index ->
+        val measuredComponent = measuredItemProvider.getAndMeasure(index)
+
+
+        var padding = if (measuredComponent.parameters.style is Stroke) measuredComponent.parameters.style.width / 2F else 0F
+        padding = maxOf(padding, measuredComponent.parameters.detectionThreshold)
+        measuredComponent.offset = with(mapState) {
+            TilePoint(
+                measuredComponent.parameters.path.getBounds().topLeft.x.toDouble() + 450 - padding,
+                measuredComponent.parameters.path.getBounds().topLeft.y.toDouble() + 450 - padding
+            ).toScreenOffset()
+        }
+        measuredPaths.add(measuredComponent)
     }
 
     return layout {
         measuredPaths.fastForEach {
-            it.place(this, it.offset, it.parameters, mapState.cameraState.angleDegrees, mapState.cameraState.zoom)
+            it.place(
+                this,
+                it.parameters,
+                mapState.cameraState.angleDegrees,
+                mapState.cameraState.zoom,
+                mapState.mapProperties.coordinatesRange,
+            )
         }
     }
 }

@@ -2,7 +2,7 @@ package com.rafambn.kmap.utils
 
 import androidx.compose.ui.geometry.Offset
 
-sealed interface Reference
+sealed interface Reference //TODO melhorar referencia
 
 data class ScreenOffset(val x: Float, val y: Float) : Reference {
     operator fun plus(reference: ScreenOffset) = ScreenOffset(x + reference.x, y + reference.y)

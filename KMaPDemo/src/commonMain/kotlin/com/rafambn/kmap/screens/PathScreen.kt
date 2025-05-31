@@ -1,6 +1,7 @@
 package com.rafambn.kmap.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,13 +21,17 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.PathData
 import androidx.compose.ui.graphics.vector.toPath
 import androidx.compose.ui.unit.dp
+import com.rafambn.kmap.components.marker
+import com.rafambn.kmap.components.marker.MarkerParameters
 import com.rafambn.kmap.components.path.PathParameter
+import com.rafambn.kmap.core.DrawPosition
 import com.rafambn.kmap.core.KMaP
 import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
 import com.rafambn.kmap.gestures.detectPathGestures
 import com.rafambn.kmap.getGestureDetector
+import com.rafambn.kmap.utils.Coordinates
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import org.jetbrains.compose.resources.vectorResource
@@ -40,14 +45,14 @@ fun PathScreen(
     Box {
 
         val pathData = PathData {
-            moveTo(40F, 40F)
-            lineTo(45F, -45F)
-            lineTo(-45F, 45F)
+            moveTo(0F, 0F)
             lineTo(-45F, -45F)
-            lineTo(40F, 40F)
-            close()
+            lineTo(-45F, 45F)
+            lineTo(45F, 45F)
+            lineTo(45F, -45F)
         }
         val path = pathData.toPath()
+
         KMaP(
             modifier = Modifier.fillMaxSize(),
             mapState = mapState,
@@ -56,6 +61,20 @@ fun PathScreen(
                 tileSource = SimpleMapTileSource()::getTile,
                 gestureDetection = getGestureDetector(mapState.motionController)
             )
+            marker(
+                marker = MarkerParameters(
+                    Coordinates(0.0, 0.0),
+                    drawPosition = DrawPosition.TOP_LEFT,
+                )
+            ) {
+                Text(
+                    text = "Middle point",
+                    modifier = Modifier
+                        .background(Color.Black)
+                        .padding(16.dp),
+                    color = Color.White
+                )
+            }
             path(
                 pathParameter = PathParameter(
                     path = path,

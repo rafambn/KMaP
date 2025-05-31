@@ -134,7 +134,7 @@ class MapState(
         .minus(cameraState.canvasSize / 2F)
         .unaryMinus()
 
-    private fun TilePoint.toCanvasDrawReference(): CanvasDrawReference = this
+    fun TilePoint.toCanvasDrawReference(): CanvasDrawReference = this
         .scale(
             mapProperties.tileSize.width * (1 shl zoomLevel) / mapProperties.tileSize.width.toDouble(),
             mapProperties.tileSize.height * (1 shl zoomLevel) / mapProperties.tileSize.height.toDouble()

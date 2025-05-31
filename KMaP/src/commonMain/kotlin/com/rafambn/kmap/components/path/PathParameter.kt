@@ -17,4 +17,5 @@ data class PathParameter(
     val style: DrawStyle = Fill,
     val colorFilter: ColorFilter? = null,
     val blendMode: BlendMode = DefaultBlendMode,
+    val detectionThreshold: Float = 10F,
 ) : Parameters

@@ -14,6 +14,7 @@ import com.rafambn.kmap.components.marker.MarkerProvider
 import com.rafambn.kmap.components.path.PathProvider
 import com.rafambn.kmap.components.path.rememberPathMeasurePolicy
 import com.rafambn.kmap.components.rememberComponentProviderLambda
+import com.rafambn.kmap.gestures.sharedPointerInput
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -62,7 +63,7 @@ fun KMaP(
 
     LazyLayout(
         itemProvider = { PathProvider(itemProvider.invoke()) },
-        modifier = modifier.clipToBounds(),
+        modifier = modifier.clipToBounds().sharedPointerInput{},
         prefetchState = null,
         measurePolicy = pathMeasurePolicy
     )
