@@ -24,13 +24,10 @@ import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.core.KMaP
 import com.rafambn.kmap.core.DrawPosition
 import com.rafambn.kmap.components.MarkerParameters
-import com.rafambn.kmap.components.MarkerZoomParameter
 import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
 import com.rafambn.kmap.getGestureDetector
-import com.rafambn.kmap.lazyMarker.marker
-import com.rafambn.kmap.lazyMarker.markers
 import com.rafambn.kmap.utils.Coordinates
 import com.rafambn.kmap.utils.asDifferentialScreenOffset
 import com.rafambn.kmap.utils.minus
@@ -75,7 +72,7 @@ fun MarkersScreen(
                 marker = MarkerParameters(
                     Coordinates(0.0, 10.0),
                     drawPosition = DrawPosition.TOP_RIGHT,
-                    zoomParameters = MarkerZoomParameter(zoomToFix = 1F),
+                    zoomToFix = 1F,
                 )
             ) {
                 Text(
@@ -90,7 +87,7 @@ fun MarkersScreen(
                 marker = MarkerParameters(
                     Coordinates(0.0, 30.0),
                     drawPosition = DrawPosition.TOP_RIGHT,
-                    zoomParameters = MarkerZoomParameter(zoomVisibilityRange = 0F..0.5F),
+                    zoomVisibilityRange = 0F..0.5F,
                 )
             ) {
                 Text(
@@ -143,12 +140,12 @@ fun MarkersScreen(
                     color = Color.Red
                 )
             }
-            markers(markers = markersList) {
+            markers(markers = markersList) { item, index ->
                 Image(
                     painter = painterResource(Res.drawable.pin),
                     contentDescription = "Removable marker",
                     modifier = Modifier
-                        .clickable { markersList.remove(it) }
+                        .clickable { markersList.remove(item) }
                         .size(32.dp)
                 )
             }

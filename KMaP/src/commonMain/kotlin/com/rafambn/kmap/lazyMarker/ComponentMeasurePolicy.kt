@@ -82,7 +82,7 @@ internal fun measureComponent(
             measuredComponent.offset.asOffset()
         )
         //TODO expand test for rotating markers
-        if (measuredComponent.parameters.zoomParameters.zoomVisibilityRange.contains(mapState.cameraState.zoom) &&
+        if (measuredComponent.parameters.zoomVisibilityRange.contains(mapState.cameraState.zoom) &&
             mapViewPort.overlaps(measuredComponent.viewPort)) {
             if (measuredComponent.parameters.clusterId != null) {
                 val map = itemsThatCanClusterMap[measuredComponent.parameters.clusterId]

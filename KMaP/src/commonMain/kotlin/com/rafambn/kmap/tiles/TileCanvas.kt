@@ -7,7 +7,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -22,7 +21,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import com.rafambn.kmap.components.CanvasComponent
 import com.rafambn.kmap.core.CameraState
 import com.rafambn.kmap.core.ViewPort
 import com.rafambn.kmap.mapProperties.MapProperties
@@ -40,7 +38,7 @@ internal fun TileCanvas(
     positionOffset: CanvasDrawReference,
     viewPort: ViewPort,
     modifier: Modifier,
-    canvasComponent: CanvasComponent,
+    canvas: com.rafambn.kmap.components.Canvas,
 ) {
     val zoomLevel = cameraState.zoom.toIntFloor()
     val magnifierScale = cameraState.zoom - zoomLevel
@@ -55,7 +53,7 @@ internal fun TileCanvas(
     )
     val coroutineScope = rememberCoroutineScope()
     var tileLayers = remember { TileLayers() }
-    val canvasState = remember { TileRenderer(canvasComponent.getTile, canvasComponent.maxCacheTiles, coroutineScope) }
+    val canvasState = remember { TileRenderer(canvas.getTile, canvas.maxCacheTiles, coroutineScope) }
 
     val renderedTilesCache = canvasState.renderedTilesFlow.collectAsState()
     if (zoomLevel != tileLayers.frontLayer.level)
@@ -95,12 +93,12 @@ internal fun TileCanvas(
     }
     Layout(
         modifier = modifier
-            .then(canvasComponent.gestureDetector?.let { Modifier.pointerInput(PointerEventPass.Main) { it(this) } } ?: Modifier)
+            .then(canvas.gestureDetector?.let { Modifier.pointerInput(PointerEventPass.Main) { it(this) } } ?: Modifier)
             .graphicsLayer {
-                alpha = canvasComponent.alpha
+                alpha = canvas.parameters.alpha
                 clip = true
             }
-            .zIndex(canvasComponent.zIndex)
+            .zIndex(canvas.parameters.zIndex)
             .drawBehind {
                 withTransform({
                     translate(translation.x, translation.y)
@@ -135,7 +133,7 @@ private fun DrawScope.drawTiles(
     tileSize: TileDimension,
     positionOffset: CanvasDrawReference,
     scaleAdjustment: Float = 1F,
-    canvas: Canvas
+    canvas: androidx.compose.ui.graphics.Canvas
 ) {
     tiles.forEach { tile ->
         tile.imageBitmap?.let {

@@ -15,12 +15,12 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.PathData
 import androidx.compose.ui.graphics.vector.toPath
 import androidx.compose.ui.unit.dp
+import com.rafambn.kmap.components.PathParameters
 import com.rafambn.kmap.core.KMaP
 import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
 import com.rafambn.kmap.getGestureDetector
-import com.rafambn.kmap.utils.Coordinates
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import org.jetbrains.compose.resources.vectorResource
@@ -40,21 +40,22 @@ fun PathScreen(
                 gestureDetection = getGestureDetector(mapState.motionController)
             )
             path(
-                origin = Coordinates(0.0, 0.0),
-                path = PathData {
-                    moveTo(0F, 0F)
-                    lineTo(100F, 100F)
-                    lineTo(200F, 200F)
-                    lineTo(100F, 200F)
-                    lineTo(100F, 100F)
-                }.toPath(),
-                color = Color.Red,
-                style = Stroke(
-                    width = 4F,
-                    cap = StrokeCap.Round,
-                    join = StrokeJoin.Round,
-                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
-                )
+                parameters = PathParameters(
+                    path = PathData {
+                        moveTo(0F, 0F)
+                        lineTo(100F, 100F)
+                        lineTo(200F, 200F)
+                        lineTo(100F, 200F)
+                        lineTo(100F, 100F)
+                    }.toPath(),
+                    color = Color.Red,
+                    style = Stroke(
+                        width = 4F,
+                        cap = StrokeCap.Round,
+                        join = StrokeJoin.Round,
+                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+                    )
+                ),
             )
         }
         Image(

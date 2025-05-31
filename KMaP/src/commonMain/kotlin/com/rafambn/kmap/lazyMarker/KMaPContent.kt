@@ -1,81 +1,66 @@
 package com.rafambn.kmap.lazyMarker
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.input.pointer.PointerInputScope
-import com.rafambn.kmap.components.CanvasComponent
-import com.rafambn.kmap.components.ClusterComponent
+import com.rafambn.kmap.components.Canvas
+import com.rafambn.kmap.components.CanvasParameters
+import com.rafambn.kmap.components.Cluster
 import com.rafambn.kmap.components.ClusterParameters
-import com.rafambn.kmap.components.MarkerComponent
+import com.rafambn.kmap.components.Marker
 import com.rafambn.kmap.components.MarkerParameters
-import com.rafambn.kmap.components.PathComponent
+import com.rafambn.kmap.components.Path
+import com.rafambn.kmap.components.PathParameters
 import com.rafambn.kmap.tiles.TileRenderResult
-import com.rafambn.kmap.utils.Coordinates
 
 class KMaPContent(
-    content: KMaPScope.() -> Unit,
-) : KMaPScope {
+    content: KMaPContent.() -> Unit,
+) {
 
-    val markers = mutableListOf<MarkerComponent>()
-    val cluster = mutableListOf<ClusterComponent>()
-    val canvas = mutableListOf<CanvasComponent>()
-    val paths = mutableListOf<PathComponent>()
+    val markers = mutableListOf<Marker>()
+    val cluster = mutableListOf<Cluster>()
+    val canvas = mutableListOf<Canvas>()
+    val paths = mutableListOf<Path>()
 
     init {
         apply(content)
     }
 
-    override fun canvas(
-        alpha: Float,
-        zIndex: Float,
-        maxCacheTiles: Int,
+    fun canvas(
+        parameters: CanvasParameters = CanvasParameters(1F, 0F),
+        maxCacheTiles: Int = 20,
         tileSource: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult,
-        gestureDetection: (suspend PointerInputScope.() -> Unit)?
+        gestureDetection: (suspend PointerInputScope.() -> Unit)? = null
     ) {
-        canvas.add(CanvasComponent(alpha, zIndex, maxCacheTiles, tileSource, gestureDetection))
+        canvas.add(Canvas(parameters, maxCacheTiles, tileSource, gestureDetection))
     }
 
-    override fun marker(markerParameters: MarkerParameters, markerContent: @Composable () -> Unit) {
-        markers.add(MarkerComponent(markerParameters, { markerContent() }))
+    inline fun <T : MarkerParameters> marker(
+        marker: T,
+        crossinline itemContent: @Composable (item: T) -> Unit
+    ) {
+        markers.add(Marker(marker, { itemContent(marker) }))
     }
 
-    override fun markers(markerParameters: List<MarkerParameters>, markerContent: @Composable (index: Int) -> Unit) {
-        markerParameters.forEachIndexed { index, it ->
-            markers.add(MarkerComponent(it, { markerContent(index) }))
+    inline fun <T : MarkerParameters> markers(
+        markers: List<T>,
+        crossinline itemContent: @Composable (item: T, index: Int) -> Unit
+    ) {
+        markers.forEachIndexed { index, it ->
+            this.markers.add(Marker(it, { itemContent(it, index) }))
         }
     }
 
-    override fun cluster(clusterParameters: ClusterParameters, clusterContent: @Composable () -> Unit) {
-        cluster.add(ClusterComponent(clusterParameters, { clusterContent() }))
+    inline fun <T : ClusterParameters> cluster(
+        cluster: T,
+        crossinline itemContent: @Composable (item: T) -> Unit
+    ) {
+        this.cluster.add(Cluster(cluster, { itemContent(cluster) }))
     }
 
-    override fun path(
-        origin: Coordinates,
-        path: Path,
-        color: Color,
-        zIndex: Float,
-        alpha: Float,
-        style: DrawStyle,
-        colorFilter: ColorFilter?,
-        blendMode: BlendMode,
-//        gestureDetection: (suspend PointerInputScope.() -> Unit)?
+    fun path(
+        parameters: PathParameters,
+        gestureDetection: (suspend PointerInputScope.() -> Unit)? = null
     ) {
-        paths.add(
-            PathComponent(
-                origin,
-                path,
-                color,
-                zIndex,
-                alpha,
-                style,
-                colorFilter,
-                blendMode,
-//                gestureDetection
-            )
-        )
+        paths.add(Path(parameters, gestureDetection))
     }
 }

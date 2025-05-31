@@ -11,46 +11,45 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.zIndex
-import com.rafambn.kmap.components.PathComponent
+import com.rafambn.kmap.components.Path
 import com.rafambn.kmap.core.CameraState
 import com.rafambn.kmap.core.MapState
-import com.rafambn.kmap.utils.ScreenOffset
 import kotlin.math.pow
 
 @Composable
 internal fun PathCanvas(
     cameraState: CameraState,
     modifier: Modifier,
-    pathComponent: PathComponent,
+    path: Path,
     mapState: MapState
 ) {
     val rotationDegrees = cameraState.angleDegrees.toFloat()
-    val offset: ScreenOffset
-    with(mapState) {
-        offset = pathComponent.origin.toTilePoint().toScreenOffset()
-    }
+//    val offset: ScreenOffset
+//    with(mapState) {
+//        offset = path.origin.toTilePoint().toScreenOffset()
+//    }
     val densityScale = LocalDensity.current.density
     Layout(
         modifier = modifier
 //            .then(pathComponent.gestureDetector?.let { Modifier.pointerInput(PointerEventPass.Main) { it(this) } } ?: Modifier)//TODO add path gesture
-            .zIndex(pathComponent.zIndex)
+            .zIndex(path.parameters.zIndex)
             .graphicsLayer {
-                alpha = pathComponent.alpha
+                alpha = path.parameters.alpha
                 clip = true
             }
             .drawBehind {
                 withTransform({
-                    translate(offset.x.toFloat(), offset.y.toFloat())
+//                    translate(offset.x.toFloat(), offset.y.toFloat())
                     rotate(rotationDegrees, Offset.Zero)
                     scale(2F.pow(cameraState.zoom) * densityScale, Offset.Zero)
                 }) {
                     drawIntoCanvas { canvas ->
                         drawPath(
-                            path = pathComponent.path,
-                            color = pathComponent.color,
-                            colorFilter = pathComponent.colorFilter,
-                            blendMode = pathComponent.blendMode,
-                            style = pathComponent.style
+                            path = path.parameters.path,
+                            color = path.parameters.color,
+                            colorFilter = path.parameters.colorFilter,
+                            blendMode = path.parameters.blendMode,
+                            style = path.parameters.style
                         )
                     }
                 }

@@ -7,8 +7,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.onGloballyPositioned
+import com.rafambn.kmap.lazyMarker.KMaPContent
 import com.rafambn.kmap.tiles.TileCanvas
-import com.rafambn.kmap.lazyMarker.KMaPScope
 import com.rafambn.kmap.lazyMarker.rememberComponentProviderLambda
 import com.rafambn.kmap.lazyMarker.rememberComponentMeasurePolicy
 import com.rafambn.kmap.path.PathCanvas
@@ -18,7 +18,7 @@ import com.rafambn.kmap.path.PathCanvas
 fun KMaP(
     modifier: Modifier = Modifier,
     mapState: MapState,
-    content: KMaPScope.() -> Unit
+    content: KMaPContent.() -> Unit
 ) {
     val itemProvider = rememberComponentProviderLambda(content, mapState)
 
@@ -28,7 +28,7 @@ fun KMaP(
             mapProperties = mapState.mapProperties,
             positionOffset = mapState.drawReference,
             viewPort = mapState.viewPort,
-            canvasComponent = it,
+            canvas = it,
             modifier = modifier
                 .onGloballyPositioned { coordinates ->
                     mapState.setCanvasSize(
@@ -56,7 +56,7 @@ fun KMaP(
     itemProvider.invoke().pathList.forEach {
         PathCanvas(
             cameraState = mapState.cameraState,
-            pathComponent = it,
+            path = it,
             modifier = modifier,
             mapState = mapState
         )

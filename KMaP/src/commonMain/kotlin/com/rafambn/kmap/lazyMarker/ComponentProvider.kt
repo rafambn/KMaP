@@ -11,7 +11,7 @@ import com.rafambn.kmap.components.Parameters
 import com.rafambn.kmap.core.MapState
 
 @Composable
-fun rememberComponentProviderLambda(content: KMaPScope.() -> Unit, mapState: MapState): () -> ComponentProvider {
+fun rememberComponentProviderLambda(content: KMaPContent.() -> Unit, mapState: MapState): () -> ComponentProvider {
     val latestContent = rememberUpdatedState(content)
 
     return remember(mapState) {
@@ -43,10 +43,10 @@ class ComponentProvider(
     override fun Item(index: Int, key: Any) {
         val item = kmapContent.markers.getOrNull(index)
         if (item == null) {
-            val cluster = kmapContent.cluster.find { it.clusterParameters.id == kmapContent.markers[index / 2].markerParameters.clusterId }
-            cluster?.clusterContent()
+            val cluster = kmapContent.cluster.find { it.parameters.id == kmapContent.markers[index / 2].parameters.clusterId }
+            cluster?.content()
         } else
-            item.markerContent()
+            item.content()
     }
 
     val canvasList get() = kmapContent.canvas
@@ -56,8 +56,8 @@ class ComponentProvider(
     fun getParameters(index: Int): Parameters {
         val item = kmapContent.markers.getOrNull(index)
         return if (item == null)
-            kmapContent.cluster.find { it.clusterParameters.id == kmapContent.markers[index / 2].markerParameters.clusterId }!!.clusterParameters
+            kmapContent.cluster.find { it.parameters.id == kmapContent.markers[index / 2].parameters.clusterId }!!.parameters
         else
-            item.markerParameters
+            item.parameters
     }
 }

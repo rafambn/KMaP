@@ -52,7 +52,7 @@ fun ClusteringScreen(
                         clusterId = 1
                     )
                 )
-            ) {
+            ) { item, index ->
                 Text(
                     text = "Tag 1",
                     modifier = Modifier
