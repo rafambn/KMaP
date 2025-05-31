@@ -19,9 +19,8 @@ data class Cluster(
 
 data class Canvas(
     val parameters: CanvasParameters,
-    val maxCacheTiles: Int = 20,
-    val getTile: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult,
     val gestureDetector: (suspend PointerInputScope.() -> Unit)? = null,
+    val content: @Composable () -> Unit
 ) : Component
 
 data class Path(

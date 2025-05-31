@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Slider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,12 +42,11 @@ fun LayersScreen(
             mapState = mapState,
         ) {
             canvas(
-                tileSource = SimpleMapTileSource()::getTile,
+                parameters = CanvasParameters(getTile = SimpleMapTileSource()::getTile),
                 gestureDetection = getGestureDetector(mapState.motionController)
             )
             canvas(
-                parameters = CanvasParameters(sliderPosition),
-                tileSource = LayerMapTileSource()::getTile
+                parameters = CanvasParameters(getTile = LayerMapTileSource()::getTile, alpha = sliderPosition),
             )
         }
         Slider(

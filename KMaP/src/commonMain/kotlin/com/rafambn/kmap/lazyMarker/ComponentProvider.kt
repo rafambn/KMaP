@@ -7,6 +7,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.referentialEqualityPolicy
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.Modifier
 import com.rafambn.kmap.components.Parameters
 import com.rafambn.kmap.core.MapState
 
@@ -16,7 +17,7 @@ fun rememberComponentProviderLambda(content: KMaPContent.() -> Unit, mapState: M
 
     return remember(mapState) {
         val kMaPContentState = derivedStateOf(referentialEqualityPolicy()) {
-            KMaPContent(latestContent.value)
+            KMaPContent(latestContent.value, mapState)
         }
         val kmapProviderState = derivedStateOf(referentialEqualityPolicy()) {
             ComponentProvider(kMaPContentState.value)
@@ -30,34 +31,77 @@ class ComponentProvider(
     private val kmapContent: KMaPContent
 ) : LazyLayoutItemProvider {
 
-    //Because you can't place a composable twice, you can't measure a cluster composable and put it in multiple places
-    //but you can double the amount of composable in the lazy layout and map the second half to the cluster of the marker
-    //this way if i want to to cluster indexes 5 and 7 i measure index 5*2 getting the cluster of of marker index == 5
-    override val itemCount
-        get() = kmapContent.markers.size * 2
+    // Because you can't place a composable twice, you can't measure a cluster composable and put it in multiple places
+    // but you can double the amount of markers in the lazy layout and map the second half to the cluster of the marker
+    // this way if i want to cluster indexes 5 and 7 i measure index 5*2 getting the cluster of marker index == 5
+    //
+    // Array representation:
+    // [0 ... markersCount-1] -> Markers
+    // [markersCount ... markersCount*2-1] -> Clusters
+    // [markersCount*2 ... markersCount*2+pathsCount-1] -> Paths
+    // [markersCount*2+pathsCount ... markersCount*2+pathsCount+canvasCount-1] -> Canvas
 
-    val markersCount
+    override val itemCount: Int
+        get() = markersCount * 2 + pathsCount + canvasCount
+
+    val markersCount: Int
         get() = kmapContent.markers.size
+
+    val pathsCount: Int
+        get() = kmapContent.paths.size
+
+    val canvasCount: Int
+        get() = kmapContent.canvas.size
 
     @Composable
     override fun Item(index: Int, key: Any) {
-        val item = kmapContent.markers.getOrNull(index)
-        if (item == null) {
-            val cluster = kmapContent.cluster.find { it.parameters.id == kmapContent.markers[index / 2].parameters.clusterId }
-            cluster?.content()
-        } else
-            item.content()
+        when {
+            // Markers area: [0 ... markersCount-1]
+            index < markersCount -> {
+                kmapContent.markers[index].content()
+            }
+            // Marker clusters area: [markersCount ... markersCount*2-1]
+            index < markersCount * 2 -> {
+                val markerIndex = index - markersCount
+                val marker = kmapContent.markers[markerIndex]
+                val cluster = kmapContent.cluster.firstOrNull() { it.parameters.id == marker.parameters.clusterId }
+                cluster?.content()
+            }
+            // Paths area: [markersCount*2 ... markersCount*2+pathsCount-1]
+            index < markersCount * 2 + pathsCount -> {
+                val pathIndex = index - (markersCount * 2)
+                kmapContent.paths[pathIndex].content()
+            }
+            // Canvas area: [markersCount*2+pathsCount ... markersCount*2+pathsCount+canvasCount-1]
+            else -> {
+                val canvasIndex = index - (markersCount * 2 + pathsCount)
+                kmapContent.canvas[canvasIndex].content()
+            }
+        }
     }
 
-    val canvasList get() = kmapContent.canvas
-
-    val pathList get() = kmapContent.paths
-
     fun getParameters(index: Int): Parameters {
-        val item = kmapContent.markers.getOrNull(index)
-        return if (item == null)
-            kmapContent.cluster.find { it.parameters.id == kmapContent.markers[index / 2].parameters.clusterId }!!.parameters
-        else
-            item.parameters
+        return when {
+            // Markers area: [0 ... markersCount-1]
+            index < markersCount -> {
+                kmapContent.markers[index].parameters
+            }
+            // Marker clusters area: [markersCount ... markersCount*2-1]
+            index < markersCount * 2 -> {
+                val markerIndex = index - markersCount
+                val marker = kmapContent.markers[markerIndex]
+                kmapContent.cluster.first { it.parameters.id == marker.parameters.clusterId }.parameters
+            }
+            // Paths area: [markersCount*2 ... markersCount*2+pathsCount-1]
+            index < markersCount * 2 + pathsCount -> {
+                val pathIndex = index - (markersCount * 2)
+                kmapContent.paths[pathIndex].parameters
+            }
+            // Canvas area: [markersCount*2+pathsCount ... markersCount*2+pathsCount+canvasCount-1]
+            else -> {
+                val canvasIndex = index - (markersCount * 2 + pathsCount)
+                kmapContent.canvas[canvasIndex].parameters
+            }
+        }
     }
 }

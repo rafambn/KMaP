@@ -19,6 +19,7 @@ import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.rafambn.kmap.components.CanvasParameters
 import com.rafambn.kmap.core.KMaP
 import com.rafambn.kmap.core.MapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
@@ -43,7 +44,7 @@ fun ViewmodelScreen(
             mapState = viewmodel.mapState,
         ) {
             canvas(
-                tileSource = SimpleMapTileSource()::getTile,
+                parameters = CanvasParameters(getTile = SimpleMapTileSource()::getTile),
                 gestureDetection = getGestureDetector(viewmodel.mapState.motionController)
             )
         }

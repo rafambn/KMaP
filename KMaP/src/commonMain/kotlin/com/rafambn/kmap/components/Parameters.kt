@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope.Companion.DefaultBlendMo
 import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Fill
 import com.rafambn.kmap.core.DrawPosition
+import com.rafambn.kmap.tiles.TileRenderResult
 import com.rafambn.kmap.utils.Degrees
 import com.rafambn.kmap.utils.Coordinates
 
@@ -49,4 +50,6 @@ open class PathParameters(
 open class CanvasParameters(
     val alpha: Float = 1F,
     val zIndex: Float = 0F,
+    val maxCacheTiles: Int = 20,
+    val getTile: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult,
 ) : Parameters

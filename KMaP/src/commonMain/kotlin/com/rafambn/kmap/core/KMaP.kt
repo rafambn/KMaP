@@ -8,10 +8,8 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.onGloballyPositioned
 import com.rafambn.kmap.lazyMarker.KMaPContent
-import com.rafambn.kmap.tiles.TileCanvas
 import com.rafambn.kmap.lazyMarker.rememberComponentProviderLambda
 import com.rafambn.kmap.lazyMarker.rememberComponentMeasurePolicy
-import com.rafambn.kmap.path.PathCanvas
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -22,25 +20,6 @@ fun KMaP(
 ) {
     val itemProvider = rememberComponentProviderLambda(content, mapState)
 
-    itemProvider.invoke().canvasList.forEach {
-        TileCanvas(
-            cameraState = mapState.cameraState,
-            mapProperties = mapState.mapProperties,
-            positionOffset = mapState.drawReference,
-            viewPort = mapState.viewPort,
-            canvas = it,
-            modifier = modifier
-                .onGloballyPositioned { coordinates ->
-                    mapState.setCanvasSize(
-                        Offset(
-                            coordinates.size.width.toFloat(),
-                            coordinates.size.height.toFloat()
-                        )
-                    )
-                },
-        )
-    }
-
     val measurePolicy = rememberComponentMeasurePolicy(
         componentProviderLambda = itemProvider,
         mapState = mapState,
@@ -48,17 +27,17 @@ fun KMaP(
 
     LazyLayout(
         itemProvider = itemProvider,
-        modifier = modifier.clipToBounds(),
+        modifier = modifier
+            .clipToBounds()
+            .onGloballyPositioned { coordinates ->
+                mapState.setCanvasSize(
+                    Offset(
+                        coordinates.size.width.toFloat(),
+                        coordinates.size.height.toFloat()
+                    )
+                )
+            },
         prefetchState = null,
         measurePolicy = measurePolicy
     )
-
-    itemProvider.invoke().pathList.forEach {
-        PathCanvas(
-            cameraState = mapState.cameraState,
-            path = it,
-            modifier = modifier,
-            mapState = mapState
-        )
-    }
 }

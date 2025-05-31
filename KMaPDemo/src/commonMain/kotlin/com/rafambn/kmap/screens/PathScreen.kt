@@ -15,9 +15,11 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.PathData
 import androidx.compose.ui.graphics.vector.toPath
 import androidx.compose.ui.unit.dp
+import com.rafambn.kmap.components.CanvasParameters
 import com.rafambn.kmap.components.PathParameters
 import com.rafambn.kmap.core.KMaP
 import com.rafambn.kmap.core.rememberMapState
+import com.rafambn.kmap.customSources.OSMTileSource
 import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
 import com.rafambn.kmap.getGestureDetector
@@ -36,7 +38,7 @@ fun PathScreen(
             mapState = mapState,
         ) {
             canvas(
-                tileSource = SimpleMapTileSource()::getTile,
+                parameters = CanvasParameters(getTile = SimpleMapTileSource()::getTile),
                 gestureDetection = getGestureDetector(mapState.motionController)
             )
             path(

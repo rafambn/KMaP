@@ -16,6 +16,7 @@ import com.rafambn.kmap.core.MapState
 import com.rafambn.kmap.core.getViewPort
 import com.rafambn.kmap.utils.asOffset
 import com.rafambn.kmap.utils.asScreenOffset
+import kotlin.let
 
 @ExperimentalFoundationApi
 @Composable
@@ -28,12 +29,12 @@ fun rememberComponentMeasurePolicy(
     { containerConstraints ->
         val componentProvider = componentProviderLambda()
 
-        val markersCount = componentProvider.markersCount
-
         val measuredItemProvider = MeasuredComponentProvider(componentProvider, this)
 
         measureComponent(
-            markersCount = markersCount,
+            markersCount = componentProvider.markersCount,
+            canvasCount = componentProvider.canvasCount,
+            pathsCount = componentProvider.pathsCount,
             measuredItemProvider = measuredItemProvider,
             mapState = mapState,
             layout = { placement ->
@@ -50,57 +51,62 @@ fun rememberComponentMeasurePolicy(
 
 internal fun measureComponent(
     markersCount: Int,
+    canvasCount: Int,
+    pathsCount: Int,
     measuredItemProvider: MeasuredComponentProvider,
     mapState: MapState,
     layout: (Placeable.PlacementScope.() -> Unit) -> MeasureResult
 ): MeasureResult {
-
-    if (markersCount <= 0)
-        return layout {}
-
     val visibleItems = mutableListOf<MeasuredComponent>()
-    val itemsThatCanClusterMap = mutableMapOf<Int, List<MeasuredComponent>>()
-    val measuredComponents = mutableListOf<MeasuredComponent>()
 
-    for (index in 0 until markersCount) {
-        measuredComponents.add(measuredItemProvider.getAndMeasure(index))
-    }
+    if (markersCount > 0) {
+        val itemsThatCanClusterMap = mutableMapOf<Int, List<MeasuredComponent>>()
+        val measuredComponents = mutableListOf<MeasuredComponent>()
 
-    val mapViewPort = Rect(
-        Offset.Zero,
-        Size(mapState.cameraState.canvasSize.xFloat, mapState.cameraState.canvasSize.yFloat)
-    )
-    measuredComponents.forEach { measuredComponent ->
-        require(measuredComponent.parameters is MarkerParameters)
-        measuredComponent.offset = with(mapState) {
-            measuredComponent.parameters.coordinates.toTilePoint().toScreenOffset()
+        for (index in 0 until markersCount) {
+            measuredComponents.add(measuredItemProvider.getAndMeasureMarker(index))
         }
-        measuredComponent.viewPort = getViewPort(
-            measuredComponent.parameters.drawPosition,
-            measuredComponent.maxWidth.toFloat(),
-            measuredComponent.maxHeight.toFloat(),
-            measuredComponent.offset.asOffset()
+
+        val mapViewPort = Rect(
+            Offset.Zero,
+            Size(mapState.cameraState.canvasSize.xFloat, mapState.cameraState.canvasSize.yFloat)
         )
-        //TODO expand test for rotating markers and clustered markers
-        if (measuredComponent.parameters.zoomVisibilityRange.contains(mapState.cameraState.zoom) &&
-            mapViewPort.overlaps(measuredComponent.viewPort)) {
-            if (measuredComponent.parameters.clusterId != null) {
-                val map = itemsThatCanClusterMap[measuredComponent.parameters.clusterId]
-                map?.let {
-                    itemsThatCanClusterMap[measuredComponent.parameters.clusterId] = it + measuredComponent
-                } ?: run {
-                    itemsThatCanClusterMap.put(measuredComponent.parameters.clusterId, listOf(measuredComponent))
-                }
-            } else
-                visibleItems.add(measuredComponent)
+        measuredComponents.forEach { measuredComponent ->
+            require(measuredComponent.parameters is MarkerParameters)
+            measuredComponent.offset = with(mapState) {
+                measuredComponent.parameters.coordinates.toTilePoint().toScreenOffset()
+            }
+            measuredComponent.viewPort = getViewPort(
+                measuredComponent.parameters.drawPosition,
+                measuredComponent.maxWidth.toFloat(),
+                measuredComponent.maxHeight.toFloat(),
+                measuredComponent.offset.asOffset()
+            )
+            //TODO expand test for rotating markers and clustered markers
+            if (measuredComponent.parameters.zoomVisibilityRange.contains(mapState.cameraState.zoom) &&
+                mapViewPort.overlaps(measuredComponent.viewPort)
+            ) {
+                if (measuredComponent.parameters.clusterId != null) {
+                    val map = itemsThatCanClusterMap[measuredComponent.parameters.clusterId]
+                    map?.let {
+                        itemsThatCanClusterMap[measuredComponent.parameters.clusterId] = it + measuredComponent
+                    } ?: run {
+                        itemsThatCanClusterMap.put(measuredComponent.parameters.clusterId, listOf(measuredComponent))
+                    }
+                } else
+                    visibleItems.add(measuredComponent)
+            }
+            measuredComponent.parameters
         }
-        measuredComponent.parameters
+        itemsThatCanClusterMap.forEach {
+            clusterComponents(it.value, measuredItemProvider, markersCount) { nonClusteredComponent, clusters ->
+                visibleItems.addAll(nonClusteredComponent)
+                visibleItems.addAll(clusters)
+            }
+        }
     }
-    itemsThatCanClusterMap.forEach {
-        clusterComponents(it.value, measuredItemProvider, markersCount) { nonClusteredComponent, clusters ->
-            visibleItems.addAll(nonClusteredComponent)
-            visibleItems.addAll(clusters)
-        }
+    repeat(canvasCount) { index ->
+        visibleItems.add(measuredItemProvider.getAndMeasureCanvas(index))
     }
 
     return layout {
@@ -150,7 +156,7 @@ private fun expandCluster(
         size++
         avgOffset += current.viewPort.topLeft
     }
-    val cluster = measuredItemProvider.getAndMeasure(measuredComponent.index + markersCount)
+    val cluster = measuredItemProvider.getAndMeasureCluster(measuredComponent.index)
     cluster.offset = (avgOffset / size.toFloat()).asScreenOffset()
     clusters.add(cluster)
 }

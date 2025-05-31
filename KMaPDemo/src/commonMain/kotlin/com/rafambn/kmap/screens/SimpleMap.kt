@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.rafambn.kmap.components.CanvasParameters
 import com.rafambn.kmap.core.KMaP
 import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
@@ -28,7 +29,7 @@ fun SimpleMapScreen(
             mapState = mapState,
         ) {
             canvas(
-                tileSource = SimpleMapTileSource()::getTile,
+                parameters = CanvasParameters(getTile = SimpleMapTileSource()::getTile),
                 gestureDetection = getGestureDetector(mapState.motionController)
             )
         }

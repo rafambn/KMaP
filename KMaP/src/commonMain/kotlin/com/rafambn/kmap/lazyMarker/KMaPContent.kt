@@ -5,12 +5,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.onGloballyPositioned
 import com.rafambn.kmap.components.Canvas
 import com.rafambn.kmap.components.CanvasParameters
 import com.rafambn.kmap.components.Cluster
@@ -19,11 +21,13 @@ import com.rafambn.kmap.components.Marker
 import com.rafambn.kmap.components.MarkerParameters
 import com.rafambn.kmap.components.Path
 import com.rafambn.kmap.components.PathParameters
+import com.rafambn.kmap.core.MapState
 import com.rafambn.kmap.gestures.sharedPointerInput
-import com.rafambn.kmap.tiles.TileRenderResult
+import com.rafambn.kmap.tiles.TileCanvas
 
 class KMaPContent(
     content: KMaPContent.() -> Unit,
+    val mapState: MapState,
 ) {
 
     val markers = mutableListOf<Marker>()
@@ -36,12 +40,24 @@ class KMaPContent(
     }
 
     fun canvas(
-        parameters: CanvasParameters = CanvasParameters(1F, 0F),
-        maxCacheTiles: Int = 20,
-        tileSource: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult,
+        parameters: CanvasParameters,
         gestureDetection: (suspend PointerInputScope.() -> Unit)? = null
     ) {
-        canvas.add(Canvas(parameters, maxCacheTiles, tileSource, gestureDetection))
+        canvas.add(
+            Canvas(
+                parameters,
+                gestureDetection
+            ) {
+                TileCanvas(
+                    cameraState = mapState.cameraState,
+                    mapProperties = mapState.mapProperties,
+                    positionOffset = mapState.drawReference,
+                    viewPort = mapState.viewPort,
+                    gestureDetection = gestureDetection,
+                    parameters = parameters,
+                )
+            }
+        )
     }
 
     inline fun <T : MarkerParameters> marker(
@@ -74,7 +90,7 @@ class KMaPContent(
         var padding = if (parameters.style is Stroke) parameters.style.width / 2F else 0F
         padding = maxOf(padding, parameters.clickPadding)
         paths.add(
-            Path(parameters, gestureDetection){
+            Path(parameters, gestureDetection) {
                 val bounds = parameters.path.getBounds()
                 Layout(
                     modifier = Modifier

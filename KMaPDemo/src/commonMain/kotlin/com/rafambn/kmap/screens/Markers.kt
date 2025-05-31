@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import com.rafambn.kmap.components.CanvasParameters
 import com.rafambn.kmap.core.KMaP
 import com.rafambn.kmap.core.DrawPosition
 import com.rafambn.kmap.components.MarkerParameters
@@ -51,7 +52,7 @@ fun MarkersScreen(
             mapState = mapState,
         ) {
             canvas(
-                tileSource = SimpleMapTileSource()::getTile,
+                parameters = CanvasParameters(getTile = SimpleMapTileSource()::getTile),
                 gestureDetection = getGestureDetector(mapState.motionController)
             )
             marker(

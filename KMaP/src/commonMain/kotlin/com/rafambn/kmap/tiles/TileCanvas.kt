@@ -1,5 +1,6 @@
 package com.rafambn.kmap.tiles
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
@@ -13,14 +14,14 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
+import com.rafambn.kmap.components.CanvasParameters
 import com.rafambn.kmap.core.CameraState
 import com.rafambn.kmap.core.ViewPort
 import com.rafambn.kmap.mapProperties.MapProperties
@@ -37,8 +38,8 @@ internal fun TileCanvas(
     mapProperties: MapProperties,
     positionOffset: CanvasDrawReference,
     viewPort: ViewPort,
-    modifier: Modifier,
-    canvas: com.rafambn.kmap.components.Canvas,
+    gestureDetection: (suspend PointerInputScope.() -> Unit)?,
+    parameters: CanvasParameters
 ) {
     val zoomLevel = cameraState.zoom.toIntFloor()
     val magnifierScale = cameraState.zoom - zoomLevel
@@ -53,7 +54,7 @@ internal fun TileCanvas(
     )
     val coroutineScope = rememberCoroutineScope()
     var tileLayers = remember { TileLayers() }
-    val canvasState = remember { TileRenderer(canvas.getTile, canvas.maxCacheTiles, coroutineScope) }
+    val canvasState = remember { TileRenderer(parameters.getTile, parameters.maxCacheTiles, coroutineScope) }
 
     val renderedTilesCache = canvasState.renderedTilesFlow.collectAsState()
     if (zoomLevel != tileLayers.frontLayer.level)
@@ -92,13 +93,8 @@ internal fun TileCanvas(
         tileLayers.insertNewTileBitmap(it)
     }
     Layout(
-        modifier = modifier
-            .then(canvas.gestureDetector?.let { Modifier.pointerInput(PointerEventPass.Main) { it(this) } } ?: Modifier)
-            .graphicsLayer {
-                alpha = canvas.parameters.alpha
-                clip = true
-            }
-            .zIndex(canvas.parameters.zIndex)
+        modifier = Modifier
+            .then(gestureDetection?.let { Modifier.pointerInput(PointerEventPass.Main) { it(this) } } ?: Modifier)
             .drawBehind {
                 withTransform({
                     translate(translation.x, translation.y)
@@ -124,7 +120,7 @@ internal fun TileCanvas(
                 }
             }
     ) { _, constraints ->
-        layout(constraints.maxWidth, constraints.maxHeight) {}
+        layout(cameraState.canvasSize.xInt, cameraState.canvasSize.yInt) {}
     }
 }
 

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.rafambn.kmap.components.CanvasParameters
 import com.rafambn.kmap.core.KMaP
 import com.rafambn.kmap.mapProperties.border.BoundMapBorder
 import com.rafambn.kmap.mapProperties.border.MapBorderType
@@ -15,6 +16,7 @@ import com.rafambn.kmap.mapProperties.border.OutsideTilesType
 import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.OSMMapProperties
 import com.rafambn.kmap.customSources.OSMTileSource
+import com.rafambn.kmap.customSources.SimpleMapTileSource
 import com.rafambn.kmap.getGestureDetector
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
@@ -36,7 +38,7 @@ fun OSMRemoteScreen(
             mapState = mapState,
         ) {
             canvas(
-                tileSource = OSMTileSource("com.rafambn.kmapdemoapp")::getTile,
+                parameters = CanvasParameters(getTile = OSMTileSource("com.rafambn.kmapdemoapp")::getTile),
                 gestureDetection = getGestureDetector(mapState.motionController)
             )
         }

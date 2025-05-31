@@ -75,7 +75,17 @@ class MeasuredComponent(
                 }
 
                 is PathParameters -> TODO()
-                is CanvasParameters -> TODO()
+                is CanvasParameters -> {
+                    println("placed")
+                    placeables[index].placeWithLayer(
+                        x = 0,
+                        y = 0,
+                        zIndex = parameters.zIndex
+                    ) {
+                        alpha = parameters.alpha
+                        clip = true
+                    }
+                }
             }
         }
     }
