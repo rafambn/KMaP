@@ -9,8 +9,8 @@ import com.rafambn.kmap.mapProperties.Latitude
 import com.rafambn.kmap.mapProperties.Longitude
 import com.rafambn.kmap.mapProperties.ZoomLevelRange
 import com.rafambn.kmap.tiles.TileDimension
-import com.rafambn.kmap.utils.TilePoint
 import com.rafambn.kmap.utils.Coordinates
+import com.rafambn.kmap.utils.ProjectedCoordinates
 
 data class SimpleMapProperties(
     override val boundMap: BoundMapBorder = BoundMapBorder(MapBorderType.BOUND, MapBorderType.BOUND),
@@ -19,14 +19,14 @@ data class SimpleMapProperties(
     override val coordinatesRange: CoordinatesRange = SimpleCoordinatesRange(),
     override val tileSize: TileDimension = TileDimension(900, 900)
 ) : MapProperties {
-    override fun toTilePoint(coordinates: Coordinates): TilePoint = TilePoint(
-        coordinates.longitude,
-        coordinates.latitude
+    override fun toProjectedCoordinates(coordinates: Coordinates): ProjectedCoordinates = ProjectedCoordinates(
+        coordinates.x,
+        coordinates.y
     )
 
-    override fun toCoordinates(tilePoint: TilePoint): Coordinates = Coordinates(
-        tilePoint.horizontal,
-        tilePoint.vertical
+    override fun toCoordinates(projectedCoordinates: ProjectedCoordinates): Coordinates = Coordinates(
+        projectedCoordinates.x,
+        projectedCoordinates.y
     )
 }
 

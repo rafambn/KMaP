@@ -33,6 +33,7 @@ import com.rafambn.kmap.lazyMarker.marker
 import com.rafambn.kmap.lazyMarker.markers
 import com.rafambn.kmap.utils.Coordinates
 import com.rafambn.kmap.utils.asDifferentialScreenOffset
+import com.rafambn.kmap.utils.minus
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import kmap.kmapdemo.generated.resources.pin
@@ -158,7 +159,7 @@ fun MarkersScreen(
                 )
             ) {
                 Text(
-                    text = "Draggable marker Coordinates(${it.coordinates.longitude.toInt()}, ${it.coordinates.latitude.toInt()})",
+                    text = "Draggable marker Coordinates(${it.coordinates.x.toInt()}, ${it.coordinates.y.toInt()})",
                     modifier = Modifier
                         .pointerInput(Unit) {
                             detectDragGestures { change, dragAmount ->

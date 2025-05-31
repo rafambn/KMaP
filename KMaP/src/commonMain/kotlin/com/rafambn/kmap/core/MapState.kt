@@ -17,16 +17,22 @@ import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.TilePoint
 import com.rafambn.kmap.utils.DifferentialScreenOffset
 import com.rafambn.kmap.utils.Coordinates
+import com.rafambn.kmap.utils.ProjectedCoordinates
 import com.rafambn.kmap.utils.ScreenOffset
 import com.rafambn.kmap.utils.asCanvasDrawReference
 import com.rafambn.kmap.utils.asCanvasPosition
 import com.rafambn.kmap.utils.asDifferentialScreenOffset
 import com.rafambn.kmap.utils.asScreenOffset
+import com.rafambn.kmap.utils.div
 import com.rafambn.kmap.utils.loopInRange
+import com.rafambn.kmap.utils.minus
+import com.rafambn.kmap.utils.plus
 import com.rafambn.kmap.utils.rotate
+import com.rafambn.kmap.utils.times
 import com.rafambn.kmap.utils.toIntFloor
 import com.rafambn.kmap.utils.toRadians
 import com.rafambn.kmap.utils.transformReference
+import com.rafambn.kmap.utils.unaryMinus
 import kotlin.math.pow
 
 @Composable
@@ -80,26 +86,26 @@ class MapState(
     val viewPort
         get() = {
             val topLeft = ScreenOffset.Zero.toTilePoint()
-            val topRight = ScreenOffset(cameraState.canvasSize.x, 0F).toTilePoint()
-            val bottomLeft = ScreenOffset(0F, cameraState.canvasSize.y).toTilePoint()
+            val topRight = ScreenOffset(cameraState.canvasSize.xFloat, 0F).toTilePoint()
+            val bottomLeft = ScreenOffset(0F, cameraState.canvasSize.yFloat).toTilePoint()
             val bottomRight = cameraState.canvasSize.toTilePoint()
             Rect(
-                minOf(topLeft.horizontal, topRight.horizontal, bottomLeft.horizontal, bottomRight.horizontal).toFloat(),
-                minOf(topLeft.vertical, topRight.vertical, bottomLeft.vertical, bottomRight.vertical).toFloat(),
-                maxOf(topLeft.horizontal, topRight.horizontal, bottomLeft.horizontal, bottomRight.horizontal).toFloat(),
-                maxOf(topLeft.vertical, topRight.vertical, bottomLeft.vertical, bottomRight.vertical).toFloat()
+                minOf(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x).toFloat(),
+                minOf(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y).toFloat(),
+                maxOf(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x).toFloat(),
+                maxOf(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y).toFloat()
             )
         }.invoke()
 
     private fun TilePoint.coerceInMap(): TilePoint {
         val x = if (mapProperties.boundMap.horizontal == MapBorderType.BOUND)
-            horizontal.coerceIn(0.0, mapProperties.tileSize.width.toDouble())
+            x.coerceIn(0.0, mapProperties.tileSize.width.toDouble())
         else
-            horizontal.loopInRange(mapProperties.tileSize.width.toDouble())
+            x.loopInRange(mapProperties.tileSize.width.toDouble())
         val y = if (mapProperties.boundMap.vertical == MapBorderType.BOUND)
-            vertical.coerceIn(0.0, mapProperties.tileSize.height.toDouble())
+            y.coerceIn(0.0, mapProperties.tileSize.height.toDouble())
         else
-            vertical.loopInRange(mapProperties.tileSize.height.toDouble())
+            y.loopInRange(mapProperties.tileSize.height.toDouble())
         return TilePoint(x, y)
     }
 
@@ -143,13 +149,13 @@ class MapState(
         .asCanvasDrawReference()
 
     private fun TilePoint.scale(horizontal: Double, vertical: Double): TilePoint =
-        TilePoint(this.horizontal * horizontal, this.vertical * vertical)
+        TilePoint(this.x * horizontal, this.y * vertical)
 
     fun Coordinates.toTilePoint(): TilePoint {
-        val unscaledTilePoint = mapProperties.toTilePoint(this@toTilePoint)
+        val projectedCoordinates = mapProperties.toProjectedCoordinates(this@toTilePoint)
         val scaledTilePoint = transformReference(
-            unscaledTilePoint.horizontal,
-            unscaledTilePoint.vertical,
+            projectedCoordinates.x,
+            projectedCoordinates.y,
             Pair(mapProperties.coordinatesRange.longitude.west, mapProperties.coordinatesRange.longitude.east),
             Pair(mapProperties.coordinatesRange.latitude.north, mapProperties.coordinatesRange.latitude.south),
             Pair(0.0, mapProperties.tileSize.width.toDouble()),
@@ -159,16 +165,15 @@ class MapState(
     }
 
     fun TilePoint.toCoordinates(): Coordinates {
-        val unscaledCoordinates = mapProperties.toCoordinates(this@toCoordinates)
         val scaledTileCoordinates = transformReference(
-            unscaledCoordinates.longitude,
-            unscaledCoordinates.latitude,
+            this.x,
+            this.y,
             Pair(0.0, mapProperties.tileSize.width.toDouble()),
             Pair(0.0, mapProperties.tileSize.height.toDouble()),
             Pair(mapProperties.coordinatesRange.longitude.west, mapProperties.coordinatesRange.longitude.east),
             Pair(mapProperties.coordinatesRange.latitude.north, mapProperties.coordinatesRange.latitude.south),
         )
-        return Coordinates(scaledTileCoordinates.first, scaledTileCoordinates.second)
+        return mapProperties.toCoordinates(ProjectedCoordinates(scaledTileCoordinates.first, scaledTileCoordinates.second))
     }
 
     fun setCanvasSize(offset: Offset) {
@@ -202,8 +207,8 @@ class MapState(
                     "canvasSize" to Pair(mapState.cameraState.canvasSize.x, mapState.cameraState.canvasSize.y),
                     "zoom" to mapState.cameraState.zoom,
                     "angleDegrees" to mapState.cameraState.angleDegrees,
-                    "coordinates" to Pair(mapState.cameraState.coordinates.longitude, mapState.cameraState.coordinates.latitude),
-                    "tilePoint" to Pair(mapState.cameraState.tilePoint.horizontal, mapState.cameraState.tilePoint.vertical),
+                    "coordinates" to Pair(mapState.cameraState.coordinates.x, mapState.cameraState.coordinates.y),
+                    "tilePoint" to Pair(mapState.cameraState.tilePoint.x, mapState.cameraState.tilePoint.y),
                 )
             },
             restore = { map ->

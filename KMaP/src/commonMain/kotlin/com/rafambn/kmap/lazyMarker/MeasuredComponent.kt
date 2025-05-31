@@ -40,8 +40,8 @@ class MeasuredComponent(
                     ) {
                         alpha = parameters.alpha
 
-                        translationX = placeOffset.x
-                        translationY = placeOffset.y
+                        translationX = placeOffset.xFloat
+                        translationY = placeOffset.yFloat
                         rotationZ =
                             if (parameters.rotateWithMap)
                                 (cameraAngle + parameters.rotation).toFloat()
@@ -57,8 +57,8 @@ class MeasuredComponent(
                     ) {
                         alpha = parameters.alpha
 
-                        translationX = placeOffset.x - parameters.drawPosition.x * placeables[index].width
-                        translationY = placeOffset.y - parameters.drawPosition.y * placeables[index].height
+                        translationX = placeOffset.xFloat - parameters.drawPosition.x * placeables[index].width
+                        translationY = placeOffset.yFloat - parameters.drawPosition.y * placeables[index].height
                         transformOrigin = parameters.drawPosition.asTransformOrigin()
                         parameters.zoomParameters.zoomToFix?.let { zoom ->
                             scaleX = 2F.pow(cameraZoom - zoom)

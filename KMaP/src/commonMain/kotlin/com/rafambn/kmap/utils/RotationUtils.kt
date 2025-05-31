@@ -13,16 +13,43 @@ fun Radians.toDegrees(): Degrees = this * 180 / PI
 
 fun Degrees.modulo(): Degrees = this.mod(180.0)
 
-fun TilePoint.rotate(radians: Radians): TilePoint = TilePoint(
-    this.horizontal * cos(radians) - this.vertical * sin(radians),
-    this.horizontal * sin(radians) + this.vertical * cos(radians)
-)
+inline fun <reified T : Reference> T.rotate(radians: Radians): T {
+    val cosRadians = cos(radians)
+    val sinRadians = sin(radians)
+    val newX = this.x * cosRadians - this.y * sinRadians
+    val newY = this.x * sinRadians + this.y * cosRadians
 
-fun TilePoint.rotateCentered(centerOffset: TilePoint, radians: Radians): TilePoint = TilePoint(
-    centerOffset.horizontal + (horizontal - centerOffset.horizontal) * cos(radians) - (vertical - centerOffset.vertical) * sin(
-        radians
-    ),
-    centerOffset.vertical + (horizontal - centerOffset.horizontal) * sin(radians) + (vertical - centerOffset.vertical) * cos(
-        radians
-    )
-)
+    return when (T::class) {
+        ScreenOffset::class -> ScreenOffset(newX, newY) as T
+        TilePoint::class -> TilePoint(newX, newY) as T
+        Coordinates::class -> Coordinates(newX, newY) as T
+        ProjectedCoordinates::class -> ProjectedCoordinates(newX, newY) as T
+        DifferentialScreenOffset::class -> DifferentialScreenOffset(newX, newY) as T
+        CanvasDrawReference::class -> CanvasDrawReference(newX, newY) as T
+        else -> throw IllegalArgumentException("Unsupported type for rotation: ${T::class.simpleName}")
+    }
+}
+
+inline fun <reified T : Reference> T.rotateCentered(center: T, radians: Radians): T {
+    val cosRadians = cos(radians)
+    val sinRadians = sin(radians)
+
+    val translatedX = this.x - center.x
+    val translatedY = this.y - center.y
+
+    val rotatedX = translatedX * cosRadians - translatedY * sinRadians
+    val rotatedY = translatedX * sinRadians + translatedY * cosRadians
+
+    val newX = center.x + rotatedX
+    val newY = center.y + rotatedY
+
+    return when (T::class) {
+        ScreenOffset::class -> ScreenOffset(newX, newY) as T
+        TilePoint::class -> TilePoint(newX, newY) as T
+        Coordinates::class -> Coordinates(newX, newY) as T
+        ProjectedCoordinates::class -> ProjectedCoordinates(newX, newY) as T
+        DifferentialScreenOffset::class -> DifferentialScreenOffset(newX, newY) as T
+        CanvasDrawReference::class -> CanvasDrawReference(newX, newY) as T
+        else -> throw IllegalArgumentException("Unsupported type for centered rotation: ${T::class.simpleName}")
+    }
+}

@@ -68,7 +68,7 @@ internal fun measureComponent(
 
     val mapViewPort = Rect(
         Offset.Zero,
-        Size(mapState.cameraState.canvasSize.x, mapState.cameraState.canvasSize.y)
+        Size(mapState.cameraState.canvasSize.xFloat, mapState.cameraState.canvasSize.yFloat)
     )
     measuredComponents.forEach { measuredComponent ->
         require(measuredComponent.parameters is MarkerParameters)

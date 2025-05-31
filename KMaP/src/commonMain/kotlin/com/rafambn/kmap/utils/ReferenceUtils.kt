@@ -2,73 +2,162 @@ package com.rafambn.kmap.utils
 
 import androidx.compose.ui.geometry.Offset
 
-sealed interface Reference
+open class Reference(val x: Double, val y: Double) {
 
-data class ScreenOffset(val x: Float, val y: Float) : Reference {
-    operator fun plus(reference: ScreenOffset) = ScreenOffset(x + reference.x, y + reference.y)
-    operator fun unaryMinus() = ScreenOffset(-x, -y)
-    operator fun minus(reference: ScreenOffset) = ScreenOffset(x - reference.x, y - reference.y)
-    operator fun times(value: Number) = ScreenOffset(x * value.toFloat(), y * value.toFloat())
-    operator fun div(value: Number) = ScreenOffset(x / value.toFloat(), y / value.toFloat())
+    constructor(x: Float, y: Float) : this(x.toDouble(), y.toDouble())
+    constructor(x: Int, y: Int) : this(x.toDouble(), y.toDouble())
+
+    val xFloat: Float get() = x.toFloat()
+    val yFloat: Float get() = y.toFloat()
+    val xInt: Int get() = x.toInt()
+    val yInt: Int get() = y.toInt()
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Reference) return false
+        return x == other.x && y == other.y
+    }
+
+    override fun hashCode(): Int = 31 * x.hashCode() + y.hashCode()
+
+    override fun toString(): String = "${this::class.simpleName}(x=$x, y=$y)"
 
     companion object {
-        val Zero: ScreenOffset = ScreenOffset(0F, 0F)
+        val ZERO = Reference(0.0, 0.0)
     }
 }
 
-data class TilePoint(val horizontal: Double, val vertical: Double) : Reference {
-    operator fun plus(reference: TilePoint) = TilePoint(horizontal + reference.horizontal, vertical + reference.vertical)
-    operator fun unaryMinus() = TilePoint(-horizontal, -vertical)
-    operator fun minus(reference: TilePoint) = TilePoint(horizontal - reference.horizontal, vertical - reference.vertical)
-    operator fun times(value: Number) = TilePoint(horizontal * value.toDouble(), vertical * value.toDouble())
-    operator fun div(value: Number) = TilePoint(horizontal / value.toDouble(), vertical / value.toDouble())
+class ScreenOffset : Reference {
+    constructor(x: Double, y: Double) : super(x, y)
+    constructor(x: Float, y: Float) : super(x, y)
+    constructor(x: Int, y: Int) : super(x, y)
 
     companion object {
-        val Zero: TilePoint = TilePoint(0.0, 0.0)
+        val Zero = ScreenOffset(0.0, 0.0)
     }
 }
 
-data class Coordinates(val longitude: Double, val latitude: Double) : Reference {
-    operator fun plus(reference: Coordinates) = Coordinates(longitude + reference.longitude, latitude + reference.latitude)
-    operator fun unaryMinus() = Coordinates(-longitude, -latitude)
-    operator fun minus(reference: Coordinates) = Coordinates(longitude - reference.longitude, latitude - reference.latitude)
-    operator fun times(value: Number) = Coordinates(longitude * value.toDouble(), latitude * value.toDouble())
-    operator fun div(value: Number) = Coordinates(longitude / value.toDouble(), latitude / value.toDouble())
+class TilePoint : Reference {
+    constructor(horizontal: Double, vertical: Double) : super(horizontal, vertical)
+    constructor(horizontal: Float, vertical: Float) : super(horizontal, vertical)
+    constructor(horizontal: Int, vertical: Int) : super(horizontal, vertical)
 
     companion object {
-        val Zero: Coordinates = Coordinates(0.0, 0.0)
+        val Zero = TilePoint(0.0, 0.0)
     }
 }
 
-data class DifferentialScreenOffset(val dx: Float, val dy: Float) : Reference {
-    operator fun plus(reference: DifferentialScreenOffset) = DifferentialScreenOffset(dx + reference.dx, dy + reference.dy)
-    operator fun unaryMinus() = DifferentialScreenOffset(-dx, -dy)
-    operator fun minus(reference: DifferentialScreenOffset) = DifferentialScreenOffset(dx - reference.dx, dy - reference.dy)
-    operator fun times(value: Number) = DifferentialScreenOffset(dx * value.toFloat(), dy * value.toFloat())
-    operator fun div(value: Number) = DifferentialScreenOffset(dx / value.toFloat(), dy / value.toFloat())
+class Coordinates : Reference {
+    constructor(longitude: Double, latitude: Double) : super(longitude, latitude)
+    constructor(longitude: Float, latitude: Float) : super(longitude, latitude)
+    constructor(longitude: Int, latitude: Int) : super(longitude, latitude)
+
     companion object {
-        val Zero: DifferentialScreenOffset = DifferentialScreenOffset(0F, 0F)
+        val Zero = Coordinates(0.0, 0.0)
     }
 }
 
-data class CanvasDrawReference(val horizontal: Double, val vertical: Double) {
-    fun plus(other: CanvasDrawReference) = CanvasDrawReference(horizontal + other.horizontal, vertical + other.vertical)
-    fun unaryMinus() = CanvasDrawReference(-horizontal, -vertical)
-    fun minus(other: CanvasDrawReference) = CanvasDrawReference(horizontal - other.horizontal, vertical - other.vertical)
-    fun times(operand: Double) = CanvasDrawReference(horizontal * operand, vertical * operand)
-    fun div(operand: Double) = CanvasDrawReference(horizontal / operand, vertical / operand)
+class ProjectedCoordinates : Reference {
+    constructor(longitude: Double, latitude: Double) : super(longitude, latitude)
+    constructor(longitude: Float, latitude: Float) : super(longitude, latitude)
+    constructor(longitude: Int, latitude: Int) : super(longitude, latitude)
+
+    companion object {
+        val Zero = ProjectedCoordinates(0.0, 0.0)
+    }
 }
 
-fun TilePoint.asScreenOffset() = ScreenOffset(this.horizontal.toFloat(), this.vertical.toFloat())
-fun TilePoint.asCanvasDrawReference() = CanvasDrawReference(this.horizontal, this.vertical)
+class DifferentialScreenOffset : Reference {
+    constructor(dx: Double, dy: Double) : super(dx, dy)
+    constructor(dx: Float, dy: Float) : super(dx, dy)
+    constructor(dx: Int, dy: Int) : super(dx, dy)
+
+    companion object {
+        val Zero = DifferentialScreenOffset(0.0, 0.0)
+    }
+}
+
+class CanvasDrawReference : Reference {
+    constructor(horizontal: Double, vertical: Double) : super(horizontal, vertical)
+    constructor(horizontal: Float, vertical: Float) : super(horizontal, vertical)
+    constructor(horizontal: Int, vertical: Int) : super(horizontal, vertical)
+
+    companion object {
+        val Zero = CanvasDrawReference(0.0, 0.0)
+    }
+}
+
+inline operator fun <reified T : Reference> T.plus(other: T): T {
+    return when (T::class) {
+        ScreenOffset::class -> ScreenOffset(x + other.x, y + other.y) as T
+        TilePoint::class -> TilePoint(x + other.x, y + other.y) as T
+        Coordinates::class -> Coordinates(x + other.x, y + other.y) as T
+        ProjectedCoordinates::class -> ProjectedCoordinates(x + other.x, y + other.y) as T
+        DifferentialScreenOffset::class -> DifferentialScreenOffset(x + other.x, y + other.y) as T
+        CanvasDrawReference::class -> CanvasDrawReference(x + other.x, y + other.y) as T
+        else -> throw IllegalArgumentException("Unsupported type: ${T::class}")
+    }
+}
+
+inline operator fun <reified T : Reference> T.unaryMinus(): T {
+    return when (T::class) {
+        ScreenOffset::class -> ScreenOffset(-x, -y) as T
+        TilePoint::class -> TilePoint(-x, -y) as T
+        Coordinates::class -> Coordinates(-x, -y) as T
+        ProjectedCoordinates::class -> ProjectedCoordinates(-x, -y) as T
+        DifferentialScreenOffset::class -> DifferentialScreenOffset(-x, -y) as T
+        CanvasDrawReference::class -> CanvasDrawReference(-x, -y) as T
+        else -> throw IllegalArgumentException("Unsupported type: ${T::class}")
+    }
+}
+
+inline operator fun <reified T : Reference> T.minus(other: T): T {
+    return when (T::class) {
+        ScreenOffset::class -> ScreenOffset(x - other.x, y - other.y) as T
+        TilePoint::class -> TilePoint(x - other.x, y - other.y) as T
+        Coordinates::class -> Coordinates(x - other.x, y - other.y) as T
+        ProjectedCoordinates::class -> ProjectedCoordinates(x + other.x, y + other.y) as T
+        DifferentialScreenOffset::class -> DifferentialScreenOffset(x - other.x, y - other.y) as T
+        CanvasDrawReference::class -> CanvasDrawReference(x - other.x, y - other.y) as T
+        else -> throw IllegalArgumentException("Unsupported type: ${T::class}")
+    }
+}
+
+inline operator fun <reified T : Reference> T.times(value: Number): T {
+    return when (T::class) {
+        ScreenOffset::class -> ScreenOffset(x * value.toDouble(), y * value.toDouble()) as T
+        TilePoint::class -> TilePoint(x * value.toDouble(), y * value.toDouble()) as T
+        Coordinates::class -> Coordinates(x * value.toDouble(), y * value.toDouble()) as T
+        ProjectedCoordinates::class -> ProjectedCoordinates(x * value.toDouble(), y * value.toDouble()) as T
+        DifferentialScreenOffset::class -> DifferentialScreenOffset(x * value.toDouble(), y * value.toDouble()) as T
+        CanvasDrawReference::class -> CanvasDrawReference(x * value.toDouble(), y * value.toDouble()) as T
+        else -> throw IllegalArgumentException("Unsupported type: ${T::class}")
+    }
+}
+
+inline operator fun <reified T : Reference> T.div(value: Number): T {
+    return when (T::class) {
+        ScreenOffset::class -> ScreenOffset(x / value.toDouble(), y / value.toDouble()) as T
+        TilePoint::class -> TilePoint(x / value.toDouble(), y / value.toDouble()) as T
+        Coordinates::class -> Coordinates(x / value.toDouble(), y / value.toDouble()) as T
+        ProjectedCoordinates::class -> ProjectedCoordinates(x * value.toDouble(), y * value.toDouble()) as T
+        DifferentialScreenOffset::class -> DifferentialScreenOffset(x / value.toDouble(), y / value.toDouble()) as T
+        CanvasDrawReference::class -> CanvasDrawReference(x / value.toDouble(), y / value.toDouble()) as T
+        else -> throw IllegalArgumentException("Unsupported type: ${T::class}")
+    }
+}
+
+fun TilePoint.asScreenOffset() = ScreenOffset(this.x, this.y)
+fun TilePoint.asCanvasDrawReference() = CanvasDrawReference(this.x, this.y)
+
+fun ScreenOffset.asOffset() = Offset(this.xFloat, this.yFloat)
+fun ScreenOffset.asDifferentialScreenOffset() = DifferentialScreenOffset(this.x, this.y)
 
 fun Offset.asScreenOffset() = ScreenOffset(this.x, this.y)
 fun Offset.asDifferentialScreenOffset() = DifferentialScreenOffset(this.x, this.y)
 
-fun DifferentialScreenOffset.asCanvasPosition() = TilePoint(this.dx.toDouble(), this.dy.toDouble())
-
-fun ScreenOffset.asOffset() = Offset(this.x, this.y)
-fun ScreenOffset.asDifferentialScreenOffset() = DifferentialScreenOffset(this.x, this.y)
+fun DifferentialScreenOffset.asCanvasPosition() = TilePoint(this.x, this.y)
+fun DifferentialScreenOffset.asTilePoint() = TilePoint(this.x, this.y)
 
 fun transformReference(
     pointX: Double,

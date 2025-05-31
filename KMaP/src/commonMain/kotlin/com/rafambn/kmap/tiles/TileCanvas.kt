@@ -130,14 +130,20 @@ internal fun TileCanvas(
     }
 }
 
-private fun DrawScope.drawTiles(tiles: List<Tile>, tileSize: TileDimension, positionOffset: CanvasDrawReference, scaleAdjustment: Float = 1F, canvas: Canvas) {
+private fun DrawScope.drawTiles(
+    tiles: List<Tile>,
+    tileSize: TileDimension,
+    positionOffset: CanvasDrawReference,
+    scaleAdjustment: Float = 1F,
+    canvas: Canvas
+) {
     tiles.forEach { tile ->
         tile.imageBitmap?.let {
             canvas.drawImageRect(
                 image = it,
                 dstOffset = IntOffset(
-                    (tileSize.width * tile.row * scaleAdjustment + positionOffset.horizontal).dp.toPx().toIntFloor(),
-                    (tileSize.height * tile.col * scaleAdjustment + positionOffset.vertical).dp.toPx().toIntFloor()
+                    (tileSize.width * tile.row * scaleAdjustment + positionOffset.x).dp.toPx().toIntFloor(),
+                    (tileSize.height * tile.col * scaleAdjustment + positionOffset.y).dp.toPx().toIntFloor()
                 ),
                 dstSize = IntSize(
                     (tileSize.width.dp.toPx() * scaleAdjustment).toIntFloor(),
