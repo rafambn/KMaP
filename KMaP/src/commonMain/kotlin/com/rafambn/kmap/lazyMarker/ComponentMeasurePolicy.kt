@@ -81,7 +81,7 @@ internal fun measureComponent(
             measuredComponent.maxHeight.toFloat(),
             measuredComponent.offset.asOffset()
         )
-        //TODO expand test for rotating markers
+        //TODO expand test for rotating markers and clustered markers
         if (measuredComponent.parameters.zoomVisibilityRange.contains(mapState.cameraState.zoom) &&
             mapViewPort.overlaps(measuredComponent.viewPort)) {
             if (measuredComponent.parameters.clusterId != null) {

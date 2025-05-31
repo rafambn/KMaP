@@ -11,7 +11,7 @@ interface MapProperties {
     val outsideTiles: OutsideTilesType
     val zoomLevels: ZoomLevelRange
     val coordinatesRange: CoordinatesRange
-    val tileSize: TileDimension
+    val tileSize: TileDimension //TODO change name to something the convey the info that is the size of map at zoom 0
 
     fun toProjectedCoordinates(coordinates: Coordinates): ProjectedCoordinates
 

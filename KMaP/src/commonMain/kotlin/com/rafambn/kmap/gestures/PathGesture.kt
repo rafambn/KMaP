@@ -1,85 +1,249 @@
 package com.rafambn.kmap.gestures
 
 import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.foundation.gestures.calculatePan
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.input.pointer.AwaitPointerEventScope
-import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.graphics.PathHitTester
+import androidx.compose.ui.graphics.PathMeasure
+import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventTimeoutCancellationException
-import androidx.compose.ui.input.pointer.PointerInputChange
+import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerInputScope
-import androidx.compose.ui.util.fastAny
-import androidx.compose.ui.util.fastForEach
+import androidx.compose.ui.input.pointer.isOutOfBounds
 import com.rafambn.kmap.core.MapState
-import com.rafambn.kmap.utils.Coordinates
+import com.rafambn.kmap.tiles.TileDimension
+import com.rafambn.kmap.utils.ScreenOffset
 import com.rafambn.kmap.utils.asScreenOffset
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.isActive
 
-private suspend fun PointerInputScope.detectPathGestures( //TODO study on how to share pointer input
-    onDoubleTap: ((Coordinates) -> Unit)? = null,
-    onLongPress: ((Coordinates) -> Unit)? = null,
-    onTap: ((Coordinates) -> Unit)? = null,
+suspend fun PointerInputScope.detectPathGestures(
+    onTap: ((ScreenOffset) -> Unit)? = null,
+    onDoubleTap: ((ScreenOffset) -> Unit)? = null,
+    onLongPress: ((ScreenOffset) -> Unit)? = null,
     mapState: MapState,
     path: Path,
+    threshold: Float = 10f,
 ) = coroutineScope {
+    val pathMeasure = PathMeasure()
+    pathMeasure.setPath(path, false)
+    val pathHitTester = PathHitTester(path, threshold)
+
+    val tester = PathTester(pathHitTester, pathMeasure, threshold, mapState.mapProperties.tileSize)
+
     awaitEachGesture {
-        val down = awaitFirstDown(pass = PointerEventPass.Final)
-//        if (!mapState.isPathHit(down.position, path))
-//            return@awaitEachGesture
-        down.consume()
-        val longPressTimeout = onLongPress?.let {
-            viewConfiguration.longPressTimeoutMillis
-        } ?: (Long.MAX_VALUE / 2)
-        var upOrCancel: PointerInputChange? = null
-        try {
-            upOrCancel = withTimeout(longPressTimeout) {
-                waitForUpOrCancellation()
-            }
-            if (upOrCancel == null)
-                return@awaitEachGesture
-            else {
-                upOrCancel.consume()
-                if (onDoubleTap == null) {
-                    onTap?.invoke(with(mapState) { upOrCancel.position.asScreenOffset().toTilePoint().toCoordinates() })
-                } else {
-                    try {
-                        val secondDown = withTimeout(viewConfiguration.doubleTapMinTimeMillis) {
-                            awaitFirstDown()
-                        }
-//                        if (!mapState.isPathHit(secondDown.position, path)) {
-//                            onTap?.invoke(with(mapState) { upOrCancel.position.asScreenOffset().toTilePoint().toCoordinates() })
-//                            return@awaitEachGesture
-//                        }
-                        secondDown.consume()
+        val longPressTimeout = viewConfiguration.longPressTimeoutMillis
+        val doubleTapTimeout = viewConfiguration.doubleTapTimeoutMillis
+        val touchSlop = viewConfiguration.touchSlop
+        var panSlop: Offset
+
+        var pathGestureState: PathGestureState
+
+        var event: PointerEvent
+
+        do {
+            event = awaitPointerEventWithTimeout()
+        } while (
+            !(event.type == PointerEventType.Press && (onTap != null || onDoubleTap != null || onLongPress != null)
+                    && event.changes.any { !it.isConsumed && it.pressed && tester.checkHit(it.position) })
+        )
+
+        pathGestureState = PathGestureState.WAITING_UP
+        //TODO check for consumed on pathGesture and MapGesture
+        do {
+            when (pathGestureState) {
+                PathGestureState.WAITING_UP -> {
+                    var timePassed = 0L
+                    panSlop = Offset.Zero
+                    do {
                         try {
-                            withTimeout(longPressTimeout) {
-                                val secondUp = waitForUpOrCancellation()
-                                if (secondUp != null) {
-                                    secondUp.consume()
-                                    onDoubleTap(with(mapState) { secondUp.position.asScreenOffset().toTilePoint().toCoordinates() })
-                                } else
-                                    onTap?.invoke(with(mapState) { upOrCancel.position.asScreenOffset().toTilePoint().toCoordinates() })
+                            event = awaitPointerEventWithTimeout(longPressTimeout - timePassed)
+                            timePassed += event.changes.minOf { it.uptimeMillis - it.previousUptimeMillis }
+
+                            when (event.type) {
+
+                                PointerEventType.Release -> {
+                                    if (event.changes.size == 1) {
+                                        if (onDoubleTap != null) {
+                                            event.changes.forEach { it.consume() }
+                                            pathGestureState = PathGestureState.WAITING_DOWN
+                                            break
+                                        }
+                                        if (onTap != null) {
+                                            event.changes.forEach { it.consume() }
+                                            onTap.invoke(event.changes[0].position.asScreenOffset())
+                                            return@awaitEachGesture
+                                        }
+                                    }
+                                }
+
+                                PointerEventType.Move -> {
+                                    panSlop += event.calculatePan()
+                                    event.changes.forEach { it.consume() }
+                                    if (panSlop.getDistance() > touchSlop) {
+                                        return@awaitEachGesture
+                                    }
+                                }
                             }
                         } catch (_: PointerEventTimeoutCancellationException) {
-                            onTap?.invoke(with(mapState) { upOrCancel.position.asScreenOffset().toTilePoint().toCoordinates() })
-                            consumeUntilUp()
+                            event.changes.forEach { it.consume() }
+                            onLongPress?.invoke(event.changes[0].position.asScreenOffset())
+                            return@awaitEachGesture
                         }
-                    } catch (_: PointerEventTimeoutCancellationException) {
-                        onTap?.invoke(with(mapState) { upOrCancel.position.asScreenOffset().toTilePoint().toCoordinates() })
-                    }
+                    } while (!event.changes.all { it.isOutOfBounds(size, extendedTouchPadding) })
+                }
+
+                PathGestureState.WAITING_DOWN -> {
+                    var timePassed = 0L
+                    panSlop = Offset.Zero
+                    do {
+                        try {
+                            event = awaitPointerEventWithTimeout(doubleTapTimeout - timePassed)
+                            timePassed += event.changes.minOf { it.uptimeMillis - it.previousUptimeMillis }
+
+                            when (event.type) {
+                                PointerEventType.Press -> {
+                                    if (onDoubleTap != null) {
+                                        pathGestureState = PathGestureState.WAITING_UP_AFTER_TAP
+                                        break
+                                    } else {
+                                        event.changes.forEach { it.consume() }
+                                        onTap?.invoke(event.changes[0].position.asScreenOffset())
+                                    }
+                                    return@awaitEachGesture
+                                }
+
+                                PointerEventType.Move -> {
+                                    panSlop += event.calculatePan()
+                                    event.changes.forEach { it.consume() }
+                                    if (onTap != null && panSlop.getDistance() > touchSlop) {
+                                        onTap.invoke(event.changes[0].position.asScreenOffset())
+                                        return@awaitEachGesture
+                                    }
+                                }
+                            }
+                        } catch (_: PointerEventTimeoutCancellationException) {
+                            if (onTap != null) {
+                                event.changes.forEach { it.consume() }
+                                onTap.invoke(event.changes[0].position.asScreenOffset())
+                                return@awaitEachGesture
+                            }
+                        }
+                    } while (!event.changes.all { it.isOutOfBounds(size, extendedTouchPadding) })
+                }
+
+                PathGestureState.WAITING_UP_AFTER_TAP -> {
+                    var timePassed = 0L
+                    panSlop = Offset.Zero
+                    do {
+                        try {
+                            event = awaitPointerEventWithTimeout(longPressTimeout - timePassed)
+                            timePassed += event.changes.minOf { it.uptimeMillis - it.previousUptimeMillis }
+
+                            when (event.type) {
+                                PointerEventType.Release -> {
+                                    onDoubleTap?.invoke(event.changes[0].position.asScreenOffset())
+                                    return@awaitEachGesture
+                                }
+
+                                PointerEventType.Move -> {
+                                    panSlop += event.calculatePan()
+                                    if (panSlop.getDistance() > touchSlop) {
+                                        onTap?.invoke(event.changes[0].position.asScreenOffset())
+                                        return@awaitEachGesture
+                                    }
+                                }
+                            }
+                        } catch (_: PointerEventTimeoutCancellationException) {
+                            onLongPress?.invoke(event.changes[0].position.asScreenOffset())
+                            return@awaitEachGesture
+                        }
+                    } while (!event.changes.all { it.isOutOfBounds(size, extendedTouchPadding) })
                 }
             }
-        } catch (_: PointerEventTimeoutCancellationException) {
-            onLongPress?.invoke(with(mapState) { down.position.asScreenOffset().toTilePoint().toCoordinates() })
-            consumeUntilUp()
-        }
+        } while (this@coroutineScope.isActive && !event.changes.any { it.isOutOfBounds(size, extendedTouchPadding) })
     }
 }
 
-suspend fun AwaitPointerEventScope.consumeUntilUp() {
-    do {
-        val event = awaitPointerEvent()
-        event.changes.fastForEach { it.consume() }
-    } while (event.changes.fastAny { it.pressed })
+class PathTester(
+    private val path: PathHitTester,
+    private val pathMeasure: PathMeasure,
+    private val threshold: Float,
+    private val tileDimension: TileDimension
+) {
+
+    fun checkHit(point: Offset): Boolean {
+        val pointTranslated = point.copy((point.x - tileDimension.width.toFloat()) / 2, (point.y - tileDimension.height.toFloat()) / 2)
+        if (isPointInsidePath(path, pointTranslated)) {
+            println("Point inside")
+            return true
+        }
+        if (isPointNearPath(pathMeasure, pointTranslated, threshold)) {
+            println("Point near")
+            return true
+        }
+
+        return false
+    }
+
+    private fun isPointInsidePath(path: PathHitTester, point: Offset): Boolean {
+        return path.contains(point)
+    }
+
+    private fun isPointNearPath(
+        pathMeasure: PathMeasure,
+        point: Offset,
+        threshold: Float
+    ): Boolean {
+        val closestPoint = findClosestPointOnPath(pathMeasure, point)
+        val distance = calculateDistance(point, closestPoint)
+        return distance <= threshold
+    }
+
+    private fun findClosestPointOnPath(pathMeasure: PathMeasure, point: Offset): Offset {
+        val pathLength = pathMeasure.length
+        val initialPointOnPath = pathMeasure.getPosition(0f)
+
+        if (pathLength == 0f) {
+            return initialPointOnPath
+        }
+
+        val dxInitial = point.x - initialPointOnPath.x
+        val dyInitial = point.y - initialPointOnPath.y
+        var overallMinDistanceSquared = dxInitial * dxInitial + dyInitial * dyInitial
+        var overallClosestPoint = initialPointOnPath
+
+        val minSamples = 30
+        val maxSamples = 1000
+        val samplesPerUnitLength = 0.2f
+
+        val calculatedSamples = (pathLength * samplesPerUnitLength).toInt()
+        val numSamplesToProcess = calculatedSamples.coerceIn(minSamples, maxSamples)
+
+        if (numSamplesToProcess > 0) {
+            for (i in 1..numSamplesToProcess) {
+                val fraction = i.toFloat() / numSamplesToProcess.toFloat()
+                val currentDistanceOnPath = pathLength * fraction
+                val pointOnPath = pathMeasure.getPosition(currentDistanceOnPath)
+
+                val dx = point.x - pointOnPath.x
+                val dy = point.y - pointOnPath.y
+                val currentDistanceSquared = dx * dx + dy * dy
+
+                if (currentDistanceSquared < overallMinDistanceSquared) {
+                    overallMinDistanceSquared = currentDistanceSquared
+                    overallClosestPoint = pointOnPath
+                }
+            }
+        }
+
+        return overallClosestPoint
+    }
+
+    private fun calculateDistance(a: Offset, b: Offset): Float {
+        val dx = a.x - b.x
+        val dy = a.y - b.y
+        return kotlin.math.sqrt(dx * dx + dy * dy)
+    }
 }
