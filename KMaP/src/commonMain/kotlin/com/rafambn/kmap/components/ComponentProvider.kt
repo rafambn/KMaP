@@ -1,4 +1,4 @@
-package com.rafambn.kmap.lazyMarker
+package com.rafambn.kmap.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.layout.LazyLayoutItemProvider
@@ -7,8 +7,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.referentialEqualityPolicy
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.ui.Modifier
-import com.rafambn.kmap.components.Parameters
 import com.rafambn.kmap.core.MapState
 
 @Composable

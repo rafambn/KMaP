@@ -7,9 +7,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.onGloballyPositioned
-import com.rafambn.kmap.lazyMarker.KMaPContent
-import com.rafambn.kmap.lazyMarker.rememberComponentProviderLambda
-import com.rafambn.kmap.lazyMarker.rememberComponentMeasurePolicy
+import com.rafambn.kmap.components.KMaPContent
+import com.rafambn.kmap.components.rememberComponentProviderLambda
+import com.rafambn.kmap.components.rememberComponentMeasurePolicy
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

@@ -175,6 +175,7 @@ class PathTester(
 
     fun checkHit(point: Offset): Boolean {
         val pointTranslated = point.copy((point.x - tileDimension.width.toFloat()) / 2, (point.y - tileDimension.height.toFloat()) / 2)
+        println("pathClicked")
         if (isPointInsidePath(path, pointTranslated)) {
             println("Point inside")
             return true

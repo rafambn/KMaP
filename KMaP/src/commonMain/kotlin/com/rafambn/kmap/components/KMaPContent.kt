@@ -1,4 +1,4 @@
-package com.rafambn.kmap.lazyMarker
+package com.rafambn.kmap.components
 
 import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
@@ -11,14 +11,6 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.layout.Layout
-import com.rafambn.kmap.components.Canvas
-import com.rafambn.kmap.components.CanvasParameters
-import com.rafambn.kmap.components.Cluster
-import com.rafambn.kmap.components.ClusterParameters
-import com.rafambn.kmap.components.Marker
-import com.rafambn.kmap.components.MarkerParameters
-import com.rafambn.kmap.components.Path
-import com.rafambn.kmap.components.PathParameters
 import com.rafambn.kmap.core.MapState
 import com.rafambn.kmap.gestures.sharedPointerInput
 import com.rafambn.kmap.tiles.TileCanvas

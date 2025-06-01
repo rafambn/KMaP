@@ -1,4 +1,4 @@
-package com.rafambn.kmap.lazyMarker
+package com.rafambn.kmap.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.layout.LazyLayoutMeasureScope
@@ -11,7 +11,6 @@ import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.util.fastForEach
-import com.rafambn.kmap.components.MarkerParameters
 import com.rafambn.kmap.core.MapState
 import com.rafambn.kmap.core.getViewPort
 import com.rafambn.kmap.utils.asOffset

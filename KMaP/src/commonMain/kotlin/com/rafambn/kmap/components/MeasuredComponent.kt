@@ -1,14 +1,9 @@
-package com.rafambn.kmap.lazyMarker
+package com.rafambn.kmap.components
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.Placeable
-import com.rafambn.kmap.components.CanvasParameters
-import com.rafambn.kmap.components.ClusterParameters
-import com.rafambn.kmap.components.MarkerParameters
-import com.rafambn.kmap.components.Parameters
-import com.rafambn.kmap.components.PathParameters
 import com.rafambn.kmap.utils.Degrees
 import com.rafambn.kmap.utils.ScreenOffset
 import kotlin.math.pow
