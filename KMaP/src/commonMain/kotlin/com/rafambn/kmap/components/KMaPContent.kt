@@ -29,6 +29,7 @@ class KMaPContent(
 
     init {
         apply(content)
+        mapState.canvasKernel.clearOldCanvas(canvas.map { it.parameters.id })
     }
 
     fun canvas(

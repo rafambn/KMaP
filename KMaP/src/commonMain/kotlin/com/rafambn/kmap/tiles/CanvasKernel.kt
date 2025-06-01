@@ -13,12 +13,15 @@ class CanvasKernel(
 
     fun addCanvas(parameters: CanvasParameters) {
         canvas.getOrPut(parameters.id) { CanvasEngine(parameters.maxCacheTiles, parameters.getTile, coroutineScope) }
-        //TODO invalidade old canvas
     }
 
     fun getTileLayers(id: Int): TileLayers = canvas.getValue(id).tileLayers
 
     fun renderTile(viewPort: ViewPort, zoomLevel: Int, mapProperties: MapProperties) {
         canvas.forEach { (_, canvasEngine) -> canvasEngine.renderTile(viewPort, zoomLevel, mapProperties) }
+    }
+
+    fun clearOldCanvas(currentIds: List<Int>) {
+        canvas.keys.filter { !currentIds.contains(it) }.forEach { canvas.remove(it) }
     }
 }
