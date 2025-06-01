@@ -74,9 +74,22 @@ class MeasuredComponent(
                     }
                 }
 
-                is PathParameters -> TODO()
+                is PathParameters -> {
+                    placeables[index].placeWithLayer(
+                        x = 0,
+                        y = 0,
+                        zIndex = parameters.zIndex
+                    ) {
+                        alpha = parameters.alpha
+                        translationX = offset.xFloat
+                        translationY = offset.yFloat
+                        rotationZ = cameraAngle.toFloat()
+                        //TODO add base zoom
+                        scaleX = 2F.pow(cameraZoom)
+                        scaleY = 2F.pow(cameraZoom)
+                    }
+                }
                 is CanvasParameters -> {
-                    println("placed")
                     placeables[index].placeWithLayer(
                         x = 0,
                         y = 0,

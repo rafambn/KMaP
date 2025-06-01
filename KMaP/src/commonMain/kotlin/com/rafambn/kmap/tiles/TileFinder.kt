@@ -6,7 +6,7 @@ import com.rafambn.kmap.mapProperties.border.OutsideTilesType
 import com.rafambn.kmap.utils.toIntFloor
 import kotlin.math.pow
 
-class TileFinder {
+object TileFinder {
 
     fun getVisibleTilesForLevel(
         viewPort: ViewPort,

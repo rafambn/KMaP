@@ -105,8 +105,16 @@ internal fun measureComponent(
             }
         }
     }
-    repeat(canvasCount) { index ->
-        visibleItems.add(measuredItemProvider.getAndMeasureCanvas(index))
+    if (pathsCount > 0) {
+        repeat(pathsCount) { index ->
+            visibleItems.add(measuredItemProvider.getAndMeasurePath(index))
+        }
+    }
+
+    if (canvasCount > 0) {
+        repeat(canvasCount) { index ->
+            visibleItems.add(measuredItemProvider.getAndMeasureCanvas(index))
+        }
     }
 
     return layout {

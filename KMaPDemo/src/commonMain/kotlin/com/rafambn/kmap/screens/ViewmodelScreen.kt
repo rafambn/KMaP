@@ -14,6 +14,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
 import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -44,7 +45,7 @@ fun ViewmodelScreen(
             mapState = viewmodel.mapState,
         ) {
             canvas(
-                parameters = CanvasParameters(getTile = SimpleMapTileSource()::getTile),
+                parameters = CanvasParameters(id = 1, getTile = SimpleMapTileSource()::getTile),
                 gestureDetection = getGestureDetector(viewmodel.mapState.motionController)
             )
         }
@@ -61,11 +62,12 @@ class MyViewmodel(savedStateHandle: SavedStateHandle) : ViewModel() {
     @OptIn(SavedStateHandleSaveableApi::class)
     val mapState = savedStateHandle.saveable(
         key = "mapState",
-        saver = MapState.saver(SimpleMapProperties()),
+        saver = MapState.saver(SimpleMapProperties(), viewModelScope),
         init = {
             MapState(
                 mapProperties = SimpleMapProperties(),
-                zoomLevelPreference = null
+                zoomLevelPreference = null,
+                coroutineScope = viewModelScope
             )
         }
     )

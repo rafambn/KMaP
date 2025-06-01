@@ -37,7 +37,7 @@ fun ClusteringScreen(
             mapState = mapState,
         ) {
             canvas(
-                parameters = CanvasParameters(getTile = SimpleMapTileSource()::getTile),
+                parameters = CanvasParameters(id = 1, getTile = SimpleMapTileSource()::getTile),
                 gestureDetection = getGestureDetector(mapState.motionController)
             )
             markers(

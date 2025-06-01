@@ -5,14 +5,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.layout.onGloballyPositioned
 import com.rafambn.kmap.components.Canvas
 import com.rafambn.kmap.components.CanvasParameters
 import com.rafambn.kmap.components.Cluster
@@ -24,6 +22,8 @@ import com.rafambn.kmap.components.PathParameters
 import com.rafambn.kmap.core.MapState
 import com.rafambn.kmap.gestures.sharedPointerInput
 import com.rafambn.kmap.tiles.TileCanvas
+import com.rafambn.kmap.utils.asOffset
+import com.rafambn.kmap.utils.toIntFloor
 
 class KMaPContent(
     content: KMaPContent.() -> Unit,
@@ -49,15 +49,18 @@ class KMaPContent(
                 gestureDetection
             ) {
                 TileCanvas(
-                    cameraState = mapState.cameraState,
-                    mapProperties = mapState.mapProperties,
+                    canvasSize = mapState.cameraState.canvasSize,
+                    magnifierScale = mapState.cameraState.zoom - mapState.cameraState.zoom.toIntFloor(),
                     positionOffset = mapState.drawReference,
-                    viewPort = mapState.viewPort,
+                    tileSize = mapState.mapProperties.tileSize,
+                    rotationDegrees = mapState.cameraState.angleDegrees.toFloat(),
+                    translation = mapState.cameraState.canvasSize.asOffset() / 2F,
                     gestureDetection = gestureDetection,
-                    parameters = parameters,
+                    tileLayers = mapState.canvasKernel.getTileLayers(parameters.id)
                 )
             }
         )
+        mapState.canvasKernel.addCanvas(parameters)
     }
 
     inline fun <T : MarkerParameters> marker(

@@ -48,6 +48,7 @@ open class PathParameters(
 ) : Parameters
 
 open class CanvasParameters(
+    val id: Int,
     val alpha: Float = 1F,
     val zIndex: Float = 0F,
     val maxCacheTiles: Int = 20,
