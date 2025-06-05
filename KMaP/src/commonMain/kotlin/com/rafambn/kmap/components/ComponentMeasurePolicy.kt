@@ -60,17 +60,17 @@ internal fun measureComponent(
 
     if (markersCount > 0) {
         val itemsThatCanClusterMap = mutableMapOf<Int, List<MeasuredComponent>>()
-        val measuredComponents = mutableListOf<MeasuredComponent>()
+        val measuredMarkers = mutableListOf<MeasuredComponent>()
 
         for (index in 0 until markersCount) {
-            measuredComponents.add(measuredItemProvider.getAndMeasureMarker(index))
+            measuredMarkers.add(measuredItemProvider.getAndMeasureMarker(index))
         }
 
         val mapViewPort = Rect(
             Offset.Zero,
             Size(mapState.cameraState.canvasSize.xFloat, mapState.cameraState.canvasSize.yFloat)
         )
-        measuredComponents.forEach { measuredComponent ->
+        measuredMarkers.forEach { measuredComponent ->
             require(measuredComponent.parameters is MarkerParameters)
             measuredComponent.offset = with(mapState) {
                 measuredComponent.parameters.coordinates.toTilePoint().toScreenOffset()
@@ -105,9 +105,19 @@ internal fun measureComponent(
         }
     }
     if (pathsCount > 0) {
+        val measuredPats = mutableListOf<MeasuredComponent>()
         repeat(pathsCount) { index ->
-            visibleItems.add(measuredItemProvider.getAndMeasurePath(index))
+            val measuredPath = measuredItemProvider.getAndMeasurePath(index)
+            require(measuredPath.parameters is PathParameters)
+            if (measuredPath.parameters.zoomVisibilityRange.contains(mapState.cameraState.zoom)) {
+                val path = measuredPath.parameters.drawPoint
+                measuredPath.offset = with(mapState) {
+                    path.toTilePoint().toScreenOffset()
+                }
+                measuredPats.add(measuredPath)
+            }
         }
+        visibleItems.addAll(measuredPats)
     }
 
     if (canvasCount > 0) {

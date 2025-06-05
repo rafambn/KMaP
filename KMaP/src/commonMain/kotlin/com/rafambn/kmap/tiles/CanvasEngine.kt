@@ -24,7 +24,8 @@ class CanvasEngine(
                 it.forEach {
                     tileLayers.insertNewTileBitmap(it)
                 }
-                tileLayers = tileLayers.copy(trigger = tileLayers.trigger * -1) //TODO improve lifecycle of tileLayers
+                tileLayers = tileLayers.copy(trigger = tileLayers.trigger * -1)
+                //TODO (improve lifecycle of tileLayers, improve tiles to use sets instead of lists)
             }
         }
     }

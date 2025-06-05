@@ -4,8 +4,11 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.Placeable
+import com.rafambn.kmap.core.DrawPosition
 import com.rafambn.kmap.utils.Degrees
 import com.rafambn.kmap.utils.ScreenOffset
+import com.rafambn.kmap.utils.rotate
+import com.rafambn.kmap.utils.toRadians
 import kotlin.math.pow
 
 class MeasuredComponent(
@@ -28,7 +31,7 @@ class MeasuredComponent(
         cameraZoom: Float
     ) = with(scope) {
         repeat(placeablesCount) { index ->
-            when(parameters){
+            when (parameters) {
                 is ClusterParameters -> {
                     placeables[index].placeWithLayer(
                         x = 0,
@@ -46,6 +49,7 @@ class MeasuredComponent(
                                 parameters.rotation.toFloat()
                     }
                 }
+
                 is MarkerParameters -> {
                     placeables[index].placeWithLayer(
                         x = 0,
@@ -70,20 +74,23 @@ class MeasuredComponent(
                 }
 
                 is PathParameters -> {
+                    val paddingWithZoom = parameters.totalPadding * 2F.pow(cameraZoom)
+                    val paddingOffset = ScreenOffset(paddingWithZoom, paddingWithZoom).rotate(cameraAngle.toRadians())
                     placeables[index].placeWithLayer(
                         x = 0,
                         y = 0,
                         zIndex = parameters.zIndex
                     ) {
+                        transformOrigin = DrawPosition.TOP_LEFT.asTransformOrigin()
+                        translationX = offset.xFloat - paddingOffset.xFloat
+                        translationY = offset.yFloat - paddingOffset.yFloat
                         alpha = parameters.alpha
-                        translationX = offset.xFloat
-                        translationY = offset.yFloat
                         rotationZ = cameraAngle.toFloat()
-                        //TODO add base zoom
                         scaleX = 2F.pow(cameraZoom)
                         scaleY = 2F.pow(cameraZoom)
                     }
                 }
+
                 is CanvasParameters -> {
                     placeables[index].placeWithLayer(
                         x = 0,

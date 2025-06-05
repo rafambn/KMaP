@@ -36,9 +36,7 @@ import com.rafambn.kmap.utils.toRadians
 import com.rafambn.kmap.utils.transformReference
 import com.rafambn.kmap.utils.unaryMinus
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import kotlin.math.pow
-import kotlin.properties.Delegates
 import kotlin.reflect.KProperty
 
 @Composable
@@ -135,8 +133,8 @@ class MapState(
         .asCanvasPosition()
         .div(density.density.toDouble())
         .scale(
-            (mapProperties.tileSize.width.toDouble() / (mapProperties.tileSize.width * 2F.pow(cameraState.zoom))).toDouble(),
-            (mapProperties.tileSize.height.toDouble() / (mapProperties.tileSize.height * 2F.pow(cameraState.zoom))).toDouble()
+            (mapProperties.tileSize.width.toDouble() / (mapProperties.tileSize.width * 2F.pow(cameraState.zoom))),
+            (mapProperties.tileSize.height.toDouble() / (mapProperties.tileSize.height * 2F.pow(cameraState.zoom)))
         )
         .rotate(-cameraState.angleDegrees.toRadians())
         .unaryMinus()
@@ -169,6 +167,18 @@ class MapState(
         val scaledTilePoint = transformReference(
             projectedCoordinates.x,
             projectedCoordinates.y,
+            Pair(mapProperties.coordinatesRange.longitude.west, mapProperties.coordinatesRange.longitude.east),
+            Pair(mapProperties.coordinatesRange.latitude.north, mapProperties.coordinatesRange.latitude.south),
+            Pair(0.0, mapProperties.tileSize.width.toDouble()),
+            Pair(0.0, mapProperties.tileSize.height.toDouble()),
+        )
+        return TilePoint(scaledTilePoint.first, scaledTilePoint.second)
+    }
+
+    fun ProjectedCoordinates.toTilePoint(): TilePoint {
+        val scaledTilePoint = transformReference(
+            this.x,
+            this.y,
             Pair(mapProperties.coordinatesRange.longitude.west, mapProperties.coordinatesRange.longitude.east),
             Pair(mapProperties.coordinatesRange.latitude.north, mapProperties.coordinatesRange.latitude.south),
             Pair(0.0, mapProperties.tileSize.width.toDouble()),

@@ -11,6 +11,7 @@ import com.rafambn.kmap.core.DrawPosition
 import com.rafambn.kmap.tiles.TileRenderResult
 import com.rafambn.kmap.utils.Degrees
 import com.rafambn.kmap.utils.Coordinates
+import com.rafambn.kmap.utils.ProjectedCoordinates
 
 sealed interface Parameters
 
@@ -44,8 +45,10 @@ open class PathParameters(
     val blendMode: BlendMode = DefaultBlendMode,
     val clickPadding: Float = 10F,
     val zoomVisibilityRange: ClosedFloatingPointRange<Float> = 0F..Float.MAX_VALUE,
-    val zoomToFix: Float? = null
-) : Parameters
+) : Parameters{
+    internal var drawPoint: ProjectedCoordinates = ProjectedCoordinates(0f, 0f)
+    internal var totalPadding: Float = 0f
+}
 
 open class CanvasParameters(
     val id: Int,

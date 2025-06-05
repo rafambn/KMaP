@@ -6,6 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.withTransform
@@ -14,6 +15,7 @@ import androidx.compose.ui.layout.Layout
 import com.rafambn.kmap.core.MapState
 import com.rafambn.kmap.gestures.sharedPointerInput
 import com.rafambn.kmap.tiles.TileCanvas
+import com.rafambn.kmap.utils.ProjectedCoordinates
 import com.rafambn.kmap.utils.asOffset
 import com.rafambn.kmap.utils.toIntFloor
 
@@ -85,9 +87,29 @@ class KMaPContent(
     ) {
         var padding = if (parameters.style is Stroke) parameters.style.width / 2F else 0F
         padding = maxOf(padding, parameters.clickPadding)
+        parameters.totalPadding = padding
+        val unmodBounds = parameters.path.getBounds()
+        val pointY = if (mapState.mapProperties.coordinatesRange.latitude.orientation == 1)
+            unmodBounds.top else unmodBounds.bottom
+        val pointX = if (mapState.mapProperties.coordinatesRange.longitude.orientation == 1)
+            unmodBounds.left else unmodBounds.right
+        val topLeft = ProjectedCoordinates(pointX, pointY)
+        parameters.drawPoint = topLeft
+        val orientationMatrix = Matrix()
+        orientationMatrix.scale(
+            (mapState.mapProperties.coordinatesRange.longitude.orientation).toFloat(),
+            (mapState.mapProperties.coordinatesRange.latitude.orientation).toFloat()
+        )
+        val scaleMatrix = Matrix()
+        scaleMatrix.scale(
+            (mapState.mapProperties.tileSize.width / mapState.mapProperties.coordinatesRange.longitude.span).toFloat(),
+            (mapState.mapProperties.tileSize.height / mapState.mapProperties.coordinatesRange.latitude.span).toFloat()
+        )
+        parameters.path.transform(orientationMatrix)
+        parameters.path.transform(scaleMatrix)
+        val bounds = parameters.path.getBounds()
         paths.add(
             Path(parameters, gestureDetection) {
-                val bounds = parameters.path.getBounds()
                 Layout(
                     modifier = Modifier
                         .then(gestureDetection?.let { Modifier.sharedPointerInput { it(parameters.path) } } ?: Modifier)

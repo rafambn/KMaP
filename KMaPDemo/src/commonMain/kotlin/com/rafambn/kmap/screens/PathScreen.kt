@@ -19,7 +19,6 @@ import com.rafambn.kmap.components.CanvasParameters
 import com.rafambn.kmap.components.PathParameters
 import com.rafambn.kmap.core.KMaP
 import com.rafambn.kmap.core.rememberMapState
-import com.rafambn.kmap.customSources.OSMTileSource
 import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
 import com.rafambn.kmap.gestures.detectPathGestures
@@ -33,12 +32,17 @@ fun PathScreen(
     navigateBack: () -> Unit
 ) {
     val mapState = rememberMapState(mapProperties = SimpleMapProperties())
-    val path = PathData {
+    val path1 = PathData {
         moveTo(0F, 0F)
-        lineTo(100F, 100F)
-        lineTo(200F, 200F)
-        lineTo(100F, 200F)
-        lineTo(100F, 100F)
+        lineTo(180F, -80F)
+        lineTo(90F, -80F)
+        lineTo(90F, 0F)
+    }.toPath()
+    val path2 = PathData {
+        moveTo(-180F, 80F)
+        lineTo(180F, 80F)
+        lineTo(-180F, -80F)
+        lineTo(-180F, 80F)
     }.toPath()
     Box {
         KMaP(
@@ -51,7 +55,7 @@ fun PathScreen(
             )
             path(
                 parameters = PathParameters(
-                    path = path,
+                    path = path1,
                     color = Color.Red,
                     style = Stroke(
                         width = 4F,
@@ -72,7 +76,29 @@ fun PathScreen(
                             println("Long press detected at $coordinates")
                         },
                         mapState = mapState,
-                        path = path
+                        path = path1
+                    )
+                }
+            )
+            path(
+                parameters = PathParameters(
+                    path = path2,
+                    color = Color.Blue,
+                    style = Stroke(
+                        width = 4F,
+                        cap = StrokeCap.Round,
+                        join = StrokeJoin.Round,
+                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+                    ),
+                    zoomVisibilityRange = 0F..1F,
+                ),
+                gestureDetection = {
+                    detectPathGestures(
+                        onTap = {
+                            println("Tap detected at $it")
+                        },
+                        mapState = mapState,
+                        path = path2
                     )
                 }
             )
