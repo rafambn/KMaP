@@ -11,12 +11,13 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
-import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import com.rafambn.kmap.gestures.MapGestureWrapper
+import com.rafambn.kmap.gestures.detectMapGestures
 import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.ScreenOffset
 import com.rafambn.kmap.utils.toIntFloor
@@ -30,12 +31,26 @@ internal fun TileCanvas(
     tileSize: TileDimension,
     rotationDegrees: Float,
     translation: Offset,
-    gestureDetection: (suspend PointerInputScope.() -> Unit)?,
+    gestureWrapper: MapGestureWrapper?,
     tileLayers: TileLayers
 ) {
     Layout(
         modifier = Modifier
-            .then(gestureDetection?.let { Modifier.pointerInput(Unit) { it(this) } } ?: Modifier)
+            .then(gestureWrapper?.let {
+                Modifier.pointerInput(Unit) {
+                    detectMapGestures(
+                        onTap = gestureWrapper.onTap,
+                        onDoubleTap = gestureWrapper.onDoubleTap,
+                        onLongPress = gestureWrapper.onLongPress,
+                        onTapLongPress = gestureWrapper.onTapLongPress,
+                        onTapSwipe = gestureWrapper.onTapSwipe,
+                        onGesture = gestureWrapper.onGesture,
+                        onTwoFingersTap = gestureWrapper.onTwoFingersTap,
+                        onHover = gestureWrapper.onHover,
+                        onScroll = gestureWrapper.onScroll,
+                    )
+                }
+            } ?: Modifier)
             .drawBehind {
                 withTransform({
                     translate(translation.x, translation.y)

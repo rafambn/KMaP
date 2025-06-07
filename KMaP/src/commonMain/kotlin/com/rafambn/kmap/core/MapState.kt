@@ -59,7 +59,7 @@ fun rememberMapState(
 )
 
 class MapState(
-    internal val mapProperties: MapProperties,
+    val mapProperties: MapProperties,
     zoomLevelPreference: ZoomLevelRange? = null,
     var density: Density = Density(1F),
     cameraState: CameraState? = null,

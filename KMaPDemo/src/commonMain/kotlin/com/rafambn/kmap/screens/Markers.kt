@@ -53,7 +53,7 @@ fun MarkersScreen(
         ) {
             canvas(
                 parameters = CanvasParameters(id = 1, getTile = SimpleMapTileSource()::getTile),
-                gestureDetection = getGestureDetector(mapState.motionController)
+                gestureWrapper = getGestureDetector(mapState.motionController)
             )
             marker(
                 marker = MarkerParameters(

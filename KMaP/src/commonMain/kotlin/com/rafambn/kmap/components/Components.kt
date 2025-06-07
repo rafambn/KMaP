@@ -19,12 +19,10 @@ data class Cluster(
 
 data class Canvas(
     val parameters: CanvasParameters,
-    val gestureDetector: (suspend PointerInputScope.() -> Unit)? = null,
     val content: @Composable () -> Unit
 ) : Component
 
 data class Path(
     val parameters: PathParameters,
-    val gestureDetector: (suspend PointerInputScope.(path: Path) -> Unit)? = null,
     val content: @Composable () -> Unit
 ) : Component

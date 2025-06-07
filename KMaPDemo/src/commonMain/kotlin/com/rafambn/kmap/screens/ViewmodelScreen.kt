@@ -46,7 +46,7 @@ fun ViewmodelScreen(
         ) {
             canvas(
                 parameters = CanvasParameters(id = 1, getTile = SimpleMapTileSource()::getTile),
-                gestureDetection = getGestureDetector(viewmodel.mapState.motionController)
+                gestureWrapper = getGestureDetector(viewmodel.mapState.motionController)
             )
         }
         Image(

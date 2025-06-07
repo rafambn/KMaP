@@ -76,7 +76,7 @@ fun AnimationScreen(
         ) {
             canvas(
                 parameters = CanvasParameters(id = 1, getTile = SimpleMapTileSource()::getTile),
-                gestureDetection = getGestureDetector(mapState.motionController)
+                gestureWrapper = getGestureDetector(mapState.motionController)
             )
         }
         Image(

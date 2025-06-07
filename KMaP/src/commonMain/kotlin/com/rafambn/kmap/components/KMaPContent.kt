@@ -7,12 +7,15 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Matrix
+import androidx.compose.ui.graphics.copy
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.withTransform
-import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.layout.Layout
 import com.rafambn.kmap.core.MapState
+import com.rafambn.kmap.gestures.MapGestureWrapper
+import com.rafambn.kmap.gestures.PathGestureWrapper
+import com.rafambn.kmap.gestures.detectPathGestures
 import com.rafambn.kmap.gestures.sharedPointerInput
 import com.rafambn.kmap.tiles.TileCanvas
 import com.rafambn.kmap.utils.ProjectedCoordinates
@@ -31,17 +34,16 @@ class KMaPContent(
 
     init {
         apply(content)
-        mapState.canvasKernel.clearOldCanvas(canvas.map { it.parameters.id })
+        mapState.canvasKernel.refreshCanvas(canvas.map { it.parameters })
     }
 
     fun canvas(
         parameters: CanvasParameters,
-        gestureDetection: (suspend PointerInputScope.() -> Unit)? = null
+        gestureWrapper: MapGestureWrapper? = null
     ) {
         canvas.add(
             Canvas(
-                parameters,
-                gestureDetection
+                parameters
             ) {
                 TileCanvas(
                     canvasSize = mapState.cameraState.canvasSize,
@@ -50,12 +52,11 @@ class KMaPContent(
                     tileSize = mapState.mapProperties.tileSize,
                     rotationDegrees = mapState.cameraState.angleDegrees.toFloat(),
                     translation = mapState.cameraState.canvasSize.asOffset() / 2F,
-                    gestureDetection = gestureDetection,
+                    gestureWrapper = gestureWrapper,
                     tileLayers = mapState.canvasKernel.getTileLayers(parameters.id)
                 )
             }
         )
-        mapState.canvasKernel.addCanvas(parameters)
     }
 
     inline fun <T : MarkerParameters> marker(
@@ -83,12 +84,13 @@ class KMaPContent(
 
     fun path(
         parameters: PathParameters,
-        gestureDetection: (suspend PointerInputScope.(path: androidx.compose.ui.graphics.Path) -> Unit)? = null
+        gestureWrapper: PathGestureWrapper? = null
     ) {
+        val originalPath = parameters.path.copy()
         var padding = if (parameters.style is Stroke) parameters.style.width / 2F else 0F
         padding = maxOf(padding, parameters.clickPadding)
         parameters.totalPadding = padding
-        val unmodBounds = parameters.path.getBounds()
+        val unmodBounds = originalPath.getBounds()
         val pointY = if (mapState.mapProperties.coordinatesRange.latitude.orientation == 1)
             unmodBounds.top else unmodBounds.bottom
         val pointX = if (mapState.mapProperties.coordinatesRange.longitude.orientation == 1)
@@ -105,21 +107,31 @@ class KMaPContent(
             (mapState.mapProperties.tileSize.width / mapState.mapProperties.coordinatesRange.longitude.span).toFloat(),
             (mapState.mapProperties.tileSize.height / mapState.mapProperties.coordinatesRange.latitude.span).toFloat()
         )
-        parameters.path.transform(orientationMatrix)
-        parameters.path.transform(scaleMatrix)
-        val bounds = parameters.path.getBounds()
+        originalPath.transform(orientationMatrix)
+        originalPath.transform(scaleMatrix)
+        val bounds = originalPath.getBounds()
         paths.add(
-            Path(parameters, gestureDetection) {
+            Path(parameters) {
                 Layout(
                     modifier = Modifier
-                        .then(gestureDetection?.let { Modifier.sharedPointerInput { it(parameters.path) } } ?: Modifier)
+                        .then(gestureWrapper?.let {
+                            Modifier.sharedPointerInput {
+                                detectPathGestures(
+                                    onTap = gestureWrapper.onTap,
+                                    onDoubleTap = gestureWrapper.onDoubleTap,
+                                    onLongPress = gestureWrapper.onLongPress,
+                                    mapState = mapState,
+                                    path = originalPath,
+                                    threshold = parameters.clickPadding
+                                )
+                            } } ?: Modifier)
                         .alpha(0.5F)//TODO remove later
                         .background(color = Color.Black)
                         .drawBehind {
                             withTransform({ translate(-bounds.left + padding, -bounds.top + padding) }) {
                                 drawIntoCanvas { canvas ->
                                     drawPath(
-                                        path = parameters.path,
+                                        path = originalPath,
                                         color = parameters.color,
                                         colorFilter = parameters.colorFilter,
                                         blendMode = parameters.blendMode,
