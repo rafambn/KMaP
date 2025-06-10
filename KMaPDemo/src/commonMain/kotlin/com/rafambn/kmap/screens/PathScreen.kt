@@ -14,11 +14,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.copy
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.PathData
@@ -33,7 +31,6 @@ import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
 import com.rafambn.kmap.gestures.PathGestureWrapper
-import com.rafambn.kmap.gestures.detectPathGestures
 import com.rafambn.kmap.getGestureDetector
 import com.rafambn.kmap.utils.Coordinates
 import kmap.kmapdemo.generated.resources.Res
@@ -96,13 +93,10 @@ fun PathScreen(
                 ),
                 gestureWrapper = PathGestureWrapper(
                     onTap = {
-                        println("Path 2 clicked")
                         markerCoordinates = with(mapState) {
                             it.toTilePoint().toCoordinates()
                         }
                     },
-                    onLongPress = {},
-                    onDoubleTap = {},
                 )
             )
             marker(
