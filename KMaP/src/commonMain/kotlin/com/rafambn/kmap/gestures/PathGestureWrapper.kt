@@ -1,9 +1,9 @@
 package com.rafambn.kmap.gestures
 
-import com.rafambn.kmap.utils.ScreenOffset
+import com.rafambn.kmap.utils.ProjectedCoordinates
 
 data class PathGestureWrapper(
-    val onTap: ((ScreenOffset) -> Unit)? = null,
-    val onDoubleTap: ((ScreenOffset) -> Unit)? = null,
-    val onLongPress: ((ScreenOffset) -> Unit)? = null,
+    val onTap: ((ProjectedCoordinates) -> Unit)? = null,
+    val onDoubleTap: ((ProjectedCoordinates) -> Unit)? = null,
+    val onLongPress: ((ProjectedCoordinates) -> Unit)? = null,
 )

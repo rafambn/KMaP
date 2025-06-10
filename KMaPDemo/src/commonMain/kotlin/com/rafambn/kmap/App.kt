@@ -110,7 +110,6 @@ expect val gestureScale: Int
 
 fun getGestureDetector(motionController: MotionController): MapGestureWrapper = MapGestureWrapper(
     onDoubleTap = { offset -> motionController.move { zoomByCentered(-1 / 3F, offset) } },
-    onTapLongPress = { offset -> motionController.move { positionBy(offset.asDifferentialScreenOffset()) } },
     onTapSwipe = { zoom -> motionController.move { zoomBy(zoom / 100) } },
     onTwoFingersTap = { offset -> motionController.move { zoomByCentered(1 / 3F, offset) } },
     onGesture = { centroid, pan, zoom, rotation ->

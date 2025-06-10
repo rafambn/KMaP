@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.copy
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.PathData
 import androidx.compose.ui.graphics.vector.toPath
@@ -79,47 +80,35 @@ fun PathScreen(
                 ),
                 gestureWrapper = PathGestureWrapper(
                     onTap = {
-                        println(markerCoordinates)
                         markerCoordinates = with(mapState) {
                             it.toTilePoint().toCoordinates()
                         }
-                        println(markerCoordinates)
-                        println("tap")
-                    },
-                    onDoubleTap = { coordinates ->
-                    },
-                    onLongPress = { coordinates ->
                     },
                 )
             )
-//            path(
-//                parameters = PathParameters(
-//                    path = path2,
-//                    color = Color.Blue,
-//                    style = Stroke(
-//                        width = 4F,
-//                        cap = StrokeCap.Round,
-//                        join = StrokeJoin.Round,
-//                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
-//                    ),
-//                    zoomVisibilityRange = 0F..1F,
-//                ),
-//                gestureDetection = {
-//                    detectPathGestures(
-//                        onTap = {
-////                            markerCoordinates = with(mapState){
-////                                it.toTilePoint().toCoordinates()
-////                            }
-//                        },
-//                        mapState = mapState,
-//                        path = path2
-//                    )
-//                }
-//            )
+            path(
+                parameters = PathParameters(
+                    path = path2,
+                    color = Color.Blue,
+                    style = Fill,
+                    zoomVisibilityRange = 0F..1F,
+                    checkForClickInsidePath = true,
+                ),
+                gestureWrapper = PathGestureWrapper(
+                    onTap = {
+                        println("Path 2 clicked")
+                        markerCoordinates = with(mapState) {
+                            it.toTilePoint().toCoordinates()
+                        }
+                    },
+                    onLongPress = {},
+                    onDoubleTap = {},
+                )
+            )
             marker(
                 marker = MarkerParameters(
                     coordinates = markerCoordinates,
-                    drawPosition = DrawPosition.TOP_LEFT,
+                    drawPosition = DrawPosition.CENTER,
                 )
             ) {
                 Canvas(modifier = Modifier.size(10.dp)) {

@@ -19,7 +19,9 @@ import com.rafambn.kmap.gestures.detectPathGestures
 import com.rafambn.kmap.gestures.sharedPointerInput
 import com.rafambn.kmap.tiles.TileCanvas
 import com.rafambn.kmap.utils.ProjectedCoordinates
+import com.rafambn.kmap.utils.ScreenOffset
 import com.rafambn.kmap.utils.asOffset
+import com.rafambn.kmap.utils.plus
 import com.rafambn.kmap.utils.toIntFloor
 
 class KMaPContent(
@@ -98,15 +100,13 @@ class KMaPContent(
         val topLeft = ProjectedCoordinates(pointX, pointY)
         parameters.drawPoint = topLeft
         val orientationMatrix = Matrix()
-        orientationMatrix.scale(
-            (mapState.mapProperties.coordinatesRange.longitude.orientation).toFloat(),
-            (mapState.mapProperties.coordinatesRange.latitude.orientation).toFloat()
-        )
+        val orientationX = (mapState.mapProperties.coordinatesRange.longitude.orientation).toFloat()
+        val orientationY = (mapState.mapProperties.coordinatesRange.latitude.orientation).toFloat()
+        orientationMatrix.scale(orientationX, orientationY)
         val scaleMatrix = Matrix()
-        scaleMatrix.scale(
-            (mapState.mapProperties.tileSize.width / mapState.mapProperties.coordinatesRange.longitude.span).toFloat(),
-            (mapState.mapProperties.tileSize.height / mapState.mapProperties.coordinatesRange.latitude.span).toFloat()
-        )
+        val scaleX = (mapState.mapProperties.tileSize.width / mapState.mapProperties.coordinatesRange.longitude.span).toFloat()
+        val scaleY = (mapState.mapProperties.tileSize.height / mapState.mapProperties.coordinatesRange.latitude.span).toFloat()
+        scaleMatrix.scale(scaleX, scaleY)
         originalPath.transform(orientationMatrix)
         originalPath.transform(scaleMatrix)
         val bounds = originalPath.getBounds()
@@ -120,11 +120,19 @@ class KMaPContent(
                                     onTap = gestureWrapper.onTap,
                                     onDoubleTap = gestureWrapper.onDoubleTap,
                                     onLongPress = gestureWrapper.onLongPress,
-                                    mapState = mapState,
                                     path = originalPath,
-                                    threshold = parameters.clickPadding
+                                    threshold = padding,
+                                    checkForInsideClick = parameters.checkForClickInsidePath,
+                                    convertScreenOffsetToProjectedCoordinates = {
+                                        val untranslatedPoint = it.plus(ScreenOffset(bounds.left - padding, bounds.top - padding))
+                                        return@detectPathGestures ProjectedCoordinates(
+                                            untranslatedPoint.x * orientationX / scaleX,
+                                            untranslatedPoint.y * orientationY / scaleY,
+                                        )
+                                    }
                                 )
-                            } } ?: Modifier)
+                            }
+                        } ?: Modifier)
                         .alpha(0.5F)//TODO remove later
                         .background(color = Color.Black)
                         .drawBehind {

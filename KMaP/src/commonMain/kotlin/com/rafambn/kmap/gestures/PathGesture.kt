@@ -11,27 +11,26 @@ import androidx.compose.ui.input.pointer.PointerEventTimeoutCancellationExceptio
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.isOutOfBounds
-import com.rafambn.kmap.core.MapState
-import com.rafambn.kmap.tiles.TileDimension
+import com.rafambn.kmap.utils.ProjectedCoordinates
 import com.rafambn.kmap.utils.ScreenOffset
 import com.rafambn.kmap.utils.asScreenOffset
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 
 suspend fun PointerInputScope.detectPathGestures(
-    onTap: ((ScreenOffset) -> Unit)? = null,
-    onDoubleTap: ((ScreenOffset) -> Unit)? = null,
-    onLongPress: ((ScreenOffset) -> Unit)? = null,
-    mapState: MapState,
+    onTap: ((ProjectedCoordinates) -> Unit)? = null,
+    onDoubleTap: ((ProjectedCoordinates) -> Unit)? = null,
+    onLongPress: ((ProjectedCoordinates) -> Unit)? = null,
+    convertScreenOffsetToProjectedCoordinates: (ScreenOffset) -> ProjectedCoordinates,
     path: Path,
     threshold: Float = 10f,
+    checkForInsideClick: Boolean
 ) = coroutineScope {
     val pathMeasure = PathMeasure()
     pathMeasure.setPath(path, false)
     val pathHitTester = PathHitTester(path, threshold)
-    println("path bound ${path.getBounds()}")
 
-    val tester = PathTester(pathHitTester, pathMeasure, threshold, mapState.mapProperties.tileSize)
+    val tester = PathTester(pathHitTester, pathMeasure, threshold, checkForInsideClick)
 
     awaitEachGesture {
         val longPressTimeout = viewConfiguration.longPressTimeoutMillis
@@ -73,7 +72,7 @@ suspend fun PointerInputScope.detectPathGestures(
                                         }
                                         if (onTap != null) {
                                             event.changes.forEach { it.consume() }
-                                            onTap.invoke(event.changes[0].position.asScreenOffset())
+                                            onTap.invoke(convertScreenOffsetToProjectedCoordinates(event.changes[0].position.asScreenOffset()))
                                             return@awaitEachGesture
                                         }
                                     }
@@ -89,7 +88,7 @@ suspend fun PointerInputScope.detectPathGestures(
                             }
                         } catch (_: PointerEventTimeoutCancellationException) {
                             event.changes.forEach { it.consume() }
-                            onLongPress?.invoke(event.changes[0].position.asScreenOffset())
+                            onLongPress?.invoke(convertScreenOffsetToProjectedCoordinates(event.changes[0].position.asScreenOffset()))
                             return@awaitEachGesture
                         }
                     } while (!event.changes.all { it.isOutOfBounds(size, extendedTouchPadding) })
@@ -110,7 +109,7 @@ suspend fun PointerInputScope.detectPathGestures(
                                         break
                                     } else {
                                         event.changes.forEach { it.consume() }
-                                        onTap?.invoke(event.changes[0].position.asScreenOffset())
+                                        onTap?.invoke(convertScreenOffsetToProjectedCoordinates(event.changes[0].position.asScreenOffset()))
                                     }
                                     return@awaitEachGesture
                                 }
@@ -119,7 +118,7 @@ suspend fun PointerInputScope.detectPathGestures(
                                     panSlop += event.calculatePan()
                                     event.changes.forEach { it.consume() }
                                     if (onTap != null && panSlop.getDistance() > touchSlop) {
-                                        onTap.invoke(event.changes[0].position.asScreenOffset())
+                                        onTap.invoke(convertScreenOffsetToProjectedCoordinates(event.changes[0].position.asScreenOffset()))
                                         return@awaitEachGesture
                                     }
                                 }
@@ -127,7 +126,7 @@ suspend fun PointerInputScope.detectPathGestures(
                         } catch (_: PointerEventTimeoutCancellationException) {
                             if (onTap != null) {
                                 event.changes.forEach { it.consume() }
-                                onTap.invoke(event.changes[0].position.asScreenOffset())
+                                onTap.invoke(convertScreenOffsetToProjectedCoordinates(event.changes[0].position.asScreenOffset()))
                                 return@awaitEachGesture
                             }
                         }
@@ -144,20 +143,20 @@ suspend fun PointerInputScope.detectPathGestures(
 
                             when (event.type) {
                                 PointerEventType.Release -> {
-                                    onDoubleTap?.invoke(event.changes[0].position.asScreenOffset())
+                                    onDoubleTap?.invoke(convertScreenOffsetToProjectedCoordinates(event.changes[0].position.asScreenOffset()))
                                     return@awaitEachGesture
                                 }
 
                                 PointerEventType.Move -> {
                                     panSlop += event.calculatePan()
                                     if (panSlop.getDistance() > touchSlop) {
-                                        onTap?.invoke(event.changes[0].position.asScreenOffset())
+                                        onTap?.invoke(convertScreenOffsetToProjectedCoordinates(event.changes[0].position.asScreenOffset()))
                                         return@awaitEachGesture
                                     }
                                 }
                             }
                         } catch (_: PointerEventTimeoutCancellationException) {
-                            onLongPress?.invoke(event.changes[0].position.asScreenOffset())
+                            onLongPress?.invoke(convertScreenOffsetToProjectedCoordinates(event.changes[0].position.asScreenOffset()))
                             return@awaitEachGesture
                         }
                     } while (!event.changes.all { it.isOutOfBounds(size, extendedTouchPadding) })
@@ -171,19 +170,16 @@ class PathTester(
     private val path: PathHitTester,
     private val pathMeasure: PathMeasure,
     private val threshold: Float,
-    private val tileDimension: TileDimension
+    private val checkForInsideClick: Boolean,
 ) {
 
     fun checkHit(point: Offset): Boolean {
-        println("hit $point")
-        val pointTranslated = point.copy((point.x - tileDimension.width.toFloat()) / 2, (point.y - tileDimension.height.toFloat()) / 2)
-        println("hit translated $pointTranslated")
-        if (isPointInsidePath(path, point)) {
+        val translatedPoint = point.minus(Offset(threshold, threshold))
+        if (isPointInsidePath(path, translatedPoint) && checkForInsideClick)
             return true
-        }
-        if (isPointNearPath(pathMeasure, point, threshold)) {
+
+        if (isPointNearPath(pathMeasure, translatedPoint, threshold))
             return true
-        }
 
         return false
     }

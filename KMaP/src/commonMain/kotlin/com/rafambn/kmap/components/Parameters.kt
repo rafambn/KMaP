@@ -45,6 +45,7 @@ open class PathParameters(
     val blendMode: BlendMode = DefaultBlendMode,
     val clickPadding: Float = 10F,
     val zoomVisibilityRange: ClosedFloatingPointRange<Float> = 0F..Float.MAX_VALUE,
+    val checkForClickInsidePath: Boolean = false,
 ) : Parameters{
     internal var drawPoint: ProjectedCoordinates = ProjectedCoordinates(0f, 0f)
     internal var totalPadding: Float = 0f
