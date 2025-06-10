@@ -29,8 +29,9 @@ suspend fun PointerInputScope.detectPathGestures(
     val pathMeasure = PathMeasure()
     pathMeasure.setPath(path, false)
     val pathHitTester = PathHitTester(path, threshold)
+    println("Path bounds ${path.getBounds()}")
 
-    val tester = PathTester(pathHitTester, pathMeasure, threshold, checkForInsideClick)
+    val tester = PathTester(pathHitTester, pathMeasure, threshold, checkForInsideClick, path.getBounds().topLeft)
 
     awaitEachGesture {
         val longPressTimeout = viewConfiguration.longPressTimeoutMillis
@@ -171,16 +172,22 @@ class PathTester(
     private val pathMeasure: PathMeasure,
     private val threshold: Float,
     private val checkForInsideClick: Boolean,
+    private val pathTranslation: Offset,
 ) {
 
     fun checkHit(point: Offset): Boolean {
-        val translatedPoint = point.minus(Offset(threshold, threshold))
-        if (isPointInsidePath(path, translatedPoint) && checkForInsideClick)
+        println("Checking hit for point $point")
+        val translatedPoint = point.minus(Offset(threshold - pathTranslation.x, threshold - pathTranslation.y))
+        println("Translated point $translatedPoint")
+        if (isPointInsidePath(path, translatedPoint) && checkForInsideClick) {
+            println("Point inside path")
             return true
+        }
 
-        if (isPointNearPath(pathMeasure, translatedPoint, threshold))
+        if (isPointNearPath(pathMeasure, translatedPoint, threshold)) {
+            println("Point near path")
             return true
-
+        }
         return false
     }
 
