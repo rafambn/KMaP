@@ -133,8 +133,6 @@ class KMaPContent(
                                 )
                             }
                         } ?: Modifier)
-                        .alpha(0.5F)//TODO remove later
-                        .background(color = Color.Black)
                         .drawBehind {
                             withTransform({ translate(-bounds.left + padding, -bounds.top + padding) }) {
                                 drawIntoCanvas { canvas ->
