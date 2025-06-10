@@ -238,8 +238,8 @@ suspend fun PointerInputScope.detectMapGestures(
                             if (onTap != null) {
                                 event.changes.forEach { it.consume() }
                                 onTap.invoke(event.changes[0].position.asScreenOffset())
-                                return@awaitEachGesture
                             }
+                            return@awaitEachGesture
                         }
                     } while (!event.changes.all { it.isOutOfBounds(size, extendedTouchPadding) })
                 }
@@ -354,6 +354,9 @@ suspend fun PointerInputScope.detectMapGestures(
                             if (onGesture != null) {
                                 mapGestureState = MapGestureState.GESTURE
                                 break
+                            } else {
+                                onLongPress?.invoke(event.changes[0].position.asScreenOffset())
+                                return@awaitEachGesture
                             }
                         }
                     } while (!event.changes.all { it.isOutOfBounds(size, extendedTouchPadding) })
