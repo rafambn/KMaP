@@ -97,6 +97,12 @@ fun PathScreen(
                             it.toTilePoint().toCoordinates()
                         }
                     },
+                    onDoubleTap = {
+                        println("double tap")
+                    },
+                    onLongPress = {
+                        println("long press")
+                    },
                 )
             )
             marker(

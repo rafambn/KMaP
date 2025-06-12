@@ -6,15 +6,12 @@ import androidx.compose.foundation.gestures.calculateCentroidSize
 import androidx.compose.foundation.gestures.calculatePan
 import androidx.compose.foundation.gestures.calculateRotation
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.pointer.AwaitPointerEventScope
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventTimeoutCancellationException
 import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.isCtrlPressed
 import androidx.compose.ui.input.pointer.isOutOfBounds
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.center
 import androidx.compose.ui.unit.toOffset
 import com.rafambn.kmap.utils.DifferentialScreenOffset
@@ -23,8 +20,6 @@ import com.rafambn.kmap.utils.asDifferentialScreenOffset
 import com.rafambn.kmap.utils.asScreenOffset
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
-import kotlin.math.PI
-import kotlin.math.atan2
 
 suspend fun PointerInputScope.detectMapGestures(
     // common use
@@ -425,27 +420,3 @@ suspend fun PointerInputScope.detectMapGestures(
         } while (this@coroutineScope.isActive && !event.changes.any { it.isOutOfBounds(size, extendedTouchPadding) })
     }
 }
-
-suspend fun AwaitPointerEventScope.awaitPointerEventWithTimeout(timeOut: Long? = null): PointerEvent {
-    return if (timeOut == null)
-        awaitPointerEvent()
-    else {
-        withTimeout(timeOut) {
-            awaitPointerEvent()
-        }
-    }
-}
-
-fun handleGestureWithCtrl(
-    event: PointerInputChange,
-    intSize: IntSize,
-    result: (rotationChange: Float) -> Unit
-) {
-    val screenCenter = Offset(intSize.width.toFloat(), intSize.height.toFloat())
-    val currentCentroid = event.position - screenCenter
-    val previousCentroid = event.previousPosition - screenCenter
-    result(previousCentroid.angle() - currentCentroid.angle())
-}
-
-private fun Offset.angle(): Float =
-    if (x == 0f && y == 0f) 0f else atan2(x, y) * 180f / PI.toFloat()
