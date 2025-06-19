@@ -61,7 +61,6 @@ suspend fun PointerInputScope.detectMapGestures(
                 onScroll?.let { scrollLambda ->
                     event.changes.forEach {
                         if (it.scrollDelta.y != 0F) {
-                            it.consume()
                             scrollLambda.invoke(it.position.asScreenOffset(), it.scrollDelta.y)
                         }
                     }
@@ -76,7 +75,6 @@ suspend fun PointerInputScope.detectMapGestures(
             PointerEventType.Move -> {
                 event.changes.forEach {
                     if (!it.isOutOfBounds(size, extendedTouchPadding)) {
-                        it.consume()
                         onHover?.invoke(it.position.asScreenOffset())
                     }
                 }
@@ -97,7 +95,6 @@ suspend fun PointerInputScope.detectMapGestures(
                                 if (onTap != null || onDoubleTap != null || onLongPress != null || onTapLongPress != null ||
                                     onTapSwipe != null || onTwoFingersTap != null || onGesture != null
                                 ) {
-                                    event.changes.forEach { it.consume() }
                                     mapGestureState = MapGestureState.WAITING_UP
                                     break
                                 }
@@ -106,7 +103,6 @@ suspend fun PointerInputScope.detectMapGestures(
                             PointerEventType.Move -> {
                                 event.changes.forEach {
                                     if (!it.isOutOfBounds(size, extendedTouchPadding)) {
-                                        it.consume()
                                         onHover?.invoke(it.position.asScreenOffset())
                                     }
                                 }
@@ -116,7 +112,6 @@ suspend fun PointerInputScope.detectMapGestures(
                                 onScroll?.let { scrollLambda ->
                                     event.changes.forEach {
                                         if (it.scrollDelta.y != 0F) {
-                                            it.consume()
                                             scrollLambda.invoke(it.position.asScreenOffset(), it.scrollDelta.y)
                                         }
                                     }
@@ -140,7 +135,6 @@ suspend fun PointerInputScope.detectMapGestures(
                                         continue
                                     }
 
-                                    event.changes.forEach { it.consume() }
                                     mapGestureState =
                                         if (onTwoFingersTap != null) MapGestureState.WAITING_UP_AFTER_TWO_PRESS else MapGestureState.GESTURE
                                     break
@@ -149,12 +143,10 @@ suspend fun PointerInputScope.detectMapGestures(
                                 PointerEventType.Release -> {
                                     if (event.changes.size == 1) {
                                         if (onDoubleTap != null || onTapLongPress != null || onTapSwipe != null) {
-                                            event.changes.forEach { it.consume() }
                                             mapGestureState = MapGestureState.WAITING_DOWN
                                             break
                                         }
                                         if (onTap != null) {
-                                            event.changes.forEach { it.consume() }
                                             onTap.invoke(event.changes[0].position.asScreenOffset())
                                             return@awaitEachGesture
                                         }
@@ -163,7 +155,6 @@ suspend fun PointerInputScope.detectMapGestures(
 
                                 PointerEventType.Move -> {
                                     panSlop += event.calculatePan()
-                                    event.changes.forEach { it.consume() }
                                     if (onGesture != null && panSlop.getDistance() > touchSlop) {
                                         mapGestureState = MapGestureState.GESTURE
                                         break
@@ -174,7 +165,6 @@ suspend fun PointerInputScope.detectMapGestures(
                                     onScroll?.let { scrollLambda ->
                                         event.changes.forEach {
                                             if (it.scrollDelta.y != 0F) {
-                                                it.consume()
                                                 scrollLambda.invoke(it.position.asScreenOffset(), it.scrollDelta.y)
                                             }
                                         }
@@ -182,7 +172,6 @@ suspend fun PointerInputScope.detectMapGestures(
                                 }
                             }
                         } catch (_: PointerEventTimeoutCancellationException) {
-                            event.changes.forEach { it.consume() }
                             onLongPress?.invoke(event.changes[0].position.asScreenOffset())
                             return@awaitEachGesture
                         }
@@ -202,7 +191,6 @@ suspend fun PointerInputScope.detectMapGestures(
                                     if (onDoubleTap != null || onTapSwipe != null || onTapLongPress != null)
                                         mapGestureState = MapGestureState.WAITING_UP_AFTER_TAP
                                     else {
-                                        event.changes.forEach { it.consume() }
                                         onTap?.invoke(event.changes[0].position.asScreenOffset())
                                         mapGestureState = MapGestureState.WAITING_UP
                                     }
@@ -211,7 +199,6 @@ suspend fun PointerInputScope.detectMapGestures(
 
                                 PointerEventType.Move -> {
                                     panSlop += event.calculatePan()
-                                    event.changes.forEach { it.consume() }
                                     if (onTap != null && panSlop.getDistance() > touchSlop) {
                                         onTap.invoke(event.changes[0].position.asScreenOffset())
                                         return@awaitEachGesture
@@ -222,7 +209,6 @@ suspend fun PointerInputScope.detectMapGestures(
                                     onScroll?.let { scrollLambda ->
                                         event.changes.forEach {
                                             if (it.scrollDelta.y != 0F) {
-                                                it.consume()
                                                 scrollLambda.invoke(it.position.asScreenOffset(), it.scrollDelta.y)
                                             }
                                         }
@@ -231,7 +217,6 @@ suspend fun PointerInputScope.detectMapGestures(
                             }
                         } catch (_: PointerEventTimeoutCancellationException) {
                             if (onTap != null) {
-                                event.changes.forEach { it.consume() }
                                 onTap.invoke(event.changes[0].position.asScreenOffset())
                             }
                             return@awaitEachGesture
@@ -265,7 +250,6 @@ suspend fun PointerInputScope.detectMapGestures(
                                     onScroll?.let { scrollLambda ->
                                         event.changes.forEach {
                                             if (it.scrollDelta.y != 0F) {
-                                                it.consume()
                                                 scrollLambda.invoke(it.position.asScreenOffset(), it.scrollDelta.y)
                                             }
                                         }
@@ -285,7 +269,6 @@ suspend fun PointerInputScope.detectMapGestures(
 
                         when (event.type) {
                             PointerEventType.Release -> {
-                                event.changes.forEach { it.consume() }
                                 return@awaitEachGesture
                             }
 
@@ -297,7 +280,6 @@ suspend fun PointerInputScope.detectMapGestures(
                                 onScroll?.let { scrollLambda ->
                                     event.changes.forEach {
                                         if (it.scrollDelta.y != 0F) {
-                                            it.consume()
                                             scrollLambda.invoke(it.position.asScreenOffset(), it.scrollDelta.y)
                                         }
                                     }
@@ -326,7 +308,6 @@ suspend fun PointerInputScope.detectMapGestures(
                                 PointerEventType.Move -> {
                                     if (onGesture != null) {
                                         panSlop += event.calculatePan()
-                                        event.changes.forEach { it.consume() }
                                         if (panSlop.getDistance() > touchSlop) {
                                             mapGestureState = MapGestureState.GESTURE
                                             break
@@ -338,7 +319,6 @@ suspend fun PointerInputScope.detectMapGestures(
                                     onScroll?.let { scrollLambda ->
                                         event.changes.forEach {
                                             if (it.scrollDelta.y != 0F) {
-                                                it.consume()
                                                 scrollLambda.invoke(it.position.asScreenOffset(), it.scrollDelta.y)
                                             }
                                         }
@@ -371,7 +351,6 @@ suspend fun PointerInputScope.detectMapGestures(
                                 if (event.keyboardModifiers.isCtrlPressed) {
                                     if (event.keyboardModifiers.isCtrlPressed) {
                                         handleGestureWithCtrl(event.changes.first { it.pressed }, size / 2) { rotationChange ->
-                                            event.changes.filter { it.pressed }.forEach { it.consume() }
                                             onGesture?.invoke(
                                                 this.size.center.toOffset().asScreenOffset(),
                                                 DifferentialScreenOffset.Zero,
@@ -392,7 +371,6 @@ suspend fun PointerInputScope.detectMapGestures(
                                     val panChange = event.calculatePan()
                                     val centroid = event.calculateCentroid()
                                     if (centroid != Offset.Unspecified) {
-                                        event.changes.filter { it.pressed }.forEach { it.consume() }
                                         onGesture?.invoke(
                                             centroid.asScreenOffset(),
                                             panChange.asDifferentialScreenOffset(),
@@ -407,7 +385,6 @@ suspend fun PointerInputScope.detectMapGestures(
                                 onScroll?.let { scrollLambda ->
                                     event.changes.forEach {
                                         if (it.scrollDelta.y != 0F) {
-                                            it.consume()
                                             scrollLambda.invoke(it.position.asScreenOffset(), it.scrollDelta.y)
                                         }
                                     }

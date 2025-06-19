@@ -19,6 +19,7 @@ enum class MapGestureState {
 enum class PathGestureState {
     WAITING_UP,
     WAITING_DOWN,
-    WAITING_DOWN_AFTER_TAP,
     WAITING_UP_AFTER_TAP,
+    HOVER,
+    DRAG,
 }
