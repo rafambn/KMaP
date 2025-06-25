@@ -1,6 +1,5 @@
 import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.KotlinMultiplatform
-import com.vanniktech.maven.publish.SonatypeHost
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
@@ -8,11 +7,11 @@ plugins {
     alias(libs.plugins.compose)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.android.library)
-    id("com.vanniktech.maven.publish") version "0.32.0"
+    id("com.vanniktech.maven.publish") version "0.33.0"
 }
 
 group = "com.rafambn"
-version = "0.2.0"
+version = "0.3.0"
 
 kotlin {
     jvmToolchain(17)
@@ -104,7 +103,7 @@ mavenPublishing {
     }
 
 // Configure publishing to Maven Central
-    publishToMavenCentral(host = SonatypeHost.CENTRAL_PORTAL, automaticRelease = false)
+    publishToMavenCentral(automaticRelease = false)
 
 // Enable GPG signing for all publications
     signAllPublications()
