@@ -33,22 +33,21 @@ With KMaP, you don't need a mapping source for each platform. Here's a simple ex
 
 ```kotlin
 val mapState = rememberMapState(mapProperties = SimpleMapProperties())
-
 KMaP(
     modifier = Modifier.fillMaxSize(),
     mapState = mapState,
 ) {
     canvas(
-        tileSource = SimpleMapTileSource()::getTile,
-        gestureDetection = {
-            detectMapGestures(
-                onDrag = { dragAmount -> motionController.move { positionBy(dragAmount) } },
-                onScroll = { mouseOffset, scrollAmount -> 
-                    motionController.move { zoomByCentered(scrollAmount, mouseOffset) } 
-                },
-                onCtrlGesture = { rotation -> motionController.move { rotateBy(rotation.toDouble()) } },
-            )
-        }
+        parameters = CanvasParameters(id = 1, tileSource = SimpleMapTileSource()::getTile),
+        gestureWrapper = MapGestureWrapper(
+            onGesture = { centroid, pan, zoom, rotation ->
+                mapState.motionController.move {
+                    rotateByCentered(rotation.toDouble(), centroid)
+                    zoomByCentered(zoom, centroid)
+                    positionBy(pan)
+                }
+            },
+        )
     )
 }
 ```

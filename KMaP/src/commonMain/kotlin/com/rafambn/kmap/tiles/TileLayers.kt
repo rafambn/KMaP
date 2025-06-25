@@ -3,6 +3,7 @@ package com.rafambn.kmap.tiles
 import com.rafambn.kmap.utils.loopInZoom
 
 data class TileLayers(
+    var trigger: Int = 1,
     var frontLayer: Layer = Layer(0, listOf()),
     var backLayer: Layer = Layer(-1, listOf())
 )

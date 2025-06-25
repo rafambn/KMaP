@@ -17,7 +17,7 @@ interface CardinalRange {
     val max: Double get() = max(start, end)
     val min: Double get() = min(start, end)
     val mean: Double get() = (start + end) / 2
-    val orientation: Int get() = start.compareTo(end)
+    val orientation: Int get() = end.compareTo(start)
     operator fun contains(value: Double): Boolean = value in min..max
 }
 

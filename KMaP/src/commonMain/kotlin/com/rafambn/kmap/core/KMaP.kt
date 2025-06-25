@@ -7,39 +7,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.onGloballyPositioned
-import com.rafambn.kmap.tiles.TileCanvas
-import com.rafambn.kmap.lazyMarker.KMaPScope
-import com.rafambn.kmap.lazyMarker.rememberComponentProviderLambda
-import com.rafambn.kmap.lazyMarker.rememberComponentMeasurePolicy
-import com.rafambn.kmap.path.PathCanvas
+import com.rafambn.kmap.components.KMaPContent
+import com.rafambn.kmap.components.rememberComponentProviderLambda
+import com.rafambn.kmap.components.rememberComponentMeasurePolicy
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun KMaP(
     modifier: Modifier = Modifier,
     mapState: MapState,
-    content: KMaPScope.() -> Unit
+    content: KMaPContent.() -> Unit
 ) {
     val itemProvider = rememberComponentProviderLambda(content, mapState)
-
-    itemProvider.invoke().canvasList.forEach {
-        TileCanvas(
-            cameraState = mapState.cameraState,
-            mapProperties = mapState.mapProperties,
-            positionOffset = mapState.drawReference,
-            viewPort = mapState.viewPort,
-            canvasComponent = it,
-            modifier = modifier
-                .onGloballyPositioned { coordinates ->
-                    mapState.setCanvasSize(
-                        Offset(
-                            coordinates.size.width.toFloat(),
-                            coordinates.size.height.toFloat()
-                        )
-                    )
-                },
-        )
-    }
 
     val measurePolicy = rememberComponentMeasurePolicy(
         componentProviderLambda = itemProvider,
@@ -48,17 +27,17 @@ fun KMaP(
 
     LazyLayout(
         itemProvider = itemProvider,
-        modifier = modifier.clipToBounds(),
+        modifier = modifier
+            .clipToBounds()
+            .onGloballyPositioned { coordinates ->
+                mapState.setCanvasSize(
+                    Offset(
+                        coordinates.size.width.toFloat(),
+                        coordinates.size.height.toFloat()
+                    )
+                )
+            },
         prefetchState = null,
         measurePolicy = measurePolicy
     )
-
-    itemProvider.invoke().pathList.forEach {
-        PathCanvas(
-            cameraState = mapState.cameraState,
-            pathComponent = it,
-            modifier = modifier,
-            mapState = mapState
-        )
-    }
 }

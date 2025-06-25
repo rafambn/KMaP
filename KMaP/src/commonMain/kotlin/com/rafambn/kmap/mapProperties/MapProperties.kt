@@ -3,8 +3,8 @@ package com.rafambn.kmap.mapProperties
 import com.rafambn.kmap.mapProperties.border.BoundMapBorder
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
 import com.rafambn.kmap.tiles.TileDimension
-import com.rafambn.kmap.utils.TilePoint
 import com.rafambn.kmap.utils.Coordinates
+import com.rafambn.kmap.utils.ProjectedCoordinates
 
 interface MapProperties {
     val boundMap: BoundMapBorder
@@ -13,7 +13,7 @@ interface MapProperties {
     val coordinatesRange: CoordinatesRange
     val tileSize: TileDimension
 
-    fun toTilePoint(coordinates: Coordinates): TilePoint
+    fun toProjectedCoordinates(coordinates: Coordinates): ProjectedCoordinates
 
-    fun toCoordinates(tilePoint: TilePoint): Coordinates
+    fun toCoordinates(projectedCoordinates: ProjectedCoordinates): Coordinates
 }

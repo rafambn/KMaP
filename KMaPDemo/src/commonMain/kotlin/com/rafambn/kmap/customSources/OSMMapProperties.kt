@@ -9,8 +9,8 @@ import com.rafambn.kmap.mapProperties.Latitude
 import com.rafambn.kmap.mapProperties.Longitude
 import com.rafambn.kmap.mapProperties.ZoomLevelRange
 import com.rafambn.kmap.tiles.TileDimension
-import com.rafambn.kmap.utils.TilePoint
 import com.rafambn.kmap.utils.Coordinates
+import com.rafambn.kmap.utils.ProjectedCoordinates
 import kotlin.math.E
 import kotlin.math.PI
 import kotlin.math.atan
@@ -25,14 +25,14 @@ data class OSMMapProperties(
     override val coordinatesRange: CoordinatesRange = OSMCoordinatesRange(),
     override val tileSize: TileDimension = TileDimension(256,256)
 ) : MapProperties {
-    override fun toTilePoint(coordinates: Coordinates): TilePoint = TilePoint(
-        coordinates.longitude,
-        ln(tan(PI / 4 + (PI * coordinates.latitude) / 360)) / (PI / 85.051129)
+    override fun toProjectedCoordinates(coordinates: Coordinates): ProjectedCoordinates = ProjectedCoordinates(
+        coordinates.x,
+        ln(tan(PI / 4 + (PI * coordinates.y) / 360)) / (PI / 85.051129)
     )
 
-    override fun toCoordinates(tilePoint: TilePoint): Coordinates = Coordinates(
-        tilePoint.horizontal,
-        (atan(E.pow(tilePoint.vertical * (PI / 85.051129))) - PI / 4) * 360 / PI
+    override fun toCoordinates(projectedCoordinates: ProjectedCoordinates): Coordinates = Coordinates(
+        projectedCoordinates.x,
+        (atan(E.pow(projectedCoordinates.y * (PI / 85.051129))) - PI / 4) * 360 / PI
     )
 }
 

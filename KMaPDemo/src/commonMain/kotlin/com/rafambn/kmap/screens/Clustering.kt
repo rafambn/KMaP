@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.rafambn.kmap.components.CanvasParameters
 import com.rafambn.kmap.core.KMaP
 import com.rafambn.kmap.components.ClusterParameters
 import com.rafambn.kmap.core.DrawPosition
@@ -36,8 +37,8 @@ fun ClusteringScreen(
             mapState = mapState,
         ) {
             canvas(
-                tileSource = SimpleMapTileSource()::getTile,
-                gestureDetection = getGestureDetector(mapState.motionController)
+                parameters = CanvasParameters(id = 1, tileSource = SimpleMapTileSource()::getTile),
+                gestureWrapper = getGestureDetector(mapState.motionController)
             )
             markers(
                 listOf(
@@ -52,7 +53,7 @@ fun ClusteringScreen(
                         clusterId = 1
                     )
                 )
-            ) {
+            ) { item, index ->
                 Text(
                     text = "Tag 1",
                     modifier = Modifier

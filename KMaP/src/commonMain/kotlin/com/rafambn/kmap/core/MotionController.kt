@@ -9,6 +9,7 @@ import com.rafambn.kmap.utils.Reference
 import com.rafambn.kmap.utils.ScreenOffset
 import com.rafambn.kmap.utils.TilePoint
 import com.rafambn.kmap.utils.lerp
+import com.rafambn.kmap.utils.plus
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
@@ -214,6 +215,7 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
                 is TilePoint -> center
                 is Coordinates -> center.toTilePoint()
                 is DifferentialScreenOffset -> center.toTilePoint()
+                else -> throw IllegalArgumentException("Center must be a reference type")
             }
         }
     }
@@ -225,6 +227,7 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
                 is TilePoint -> center.toScreenOffset()
                 is Coordinates -> center.toTilePoint().toScreenOffset()
                 is DifferentialScreenOffset -> center.toTilePoint().toScreenOffset()
+                else -> throw IllegalArgumentException("Center must be a reference type")
             }
         }
     }

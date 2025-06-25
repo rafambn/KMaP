@@ -1,11 +1,12 @@
 package com.rafambn.kmap.core
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.mapSaver
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.LocalDensity
@@ -13,44 +14,56 @@ import androidx.compose.ui.unit.Density
 import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.ZoomLevelRange
 import com.rafambn.kmap.mapProperties.border.MapBorderType
+import com.rafambn.kmap.tiles.CanvasKernel
 import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.TilePoint
 import com.rafambn.kmap.utils.DifferentialScreenOffset
 import com.rafambn.kmap.utils.Coordinates
+import com.rafambn.kmap.utils.ProjectedCoordinates
 import com.rafambn.kmap.utils.ScreenOffset
 import com.rafambn.kmap.utils.asCanvasDrawReference
 import com.rafambn.kmap.utils.asCanvasPosition
 import com.rafambn.kmap.utils.asDifferentialScreenOffset
 import com.rafambn.kmap.utils.asScreenOffset
+import com.rafambn.kmap.utils.div
 import com.rafambn.kmap.utils.loopInRange
+import com.rafambn.kmap.utils.minus
+import com.rafambn.kmap.utils.plus
 import com.rafambn.kmap.utils.rotate
+import com.rafambn.kmap.utils.times
 import com.rafambn.kmap.utils.toIntFloor
 import com.rafambn.kmap.utils.toRadians
 import com.rafambn.kmap.utils.transformReference
+import com.rafambn.kmap.utils.unaryMinus
+import kotlinx.coroutines.CoroutineScope
 import kotlin.math.pow
+import kotlin.reflect.KProperty
 
 @Composable
 fun rememberMapState(
     mapProperties: MapProperties,
     zoomLevelPreference: ZoomLevelRange? = null,
     density: Density = LocalDensity.current,
+    coroutineScope: CoroutineScope = rememberCoroutineScope(),
 ): MapState = rememberSaveable(
-    saver = MapState.saver(mapProperties),
+    saver = MapState.saver(mapProperties, coroutineScope),
     init = {
         MapState(
             mapProperties = mapProperties,
             zoomLevelPreference = zoomLevelPreference,
             density = density,
-            cameraState = null
+            cameraState = null,
+            coroutineScope
         )
     }
 )
 
 class MapState(
-    internal val mapProperties: MapProperties,
+    val mapProperties: MapProperties,
     zoomLevelPreference: ZoomLevelRange? = null,
     var density: Density = Density(1F),
-    cameraState: CameraState? = null
+    cameraState: CameraState? = null,
+    coroutineScope: CoroutineScope
 ) {
     val motionController = MotionController(this)
 
@@ -70,36 +83,40 @@ class MapState(
         )
     )
 
+    operator fun MutableState<CameraState>.setValue(thisObj: Any?, property: KProperty<*>, value: CameraState) {
+        this.value = value
+        val topLeft = ScreenOffset.Zero.toTilePoint()
+        val topRight = ScreenOffset(value.canvasSize.xFloat, 0F).toTilePoint()
+        val bottomLeft = ScreenOffset(0F, value.canvasSize.yFloat).toTilePoint()
+        val bottomRight = value.canvasSize.toTilePoint()
+        val viewPort = Rect(
+            minOf(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x).toFloat(),
+            minOf(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y).toFloat(),
+            maxOf(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x).toFloat(),
+            maxOf(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y).toFloat()
+        )
+        canvasKernel.renderTile(viewPort, value.zoom.toIntFloor(), mapProperties)
+    }
+
     //Derivative variables
     val drawReference
         get() = cameraState.tilePoint.toCanvasDrawReference()
     private val zoomLevel
         get() = cameraState.zoom.toIntFloor()
 
-    //Utility functions
-    val viewPort
-        get() = {
-            val topLeft = ScreenOffset.Zero.toTilePoint()
-            val topRight = ScreenOffset(cameraState.canvasSize.x, 0F).toTilePoint()
-            val bottomLeft = ScreenOffset(0F, cameraState.canvasSize.y).toTilePoint()
-            val bottomRight = cameraState.canvasSize.toTilePoint()
-            Rect(
-                minOf(topLeft.horizontal, topRight.horizontal, bottomLeft.horizontal, bottomRight.horizontal).toFloat(),
-                minOf(topLeft.vertical, topRight.vertical, bottomLeft.vertical, bottomRight.vertical).toFloat(),
-                maxOf(topLeft.horizontal, topRight.horizontal, bottomLeft.horizontal, bottomRight.horizontal).toFloat(),
-                maxOf(topLeft.vertical, topRight.vertical, bottomLeft.vertical, bottomRight.vertical).toFloat()
-            )
-        }.invoke()
+    //Canvas Kernel
+    val canvasKernel = CanvasKernel(coroutineScope)
 
+    //Utility functions
     private fun TilePoint.coerceInMap(): TilePoint {
         val x = if (mapProperties.boundMap.horizontal == MapBorderType.BOUND)
-            horizontal.coerceIn(0.0, mapProperties.tileSize.width.toDouble())
+            x.coerceIn(0.0, mapProperties.tileSize.width.toDouble())
         else
-            horizontal.loopInRange(mapProperties.tileSize.width.toDouble())
+            x.loopInRange(mapProperties.tileSize.width.toDouble())
         val y = if (mapProperties.boundMap.vertical == MapBorderType.BOUND)
-            vertical.coerceIn(0.0, mapProperties.tileSize.height.toDouble())
+            y.coerceIn(0.0, mapProperties.tileSize.height.toDouble())
         else
-            vertical.loopInRange(mapProperties.tileSize.height.toDouble())
+            y.loopInRange(mapProperties.tileSize.height.toDouble())
         return TilePoint(x, y)
     }
 
@@ -116,8 +133,8 @@ class MapState(
         .asCanvasPosition()
         .div(density.density.toDouble())
         .scale(
-            (mapProperties.tileSize.width.toDouble() / (mapProperties.tileSize.width * 2F.pow(cameraState.zoom))).toDouble(),
-            (mapProperties.tileSize.height.toDouble() / (mapProperties.tileSize.height * 2F.pow(cameraState.zoom))).toDouble()
+            (mapProperties.tileSize.width.toDouble() / (mapProperties.tileSize.width * 2F.pow(cameraState.zoom))),
+            (mapProperties.tileSize.height.toDouble() / (mapProperties.tileSize.height * 2F.pow(cameraState.zoom)))
         )
         .rotate(-cameraState.angleDegrees.toRadians())
         .unaryMinus()
@@ -143,13 +160,25 @@ class MapState(
         .asCanvasDrawReference()
 
     private fun TilePoint.scale(horizontal: Double, vertical: Double): TilePoint =
-        TilePoint(this.horizontal * horizontal, this.vertical * vertical)
+        TilePoint(this.x * horizontal, this.y * vertical)
 
     fun Coordinates.toTilePoint(): TilePoint {
-        val unscaledTilePoint = mapProperties.toTilePoint(this@toTilePoint)
+        val projectedCoordinates = mapProperties.toProjectedCoordinates(this@toTilePoint)
         val scaledTilePoint = transformReference(
-            unscaledTilePoint.horizontal,
-            unscaledTilePoint.vertical,
+            projectedCoordinates.x,
+            projectedCoordinates.y,
+            Pair(mapProperties.coordinatesRange.longitude.west, mapProperties.coordinatesRange.longitude.east),
+            Pair(mapProperties.coordinatesRange.latitude.north, mapProperties.coordinatesRange.latitude.south),
+            Pair(0.0, mapProperties.tileSize.width.toDouble()),
+            Pair(0.0, mapProperties.tileSize.height.toDouble()),
+        )
+        return TilePoint(scaledTilePoint.first, scaledTilePoint.second)
+    }
+
+    fun ProjectedCoordinates.toTilePoint(): TilePoint {
+        val scaledTilePoint = transformReference(
+            this.x,
+            this.y,
             Pair(mapProperties.coordinatesRange.longitude.west, mapProperties.coordinatesRange.longitude.east),
             Pair(mapProperties.coordinatesRange.latitude.north, mapProperties.coordinatesRange.latitude.south),
             Pair(0.0, mapProperties.tileSize.width.toDouble()),
@@ -159,16 +188,15 @@ class MapState(
     }
 
     fun TilePoint.toCoordinates(): Coordinates {
-        val unscaledCoordinates = mapProperties.toCoordinates(this@toCoordinates)
         val scaledTileCoordinates = transformReference(
-            unscaledCoordinates.longitude,
-            unscaledCoordinates.latitude,
+            this.x,
+            this.y,
             Pair(0.0, mapProperties.tileSize.width.toDouble()),
             Pair(0.0, mapProperties.tileSize.height.toDouble()),
             Pair(mapProperties.coordinatesRange.longitude.west, mapProperties.coordinatesRange.longitude.east),
             Pair(mapProperties.coordinatesRange.latitude.north, mapProperties.coordinatesRange.latitude.south),
         )
-        return Coordinates(scaledTileCoordinates.first, scaledTileCoordinates.second)
+        return mapProperties.toCoordinates(ProjectedCoordinates(scaledTileCoordinates.first, scaledTileCoordinates.second))
     }
 
     fun setCanvasSize(offset: Offset) {
@@ -194,7 +222,7 @@ class MapState(
     }
 
     companion object {
-        fun saver(mapProperties: MapProperties) = mapSaver(
+        fun saver(mapProperties: MapProperties, coroutineScope: CoroutineScope) = mapSaver(
             save = { mapState ->
                 mapOf(
                     "zoomLevelPreference" to Pair(mapState.zoomLevelPreference.min, mapState.zoomLevelPreference.max),
@@ -202,8 +230,8 @@ class MapState(
                     "canvasSize" to Pair(mapState.cameraState.canvasSize.x, mapState.cameraState.canvasSize.y),
                     "zoom" to mapState.cameraState.zoom,
                     "angleDegrees" to mapState.cameraState.angleDegrees,
-                    "coordinates" to Pair(mapState.cameraState.coordinates.longitude, mapState.cameraState.coordinates.latitude),
-                    "tilePoint" to Pair(mapState.cameraState.tilePoint.horizontal, mapState.cameraState.tilePoint.vertical),
+                    "coordinates" to Pair(mapState.cameraState.coordinates.x, mapState.cameraState.coordinates.y),
+                    "tilePoint" to Pair(mapState.cameraState.tilePoint.x, mapState.cameraState.tilePoint.y),
                 )
             },
             restore = { map ->
@@ -222,7 +250,8 @@ class MapState(
                         angleDegrees = map["angleDegrees"] as Double,
                         coordinates = (map["coordinates"] as Pair<*, *>).let { Coordinates(it.first as Double, it.second as Double) },
                         tilePoint = (map["tilePoint"] as Pair<*, *>).let { TilePoint(it.first as Double, it.second as Double) },
-                    )
+                    ),
+                    coroutineScope = coroutineScope
                 )
             }
         )

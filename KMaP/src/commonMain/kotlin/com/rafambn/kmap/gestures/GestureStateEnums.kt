@@ -2,9 +2,9 @@ package com.rafambn.kmap.gestures
 
 
 /**
- * [GestureState] is used to indicate what is the current state that the gesture is.
+ * [MapGestureState] is used to indicate what is the current state that the map gesture is.
  */
-enum class GestureState {
+enum class MapGestureState {
     GESTURE,
     TAP_SWIPE,
     HOVER,
@@ -12,4 +12,13 @@ enum class GestureState {
     WAITING_UP_AFTER_TAP,
     WAITING_UP_AFTER_TWO_PRESS,
     WAITING_DOWN
+}
+/**
+ * [PathGestureState] is used to indicate what is the current state that the path gesture is.
+ */
+enum class PathGestureState {
+    WAITING_UP,
+    WAITING_DOWN,
+    WAITING_UP_AFTER_TAP,
+    HOVER,
 }

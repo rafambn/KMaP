@@ -14,11 +14,13 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
 import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.rafambn.kmap.components.CanvasParameters
 import com.rafambn.kmap.core.KMaP
 import com.rafambn.kmap.core.MapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
@@ -43,8 +45,8 @@ fun ViewmodelScreen(
             mapState = viewmodel.mapState,
         ) {
             canvas(
-                tileSource = SimpleMapTileSource()::getTile,
-                gestureDetection = getGestureDetector(viewmodel.mapState.motionController)
+                parameters = CanvasParameters(id = 1, tileSource = SimpleMapTileSource()::getTile),
+                gestureWrapper = getGestureDetector(viewmodel.mapState.motionController)
             )
         }
         Image(
@@ -60,11 +62,12 @@ class MyViewmodel(savedStateHandle: SavedStateHandle) : ViewModel() {
     @OptIn(SavedStateHandleSaveableApi::class)
     val mapState = savedStateHandle.saveable(
         key = "mapState",
-        saver = MapState.saver(SimpleMapProperties()),
+        saver = MapState.saver(SimpleMapProperties(), viewModelScope),
         init = {
             MapState(
                 mapProperties = SimpleMapProperties(),
-                zoomLevelPreference = null
+                zoomLevelPreference = null,
+                coroutineScope = viewModelScope
             )
         }
     )

@@ -13,11 +13,20 @@ fun Int.loopInZoom(zoomLevel: Int): Int = this.mod(1 shl zoomLevel)
 
 fun lerp(start: Double, end: Double, value: Double): Double = start + (end - start) * value
 
-fun lerp(start: TilePoint, end: TilePoint, value: Double): TilePoint =
-    TilePoint(lerp(start.horizontal, end.horizontal, value), lerp(start.vertical, end.vertical, value))
+inline fun <reified T : Reference> lerp(start: T, end: T, value: Double): T {
+    val newX = lerp(start.x, end.x, value)
+    val newY = lerp(start.y, end.y, value)
 
-fun lerp(start: Coordinates, end: Coordinates, value: Double): Coordinates =
-    Coordinates(lerp(start.longitude, end.longitude, value), lerp(start.latitude, end.latitude, value))
+    return when (T::class) {
+        ScreenOffset::class -> ScreenOffset(newX, newY) as T
+        TilePoint::class -> TilePoint(newX, newY) as T
+        Coordinates::class -> Coordinates(newX, newY) as T
+        ProjectedCoordinates::class -> ProjectedCoordinates(newX, newY) as T
+        DifferentialScreenOffset::class -> DifferentialScreenOffset(newX, newY) as T
+        CanvasDrawReference::class -> CanvasDrawReference(newX, newY) as T
+        else -> throw IllegalArgumentException("Unsupported type for lerp: ${T::class.simpleName}")
+    }
+}
 
 fun Float.toIntFloor(): Int = floor(this).toInt()
 

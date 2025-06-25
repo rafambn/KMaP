@@ -14,6 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.rafambn.kmap.components.CanvasParameters
 import com.rafambn.kmap.core.KMaP
 import com.rafambn.kmap.tiles.TileSource
 import com.rafambn.kmap.core.rememberMapState
@@ -40,12 +41,11 @@ fun LayersScreen(
             mapState = mapState,
         ) {
             canvas(
-                tileSource = SimpleMapTileSource()::getTile,
-                gestureDetection = getGestureDetector(mapState.motionController)
+                parameters = CanvasParameters(id = 1, tileSource = SimpleMapTileSource()::getTile),
+                gestureWrapper = getGestureDetector(mapState.motionController)
             )
             canvas(
-                alpha = sliderPosition,
-                tileSource = LayerMapTileSource()::getTile
+                parameters = CanvasParameters(id = 2, tileSource = LayerMapTileSource()::getTile, alpha = sliderPosition),
             )
         }
         Slider(

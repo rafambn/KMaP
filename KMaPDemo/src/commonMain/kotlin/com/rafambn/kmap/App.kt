@@ -14,6 +14,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.rafambn.kmap.core.MotionController
+import com.rafambn.kmap.gestures.MapGestureWrapper
 import com.rafambn.kmap.gestures.detectMapGestures
 import com.rafambn.kmap.screens.AnimationScreen
 import com.rafambn.kmap.screens.ClusteringScreen
@@ -107,19 +108,16 @@ expect val scrollScale: Int
 
 expect val gestureScale: Int
 
-fun getGestureDetector(motionController: MotionController): suspend PointerInputScope.() -> Unit = {
-    detectMapGestures(
-        onDoubleTap = { offset -> motionController.move { zoomByCentered(-1 / 3F, offset) } },
-        onTapLongPress = { offset -> motionController.move { positionBy(offset.asDifferentialScreenOffset()) } },
-        onTapSwipe = { zoom -> motionController.move { zoomBy(zoom / 100) } },
-        onTwoFingersTap = { offset -> motionController.move { zoomByCentered(1 / 3F, offset) } },
-        onGesture = { centroid, pan, zoom, rotation ->
-            motionController.move {
-                rotateByCentered(rotation.toDouble(), centroid)
-                zoomByCentered(zoom / gestureScale, centroid)
-                positionBy(pan)
-            }
-        },
-        onScroll = { mouseOffset, scrollAmount -> motionController.move { zoomByCentered(scrollAmount / scrollScale, mouseOffset) } },
-    )
-}
+fun getGestureDetector(motionController: MotionController): MapGestureWrapper = MapGestureWrapper(
+    onDoubleTap = { offset -> motionController.move { zoomByCentered(-1 / 3F, offset) } },
+    onTapSwipe = { zoom -> motionController.move { zoomBy(zoom / 100) } },
+    onTwoFingersTap = { offset -> motionController.move { zoomByCentered(1 / 3F, offset) } },
+    onGesture = { centroid, pan, zoom, rotation ->
+        motionController.move {
+            rotateByCentered(rotation.toDouble(), centroid)
+            zoomByCentered(zoom / gestureScale, centroid)
+            positionBy(pan)
+        }
+    },
+    onScroll = { mouseOffset, scrollAmount -> motionController.move { zoomByCentered(scrollAmount / scrollScale, mouseOffset) } },
+)
