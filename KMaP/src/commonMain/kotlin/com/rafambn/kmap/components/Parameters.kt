@@ -56,5 +56,5 @@ open class CanvasParameters(
     val alpha: Float = 1F,
     val zIndex: Float = 0F,
     val maxCacheTiles: Int = 20,
-    val getTile: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult,
+    val tileSource: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult,
 ) : Parameters

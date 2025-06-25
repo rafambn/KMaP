@@ -15,7 +15,7 @@
     ```kotlin
     sourceSets {
         commonMain.dependencies {
-            implementation("com.rafambn:kmap:0.1.0")
+            implementation("com.rafambn:kmap:0.3.0")
         }
     }
     ```
@@ -26,7 +26,7 @@
 
     [versions]
 
-    kmap = "0.1.0"
+    kmap = "0.3.0"
 
     
     [libraries]

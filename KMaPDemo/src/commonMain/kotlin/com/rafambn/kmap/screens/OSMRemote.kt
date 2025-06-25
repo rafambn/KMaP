@@ -37,7 +37,7 @@ fun OSMRemoteScreen(
             mapState = mapState,
         ) {
             canvas(
-                parameters = CanvasParameters(id = 1, getTile = OSMTileSource("com.rafambn.kmapdemoapp")::getTile),
+                parameters = CanvasParameters(id = 1, tileSource = OSMTileSource("com.rafambn.kmapdemoapp")::getTile),
                 gestureWrapper = getGestureDetector(mapState.motionController)
             )
         }

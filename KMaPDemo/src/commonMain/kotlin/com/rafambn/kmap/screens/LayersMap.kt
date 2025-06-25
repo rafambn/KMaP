@@ -41,11 +41,11 @@ fun LayersScreen(
             mapState = mapState,
         ) {
             canvas(
-                parameters = CanvasParameters(id = 1, getTile = SimpleMapTileSource()::getTile),
+                parameters = CanvasParameters(id = 1, tileSource = SimpleMapTileSource()::getTile),
                 gestureWrapper = getGestureDetector(mapState.motionController)
             )
             canvas(
-                parameters = CanvasParameters(id = 2, getTile = LayerMapTileSource()::getTile, alpha = sliderPosition),
+                parameters = CanvasParameters(id = 2, tileSource = LayerMapTileSource()::getTile, alpha = sliderPosition),
             )
         }
         Slider(

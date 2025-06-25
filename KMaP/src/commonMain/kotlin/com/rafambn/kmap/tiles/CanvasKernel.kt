@@ -30,7 +30,7 @@ class CanvasKernel(
             if (parameters.id !in canvas) {
                 canvas[parameters.id] = CanvasEngine(
                     parameters.maxCacheTiles,
-                    parameters.getTile,
+                    parameters.tileSource,
                     coroutineScope
                 )
             }
