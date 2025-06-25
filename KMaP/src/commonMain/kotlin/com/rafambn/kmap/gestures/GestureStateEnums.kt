@@ -21,5 +21,4 @@ enum class PathGestureState {
     WAITING_DOWN,
     WAITING_UP_AFTER_TAP,
     HOVER,
-    DRAG,
 }

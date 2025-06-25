@@ -1,32 +1,19 @@
 package com.rafambn.kmap.gestures
 
 import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.calculateCentroid
-import androidx.compose.foundation.gestures.calculateCentroidSize
 import androidx.compose.foundation.gestures.calculatePan
-import androidx.compose.foundation.gestures.calculateRotation
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathHitTester
 import androidx.compose.ui.graphics.PathMeasure
 import androidx.compose.ui.input.pointer.PointerEvent
-import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventTimeoutCancellationException
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.PointerInputScope
-import androidx.compose.ui.input.pointer.changedToDown
-import androidx.compose.ui.input.pointer.changedToUp
-import androidx.compose.ui.input.pointer.isCtrlPressed
 import androidx.compose.ui.input.pointer.isOutOfBounds
-import androidx.compose.ui.input.pointer.positionChange
-import androidx.compose.ui.input.pointer.positionChangeIgnoreConsumed
-import androidx.compose.ui.unit.center
-import androidx.compose.ui.unit.toOffset
-import com.rafambn.kmap.utils.DifferentialScreenOffset
 import com.rafambn.kmap.utils.ProjectedCoordinates
 import com.rafambn.kmap.utils.ScreenOffset
-import com.rafambn.kmap.utils.asDifferentialScreenOffset
 import com.rafambn.kmap.utils.asScreenOffset
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
@@ -35,7 +22,6 @@ suspend fun PointerInputScope.detectPathGestures(
     onTap: ((ProjectedCoordinates) -> Unit)? = null,
     onDoubleTap: ((ProjectedCoordinates) -> Unit)? = null,
     onLongPress: ((ProjectedCoordinates) -> Unit)? = null,
-    onDrag: ((DifferentialScreenOffset) -> Unit)? = null,
     onHover: ((ProjectedCoordinates) -> Unit)? = null,
     convertScreenOffsetToProjectedCoordinates: (ScreenOffset) -> ProjectedCoordinates,
     path: Path,
@@ -60,7 +46,7 @@ suspend fun PointerInputScope.detectPathGestures(
         do {
             event = awaitPointerEventWithTimeout()
         } while (
-            !(event.type == PointerEventType.Press && (onTap != null || onDoubleTap != null || onLongPress != null || onDrag != null) &&
+            !(event.type == PointerEventType.Press && (onTap != null || onDoubleTap != null || onLongPress != null) &&
                     tester.checkHit(event.changes[0].position)) &&
             !(event.type == PointerEventType.Move && onHover != null)
         )
@@ -110,13 +96,8 @@ suspend fun PointerInputScope.detectPathGestures(
                                         return@awaitEachGesture
 
                                     panSlop += event.calculatePan()
-                                    if (panSlop.getDistance() > touchSlop) {
-                                        if (onDrag != null) {
-                                            pathGestureState = PathGestureState.DRAG
-                                            break
-                                        }
+                                    if (panSlop.getDistance() > touchSlop)
                                         return@awaitEachGesture
-                                    }
                                 }
                             }
                         } catch (_: PointerEventTimeoutCancellationException) {
@@ -129,10 +110,13 @@ suspend fun PointerInputScope.detectPathGestures(
                 PathGestureState.WAITING_DOWN -> {
                     var timePassed = 0L
                     panSlop = Offset.Zero
+                    var previousEvent = event
                     do {
                         try {
                             event = awaitPointerEventWithTimeout(doubleTapTimeout - timePassed)
-                            timePassed += event.changes.minOf { it.uptimeMillis - it.previousUptimeMillis }
+                            timePassed += event.changes.minOf { it.uptimeMillis } - previousEvent.changes.minOf { it.uptimeMillis }
+                            if (doubleTapTimeout - timePassed < 0)
+                                throw PointerEventTimeoutCancellationException(0)
 
                             when (event.type) {
                                 PointerEventType.Press -> {
@@ -153,13 +137,16 @@ suspend fun PointerInputScope.detectPathGestures(
                                 }
 
                                 PointerEventType.Move -> {
-                                    panSlop += event.calculatePan()
+                                    val currentCentroid = event.changes[0].position
+                                    val previousCentroid = previousEvent.changes[0].position
+                                    panSlop += currentCentroid - previousCentroid
                                     if (panSlop.getDistance() > touchSlop) {
                                         onTap?.invoke(convertScreenOffsetToProjectedCoordinates(referencePointer!!.position.asScreenOffset()))
                                         return@awaitEachGesture
                                     }
                                 }
                             }
+                            previousEvent = event
                         } catch (_: PointerEventTimeoutCancellationException) {
                             onTap?.invoke(convertScreenOffsetToProjectedCoordinates(referencePointer!!.position.asScreenOffset()))
                             return@awaitEachGesture
@@ -188,35 +175,13 @@ suspend fun PointerInputScope.detectPathGestures(
                                         return@awaitEachGesture
 
                                     panSlop += event.calculatePan()
-                                    if (panSlop.getDistance() > touchSlop) {
-                                        if (onDrag != null) {
-                                            pathGestureState = PathGestureState.DRAG
-                                            break
-                                        }
+                                    if (panSlop.getDistance() > touchSlop)
                                         return@awaitEachGesture
-                                    }
                                 }
                             }
                         } catch (_: PointerEventTimeoutCancellationException) {
                             onLongPress?.invoke(convertScreenOffsetToProjectedCoordinates(referencePointer!!.position.asScreenOffset()))
                             return@awaitEachGesture
-                        }
-                    } while (!event.changes.all { it.isOutOfBounds(size, extendedTouchPadding) })
-                }
-
-                PathGestureState.DRAG -> {
-                    do {
-                        event = awaitPointerEventWithTimeout()
-
-                        when (event.type) {
-                            PointerEventType.Release -> {
-                                if (event.changes.size == 1)
-                                    return@awaitEachGesture
-                            }
-
-                            PointerEventType.Move -> {
-                                onDrag?.invoke(event.calculatePan().asDifferentialScreenOffset())
-                            }
                         }
                     } while (!event.changes.all { it.isOutOfBounds(size, extendedTouchPadding) })
                 }
@@ -227,7 +192,7 @@ suspend fun PointerInputScope.detectPathGestures(
 
                         when (event.type) {
                             PointerEventType.Press -> {
-                                if ((onTap != null || onDoubleTap != null || onLongPress != null || onDrag != null) && tester.checkHit(event.changes[0].position)) {
+                                if ((onTap != null || onDoubleTap != null || onLongPress != null) && tester.checkHit(event.changes[0].position)) {
                                     pathGestureState = PathGestureState.WAITING_UP
                                     break
                                 }
@@ -245,124 +210,6 @@ suspend fun PointerInputScope.detectPathGestures(
                 }
             }
         } while (this@coroutineScope.isActive && !event.changes.any { it.isOutOfBounds(size, extendedTouchPadding) })
-
-//
-//        val longPressTimeout = viewConfiguration.longPressTimeoutMillis
-//        val doubleTapTimeout = viewConfiguration.doubleTapTimeoutMillis
-//        val touchSlop = viewConfiguration.touchSlop
-//
-//        var maxTime = 0L
-//        var timePassed = 0L
-//        var panSlop = Offset.Zero
-//        var pathGestureState = PathGestureState.WAITING_DOWN
-//        var event: PointerEvent
-//        var referencePointer: PointerInputChange? = null
-//
-//        do {
-//            try {
-//                event = referencePointer?.let { awaitPointerEventWithTimeout(maxTime - timePassed, PointerEventPass.Initial) }
-//                    ?: awaitPointerEventWithTimeout(pass = PointerEventPass.Initial)
-//                referencePointer?.let { pointerEvent -> timePassed = event.changes.minOf { it.uptimeMillis } - pointerEvent.uptimeMillis }
-//            } catch (_: PointerEventTimeoutCancellationException) {
-//                when (pathGestureState) {
-//                    PathGestureState.WAITING_DOWN -> {}
-//                    PathGestureState.WAITING_UP -> {
-//                        onLongPress?.invoke(convertScreenOffsetToProjectedCoordinates(referencePointer!!.position.asScreenOffset()))
-//                    }
-//
-//                    PathGestureState.WAITING_DOWN_AFTER_TAP -> {
-//                        onTap?.invoke(convertScreenOffsetToProjectedCoordinates(referencePointer!!.position.asScreenOffset()))
-//                    }
-//
-//                    PathGestureState.WAITING_UP_AFTER_TAP -> {
-//                        onLongPress?.invoke(convertScreenOffsetToProjectedCoordinates(referencePointer!!.position.asScreenOffset()))
-//                    }
-//                }
-//                return@awaitEachGesture
-//            }
-//            when (pathGestureState) {
-//                PathGestureState.WAITING_DOWN -> {
-//                    if (event.changes.size == 1 && event.changes[0].changedToDown() && tester.checkHit(event.changes[0].position)) {
-//                        event.changes[0].consume()
-//                        pathGestureState = PathGestureState.WAITING_UP
-//                        maxTime = longPressTimeout
-//                        panSlop = Offset.Zero
-//                        referencePointer = event.changes[0]
-//                    }
-//                }
-//
-//                PathGestureState.WAITING_UP -> {
-//                    when (event.type) {
-//                        PointerEventType.Release -> {
-//                            if (event.changes.find { it.id == referencePointer!!.id }?.changedToUp() ?: false) {
-//                                if (onDoubleTap != null) {
-//                                    event.changes.find { it.id == referencePointer!!.id }?.consume()
-//                                    pathGestureState = PathGestureState.WAITING_DOWN_AFTER_TAP
-//                                    maxTime = doubleTapTimeout + timePassed
-//                                    panSlop = Offset.Zero
-//                                    continue
-//                                }
-//                                if (onTap != null) {
-//                                    event.changes.find { it.id == referencePointer!!.id }?.consume()
-//                                    onTap.invoke(convertScreenOffsetToProjectedCoordinates(referencePointer!!.position.asScreenOffset()))
-//                                    return@awaitEachGesture
-//                                }
-//                            }
-//                        }
-//
-//                        PointerEventType.Move -> {
-//                            panSlop += event.changes.find { it.id == referencePointer!!.id }?.positionChange() ?: Offset.Zero
-//                            event.changes.find { it.id == referencePointer!!.id }?.consume()
-//                            if (panSlop.getDistance() > touchSlop)
-//                                return@awaitEachGesture
-//                        }
-//                    }
-//                }
-//
-//                PathGestureState.WAITING_DOWN_AFTER_TAP -> {
-//                    when (event.type) {
-//                        PointerEventType.Press -> {
-//                            if (event.changes.size == 1 && event.changes[0].changedToDown() && tester.checkHit(event.changes[0].position)) {
-//                                event.changes[0].consume()
-//                                pathGestureState = PathGestureState.WAITING_UP_AFTER_TAP
-//                                maxTime = longPressTimeout
-//                                panSlop = Offset.Zero
-//                                referencePointer = event.changes[0]
-//                            } else {
-//                                onTap?.invoke(convertScreenOffsetToProjectedCoordinates(referencePointer!!.position.asScreenOffset()))
-//                                return@awaitEachGesture
-//                            }
-//                        }
-//
-//                        PointerEventType.Move -> {
-//                            panSlop += event.changes[0].positionChangeIgnoreConsumed()
-//                            if (panSlop.getDistance() > touchSlop) {
-//                                onTap?.invoke(convertScreenOffsetToProjectedCoordinates(referencePointer!!.position.asScreenOffset()))
-//                                return@awaitEachGesture
-//                            }
-//                        }
-//                    }
-//                }
-//
-//                PathGestureState.WAITING_UP_AFTER_TAP -> {
-//                    when (event.type) {
-//                        PointerEventType.Release -> {
-//                            if (event.changes.find { it.id == referencePointer!!.id }?.changedToUp() ?: false)
-//                                onDoubleTap?.invoke(convertScreenOffsetToProjectedCoordinates(event.changes[0].position.asScreenOffset()))
-//                            return@awaitEachGesture
-//                        }
-//
-//                        PointerEventType.Move -> {
-//                            panSlop += event.changes.find { it.id == referencePointer!!.id }?.positionChange() ?: Offset.Zero
-//                            event.changes.find { it.id == referencePointer!!.id }?.consume()
-//                            if (panSlop.getDistance() > touchSlop)
-//                                return@awaitEachGesture
-//                        }
-//                    }
-//                }
-//            }
-//
-//        } while (!event.changes.any { it.isOutOfBounds(size, extendedTouchPadding) })
     }
 }
 
