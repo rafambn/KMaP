@@ -216,9 +216,7 @@ suspend fun PointerInputScope.detectMapGestures(
                                 }
                             }
                         } catch (_: PointerEventTimeoutCancellationException) {
-                            if (onTap != null) {
-                                onTap.invoke(event.changes[0].position.asScreenOffset())
-                            }
+                            onTap?.invoke(event.changes[0].position.asScreenOffset())
                             return@awaitEachGesture
                         }
                     } while (!event.changes.all { it.isOutOfBounds(size, extendedTouchPadding) })

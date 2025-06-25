@@ -106,6 +106,9 @@ class KMaPContent(
         scaleMatrix.scale(scaleX, scaleY)
         originalPath.transform(orientationMatrix)
         originalPath.transform(scaleMatrix)
+        val densityScale = Matrix()
+        densityScale.scale(mapState.density.density, mapState.density.density)
+        originalPath.transform(densityScale)
         val bounds = originalPath.getBounds()
         paths.add(
             Path(parameters) {
@@ -123,8 +126,8 @@ class KMaPContent(
                                     convertScreenOffsetToProjectedCoordinates = {
                                         val untranslatedPoint = it.plus(ScreenOffset(bounds.left - padding, bounds.top - padding))
                                         return@detectPathGestures ProjectedCoordinates(
-                                            untranslatedPoint.x * orientationX / scaleX,
-                                            untranslatedPoint.y * orientationY / scaleY,
+                                            untranslatedPoint.x * orientationX / (scaleX*mapState.density.density),
+                                            untranslatedPoint.y * orientationY / (scaleY*mapState.density.density),
                                         )
                                     }
                                 )
