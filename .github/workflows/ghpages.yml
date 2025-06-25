@@ -27,6 +27,9 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Clean Yarn Cache
+        run: yarn cache clean --all
+
       - name: Build KMaP Wasm target
         run: | 
           chmod +x ./gradlew 
