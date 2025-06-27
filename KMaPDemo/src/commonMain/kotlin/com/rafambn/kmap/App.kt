@@ -9,13 +9,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.rafambn.kmap.core.MotionController
 import com.rafambn.kmap.gestures.MapGestureWrapper
-import com.rafambn.kmap.gestures.detectMapGestures
 import com.rafambn.kmap.screens.AnimationScreen
 import com.rafambn.kmap.screens.ClusteringScreen
 import com.rafambn.kmap.screens.LayersScreen
@@ -26,7 +24,6 @@ import com.rafambn.kmap.screens.SimpleMapScreen
 import com.rafambn.kmap.screens.StartScreen
 import com.rafambn.kmap.screens.ViewmodelScreen
 import com.rafambn.kmap.theme.AppTheme
-import com.rafambn.kmap.utils.asDifferentialScreenOffset
 
 @Composable
 fun App() = AppTheme {
@@ -110,7 +107,13 @@ expect val gestureScale: Int
 
 fun getGestureDetector(motionController: MotionController): MapGestureWrapper = MapGestureWrapper(
     onDoubleTap = { offset -> motionController.move { zoomByCentered(-1 / 3F, offset) } },
-    onTapSwipe = { zoom -> motionController.move { zoomBy(zoom / 100) } },
+    onTapSwipe = { zoomChange, rotationChange ->
+        println("onTapSwipe: $zoomChange, $rotationChange")
+        motionController.move {
+            zoomBy(zoomChange / 120)
+            rotateBy(rotationChange)
+        }
+    },
     onTwoFingersTap = { offset -> motionController.move { zoomByCentered(1 / 3F, offset) } },
     onGesture = { centroid, pan, zoom, rotation ->
         motionController.move {

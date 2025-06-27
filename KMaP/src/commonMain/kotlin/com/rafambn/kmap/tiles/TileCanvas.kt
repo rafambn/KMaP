@@ -11,13 +11,13 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.gestures.MapGestureWrapper
 import com.rafambn.kmap.gestures.detectMapGestures
+import com.rafambn.kmap.gestures.sharedPointerInput
 import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.ScreenOffset
 import com.rafambn.kmap.utils.toIntFloor
@@ -37,7 +37,7 @@ internal fun TileCanvas(
     Layout(
         modifier = Modifier
             .then(gestureWrapper?.let {
-                Modifier.pointerInput(Unit) {
+                Modifier.sharedPointerInput {
                     detectMapGestures(
                         onTap = gestureWrapper.onTap,
                         onDoubleTap = gestureWrapper.onDoubleTap,

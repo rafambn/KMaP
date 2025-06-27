@@ -10,10 +10,7 @@ import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventTimeoutCancellationException
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerInputScope
-import androidx.compose.ui.input.pointer.isCtrlPressed
 import androidx.compose.ui.input.pointer.isOutOfBounds
-import androidx.compose.ui.unit.center
-import androidx.compose.ui.unit.toOffset
 import com.rafambn.kmap.utils.DifferentialScreenOffset
 import com.rafambn.kmap.utils.ScreenOffset
 import com.rafambn.kmap.utils.asDifferentialScreenOffset
@@ -27,7 +24,7 @@ suspend fun PointerInputScope.detectMapGestures(
     onDoubleTap: ((screenOffset: ScreenOffset) -> Unit)? = null,
     onLongPress: ((screenOffset: ScreenOffset) -> Unit)? = null,
     onTapLongPress: ((screenOffset: ScreenOffset) -> Unit)? = null,
-    onTapSwipe: ((zoom: Float) -> Unit)? = null,
+    onTapSwipe: ((zoomChange: Float, rotationChange: Double) -> Unit)? = null,
     onGesture: ((screenOffset: ScreenOffset, screenOffsetDiff: DifferentialScreenOffset, zoom: Float, rotation: Float) -> Unit)? = null,
 
     // mobile use
@@ -271,7 +268,17 @@ suspend fun PointerInputScope.detectMapGestures(
                             }
 
                             PointerEventType.Move -> {
-                                onTapSwipe?.invoke(event.changes[0].position.y - event.changes[0].previousPosition.y)
+                                val screenSize = size / 2
+                                val pointerInputEvent = event.changes.first { it.pressed }
+
+                                val screenCenter = Offset(screenSize.width.toFloat(), screenSize.height.toFloat())
+                                val currentCentroid = pointerInputEvent.position - screenCenter
+                                val previousCentroid = pointerInputEvent.previousPosition - screenCenter
+
+                                onTapSwipe?.invoke(
+                                    currentCentroid.getDistance() - previousCentroid.getDistance(),
+                                    previousCentroid.angle() - currentCentroid.angle()
+                                )
                             }
 
                             PointerEventType.Scroll -> {
@@ -346,36 +353,23 @@ suspend fun PointerInputScope.detectMapGestures(
                             }
 
                             PointerEventType.Move -> {
-                                if (event.keyboardModifiers.isCtrlPressed) {
-                                    if (event.keyboardModifiers.isCtrlPressed) {
-                                        handleGestureWithCtrl(event.changes.first { it.pressed }, size / 2) { rotationChange ->
-                                            onGesture?.invoke(
-                                                this.size.center.toOffset().asScreenOffset(),
-                                                DifferentialScreenOffset.Zero,
-                                                0F,
-                                                rotationChange
-                                            )
-                                        }
-                                    }
-                                } else {
-                                    val eventZoomCentroid = event.calculateCentroidSize()
-                                    val previousEventZoomCentroid = event.calculateCentroidSize(false)
-                                    var zoomChange = eventZoomCentroid - previousEventZoomCentroid
-                                    if (eventZoomCentroid == 0f || previousEventZoomCentroid == 0f)
-                                        zoomChange = 0.0F
+                                val eventZoomCentroid = event.calculateCentroidSize()
+                                val previousEventZoomCentroid = event.calculateCentroidSize(false)
+                                var zoomChange = eventZoomCentroid - previousEventZoomCentroid
+                                if (eventZoomCentroid == 0f || previousEventZoomCentroid == 0f)
+                                    zoomChange = 0.0F
 
-                                    val rotationChange = event.calculateRotation()
+                                val rotationChange = event.calculateRotation()
 
-                                    val panChange = event.calculatePan()
-                                    val centroid = event.calculateCentroid()
-                                    if (centroid != Offset.Unspecified) {
-                                        onGesture?.invoke(
-                                            centroid.asScreenOffset(),
-                                            panChange.asDifferentialScreenOffset(),
-                                            zoomChange,
-                                            rotationChange
-                                        )
-                                    }
+                                val panChange = event.calculatePan()
+                                val centroid = event.calculateCentroid()
+                                if (centroid != Offset.Unspecified) {
+                                    onGesture?.invoke(
+                                        centroid.asScreenOffset(),
+                                        panChange.asDifferentialScreenOffset(),
+                                        zoomChange,
+                                        rotationChange
+                                    )
                                 }
                             }
 

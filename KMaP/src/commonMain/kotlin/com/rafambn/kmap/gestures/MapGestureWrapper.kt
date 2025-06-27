@@ -9,7 +9,7 @@ data class MapGestureWrapper(
     val onDoubleTap: ((screenOffset: ScreenOffset) -> Unit)? = null,
     val onLongPress: ((screenOffset: ScreenOffset) -> Unit)? = null,
     val onTapLongPress: ((screenOffset: ScreenOffset) -> Unit)? = null,
-    val onTapSwipe: ((zoom: Float) -> Unit)? = null,
+    val onTapSwipe: ((zoomChange: Float, rotationChange: Double) -> Unit)? = null,
     val onGesture: ((screenOffset: ScreenOffset, screenOffsetDiff: DifferentialScreenOffset, zoom: Float, rotation: Float) -> Unit)? = null,
 
     // mobile use

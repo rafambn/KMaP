@@ -3,6 +3,7 @@ package com.rafambn.kmap.gestures
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.SuspendingPointerInputModifierNode
 import androidx.compose.ui.node.DelegatingNode
@@ -55,12 +56,33 @@ class SharedPointerInputModifierNodeImpl(
         pointerInputNode = delegate(SuspendingPointerInputModifierNode(pointerInputEventHandler))
     }
 
+    var initialCount = 0
+    var mainCount = 0
+    var pointerList = mutableListOf<PointerInputChange>()
+    var previousFinal = false
+
     override fun onPointerEvent(
         pointerEvent: PointerEvent,
         pass: PointerEventPass,
         bounds: IntSize
     ) {
-        pointerInputNode.onPointerEvent(pointerEvent, pass, bounds)
+        if (previousFinal && pass == PointerEventPass.Initial) {
+            pointerList.clear()
+            previousFinal = false
+            initialCount = 0
+            mainCount = 0
+        }
+        if (pass == PointerEventPass.Initial) {
+            initialCount++
+        }
+        if (pass == PointerEventPass.Main) {
+            pointerList.addAll(pointerEvent.changes)
+            mainCount++
+        }
+        if (pass == PointerEventPass.Final && !previousFinal && initialCount == mainCount) {
+            previousFinal = true
+            pointerInputNode.onPointerEvent(PointerEvent(pointerList), PointerEventPass.Main, bounds)
+        }
     }
 
     override fun onCancelPointerInput() {
