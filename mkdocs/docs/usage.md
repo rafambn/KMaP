@@ -192,7 +192,12 @@ It's provided a MapGestureWrapper with a some gesture that later will be attribu
 ```kotlin
 MapGestureWrapper(
     onDoubleTap = { offset -> motionController.move { zoomByCentered(-1 / 3F, offset) } },
-    onTapSwipe = { zoom -> motionController.move { zoomBy(zoom / 100) } },
+    onTapSwipe = { zoomChange, rotationChange ->
+        motionController.move {
+            zoomBy(zoomChange / 120)
+            rotateBy(rotationChange)
+        }
+    },
     onTwoFingersTap = { offset -> motionController.move { zoomByCentered(1 / 3F, offset) } },
     onGesture = { centroid, pan, zoom, rotation ->
         motionController.move {
