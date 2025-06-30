@@ -9,7 +9,7 @@
 ## Checkout the demo app on wasm target: [**KMaP Demo**](https://kmap.rafambn.com/kmapdemo/).
 ## Checkout the documentation also: [**KMaP Page**](https://kmap.rafambn.com/).
 
-Current version [0.2.0](https://github.com/rafambn/kmap/releases).
+Current version [0.3.1](https://github.com/rafambn/kmap/releases).
 
 ### Key Features
 
