@@ -22,6 +22,7 @@ import com.rafambn.kmap.screens.OSMRemoteScreen
 import com.rafambn.kmap.screens.PathScreen
 import com.rafambn.kmap.screens.SimpleMapScreen
 import com.rafambn.kmap.screens.StartScreen
+import com.rafambn.kmap.screens.VectorTileScreen
 import com.rafambn.kmap.screens.ViewmodelScreen
 import com.rafambn.kmap.theme.AppTheme
 
@@ -55,6 +56,7 @@ fun App() = AppTheme {
                     navigateOSM = { navigationController.navigate(Routes.OSMRemote) },
                     navigateClustering = { navigationController.navigate(Routes.Clustering) },
                     navigateSavedStateHandle = { navigationController.navigate(Routes.SavedStateHandle) },
+                    navigateVectorTile = { navigationController.navigate(Routes.VectorTiles) },
                 )
             }
             composable<Routes.Simple> {
@@ -94,6 +96,11 @@ fun App() = AppTheme {
             }
             composable<Routes.SavedStateHandle> {
                 ViewmodelScreen(
+                    navigateBack = { navigationController.popBackStack() }
+                )
+            }
+            composable<Routes.VectorTiles> {
+                VectorTileScreen(
                     navigateBack = { navigationController.popBackStack() }
                 )
             }

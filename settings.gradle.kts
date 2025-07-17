@@ -1,6 +1,7 @@
 rootProject.name = "KMaP"
 include(":KMaPDemo")
 include(":KMaP")
+include("MVTParser")
 
 pluginManagement {
     repositories {
@@ -32,3 +33,4 @@ dependencyResolutionManagement {
         maven("https://maven.pkg.jetbrains.space/public/p/ktor/eap")
     }
 }
+
