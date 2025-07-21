@@ -14,18 +14,12 @@ data class DecodedGeometry(
 
 expect fun decompressGzip(compressedBytes: ByteArray): ByteArray
 
-/**
- * Decompresses and deserializes MVT bytes into raw MVTile
- */
 @OptIn(ExperimentalSerializationApi::class)
 fun deserializeMVT(compressedBytes: ByteArray): MVTile {
     val decompressedBytes = decompressGzip(compressedBytes)
     return ProtoBuf.decodeFromByteArray(MVTile.serializer(), decompressedBytes)
 }
 
-/**
- * Parses MVTile into ParsedMVTile with decoded geometries
- */
 fun parseMVT(mvtTile: MVTile): ParsedMVTile {
     val parsedLayers = mvtTile.layers.map { layer ->
         val parsedFeatures = layer.features.map { feature ->

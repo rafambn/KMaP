@@ -44,22 +44,12 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
         }
 
-        jvmMain.dependencies {
-            // JVM-specific dependencies if needed
-        }
-
         jsMain.dependencies {
-            // JS-specific dependencies if needed
             implementation(npm("pako", "2.1.0"))
         }
 
         wasmJsMain.dependencies {
-            // Wasm-specific dependencies if needed
             implementation(npm("pako", "2.1.0"))
-        }
-
-        androidMain.dependencies {
-            // Android-specific dependencies if needed
         }
     }
 }
