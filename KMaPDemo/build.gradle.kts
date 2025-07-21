@@ -56,8 +56,10 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(libs.androidx.navigation.composee)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.kotlinx.serialization.protobuf)
             implementation(libs.kotlinx.coroutines.core)
             implementation(project(":KMaP"))
+            implementation(project(":MVTParser"))
 //            implementation(libs.kmap)
             implementation(libs.ktor.client.core)
         }
@@ -92,11 +94,11 @@ android {
 
     defaultConfig {
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
 
         applicationId = "com.rafambn.kmapdemo"
         versionCode = 1
-        versionName = "0.1.0"
+        versionName = "1.0.0"
     }
 }
 

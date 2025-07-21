@@ -3,51 +3,67 @@ package com.rafambn.mvtparser
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.protobuf.ProtoBuf
 
-/**
- * Constants for MVT command types
- */
-const val CMD_MOVETO = 1u
-const val CMD_LINETO = 2u
-const val CMD_CLOSEPATH = 7u
+const val CMD_MOVETO = 1
+const val CMD_LINETO = 2
+const val CMD_CLOSEPATH = 7
 
-/**
- * Data class to hold decoded geometry for a feature
- */
 data class DecodedGeometry(
-    val type: Tile.GeomType,
-    val coordinates: List<List<Pair<Int, Int>>> // For multi-part geometries like polygons (outer ring, inner rings) or multi-line strings
+    val type: GeomType,
+    val coordinates: List<List<Pair<Int, Int>>>
 )
 
-/**
- * Decompresses GZIP-compressed data
- *
- * @param compressedBytes The compressed byte array
- * @return The decompressed byte array
- */
 expect fun decompressGzip(compressedBytes: ByteArray): ByteArray
 
 /**
- * Decodes a ZigZag-encoded integer (standard for protobuf signed integers)
- *
- * @param n The ZigZag-encoded integer
- * @return The decoded integer
+ * Decompresses and deserializes MVT bytes into raw MVTile
  */
-fun decodeZigZag(n: UInt): Int {
-    return if (n and 1u == 1u) {
-        -((n.toInt() shr 1) + 1)
-    } else {
-        n.toInt() shr 1
-    }
+@OptIn(ExperimentalSerializationApi::class)
+fun deserializeMVT(compressedBytes: ByteArray): MVTile {
+    val decompressedBytes = decompressGzip(compressedBytes)
+    return ProtoBuf.decodeFromByteArray(MVTile.serializer(), decompressedBytes)
 }
 
 /**
- * Decodes the geometry of a feature
- *
- * @param feature The feature to decode
- * @param extent The extent of the layer
- * @return The decoded geometry
+ * Parses MVTile into ParsedMVTile with decoded geometries
  */
-fun decodeFeatureGeometry(feature: Tile.Feature, extent: UInt): DecodedGeometry {
+fun parseMVT(mvtTile: MVTile): ParsedMVTile {
+    val parsedLayers = mvtTile.layers.map { layer ->
+        val parsedFeatures = layer.features.map { feature ->
+            val decodedGeometry = decodeFeatureGeometry(feature, layer.extent)
+            val properties = resolveFeatureProperties(feature, layer)
+
+            ParsedFeature(
+                id = if (feature.id != 0L) feature.id else null,
+                type = feature.type,
+                geometry = decodedGeometry.coordinates,
+                properties = properties
+            )
+        }
+
+        ParsedLayer(
+            name = layer.name,
+            extent = layer.extent,
+            features = parsedFeatures
+        )
+    }
+
+    return ParsedMVTile(parsedLayers)
+}
+
+fun parseCompressedMVT(compressedBytes: ByteArray): ParsedMVTile {
+    val mvtTile = deserializeMVT(compressedBytes)
+    return parseMVT(mvtTile)
+}
+
+fun decodeZigZag(n: Int): Int {
+    return if (n and 1 == 1) {
+        -((n shr 1) + 1)
+    } else {
+        n shr 1
+    }
+}
+
+fun decodeFeatureGeometry(feature: Feature, extent: Int): DecodedGeometry {
     val geometry = feature.geometry
     val geomType = feature.type
     var cursor = 0
@@ -58,8 +74,8 @@ fun decodeFeatureGeometry(feature: Tile.Feature, extent: UInt): DecodedGeometry 
 
     while (cursor < geometry.size) {
         val commandInteger = geometry[cursor++]
-        val command = commandInteger and 0x7u // Lower 3 bits
-        val count = commandInteger shr 3 // Next 3 bits
+        val command = commandInteger and 0x7
+        val count = commandInteger shr 3
 
         when (command) {
             CMD_MOVETO -> {
@@ -67,7 +83,7 @@ fun decodeFeatureGeometry(feature: Tile.Feature, extent: UInt): DecodedGeometry 
                     allParts.add(currentPart)
                     currentPart = mutableListOf()
                 }
-                repeat(count.toInt()) {
+                repeat(count) {
                     val dx = decodeZigZag(geometry[cursor++])
                     val dy = decodeZigZag(geometry[cursor++])
                     x += dx
@@ -76,7 +92,7 @@ fun decodeFeatureGeometry(feature: Tile.Feature, extent: UInt): DecodedGeometry 
                 }
             }
             CMD_LINETO -> {
-                repeat(count.toInt()) {
+                repeat(count) {
                     val dx = decodeZigZag(geometry[cursor++])
                     val dy = decodeZigZag(geometry[cursor++])
                     x += dx
@@ -85,22 +101,18 @@ fun decodeFeatureGeometry(feature: Tile.Feature, extent: UInt): DecodedGeometry 
                 }
             }
             CMD_CLOSEPATH -> {
-                // A ClosePath command consumes no parameters but acts on the current part
                 if (currentPart.isNotEmpty()) {
-                    // For polygons, the last point implicitly connects to the first.
-                    // You might need to explicitly add the first point to close the loop for some rendering engines.
-                    // currentPart.add(currentPart.first()) // Depends on your rendering needs
                     allParts.add(currentPart)
-                    currentPart = mutableListOf() // Start new part for subsequent commands if any
+                    currentPart = mutableListOf()
                 }
             }
             else -> {
-                // Unknown command, handle error or skip
-                // For simplicity, skip corresponding parameters
-                cursor += (count * 2u).toInt() // Assuming 2 parameters per command
+                // Unknown command, skip parameters
+                cursor += count * 2 // Assuming 2 parameters per command
             }
         }
     }
+
     if (currentPart.isNotEmpty()) {
         allParts.add(currentPart)
     }
@@ -108,50 +120,32 @@ fun decodeFeatureGeometry(feature: Tile.Feature, extent: UInt): DecodedGeometry 
     return DecodedGeometry(geomType, allParts)
 }
 
-/**
- * Resolves the properties of a feature
- *
- * @param feature The feature to resolve properties for
- * @param layer The layer containing the feature
- * @return A map of property names to values
- */
-fun resolveFeatureProperties(feature: Tile.Feature, layer: Tile.Layer): Map<String, Any?> {
+fun resolveFeatureProperties(feature: Feature, layer: Layer): Map<String, Any?> {
     val properties = mutableMapOf<String, Any?>()
     val tags = feature.tags
 
     for (i in tags.indices step 2) {
-        val keyIndex = tags[i].toInt()
-        val valueIndex = tags[i + 1].toInt()
+        if (i + 1 < tags.size) {
+            val keyIndex = tags[i]
+            val valueIndex = tags[i + 1]
 
-        if (keyIndex < layer.keys.size && valueIndex < layer.values.size) {
-            val key = layer.keys[keyIndex]
-            val rawValue = layer.values[valueIndex]
+            if (keyIndex < layer.keys.size && valueIndex < layer.values.size) {
+                val key = layer.keys[keyIndex]
+                val rawValue = layer.values[valueIndex]
 
-            // Convert the 'Value' message to a simpler Kotlin type
-            val value: Any? = when {
-                rawValue.stringValue != null -> rawValue.stringValue
-                rawValue.floatValue != null -> rawValue.floatValue
-                rawValue.doubleValue != null -> rawValue.doubleValue
-                rawValue.intValue != null -> rawValue.intValue
-                rawValue.uintValue != null -> rawValue.uintValue
-                rawValue.sintValue != null -> rawValue.sintValue
-                rawValue.boolValue != null -> rawValue.boolValue
-                else -> null // Should not happen if proto is valid
+                val value: Any? = when {
+                    rawValue.string_value != null -> rawValue.string_value
+                    rawValue.float_value != null -> rawValue.float_value
+                    rawValue.double_value != null -> rawValue.double_value
+                    rawValue.int_value != null -> rawValue.int_value
+                    rawValue.uint_value != null -> rawValue.uint_value
+                    rawValue.sint_value != null -> rawValue.sint_value
+                    rawValue.bool_value != null -> rawValue.bool_value
+                    else -> null
+                }
+                properties[key] = value
             }
-            properties[key] = value
         }
     }
     return properties
-}
-
-/**
- * Parses a MVT byte array
- *
- * @param bytes The MVT byte array
- * @return The parsed Tile
- */
-@OptIn(ExperimentalSerializationApi::class)
-fun parseMVT(bytes: ByteArray): Tile {
-    val decompressedBytes = decompressGzip(bytes)
-    return ProtoBuf.decodeFromByteArray(Tile.serializer(), decompressedBytes)
 }
