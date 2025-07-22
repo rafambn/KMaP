@@ -28,7 +28,15 @@ class OSMTileSource(private val userAgent: String) : TileSource {
             }.readRawBytes()
             imageBitmap = byteArray.decodeToImageBitmap()
 
-            val compressedBytes = client.get("https://vtiles.openhistoricalmap.org/maps/osm/$zoom/$row/$column") {
+//            val compressedBytes = client.get("https://vtiles.openhistoricalmap.org/maps/osm/$zoom/$row/$column") {
+//                contentType(ContentType.Application.ProtoBuf)
+//            }.readRawBytes()
+
+//            val compressedBytes = client.get("https://api.maptiler.com/tiles/v3-openmaptiles/$zoom/$row/$column.pbf?key=") {
+//                contentType(ContentType.Application.ProtoBuf)
+//            }.readRawBytes()
+
+            val compressedBytes = client.get("https://tiles.versatiles.org/tiles/osm/$zoom/$row/$column") {
                 contentType(ContentType.Application.ProtoBuf)
             }.readRawBytes()
 
