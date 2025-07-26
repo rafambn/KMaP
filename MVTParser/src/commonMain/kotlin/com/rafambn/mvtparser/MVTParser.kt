@@ -101,8 +101,7 @@ fun decodeFeatureGeometry(feature: Feature, extent: Int): DecodedGeometry {
                 }
             }
             else -> {
-                // Unknown command, skip parameters
-                cursor += count * 2 // Assuming 2 parameters per command
+                cursor += count * 2
             }
         }
     }
