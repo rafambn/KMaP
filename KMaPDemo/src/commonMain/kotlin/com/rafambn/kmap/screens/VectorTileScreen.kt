@@ -37,7 +37,7 @@ fun VectorTileScreen(
             mapState = mapState,
         ) {
             canvas(
-                parameters = CanvasParameters(id = 1, tileSource = VectorTileSource("com.rafambn.kmapdemoapp")::getTile),
+                parameters = CanvasParameters(id = 1, tileSource = VectorTileSource()::getTile),
                 gestureWrapper = getGestureDetector(mapState.motionController)
             )
         }
