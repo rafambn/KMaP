@@ -60,6 +60,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
             implementation(project(":KMaP"))
             implementation(project(":MVTParser"))
+            implementation(project(":GzipUtils"))
 //            implementation(libs.kmap)
             implementation(libs.ktor.client.core)
         }

@@ -1,7 +1,8 @@
 rootProject.name = "KMaP"
 include(":KMaPDemo")
 include(":KMaP")
-include("MVTParser")
+include(":MVTParser")
+include(":GzipUtils")
 
 pluginManagement {
     repositories {

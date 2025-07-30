@@ -4,7 +4,6 @@ import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
     alias(libs.plugins.multiplatform)
-    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.android.library)
 }
 
@@ -17,13 +16,24 @@ kotlin {
     androidTarget()
     jvm()
     js(IR) {
-        browser()
+        browser {
+            testTask {
+                useKarma {
+                    useFirefox()
+                }
+            }
+        }
         nodejs()
         binaries.executable()
     }
     wasmJs {
-        browser()
-        nodejs()
+        browser {
+            testTask {
+                useKarma {
+                    useFirefox()
+                }
+            }
+        }
         binaries.executable()
     }
     listOf(
@@ -32,24 +42,28 @@ kotlin {
         iosSimulatorArm64()
     ).forEach {
         it.binaries.framework {
-            baseName = "MVTParser"
+            baseName = "GzipUtils"
             isStatic = true
         }
     }
 
     sourceSets {
-        commonMain.dependencies {
-            implementation(libs.kotlinx.serialization.protobuf)
-        }
-
         commonTest.dependencies {
             implementation(kotlin("test"))
+        }
+
+        jsMain.dependencies {
+            implementation(npm("pako", "2.1.0"))
+        }
+
+        wasmJsMain.dependencies {
+            implementation(npm("pako", "2.1.0"))
         }
     }
 }
 
 android {
-    namespace = "com.rafambn.mvtparser"
+    namespace = "com.rafambn.gziputils"
     compileSdk = 35
 
     defaultConfig {

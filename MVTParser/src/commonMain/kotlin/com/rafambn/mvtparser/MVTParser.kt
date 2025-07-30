@@ -12,18 +12,20 @@ data class DecodedGeometry(
     val coordinates: List<List<Pair<Int, Int>>>
 )
 
-expect fun decompressGzip(compressedBytes: ByteArray): ByteArray
+@OptIn(ExperimentalSerializationApi::class)
+fun deserializeMVT(decompressedBytes: ByteArray): MVTile {
+    return ProtoBuf.decodeFromByteArray(MVTile.serializer(), decompressedBytes)
+}
 
 @OptIn(ExperimentalSerializationApi::class)
-fun deserializeMVT(compressedBytes: ByteArray): MVTile {
-    val decompressedBytes = decompressGzip(compressedBytes)
-    return ProtoBuf.decodeFromByteArray(MVTile.serializer(), decompressedBytes)
+fun serializeMVT(mvtTile: MVTile): ByteArray {
+    return ProtoBuf.encodeToByteArray(MVTile.serializer(), mvtTile)
 }
 
 fun parseMVT(mvtTile: MVTile): ParsedMVTile {
     val parsedLayers = mvtTile.layers.map { layer ->
         val parsedFeatures = layer.features.map { feature ->
-            val decodedGeometry = decodeFeatureGeometry(feature, layer.extent)
+            val decodedGeometry = decodeFeatureGeometry(feature)
             val properties = resolveFeatureProperties(feature, layer)
 
             ParsedFeature(
@@ -44,10 +46,35 @@ fun parseMVT(mvtTile: MVTile): ParsedMVTile {
     return ParsedMVTile(parsedLayers)
 }
 
-fun parseCompressedMVT(compressedBytes: ByteArray): ParsedMVTile {
-    val mvtTile = deserializeMVT(compressedBytes)
-    return parseMVT(mvtTile)
+fun deparseMVT(parsedMVTile: ParsedMVTile): MVTile {
+    val layers = parsedMVTile.layers.map { parsedLayer ->
+        val keys = mutableListOf<String>()
+        val values = mutableListOf<Value>()
+
+        val features = parsedLayer.features.map { parsedFeature ->
+            val geometry = encodeFeatureGeometry(parsedFeature.geometry, parsedFeature.type)
+            val tags = encodeFeatureProperties(parsedFeature.properties, keys, values)
+
+            Feature(
+                id = parsedFeature.id ?: 0L,
+                tags = tags,
+                type = parsedFeature.type,
+                geometry = geometry
+            )
+        }
+
+        Layer(
+            name = parsedLayer.name,
+            extent = parsedLayer.extent,
+            keys = keys,
+            values = values,
+            features = features
+        )
+    }
+
+    return MVTile(layers = layers)
 }
+
 
 fun decodeZigZag(n: Int): Int {
     return if (n and 1 == 1) {
@@ -57,7 +84,11 @@ fun decodeZigZag(n: Int): Int {
     }
 }
 
-fun decodeFeatureGeometry(feature: Feature, extent: Int): DecodedGeometry {
+fun encodeZigZag(n: Int): Int {
+    return (n shl 1) xor (n shr 31)
+}
+
+fun decodeFeatureGeometry(feature: Feature): DecodedGeometry {
     val geometry = feature.geometry
     val geomType = feature.type
     var cursor = 0
@@ -113,6 +144,49 @@ fun decodeFeatureGeometry(feature: Feature, extent: Int): DecodedGeometry {
     return DecodedGeometry(geomType, allParts)
 }
 
+fun encodeFeatureGeometry(coordinates: List<List<Pair<Int, Int>>>, type: GeomType): List<Int> {
+    if (coordinates.isEmpty()) return emptyList()
+
+    val geometry = mutableListOf<Int>()
+    var lastX = 0
+    var lastY = 0
+
+    coordinates.forEach { part ->
+        if (part.isEmpty()) return@forEach
+
+        val firstPoint = part[0]
+        val dx1 = firstPoint.first - lastX
+        val dy1 = firstPoint.second - lastY
+        lastX = firstPoint.first
+        lastY = firstPoint.second
+
+        geometry.add(CMD_MOVETO or (1 shl 3))
+        geometry.add(encodeZigZag(dx1))
+        geometry.add(encodeZigZag(dy1))
+
+        if (part.size > 1) {
+            val remainingPoints = part.drop(1)
+            geometry.add(CMD_LINETO or (remainingPoints.size shl 3))
+
+            remainingPoints.forEach { point ->
+                val dx = point.first - lastX
+                val dy = point.second - lastY
+                lastX = point.first
+                lastY = point.second
+
+                geometry.add(encodeZigZag(dx))
+                geometry.add(encodeZigZag(dy))
+            }
+        }
+
+        if (type == GeomType.POLYGON) {
+            geometry.add(CMD_CLOSEPATH)
+        }
+    }
+
+    return geometry
+}
+
 fun resolveFeatureProperties(feature: Feature, layer: Layer): Map<String, Any?> {
     val properties = mutableMapOf<String, Any?>()
     val tags = feature.tags
@@ -141,4 +215,53 @@ fun resolveFeatureProperties(feature: Feature, layer: Layer): Map<String, Any?> 
         }
     }
     return properties
+}
+
+fun encodeFeatureProperties(properties: Map<String, Any?>, keys: MutableList<String>, values: MutableList<Value>): List<Int> {
+    val tags = mutableListOf<Int>()
+
+    properties.forEach { (key, value) ->
+        if (value == null) return@forEach
+
+        val keyIndex = keys.indexOf(key).let { index ->
+            if (index == -1) {
+                keys.add(key)
+                keys.size - 1
+            } else {
+                index
+            }
+        }
+
+        val valueObj = when (value) {
+            is String -> Value(string_value = value)
+            is Float -> Value(float_value = value)
+            is Double -> Value(double_value = value)
+            is Int -> Value(int_value = value.toLong())
+            is Long -> Value(int_value = value)
+            is Boolean -> Value(bool_value = value)
+            else -> Value(string_value = value.toString())
+        }
+
+        val valueIndex = values.indexOfFirst { existingValue ->
+            existingValue.string_value == valueObj.string_value &&
+            existingValue.float_value == valueObj.float_value &&
+            existingValue.double_value == valueObj.double_value &&
+            existingValue.int_value == valueObj.int_value &&
+            existingValue.uint_value == valueObj.uint_value &&
+            existingValue.sint_value == valueObj.sint_value &&
+            existingValue.bool_value == valueObj.bool_value
+        }.let { index ->
+            if (index == -1) {
+                values.add(valueObj)
+                values.size - 1
+            } else {
+                index
+            }
+        }
+
+        tags.add(keyIndex)
+        tags.add(valueIndex)
+    }
+
+    return tags
 }
