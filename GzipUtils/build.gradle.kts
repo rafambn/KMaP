@@ -34,6 +34,7 @@ kotlin {
                 }
             }
         }
+        nodejs()
         binaries.executable()
     }
     listOf(

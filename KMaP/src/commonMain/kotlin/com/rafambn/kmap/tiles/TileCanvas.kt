@@ -47,7 +47,7 @@ internal fun TileCanvas(
                         onGesture = gestureWrapper.onGesture,
                         onTwoFingersTap = gestureWrapper.onTwoFingersTap,
                         onHover = gestureWrapper.onHover,
-                        onScroll = gestureWrapper.onScroll,
+                        onScroll = gestureWrapper.onScroll,//TODO fix scroll no working
                     )
                 }
             } ?: Modifier)
