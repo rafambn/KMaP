@@ -25,6 +25,7 @@ kotlin {
         }
         nodejs()
         binaries.executable()
+        
     }
     wasmJs {
         browser {
@@ -36,6 +37,7 @@ kotlin {
         }
         nodejs()
         binaries.executable()
+        
     }
     listOf(
         iosX64(),
@@ -49,22 +51,17 @@ kotlin {
     }
 
     sourceSets {
+        commonMain.dependencies {
+            implementation(libs.kotlinx.datetime)
+        }
         commonTest.dependencies {
             implementation(kotlin("test"))
-        }
-
-        jsMain.dependencies {
-            implementation(npm("pako", "2.1.0"))
-        }
-
-        wasmJsMain.dependencies {
-            implementation(npm("pako", "2.1.0"))
         }
     }
 }
 
 android {
-    namespace = "com.rafambn.gziputils"
+    namespace = "com.rafambn.kflate"
     compileSdk = 35
 
     defaultConfig {
