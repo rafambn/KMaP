@@ -5,7 +5,6 @@ import com.rafambn.kmap.tiles.TileSource
 import com.rafambn.kmap.tiles.TileSpecs
 import com.rafambn.mvtparser.deserializeMVT
 import com.rafambn.mvtparser.parseMVT
-import com.rafambn.gziputils.decompressGzip
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.readRawBytes
@@ -31,15 +30,15 @@ class VectorTileSource : TileSource {
 //                contentType(ContentType.Application.ProtoBuf)
 //            }.readRawBytes()
 
-            val decompressedBytes = decompressGzip(compressedBytes)
-            val mvtTile = deserializeMVT(decompressedBytes)
-
-            val parsedMVTile = parseMVT(mvtTile)
-
-            println("Parsed tile with ${parsedMVTile.layers.size} layers")
-            parsedMVTile.layers.forEach { layer ->
-                println("Layer: ${layer.name} with ${layer.features.size} features")
-            }
+//            val decompressedBytes = decompressGzip(compressedBytes)
+//            val mvtTile = deserializeMVT(decompressedBytes)
+//
+//            val parsedMVTile = parseMVT(mvtTile)
+//
+//            println("Parsed tile with ${parsedMVTile.layers.size} layers")
+//            parsedMVTile.layers.forEach { layer ->
+//                println("Layer: ${layer.name} with ${layer.features.size} features")
+//            }
 
         } catch (ex: Exception) {
             println(ex)

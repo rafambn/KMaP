@@ -25,7 +25,7 @@ kotlin {
         }
         nodejs()
         binaries.executable()
-        
+
     }
     wasmJs {
         browser {
@@ -37,7 +37,7 @@ kotlin {
         }
         nodejs()
         binaries.executable()
-        
+
     }
     listOf(
         iosX64(),
@@ -52,9 +52,9 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(libs.kotlinx.datetime)
+            implementation(libs.kotlinx.coroutines.core)
         }
-        commonTest.dependencies {
+        jvmTest.dependencies {
             implementation(kotlin("test"))
         }
     }
