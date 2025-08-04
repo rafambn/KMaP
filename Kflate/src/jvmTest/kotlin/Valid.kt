@@ -17,10 +17,12 @@ class KFlateTest {
 
     // Test resources
     private val testFiles = listOf(
+        "model3D",
         "Maltese.bmp",
-        "moby10b.txt",
+        "text",
         "Rainier.bmp",
-        "Sunrise.bmp"
+        "Sunrise.bmp",
+        "simpleText",
     )
 
     // Test file sizes for verification
@@ -74,7 +76,7 @@ class KFlateTest {
             val compressedData = KFlate.Flate.deflate(originalData.toUByteArray(), DeflateOptions())
 
             // Decompress with Java's Inflater
-            val inflater = Inflater()
+            val inflater = Inflater(true)
             val inputStream = ByteArrayInputStream(compressedData.toByteArray())
             val inflaterStream = InflaterInputStream(inputStream, inflater)
             val outputStream = ByteArrayOutputStream()

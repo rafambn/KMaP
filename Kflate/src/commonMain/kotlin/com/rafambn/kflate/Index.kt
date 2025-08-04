@@ -54,7 +54,6 @@ data class HuffmanTable(
     }
 }
 
-// get base, reverse index map from extra bits
 fun generateHuffmanTable(extraBits: UByteArray, startValue: Int): HuffmanTable {
     val baseLengths = UShortArray(31)
     var currentStart = startValue
@@ -64,7 +63,6 @@ fun generateHuffmanTable(extraBits: UByteArray, startValue: Int): HuffmanTable {
         baseLengths[i] = currentStart.toUShort()
     }
 
-    // numbers here are at max 18 bits
     val reverseLookup = IntArray(baseLengths[30].toInt())
     for (i in 1 until 30) {
         for (j in baseLengths[i].toInt() until baseLengths[i + 1].toInt()) {
@@ -134,7 +132,6 @@ fun createHuffmanTree(codeLengths: UByteArray, maxBits: Int, isReversed: Boolean
         for (i in 0 until codeLengthSize) {
             if (codeLengths[i].toInt() != 0) {
                 val codeLength = codeLengths[i].toInt()
-                // Fix: Get current value, then increment
                 val currentCode = minCodes[codeLength - 1]
                 minCodes[codeLength - 1]++
                 codes[i] = (reverseTable[currentCode].toInt() shr (15 - codeLength)).toUShort()
@@ -144,7 +141,6 @@ fun createHuffmanTree(codeLengths: UByteArray, maxBits: Int, isReversed: Boolean
     return codes
 }
 
-// fixed length tree
 val fixedLengthTree = UByteArray(288).apply {
     for (i in 0 until 144) this[i] = 8u
     for (i in 144 until 256) this[i] = 9u
@@ -152,7 +148,6 @@ val fixedLengthTree = UByteArray(288).apply {
     for (i in 280 until 288) this[i] = 8u
 }
 
-// fixed distance tree
 val fixedDistanceTree = UByteArray(32).apply {
     for (i in 0 until 32) this[i] = 5u
 }
@@ -325,13 +320,12 @@ fun inflate(
 
     do {
         if (literalLengthMap == null) {
-            // Read block header
             isFinalBlock = readBits(inputData, currentBitPosition, 1)
             val blockType = readBits(inputData, currentBitPosition + 1, 3)
             currentBitPosition += 3
 
             when (blockType) {
-                0 -> { // No compression - stored block
+                0 -> {
                     val blockStartByte = shiftToNextByte(currentBitPosition) + 4
                     val blockLength = (inputData[blockStartByte - 4].toInt() and 0xFF) or
                             ((inputData[blockStartByte - 3].toInt() and 0xFF) shl 8)
@@ -360,14 +354,14 @@ fun inflate(
                     continue
                 }
 
-                1 -> { // Fixed Huffman codes
+                1 -> {
                     literalLengthMap = fixedLengthMap
                     distanceMap = fixedDistanceMap
                     literalMaxBits = 9
                     distanceMaxBits = 5
                 }
 
-                2 -> { // Dynamic Huffman codes
+                2 -> {
                     val numLiteralCodes = readBits(inputData, currentBitPosition, 31) + 257
                     val numDistanceCodes = readBits(inputData, currentBitPosition + 5, 31) + 1
                     val numCodeLengthCodes = readBits(inputData, currentBitPosition + 10, 15) + 4
@@ -384,7 +378,6 @@ fun inflate(
                     val codeLengthBitMask = (1 shl codeLengthMaxBits) - 1
                     val codeLengthHuffmanMap = createHuffmanTree(codeLengthTree, codeLengthMaxBits, true)
 
-                    // Decode literal/length and distance code lengths
                     val allCodeLengths = UByteArray(totalCodes)
                     var codeIndex = 0
 
@@ -419,7 +412,6 @@ fun inflate(
                         }
                     }
 
-                    // Split into literal/length and distance trees
                     val literalLengthCodeLengths = allCodeLengths.copyOfRange(0, numLiteralCodes)
                     val distanceCodeLengths = allCodeLengths.copyOfRange(numLiteralCodes, totalCodes)
 
@@ -459,22 +451,18 @@ fun inflate(
 
             when {
                 symbol < 256 -> {
-                    // Literal byte
                     workingBuffer[bytesWrittenToOutput++] = symbol.toUByte()
                 }
 
                 symbol == 256 -> {
-                    // End of block
                     savedBitPosition = currentBitPosition
                     literalLengthMap = null
                     break
                 }
 
                 else -> {
-                    // Length/distance pair
                     var matchLength = symbol - 254
 
-                    // Handle extra length bits
                     if (symbol > 264) {
                         val lengthIndex = symbol - 257
                         val extraBits = FIXED_LENGTH_EXTRA_BITS[lengthIndex]
@@ -483,7 +471,6 @@ fun inflate(
                         currentBitPosition += extraBits.toInt()
                     }
 
-                    // Decode distance
                     val distanceCode = distanceMap!![readBits16(inputData, currentBitPosition) and distanceBitMask]
                     val distanceSymbol = distanceCode.toInt() shr 4
                     if (distanceCode.toInt() == 0) createFlateError(FlateErrorCode.INVALID_DISTANCE.code)
@@ -592,6 +579,8 @@ private fun buildHuffmanTreeFromFrequencies(frequencies: UShortArray, maxBits: I
     }
 
     val nodeCount = nodes.size
+    val originalNodes = ArrayList(nodes)
+
     if (nodeCount == 0) {
         return HuffmanTreeResult(UByteArray(0), 0)
     }
@@ -601,10 +590,13 @@ private fun buildHuffmanTreeFromFrequencies(frequencies: UShortArray, maxBits: I
         return HuffmanTreeResult(codeLengths, 1)
     }
 
+    val maxSymbol = originalNodes.maxOf { it.symbol }
+    val codeLengths = UShortArray(maxSymbol + 1)
+
     nodes.sortBy { it.frequency }
 
     val combinedNodes = ArrayList(nodes)
-    combinedNodes.add(HuffmanNode(symbol = -1, frequency = 25001)) // Sentinel value
+    combinedNodes.add(HuffmanNode(symbol = -1, frequency = 25001))
 
     var lowFreqIndex = 0
     var highFreqIndex = 1
@@ -620,8 +612,10 @@ private fun buildHuffmanTreeFromFrequencies(frequencies: UShortArray, maxBits: I
     )
 
     while (highFreqIndex != nodeCount - 1) {
-        val node1 = if (combinedNodes[lowFreqIndex].frequency < combinedNodes[combinedIndex].frequency) combinedNodes[lowFreqIndex++] else combinedNodes[combinedIndex++]
-        val node2 = if (lowFreqIndex != highFreqIndex && combinedNodes[lowFreqIndex].frequency < combinedNodes[combinedIndex].frequency) combinedNodes[lowFreqIndex++] else combinedNodes[combinedIndex++]
+        val node1 =
+            if (combinedNodes[lowFreqIndex].frequency < combinedNodes[combinedIndex].frequency) combinedNodes[lowFreqIndex++] else combinedNodes[combinedIndex++]
+        val node2 =
+            if (lowFreqIndex != highFreqIndex && combinedNodes[lowFreqIndex].frequency < combinedNodes[combinedIndex].frequency) combinedNodes[lowFreqIndex++] else combinedNodes[combinedIndex++]
         combinedNodes[highFreqIndex++] = HuffmanNode(
             symbol = -1,
             frequency = node1.frequency + node2.frequency,
@@ -630,8 +624,6 @@ private fun buildHuffmanTreeFromFrequencies(frequencies: UShortArray, maxBits: I
         )
     }
 
-    val maxSymbol = nodes.maxOf { it.symbol }
-    val codeLengths = UShortArray(maxSymbol + 1)
     var currentMaxBits = assignCodeLengthsAndGetMaxDepth(combinedNodes[highFreqIndex - 1], codeLengths, 0)
 
     if (currentMaxBits > maxBits) {
@@ -639,24 +631,25 @@ private fun buildHuffmanTreeFromFrequencies(frequencies: UShortArray, maxBits: I
         val costShift = currentMaxBits - maxBits
         val cost = 1 shl costShift
 
-//        nodes.sortByDescending { codeLengths[it.symbol].toInt() }
-        nodes.sortWith(compareByDescending<HuffmanNode> { codeLengths[it.symbol].toInt() }.thenBy { it.frequency })
+        originalNodes.sortWith(compareByDescending<HuffmanNode> { codeLengths[it.symbol].toInt() }
+            .thenBy { it.frequency })
 
-        for (i in 0 until nodeCount) {
-            val symbol = nodes[i].symbol
+        var i = 0
+        for (nodeIndex in 0 until nodeCount) {
+            val symbol = originalNodes[nodeIndex].symbol
             if (codeLengths[symbol] > maxBits.toUShort()) {
                 debt += cost - (1 shl (currentMaxBits - codeLengths[symbol].toInt()))
                 codeLengths[symbol] = maxBits.toUShort()
             } else {
+                i = nodeIndex
                 break
             }
         }
 
         debt = debt shr costShift
 
-        var i = nodeCount - 1
         while (debt > 0) {
-            val symbol = nodes[i].symbol
+            val symbol = originalNodes[i].symbol
             if (codeLengths[symbol] < maxBits.toUShort()) {
                 debt -= 1 shl (maxBits - codeLengths[symbol].toInt() - 1)
                 codeLengths[symbol]++
@@ -667,7 +660,7 @@ private fun buildHuffmanTreeFromFrequencies(frequencies: UShortArray, maxBits: I
 
         i = nodeCount - 1
         while (i >= 0 && debt != 0) {
-            val symbol = nodes[i].symbol
+            val symbol = originalNodes[i].symbol
             if (codeLengths[symbol] == maxBits.toUShort()) {
                 codeLengths[symbol]--
                 debt++
@@ -831,11 +824,8 @@ fun writeBlock(
         writeBits(output, currentBitPosition + 10, numCodeLengthCodes - 4)
         currentBitPosition += 14
 
-        if (bitPosition >= 36400000)
-            println("zika")
-        for (i in 0 until numCodeLengthCodes) {
-            writeBits(output, currentBitPosition + 3 * i, codeLengthTree[CODE_LENGTH_INDEX_MAP[i].toInt()].toInt())
-        }
+        for (i in 0 until numCodeLengthCodes)
+            writeBits(output, currentBitPosition + 3 * i, codeLengthTree.getOrNull(CODE_LENGTH_INDEX_MAP[i].toInt())?.toInt() ?: 0)
         currentBitPosition += 3 * numCodeLengthCodes
 
         val codeLengthTrees = arrayOf(literalCodeLengths, distanceCodeLengths)
@@ -935,7 +925,7 @@ fun deflate(
     state: DeflateState
 ): UByteArray {
     val dataSize = state.endIndex.takeIf { it != 0 } ?: data.size
-    val output = UByteArray(prefixSize + dataSize + 5 * (1 + (dataSize / 7000).toInt()) + postfixSize)
+    val output = UByteArray(prefixSize + dataSize + 5 * (1 + ceil((dataSize / 7000.0)).toInt()) + postfixSize)
     val writeBuffer = output.sliceArray(prefixSize until output.size - postfixSize)
     val isLastBlock = state.isLastChunk
     var bitPosition = state.remainderByteInfo and 7
@@ -950,7 +940,7 @@ fun deflate(
         val mask = (1 shl compressionLevel) - 1
         val prev = state.prev ?: UShortArray(32768)
         val head = state.head ?: UShortArray(mask + 1)
-        val baseShift1 = (compressionLevel / 3).toInt()
+        val baseShift1 = ceil(compressionLevel / 3.0).toInt()
         val baseShift2 = 2 * baseShift1
         val hash = { i: Int -> (data[i].toInt() xor (data[i + 1].toInt() shl baseShift1) xor (data[i + 2].toInt() shl baseShift2)) and mask }
 
@@ -1031,13 +1021,13 @@ fun deflate(
                     val lenIndex = fixedLengthReverseLookup[length] and 31
                     val distIndex = fixedDistanceReverseLookup[distance] and 31
                     extraBits += FIXED_LENGTH_EXTRA_BITS[lenIndex].toInt() + FIXED_DISTANCE_EXTRA_BITS[distIndex].toInt()
-                    literalFrequencies[257 + lenIndex]++
-                    distanceFrequencies[distIndex]++
+                    ++literalFrequencies[257 + lenIndex]
+                    ++distanceFrequencies[distIndex]
                     waitIndex = i + length
-                    literalCount++
+                    ++literalCount
                 } else {
                     symbols[symbolIndex++] = data[i].toInt()
-                    literalFrequencies[data[i].toInt()]++
+                    ++literalFrequencies[data[i].toInt()]
                 }
             }
             i++
@@ -1076,6 +1066,7 @@ fun deflate(
         }
         state.index = dataSize
     }
+    writeBuffer.copyInto(output, destinationOffset = prefixSize)
     return output.sliceArray(0 until prefixSize + shiftToNextByte(bitPosition) + postfixSize)
 }
 
@@ -1113,7 +1104,7 @@ fun deflateWithOptions(
     } else {
         20
     }
-    else options.mem +12
+    else options.mem + 12
 
     return deflate(
         workingData,
