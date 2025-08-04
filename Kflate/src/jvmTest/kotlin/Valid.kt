@@ -15,7 +15,6 @@ import kotlin.test.assertContentEquals
 
 class KFlateTest {
 
-    // Test resources
     private val testFiles = listOf(
         "model3D",
         "text",
@@ -25,7 +24,6 @@ class KFlateTest {
         "simpleText",
     )
 
-    // Test file sizes for verification
     private val expectedFileSizes = mapOf(
         "Maltese.bmp" to 16427390,
         "text" to 1256167,
@@ -35,18 +33,15 @@ class KFlateTest {
         "simpleText" to 101,
     )
 
-    // Helper function to read resource files
     private fun readResourceFile(fileName: String): ByteArray {
         return javaClass.classLoader.getResourceAsStream(fileName)?.readBytes()
             ?: throw IllegalArgumentException("Resource file not found: $fileName")
     }
 
-    // Helper function to convert ByteArray to UByteArray
     private fun ByteArray.toUByteArray(): UByteArray {
         return UByteArray(this.size) { this[it].toUByte() }
     }
 
-    // Helper function to convert UByteArray to ByteArray
     private fun UByteArray.toByteArray(): ByteArray {
         return ByteArray(this.size) { this[it].toByte() }
     }
@@ -59,7 +54,6 @@ class KFlateTest {
             val fileData = readResourceFile(fileName)
             val expectedSize = expectedFileSizes[fileName]
 
-            // Verify file was loaded and has the expected size
             assert(fileData.isNotEmpty()) { "File $fileName could not be loaded or is empty" }
             assert(fileData.size == expectedSize) {
                 "File $fileName has size ${fileData.size} but expected $expectedSize"
@@ -162,7 +156,7 @@ class KFlateTest {
 
             val compressedData = KFlate.Zlib.compress(originalData.toUByteArray(), DeflateOptions())
 
-            val inflater = Inflater(true)
+            val inflater = Inflater()
             val inputStream = ByteArrayInputStream(compressedData.toByteArray())
             val inflaterStream = InflaterInputStream(inputStream, inflater)
             val outputStream = ByteArrayOutputStream()

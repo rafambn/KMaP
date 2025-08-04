@@ -51,7 +51,7 @@ object KFlate {
         fun compress(data: UByteArray, options: DeflateOptions): UByteArray {
             val adler = Adler32Checksum()
             adler.update(data)
-            val deflatedData = deflateWithOptions(data, options, if (options?.dictionary != null) 6 else 2, 4)
+            val deflatedData = deflateWithOptions(data, options, if (options.dictionary != null) 6 else 2, 4)
             writeZlibHeader(deflatedData, options)
             writeBytes(deflatedData, deflatedData.size - 4, adler.getChecksum().toLong())
             return deflatedData
