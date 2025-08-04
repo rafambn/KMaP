@@ -1,11 +1,14 @@
-@file:OptIn(ExperimentalUnsignedTypes::class)
+@file:OptIn(ExperimentalUnsignedTypes::class, ExperimentalTime::class)
 
 package com.rafambn.kflate
 
 import kotlin.math.ceil
+import kotlin.math.floor
 import kotlin.math.ln
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 /**
  * For a given length symbol, this table stores the number of extra bits to read
@@ -1132,11 +1135,11 @@ fun readEightBytes(data: UByteArray, offset: Int): Long {
 }
 
 fun writeBytes(data: UByteArray, offset: Int, value: Long) {
-    var v = value
+    var v = value.toUInt()
     var i = offset
-    while (v > 0) {
-        data[i++] = (v and 0xFF).toUByte()
-        v = v ushr 8
+    while (v != 0u) {
+        data[i++] = (v and 0xFFu).toUByte()
+        v = v shr 8
     }
 }
 
@@ -1152,9 +1155,14 @@ fun writeGzipHeader(output: UByteArray, options: GzipOptions) {
     output[9] = 3u
 
     val mtime = options.mtime
-    if (mtime != null && mtime is Number && mtime.toLong() != 0L) {
-        writeBytes(output, 4, mtime.toLong() / 1000)
+    val timeInMillis = when (mtime) {
+        is Number -> mtime.toLong()
+        is String -> mtime.toLongOrNull() ?: Clock.System.now().toEpochMilliseconds()
+        else -> Clock.System.now().toEpochMilliseconds()
     }
+
+    if (timeInMillis != 0L)
+        writeBytes(output, 4, floor(timeInMillis / 1000.0).toLong())
 
     options.filename?.let {
         output[3] = 8u
@@ -1235,9 +1243,9 @@ interface ChecksumGenerator {
 val CRC32_TABLE = IntArray(256).apply {
     for (i in 0 until 256) {
         var c = i
-        var k = 9
-        while (--k > 0) {
-            c = if (c and 1 != 0) -306674912 else 0 xor (c ushr 1)
+        repeat(8) {
+            val mask = if ((c and 1) != 0) -306674912 else 0
+            c = mask xor (c ushr 1)
         }
         this[i] = c
     }
@@ -1248,7 +1256,7 @@ class Crc32Checksum : ChecksumGenerator {
 
     override fun update(data: UByteArray) {
         for (byte in data) {
-            crc = CRC32_TABLE[(crc and 255) xor byte.toInt()] xor (crc ushr 8)
+            crc = CRC32_TABLE[(crc and 0xFF) xor byte.toInt()] xor (crc ushr 8)
         }
     }
 

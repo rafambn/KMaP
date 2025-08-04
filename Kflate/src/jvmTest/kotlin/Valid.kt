@@ -18,9 +18,9 @@ class KFlateTest {
     // Test resources
     private val testFiles = listOf(
         "model3D",
-        "Maltese.bmp",
         "text",
         "Rainier.bmp",
+        "Maltese.bmp",
         "Sunrise.bmp",
         "simpleText",
     )
@@ -28,9 +28,11 @@ class KFlateTest {
     // Test file sizes for verification
     private val expectedFileSizes = mapOf(
         "Maltese.bmp" to 16427390,
-        "moby10b.txt" to 1256164,
+        "text" to 1256167,
         "Rainier.bmp" to 6220854,
-        "Sunrise.bmp" to 52344054
+        "Sunrise.bmp" to 52344054,
+        "model3D" to 2478,
+        "simpleText" to 101,
     )
 
     // Helper function to read resource files
@@ -68,14 +70,12 @@ class KFlateTest {
     // FLATE TESTS
 
     @Test
-    fun testFlateCompressDecompress() {
+    fun testFlateCompress() {
         for (fileName in testFiles) {
             val originalData = readResourceFile(fileName)
 
-            // Compress with KFlate
             val compressedData = KFlate.Flate.deflate(originalData.toUByteArray(), DeflateOptions())
 
-            // Decompress with Java's Inflater
             val inflater = Inflater(true)
             val inputStream = ByteArrayInputStream(compressedData.toByteArray())
             val inflaterStream = InflaterInputStream(inputStream, inflater)
@@ -84,20 +84,17 @@ class KFlateTest {
             inflaterStream.copyTo(outputStream)
             val decompressedData = outputStream.toByteArray()
 
-            // Verify the data matches
             assertContentEquals(originalData, decompressedData, "Failed on file: $fileName")
 
-            // Clean up
             inflater.end()
         }
     }
 
     @Test
-    fun testFlateDecompressCompress() {
+    fun testFlateDecompress() {
         for (fileName in testFiles) {
             val originalData = readResourceFile(fileName)
 
-            // Compress with Java's Deflater
             val deflater = Deflater()
             val outputStream = ByteArrayOutputStream()
             val deflaterStream = DeflaterOutputStream(outputStream, deflater)
@@ -108,13 +105,10 @@ class KFlateTest {
 
             val compressedData = outputStream.toByteArray()
 
-            // Decompress with KFlate
             val decompressedData = KFlate.Flate.inflate(compressedData.toUByteArray(), InflateOptions())
 
-            // Verify the data matches
             assertContentEquals(originalData, decompressedData.toByteArray(), "Failed on file: $fileName")
 
-            // Clean up
             deflater.end()
         }
     }
@@ -122,14 +116,12 @@ class KFlateTest {
     // GZIP TESTS
 
     @Test
-    fun testGzipCompressDecompress() {
+    fun testGzipCompress() {
         for (fileName in testFiles) {
             val originalData = readResourceFile(fileName)
 
-            // Compress with KFlate's gzip
             val compressedData = KFlate.Gzip.compress(originalData.toUByteArray(), GzipOptions())
 
-            // Decompress with Java's GZIPInputStream
             val inputStream = ByteArrayInputStream(compressedData.toByteArray())
             val gzipInputStream = GZIPInputStream(inputStream)
             val outputStream = ByteArrayOutputStream()
@@ -137,17 +129,15 @@ class KFlateTest {
             gzipInputStream.copyTo(outputStream)
             val decompressedData = outputStream.toByteArray()
 
-            // Verify the data matches
             assertContentEquals(originalData, decompressedData, "Failed on file: $fileName")
         }
     }
 
     @Test
-    fun testGzipDecompressCompress() {
+    fun testGzipDecompress() {
         for (fileName in testFiles) {
             val originalData = readResourceFile(fileName)
 
-            // Compress with Java's GZIPOutputStream
             val outputStream = ByteArrayOutputStream()
             val gzipOutputStream = GZIPOutputStream(outputStream)
 
@@ -157,10 +147,8 @@ class KFlateTest {
 
             val compressedData = outputStream.toByteArray()
 
-            // Decompress with KFlate's gzip
             val decompressedData = KFlate.Gzip.decompress(compressedData.toUByteArray(), DeflateOptions())
 
-            // Verify the data matches
             assertContentEquals(originalData, decompressedData.toByteArray(), "Failed on file: $fileName")
         }
     }
@@ -168,15 +156,13 @@ class KFlateTest {
     // ZLIB TESTS
 
     @Test
-    fun testZlibCompressDecompress() {
+    fun testZlibCompress() {
         for (fileName in testFiles) {
             val originalData = readResourceFile(fileName)
 
-            // Compress with KFlate's zlib
             val compressedData = KFlate.Zlib.compress(originalData.toUByteArray(), DeflateOptions())
 
-            // Decompress with Java's Inflater (with ZLIB header)
-            val inflater = Inflater(true) // true = with ZLIB header
+            val inflater = Inflater(true)
             val inputStream = ByteArrayInputStream(compressedData.toByteArray())
             val inflaterStream = InflaterInputStream(inputStream, inflater)
             val outputStream = ByteArrayOutputStream()
@@ -184,20 +170,17 @@ class KFlateTest {
             inflaterStream.copyTo(outputStream)
             val decompressedData = outputStream.toByteArray()
 
-            // Verify the data matches
             assertContentEquals(originalData, decompressedData, "Failed on file: $fileName")
 
-            // Clean up
             inflater.end()
         }
     }
 
     @Test
-    fun testZlibDecompressCompress() {
+    fun testZlibDecompress() {
         for (fileName in testFiles) {
             val originalData = readResourceFile(fileName)
 
-            // Compress with Java's Deflater (with ZLIB header)
             val deflater = Deflater(Deflater.DEFAULT_COMPRESSION, true) // true = with ZLIB header
             val outputStream = ByteArrayOutputStream()
             val deflaterStream = DeflaterOutputStream(outputStream, deflater)
@@ -208,13 +191,10 @@ class KFlateTest {
 
             val compressedData = outputStream.toByteArray()
 
-            // Decompress with KFlate's zlib
             val decompressedData = KFlate.Zlib.decompress(compressedData.toUByteArray(), DeflateOptions())
 
-            // Verify the data matches
             assertContentEquals(originalData, decompressedData.toByteArray(), "Failed on file: $fileName")
 
-            // Clean up
             deflater.end()
         }
     }
