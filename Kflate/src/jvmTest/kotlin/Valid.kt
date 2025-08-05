@@ -89,7 +89,7 @@ class KFlateTest {
         for (fileName in testFiles) {
             val originalData = readResourceFile(fileName)
 
-            val deflater = Deflater()
+            val deflater = Deflater(6, true)
             val outputStream = ByteArrayOutputStream()
             val deflaterStream = DeflaterOutputStream(outputStream, deflater)
 

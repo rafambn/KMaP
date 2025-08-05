@@ -75,16 +75,16 @@ fun generateHuffmanTable(extraBits: UByteArray, startValue: Int): HuffmanTable {
     return HuffmanTable(baseLengths, reverseLookup)
 }
 
-val fixedLengthBase = generateHuffmanTable(FIXED_LENGTH_EXTRA_BITS, 2).baseLengths.apply {
+val FIXED_LENGTH_BASE = generateHuffmanTable(FIXED_LENGTH_EXTRA_BITS, 2).baseLengths.apply {
     this[28] = 258u
 }
-val fixedLengthReverseLookup = generateHuffmanTable(FIXED_LENGTH_EXTRA_BITS, 2).reverseLookup.apply {
+val FIXED_LENGTH_REVERSE_LOOKUP = generateHuffmanTable(FIXED_LENGTH_EXTRA_BITS, 2).reverseLookup.apply {
     this[258] = 28
 }
-val fixedDistanceBase = generateHuffmanTable(FIXED_DISTANCE_EXTRA_BITS, 0).baseLengths
-val fixedDistanceReverseLookup = generateHuffmanTable(FIXED_DISTANCE_EXTRA_BITS, 0).reverseLookup
+val FIXED_DISTANCE_BASE = generateHuffmanTable(FIXED_DISTANCE_EXTRA_BITS, 0).baseLengths
+val FIXED_DISTANCE_REVERSE_LOOKUP = generateHuffmanTable(FIXED_DISTANCE_EXTRA_BITS, 0).reverseLookup
 
-val reverseTable = UShortArray(32768).apply {
+val REVERSE_TABLE = UShortArray(32768).apply {
     for (value in this.indices) {
         var reversedBits = ((value and 0xAAAA) shr 1) or ((value and 0x5555) shl 1)
         reversedBits = ((reversedBits and 0xCCCC) shr 2) or ((reversedBits and 0x3333) shl 2)
@@ -125,7 +125,7 @@ fun createHuffmanTree(codeLengths: UByteArray, maxBits: Int, isReversed: Boolean
 
                 val endValue = value or ((1 shl remainingBits) - 1)
                 while (value <= endValue) {
-                    codes[reverseTable[value].toInt() shr reverseBits] = symbolAndBits.toUShort()
+                    codes[REVERSE_TABLE[value].toInt() shr reverseBits] = symbolAndBits.toUShort()
                     value++
                 }
             }
@@ -137,26 +137,29 @@ fun createHuffmanTree(codeLengths: UByteArray, maxBits: Int, isReversed: Boolean
                 val codeLength = codeLengths[i].toInt()
                 val currentCode = minCodes[codeLength - 1]
                 minCodes[codeLength - 1]++
-                codes[i] = (reverseTable[currentCode].toInt() shr (15 - codeLength)).toUShort()
+                codes[i] = (REVERSE_TABLE[currentCode].toInt() shr (15 - codeLength)).toUShort()
             }
         }
     }
     return codes
 }
 
-val fixedLengthTree = UByteArray(288).apply {
+val FIXED_LENGTH_TREE = UByteArray(288).apply {
     for (i in 0 until 144) this[i] = 8u
     for (i in 144 until 256) this[i] = 9u
     for (i in 256 until 280) this[i] = 7u
     for (i in 280 until 288) this[i] = 8u
 }
 
-val fixedDistanceTree = UByteArray(32).apply {
+val FIXED_DISTANCE_TREE = UByteArray(32).apply {
     for (i in 0 until 32) this[i] = 5u
 }
 
-val fixedLengthMap = createHuffmanTree(fixedLengthTree, 9, false)
-val fixedDistanceMap = createHuffmanTree(fixedDistanceTree, 5, false)
+val FIXED_LENGTH_MAP = createHuffmanTree(FIXED_LENGTH_TREE, 9, false)
+val FIXED_DISTANCE_MAP = createHuffmanTree(FIXED_DISTANCE_TREE, 5, false)
+
+val FIXED_LENGTH_REVERSE_MAP = createHuffmanTree(FIXED_LENGTH_TREE, 9, true)
+val FIXED_DISTANCE_REVERSE_MAP = createHuffmanTree(FIXED_DISTANCE_TREE, 5, true)
 
 fun findMaxValue(array: UByteArray): UByte {
     var maxValue = array[0]
@@ -168,15 +171,21 @@ fun findMaxValue(array: UByteArray): UByte {
 
 fun readBits(data: UByteArray, bitPosition: Int, bitMask: Int): Int {
     val byteOffset = bitPosition / 8
-    return ((data[byteOffset].toInt() and 0xFF) or
-            ((data[byteOffset + 1].toInt() and 0xFF) shl 8)) shr (bitPosition and 7) and bitMask
+
+    fun safe(index: Int): Int = if (index < data.size) data[index].toInt() and 0xFF else 0
+
+    return ((safe(byteOffset) or (safe(byteOffset + 1) shl 8)) shr (bitPosition and 7)) and bitMask
 }
 
 fun readBits16(data: UByteArray, bitPosition: Int): Int {
     val byteOffset = bitPosition / 8
-    return ((data[byteOffset].toInt() and 0xFF) or
-            ((data[byteOffset + 1].toInt() and 0xFF) shl 8) or
-            ((data[byteOffset + 2].toInt() and 0xFF) shl 16)) shr (bitPosition and 7)
+
+    fun safe(index: Int): Int =
+        if (index < data.size) data[index].toInt() and 0xFF else 0
+
+    return ((safe(byteOffset)) or
+            (safe(byteOffset + 1) shl 8) or
+            (safe(byteOffset + 2) shl 16)) shr (bitPosition and 7)
 }
 
 fun shiftToNextByte(bitPosition: Int): Int {
@@ -358,8 +367,8 @@ fun inflate(
                 }
 
                 1 -> {
-                    literalLengthMap = fixedLengthMap
-                    distanceMap = fixedDistanceMap
+                    literalLengthMap = FIXED_LENGTH_REVERSE_MAP
+                    distanceMap = FIXED_DISTANCE_REVERSE_MAP
                     literalMaxBits = 9
                     distanceMaxBits = 5
                 }
@@ -470,7 +479,7 @@ fun inflate(
                         val lengthIndex = symbol - 257
                         val extraBits = FIXED_LENGTH_EXTRA_BITS[lengthIndex]
                         matchLength =
-                            readBits(inputData, currentBitPosition, (1 shl extraBits.toInt()) - 1) + fixedLengthBase[lengthIndex].toInt()
+                            readBits(inputData, currentBitPosition, (1 shl extraBits.toInt()) - 1) + FIXED_LENGTH_BASE[lengthIndex].toInt()
                         currentBitPosition += extraBits.toInt()
                     }
 
@@ -479,10 +488,10 @@ fun inflate(
                     if (distanceCode.toInt() == 0) createFlateError(FlateErrorCode.INVALID_DISTANCE.code)
                     currentBitPosition += (distanceCode.toInt() and 15)
 
-                    var matchDistance = fixedDistanceBase[distanceSymbol].toInt()
+                    var matchDistance = FIXED_DISTANCE_BASE[distanceSymbol].toInt()
                     if (distanceSymbol > 3) {
                         val extraBits = FIXED_DISTANCE_EXTRA_BITS[distanceSymbol].toInt()
-                        matchDistance += readBits16(inputData, currentBitPosition) and ((1 shl extraBits - 1))
+                        matchDistance += readBits16(inputData, currentBitPosition) and ((1 shl extraBits) - 1)
                         currentBitPosition += extraBits
                     }
 
@@ -796,8 +805,8 @@ fun writeBlock(
     }
 
     val fixedBlockLength = (blockLength + 5) shl 3
-    val fixedTypedLength = calculateCodeLength(literalFrequencies, fixedLengthTree) +
-            calculateCodeLength(distanceFrequencies, fixedDistanceTree) + extraBits
+    val fixedTypedLength = calculateCodeLength(literalFrequencies, FIXED_LENGTH_TREE) +
+            calculateCodeLength(distanceFrequencies, FIXED_DISTANCE_TREE) + extraBits
     val dynamicTypedLength = calculateCodeLength(literalFrequencies, dynamicLiteralTree) +
             calculateCodeLength(distanceFrequencies, dynamicDistanceTree) + extraBits + 14 + 3 * numCodeLengthCodes +
             calculateCodeLength(codeLengthFrequencies, codeLengthTree) + 2 * codeLengthFrequencies[16].toInt() +
@@ -844,10 +853,10 @@ fun writeBlock(
             }
         }
     } else {
-        literalMap = fixedLengthMap
-        literalLengths = fixedLengthTree
-        distanceMap = fixedDistanceMap
-        distanceLengths = fixedDistanceTree
+        literalMap = FIXED_LENGTH_MAP
+        literalLengths = FIXED_LENGTH_TREE
+        distanceMap = FIXED_DISTANCE_MAP
+        distanceLengths = FIXED_DISTANCE_TREE
     }
 
     for (i in 0 until symbolCount) {
@@ -1020,9 +1029,9 @@ fun deflate(
                 }
 
                 if (distance != 0) {
-                    symbols[symbolIndex++] = 268435456 or (fixedLengthReverseLookup[length] shl 18) or fixedDistanceReverseLookup[distance]
-                    val lenIndex = fixedLengthReverseLookup[length] and 31
-                    val distIndex = fixedDistanceReverseLookup[distance] and 31
+                    symbols[symbolIndex++] = 268435456 or (FIXED_LENGTH_REVERSE_LOOKUP[length] shl 18) or FIXED_DISTANCE_REVERSE_LOOKUP[distance]
+                    val lenIndex = FIXED_LENGTH_REVERSE_LOOKUP[length] and 31
+                    val distIndex = FIXED_DISTANCE_REVERSE_LOOKUP[distance] and 31
                     extraBits += FIXED_LENGTH_EXTRA_BITS[lenIndex].toInt() + FIXED_DISTANCE_EXTRA_BITS[distIndex].toInt()
                     ++literalFrequencies[257 + lenIndex]
                     ++distanceFrequencies[distIndex]
