@@ -57,9 +57,11 @@ object KFlate {
             return deflatedData
         }
 
-        fun decompress(data: UByteArray, options: DeflateOptions): UByteArray {
+        fun decompress(data: UByteArray, options: InflateOptions): UByteArray {
+            val start = writeZlibStart(data, options.dictionary != null)
+            val inputData = data.copyOfRange(start, data.size - 4)
             return inflate(
-                data.copyOfRange(writeZlibStart(data, true), -4),
+                inputData,
                 InflateState(lastCheck = 2),
                 null,
                 options.dictionary

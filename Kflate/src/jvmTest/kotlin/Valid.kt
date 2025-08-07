@@ -175,7 +175,7 @@ class KFlateTest {
         for (fileName in testFiles) {
             val originalData = readResourceFile(fileName)
 
-            val deflater = Deflater(Deflater.DEFAULT_COMPRESSION, true) // true = with ZLIB header
+            val deflater = Deflater(Deflater.DEFAULT_COMPRESSION)
             val outputStream = ByteArrayOutputStream()
             val deflaterStream = DeflaterOutputStream(outputStream, deflater)
 
@@ -185,7 +185,7 @@ class KFlateTest {
 
             val compressedData = outputStream.toByteArray()
 
-            val decompressedData = KFlate.Zlib.decompress(compressedData.toUByteArray(), DeflateOptions())
+            val decompressedData = KFlate.Zlib.decompress(compressedData.toUByteArray(), InflateOptions())
 
             assertContentEquals(originalData, decompressedData.toByteArray(), "Failed on file: $fileName")
 

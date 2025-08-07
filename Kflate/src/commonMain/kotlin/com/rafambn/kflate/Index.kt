@@ -1232,7 +1232,7 @@ fun writeZlibHeader(output: UByteArray, options: DeflateOptions) {
 fun writeZlibStart(data: UByteArray, hasDictionary: Boolean): Int {
     val cmf = data[0].toInt()
     val flg = data[1].toInt()
-    if ((cmf and 15) != 8 || (cmf ushr 4) > 7 || ((cmf shl 8 or flg) % 31) != 0) {
+    if ((cmf and 15) != 8 || (cmf ushr 4) > 7 || ((cmf shl 8 or flg) % 31 != 0)) {
         createFlateError(FlateErrorCode.INVALID_HEADER.code) //TODO "invalid zlib data"
     }
     val needsDictionary = (flg and 32) != 0
@@ -1242,7 +1242,6 @@ fun writeZlibStart(data: UByteArray, hasDictionary: Boolean): Int {
     }
     return (if ((flg ushr 3 and 4) != 0) 4 else 0) + 2
 }
-
 
 interface ChecksumGenerator {
     fun update(data: UByteArray)
