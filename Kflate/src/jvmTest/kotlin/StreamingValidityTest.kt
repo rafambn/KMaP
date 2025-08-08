@@ -80,7 +80,14 @@ class StreamingValidityTest {
                 }
             )
 
-            compressor.push(originalData, true)
+            val chunkSize = originalData.size / 3
+            val chunk1 = originalData.copyOfRange(0, chunkSize)
+            val chunk2 = originalData.copyOfRange(chunkSize, 2 * chunkSize)
+            val chunk3 = originalData.copyOfRange(2 * chunkSize, originalData.size)
+
+            compressor.push(chunk1, false)
+            compressor.push(chunk2, false)
+            compressor.push(chunk3, true)
 
             assert(streamingFinal) { "Final flag was not set for file: $fileName" }
 
@@ -122,7 +129,14 @@ class StreamingValidityTest {
                 streamingFinal = isFinal
             }
 
-            decompressor.push(compressedData, true)
+            val chunkSize = compressedData.size / 3
+            val chunk1 = compressedData.copyOfRange(0, chunkSize)
+            val chunk2 = compressedData.copyOfRange(chunkSize, 2 * chunkSize)
+            val chunk3 = compressedData.copyOfRange(2 * chunkSize, compressedData.size)
+
+            decompressor.push(chunk1, false)
+            decompressor.push(chunk2, false)
+            decompressor.push(chunk3, true)
 
             assert(streamingFinal) { "Final flag was not set for file: $fileName" }
 
@@ -148,7 +162,14 @@ class StreamingValidityTest {
                 streamingFinal = isFinal
             }
 
-            compressor.push(originalData, true)
+            val chunkSize = originalData.size / 3
+            val chunk1 = originalData.copyOfRange(0, chunkSize)
+            val chunk2 = originalData.copyOfRange(chunkSize, 2 * chunkSize)
+            val chunk3 = originalData.copyOfRange(2 * chunkSize, originalData.size)
+
+            compressor.push(chunk1, false)
+            compressor.push(chunk2, false)
+            compressor.push(chunk3, true)
 
             assert(streamingFinal) { "Final flag was not set for file: $fileName" }
 
@@ -180,14 +201,20 @@ class StreamingValidityTest {
             var decompressedChunks = UByteArray(0)
             var streamingFinal = false
 
-            // Create a streaming decompressor that collects chunks
             val decompressor = KFlate.GzipStream.Decompressor(InflateOptions()) { chunk, isFinal ->
                 decompressedChunks = decompressedChunks.copyOf(decompressedChunks.size + chunk.size)
                 chunk.copyInto(decompressedChunks, decompressedChunks.size - chunk.size)
                 streamingFinal = isFinal
             }
 
-            decompressor.push(compressedData, true)
+            val chunkSize = compressedData.size / 3
+            val chunk1 = compressedData.copyOfRange(0, chunkSize)
+            val chunk2 = compressedData.copyOfRange(chunkSize, 2 * chunkSize)
+            val chunk3 = compressedData.copyOfRange(2 * chunkSize, compressedData.size)
+
+            decompressor.push(chunk1, false)
+            decompressor.push(chunk2, false)
+            decompressor.push(chunk3, true)
 
             assert(streamingFinal) { "Final flag was not set for file: $fileName" }
 
@@ -211,7 +238,14 @@ class StreamingValidityTest {
                 streamingFinal = isFinal
             }
 
-            compressor.push(originalData, true)
+            val chunkSize = originalData.size / 3
+            val chunk1 = originalData.copyOfRange(0, chunkSize)
+            val chunk2 = originalData.copyOfRange(chunkSize, 2 * chunkSize)
+            val chunk3 = originalData.copyOfRange(2 * chunkSize, originalData.size)
+
+            compressor.push(chunk1, false)
+            compressor.push(chunk2, false)
+            compressor.push(chunk3, true)
 
             assert(streamingFinal) { "Final flag was not set for file: $fileName" }
 
@@ -253,7 +287,14 @@ class StreamingValidityTest {
                 streamingFinal = isFinal
             }
 
-            decompressor.push(compressedData, true)
+            val chunkSize = compressedData.size / 3
+            val chunk1 = compressedData.copyOfRange(0, chunkSize)
+            val chunk2 = compressedData.copyOfRange(chunkSize, 2 * chunkSize)
+            val chunk3 = compressedData.copyOfRange(2 * chunkSize, compressedData.size)
+
+            decompressor.push(chunk1, false)
+            decompressor.push(chunk2, false)
+            decompressor.push(chunk3, true)
 
             assert(streamingFinal) { "Final flag was not set for file: $fileName" }
 

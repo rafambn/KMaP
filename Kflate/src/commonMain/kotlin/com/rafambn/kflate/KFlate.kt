@@ -103,7 +103,6 @@ object KFlate {
         open val options: DeflateOptions = DeflateOptions(),
         val onData: (chunk: UByteArray, isFinal: Boolean) -> Unit
     ) {
-
         val deflateState = DeflateState(isLastChunk = 0, index = 32768, waitIndex = 32768, endIndex = 32768)
         var buffer = UByteArray(98304)
 
@@ -171,41 +170,39 @@ object KFlate {
         val inflateState = InflateState(lastCheck = 0, byte = options.dictionary?.size ?: 0)
         var outputBuffer = UByteArray(32768)
         var pendingBuffer = UByteArray(0)
-        val isFinished = false
+        var isFinished = false
 
         init {
             options.dictionary?.copyInto(outputBuffer)
         }
 
-        protected fun accumulateChunk(
-            chunk: UByteArray,
-        ) {
+        protected fun accumulateChunk(chunk: UByteArray) {
             if (isFinished) createFlateError(FlateErrorCode.STREAM_FINISHED.code)
             if (pendingBuffer.isEmpty()) {
-                pendingBuffer.copyInto(chunk)
+                pendingBuffer = chunk
             } else {
                 val newPendingInput = UByteArray(pendingBuffer.size + chunk.size)
                 pendingBuffer.copyInto(newPendingInput)
-                chunk.copyInto(newPendingInput, pendingBuffer.size, 0, chunk.size)
+                chunk.copyInto(newPendingInput, pendingBuffer.size)
                 pendingBuffer = newPendingInput
             }
         }
 
-        protected fun processInput(
-            isFinal: Boolean,
-        ) {
-            inflateState.lastCheck = if (isFinal) 1 else 0
-            val result = inflate(pendingBuffer, inflateState, outputBuffer)
-            onData(
-                sliceArray(result, 0, inflateState.byte),
-                isFinished
-            )
-            outputBuffer = sliceArray(result, inflateState.byte!! - 32768)
-            inflateState.byte = outputBuffer.size
-            pendingBuffer = sliceArray(pendingBuffer, (inflateState.position!! / 8))
-            inflateState.position = inflateState.position!! and 7
-        }
+        protected fun processInput(isFinal: Boolean) {
+            isFinished = isFinal
+            inflateState.lastCheck = if (isFinished) 1 else 0
 
+            val result = inflate(pendingBuffer, inflateState, outputBuffer)
+            val byteCount = inflateState.byte ?: 0
+            val position = inflateState.position ?: 0
+
+            onData(sliceArray(result, 0, byteCount), isFinished)
+
+            val outputStart = maxOf(0, byteCount - 32768)
+            outputBuffer = sliceArray(result, outputStart)
+            pendingBuffer = sliceArray(pendingBuffer, position / 8)
+            inflateState.position = position and 7
+        }
 
         open fun push(
             chunk: UByteArray,
@@ -217,20 +214,13 @@ object KFlate {
     }
 
     class GzipStreamCompressor(
-        override val options: GzipOptions = GzipOptions(),
+        options: GzipOptions = GzipOptions(),
         onData: (chunk: UByteArray, isFinal: Boolean) -> Unit
     ) : RawStreamCompressor(options, onData) {
 
         var totalUncompressedLength = 0
         var isFirstChunk = true
         val crc = Crc32Checksum()
-
-        init {
-            options.dictionary?.let {
-                it.copyInto(buffer, destinationOffset = 32768 - it.size)
-                deflateState.index = 32768 - it.size
-            }
-        }
 
         override fun push(
             chunk: UByteArray,
@@ -242,7 +232,7 @@ object KFlate {
         }
 
         override fun processDeflate(chunk: UByteArray, isFinal: Boolean) {
-            val raw = deflateWithOptions(chunk, options, getGzipHeaderSize(options), if (isFinal) 8 else 0, deflateState)
+            val raw = deflateWithOptions(chunk, options, getGzipHeaderSize(options as GzipOptions), if (isFinal) 8 else 0, deflateState)
             if (isFirstChunk) {
                 writeGzipHeader(raw, options)
                 isFirstChunk = false
@@ -296,19 +286,12 @@ object KFlate {
     }
 
     class ZlibStreamCompressor(
-        override val options: DeflateOptions = DeflateOptions(),
+        options: DeflateOptions = DeflateOptions(),
         onData: (chunk: UByteArray, isFinal: Boolean) -> Unit
     ) : RawStreamCompressor(options, onData) {
 
         var isFirstChunk = true
         val adler = Adler32Checksum()
-
-        init {
-            options.dictionary?.let {
-                it.copyInto(buffer, destinationOffset = 32768 - it.size)
-                deflateState.index = 32768 - it.size
-            }
-        }
 
         override fun push(chunk: UByteArray, isFinal: Boolean) {
             adler.update(chunk)
@@ -359,5 +342,11 @@ object KFlate {
             }
             processInput(isFinal)
         }
+    }
+}
+
+fun dsds() {
+    val compressor = KFlate.GzipStream.Compressor(GzipOptions()) { s, ds ->
+
     }
 }

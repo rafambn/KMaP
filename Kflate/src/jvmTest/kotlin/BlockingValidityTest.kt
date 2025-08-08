@@ -61,7 +61,7 @@ class BlockingValidityTest {
         }
     }
 
-    // FLATE TESTS
+    // RAW TESTS
 
     @Test
     fun testFlateCompress() {
