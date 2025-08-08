@@ -121,7 +121,7 @@ object KFlate {
             onData(deflateWithOptions(chunk, options, 0, 0, deflateState), isFinal)
         }
 
-        protected open fun push(chunk: UByteArray, isFinal: Boolean) {
+        open fun push(chunk: UByteArray, isFinal: Boolean) {
             if (deflateState.isLastChunk != 0) createFlateError(FlateErrorCode.STREAM_FINISHED.code)
 
             val endLength = chunk.size + deflateState.endIndex
