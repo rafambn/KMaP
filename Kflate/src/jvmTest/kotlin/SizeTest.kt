@@ -33,7 +33,7 @@ class SizeTest {
         println("Flate Size Test")
         for (fileName in testFiles) {
             val originalData = readResourceFile(fileName)
-            val compressedData = KFlate.Flate.deflate(originalData.toUByteArray(), DeflateOptions())
+            val compressedData = KFlate.Raw.deflate(originalData.toUByteArray(), DeflateOptions())
 
             val deflater = Deflater(6, true)
             val outputStream = ByteArrayOutputStream()

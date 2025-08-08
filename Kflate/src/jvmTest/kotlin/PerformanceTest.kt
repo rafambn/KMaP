@@ -47,7 +47,7 @@ class PerformanceTest {
             val originalData = readResourceFile(fileName)
 
             val kflateTime = measureTimeMillis {
-                KFlate.Flate.deflate(originalData.toUByteArray())
+                KFlate.Raw.deflate(originalData.toUByteArray())
             }
 
             val jvmTime = measureTimeMillis {
@@ -79,7 +79,7 @@ class PerformanceTest {
             val compressedData = outputStream.toByteArray()
 
             val kflateTime = measureTimeMillis {
-                KFlate.Flate.inflate(compressedData.toUByteArray())
+                KFlate.Raw.inflate(compressedData.toUByteArray())
             }
 
             val jvmTime = measureTimeMillis {

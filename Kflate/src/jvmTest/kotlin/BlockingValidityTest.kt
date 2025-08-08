@@ -13,7 +13,7 @@ import java.util.zip.InflaterInputStream
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 
-class KFlateTest {
+class BlockingValidityTest {
 
     private val testFiles = listOf(
         "model3D",
@@ -68,7 +68,7 @@ class KFlateTest {
         for (fileName in testFiles) {
             val originalData = readResourceFile(fileName)
 
-            val compressedData = KFlate.Flate.deflate(originalData.toUByteArray(), DeflateOptions())
+            val compressedData = KFlate.Raw.deflate(originalData.toUByteArray(), DeflateOptions())
 
             val inflater = Inflater(true)
             val inputStream = ByteArrayInputStream(compressedData.toByteArray())
@@ -99,7 +99,7 @@ class KFlateTest {
 
             val compressedData = outputStream.toByteArray()
 
-            val decompressedData = KFlate.Flate.inflate(compressedData.toUByteArray(), InflateOptions())
+            val decompressedData = KFlate.Raw.inflate(compressedData.toUByteArray(), InflateOptions())
 
             assertContentEquals(originalData, decompressedData.toByteArray(), "Failed on file: $fileName")
 

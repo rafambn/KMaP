@@ -1,17 +1,10 @@
-@file:OptIn(ExperimentalUnsignedTypes::class, ExperimentalAtomicApi::class)
+@file:OptIn(ExperimentalUnsignedTypes::class)
 
 package com.rafambn.kflate
 
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.selects.select
-import kotlin.concurrent.atomics.AtomicBoolean
-import kotlin.concurrent.atomics.AtomicReference
-import kotlin.concurrent.atomics.ExperimentalAtomicApi
-
 object KFlate {
-    object Flate {
+
+    object Raw {
         fun inflate(data: UByteArray, options: InflateOptions = InflateOptions()): UByteArray =
             inflate(data, InflateState(lastCheck = 2), null, options.dictionary)
 
@@ -69,407 +62,302 @@ object KFlate {
         }
     }
 
-//    open class FlateStream(protected val scope: CoroutineScope) {
-//
-//        @OptIn(ExperimentalAtomicApi::class)
-//        fun decompress(
-//            options: InflateOptions,
-//            inputChannel: ReceiveChannel<FlateStreamData>,
-//            outputChannel: Channel<FlateStreamData>
-//        ) {
-//            val inflateState = InflateState(lastCheck = 0, byte = options.dictionary?.size ?: 0)
-//            var outputBuffer = AtomicReference(UByteArray(32768))
-//            var pendingInput = AtomicReference(UByteArray(0))
-//            val isFinished = AtomicBoolean(false)
-//            options.dictionary?.copyInto(outputBuffer.load())
-//
-//            scope.launch(Dispatchers.Default) {
-//                while (isActive)
-//                    select {
-//                        inputChannel.onReceive { (chunk, isFinal) ->
-//                            pendingInflate(chunk, isFinished, pendingInput)
-//                            processInflate(isFinal, isFinished, inflateState, outputBuffer, pendingInput, outputChannel)
-//                        }
-//                    }
-//            }
-//        }
-//
-//        protected fun pendingInflate(
-//            chunk: UByteArray,
-//            isFinished: AtomicBoolean,
-//            pendingInput: AtomicReference<UByteArray>,
-//        ) {
-//            if (isFinished.load()) createFlateError(FlateErrorCode.STREAM_FINISHED.code)
-//            if (pendingInput.load().isEmpty()) {
-//                pendingInput.load().copyInto(chunk)
-//            } else {
-//                val newPendingInput = UByteArray(pendingInput.load().size + chunk.size)
-//                pendingInput.load().copyInto(newPendingInput)
-//                chunk.copyInto(newPendingInput, pendingInput.load().size, 0, chunk.size)
-//                pendingInput.store(newPendingInput)
-//            }
-//        }
-//
-//        protected suspend fun processInflate(
-//            isFinal: Boolean,
-//            isFinished: AtomicBoolean,
-//            inflateState: InflateState,
-//            outputBuffer: AtomicReference<UByteArray>,
-//            pendingInput: AtomicReference<UByteArray>,
-//            outputChannel: Channel<FlateStreamData>
-//        ) {
-//            inflateState.lastCheck = if (isFinal) 1 else 0
-//            val result = inflate(pendingInput.load(), inflateState, outputBuffer.load())
-//            outputChannel.send(
-//                FlateStreamData(
-//                    sliceArray(result, 0, inflateState.byte),
-//                    isFinished.load()
-//                )
-//            )
-//            outputBuffer.store(sliceArray(result, inflateState.byte!! - 32768))
-//            inflateState.byte = outputBuffer.load().size
-//            pendingInput.store(sliceArray(pendingInput.load(), (inflateState.position!! / 8)))
-//            inflateState.position = inflateState.position!! and 7
-//        }
-//
-//        fun compress(
-//            options: DeflateOptions,
-//            inputChannel: ReceiveChannel<FlateStreamData>,
-//            outputChannel: Channel<FlateStreamData>
-//        ) {
-//            val deflateState = DeflateState(isLastChunk = 0, index = 32768, waitIndex = 32768, endIndex = 32768)
-//            var buffer = UByteArray(98304)
-//
-//            options.dictionary?.let {
-//                it.copyInto(buffer, destinationOffset = 32768 - it.size)
-//                deflateState.index = 32768 - it.size
-//            }
-//
-//            scope.launch(Dispatchers.Default) {
-//                while (isActive)
-//                    select {
-//                        inputChannel.onReceive { (chunk, isFinal) ->
-//                            if (deflateState.isLastChunk != 0) createFlateError(FlateErrorCode.STREAM_FINISHED.code)
-//
-//                            val endLength = chunk.size + deflateState.endIndex
-//                            if (endLength > buffer.size) {
-//                                if (endLength > 2 * buffer.size - 32768) {
-//                                    val newBuffer = UByteArray(endLength and -32768)
-//                                    buffer.copyInto(newBuffer, endIndex = deflateState.endIndex)
-//                                    buffer = newBuffer
-//                                }
-//
-//                                val split = buffer.size - deflateState.endIndex
-//                                chunk.copyInto(buffer, destinationOffset = deflateState.endIndex, endIndex = split)
-//                                deflateState.endIndex = buffer.size
-//                                processDeflate(buffer, false, outputChannel, options, deflateState)
-//
-//                                buffer.copyInto(buffer, destinationOffset = 0, startIndex = buffer.size - 32768)
-//                                chunk.copyInto(buffer, destinationOffset = 32768, startIndex = split)
-//                                deflateState.endIndex = chunk.size - split + 32768
-//                                deflateState.index = 32766
-//                                deflateState.waitIndex = 32768
-//                            } else {
-//                                chunk.copyInto(buffer, destinationOffset = deflateState.endIndex)
-//                                deflateState.endIndex += chunk.size
-//                            }
-//
-//                            deflateState.isLastChunk = if (isFinal) 1 else 0
-//                            if (deflateState.endIndex > deflateState.waitIndex + 8191 || isFinal) {
-//                                processDeflate(buffer, isFinal, outputChannel, options, deflateState)
-//                                deflateState.waitIndex = deflateState.index
-//                                deflateState.index -= 2
-//                            }
-//                        }
-//                    }
-//            }
-//        }
-//
-//        protected open suspend fun processDeflate(
-//            data: UByteArray,
-//            isFinal: Boolean,
-//            outputChannel: Channel<FlateStreamData>,
-//            options: DeflateOptions,
-//            deflateState: DeflateState
-//        ) {
-//            outputChannel.send(FlateStreamData(deflateWithOptions(data, options, 0, 0, deflateState), isFinal))
-//        }
-//    }
-//
-//    class GzipStream(scope: CoroutineScope) : FlateStream(scope) {
-//
-//        fun compress(
-//            options: GzipOptions,
-//            inputChannel: ReceiveChannel<FlateStreamData>,
-//            outputChannel: Channel<FlateStreamData>
-//        ) {
-//            val deflateState = DeflateState(isLastChunk = 0, index = 32768, waitIndex = 32768, endIndex = 32768)
-//            var buffer = UByteArray(98304)
-//            var totalUncompressedLength = 0
-//            val isFirstChunk = AtomicReference(true)
-//            val crc = Crc32Checksum()
-//
-//            options.dictionary?.let {
-//                it.copyInto(buffer, destinationOffset = 32768 - it.size)
-//                deflateState.index = 32768 - it.size
-//            }
-//
-//            scope.launch(Dispatchers.Default) {
-//                while (isActive)
-//                    select {
-//                        inputChannel.onReceive { (chunk, isFinal) ->
-//                            crc.update(chunk)
-//                            totalUncompressedLength += chunk.size
-//                            if (deflateState.isLastChunk != 0) createFlateError(FlateErrorCode.STREAM_FINISHED.code)
-//
-//                            val endLength = chunk.size + deflateState.endIndex
-//                            if (endLength > buffer.size) {
-//                                if (endLength > 2 * buffer.size - 32768) {
-//                                    val newBuffer = UByteArray(endLength and -32768)
-//                                    buffer.copyInto(newBuffer, endIndex = deflateState.endIndex)
-//                                    buffer = newBuffer
-//                                }
-//
-//                                val split = buffer.size - deflateState.endIndex
-//                                chunk.copyInto(buffer, destinationOffset = deflateState.endIndex, endIndex = split)
-//                                deflateState.endIndex = buffer.size
-//                                processGzipDeflate(
-//                                    buffer,
-//                                    false,
-//                                    outputChannel,
-//                                    options,
-//                                    deflateState,
-//                                    isFirstChunk,
-//                                    crc,
-//                                    totalUncompressedLength
-//                                )
-//
-//                                buffer.copyInto(buffer, destinationOffset = 0, startIndex = buffer.size - 32768)
-//                                chunk.copyInto(buffer, destinationOffset = 32768, startIndex = split)
-//                                deflateState.endIndex = chunk.size - split + 32768
-//                                deflateState.index = 32766
-//                                deflateState.waitIndex = 32768
-//                            } else {
-//                                chunk.copyInto(buffer, destinationOffset = deflateState.endIndex)
-//                                deflateState.endIndex += chunk.size
-//                            }
-//
-//                            deflateState.isLastChunk = if (isFinal) 1 else 0
-//                            if (deflateState.endIndex > deflateState.waitIndex + 8191 || isFinal) {
-//                                processGzipDeflate(
-//                                    buffer,
-//                                    isFinal,
-//                                    outputChannel,
-//                                    options,
-//                                    deflateState,
-//                                    isFirstChunk,
-//                                    crc,
-//                                    totalUncompressedLength
-//                                )
-//                                deflateState.waitIndex = deflateState.index
-//                                deflateState.index -= 2
-//                            }
-//                        }
-//                    }
-//            }
-//        }
-//
-//        suspend fun processGzipDeflate(
-//            data: UByteArray,
-//            isFinal: Boolean,
-//            outputChannel: Channel<FlateStreamData>,
-//            options: GzipOptions,
-//            deflateState: DeflateState,
-//            isFirstChunk: AtomicReference<Boolean>,
-//            crcCalculator: Crc32Checksum,
-//            totalUncompressedLength: Int,
-//        ) {
-//            val raw = deflateWithOptions(data, options, getGzipHeaderSize(options), if (isFinal) 8 else 0, deflateState)
-//            if (isFirstChunk.load()) {
-//                writeGzipHeader(raw, options)
-//                isFirstChunk.store(false)
-//            }
-//
-//            if (isFinal) {
-//                writeBytes(raw, raw.size - 8, crcCalculator.getChecksum().toLong())
-//                writeBytes(raw, raw.size - 4, totalUncompressedLength.toLong())
-//            }
-//
-//            outputChannel.send(FlateStreamData(raw, isFinal))
-//        }
-//
-//        fun decompress(
-//            options: InflateOptions,
-//            inputChannel: Channel<FlateStreamData>,
-//            outputChannel: Channel<FlateStreamData>
-//        ) {
-//            val inflateState = InflateState(lastCheck = 0, byte = options.dictionary?.size ?: 0)
-//            val outputBuffer = AtomicReference(UByteArray(32768))
-//            val pendingInput = AtomicReference(UByteArray(0))
-//            val isFinished = AtomicBoolean(false)
-//            options.dictionary?.copyInto(outputBuffer.load())
-//            val headerLength = AtomicReference(1)
-//            val totalBytesRead = AtomicReference(0)
-//
-//            scope.launch {
-//                select {
-//                    inputChannel.onReceive { (chunk, isFinal) ->
-//                        pendingInflate(chunk, isFinished, pendingInput)
-//                        totalBytesRead.store(totalBytesRead.load() + chunk.size)
-//                        if (headerLength.load() != 0) {
-//                            val p = pendingInput.load().sliceArray(headerLength.load() - 1 until pendingInput.load().size)
-//                            val s = if (p.size > 3) writeGzipStart(p) else 4
-//                            if (s > p.size) {
-//                                if (!isFinal) return@onReceive
-//                            }
-//                            pendingInput.store(p.sliceArray(s until p.size))
-//                            headerLength.store(0)
-//                        }
-//
-//                        processInflate(isFinal, isFinished, inflateState, outputBuffer, pendingInput, outputChannel)
-//
-//                        if (inflateState.finalFlag == null && inflateState.literalMap != null) {
-//                            headerLength.store(shiftToNextByte((inflateState.position ?: 0) + 9))
-//                            inflateState.lastCheck = 0
-//                            outputBuffer.store(UByteArray(0))
-//                            inputChannel.send(FlateStreamData(UByteArray(0), false))
-//                        } else if (isFinal) {
-//                            processInflate(isFinal, isFinished, inflateState, outputBuffer, pendingInput, outputChannel)
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-//
-//    class ZlibStream(scope: CoroutineScope) : FlateStream(scope) {
-//
-//        fun compress(
-//            options: GzipOptions,
-//            inputChannel: ReceiveChannel<FlateStreamData>,
-//            outputChannel: Channel<FlateStreamData>
-//        ) {
-//            val deflateState = DeflateState(isLastChunk = 0, index = 32768, waitIndex = 32768, endIndex = 32768)
-//            var buffer = UByteArray(98304)
-//            val isFirstChunk = AtomicReference(true)
-//            val adler = Adler32Checksum()
-//
-//            options.dictionary?.let {
-//                it.copyInto(buffer, destinationOffset = 32768 - it.size)
-//                deflateState.index = 32768 - it.size
-//            }
-//
-//            scope.launch(Dispatchers.Default) {
-//                while (isActive)
-//                    select {
-//                        inputChannel.onReceive { (chunk, isFinal) ->
-//                            adler.update(chunk)
-//                            if (deflateState.isLastChunk != 0) createFlateError(FlateErrorCode.STREAM_FINISHED.code)
-//
-//                            val endLength = chunk.size + deflateState.endIndex
-//                            if (endLength > buffer.size) {
-//                                if (endLength > 2 * buffer.size - 32768) {
-//                                    val newBuffer = UByteArray(endLength and -32768)
-//                                    buffer.copyInto(newBuffer, endIndex = deflateState.endIndex)
-//                                    buffer = newBuffer
-//                                }
-//
-//                                val split = buffer.size - deflateState.endIndex
-//                                chunk.copyInto(buffer, destinationOffset = deflateState.endIndex, endIndex = split)
-//                                deflateState.endIndex = buffer.size
-//                                processZlibDeflate(buffer, false, outputChannel, options, deflateState, isFirstChunk, adler)
-//
-//                                buffer.copyInto(buffer, destinationOffset = 0, startIndex = buffer.size - 32768)
-//                                chunk.copyInto(buffer, destinationOffset = 32768, startIndex = split)
-//                                deflateState.endIndex = chunk.size - split + 32768
-//                                deflateState.index = 32766
-//                                deflateState.waitIndex = 32768
-//                            } else {
-//                                chunk.copyInto(buffer, destinationOffset = deflateState.endIndex)
-//                                deflateState.endIndex += chunk.size
-//                            }
-//
-//                            deflateState.isLastChunk = if (isFinal) 1 else 0
-//                            if (deflateState.endIndex > deflateState.waitIndex + 8191 || isFinal) {
-//                                processZlibDeflate(buffer, isFinal, outputChannel, options, deflateState, isFirstChunk, adler)
-//                                deflateState.waitIndex = deflateState.index
-//                                deflateState.index -= 2
-//                            }
-//                        }
-//                    }
-//            }
-//        }
-//
-//        private suspend fun processZlibDeflate(
-//            data: UByteArray,
-//            isFinal: Boolean,
-//            outputChannel: Channel<FlateStreamData>,
-//            options: DeflateOptions,
-//            deflateState: DeflateState,
-//            isFirstChunk: AtomicReference<Boolean>,
-//            adlerCalculator: Adler32Checksum,
-//        ) {
-//            val headerLength = if (isFirstChunk.load()) {
-//                if (options.dictionary == null) 6 else 2
-//            } else {
-//                0
-//            }
-//            val raw = deflateWithOptions(data, options, headerLength, if (isFinal) 4 else 0, deflateState)
-//
-//            if (isFirstChunk.load()) {
-//                writeZlibHeader(raw, options)
-//                isFirstChunk.store(false)
-//            }
-//
-//            if (isFinal) {
-//                writeBytes(raw, raw.size - 4, adlerCalculator.getChecksum().toLong())
-//            }
-//
-//            outputChannel.send(FlateStreamData(raw, isFinal))
-//        }
-//
-//        fun decompress(
-//            options: InflateOptions,
-//            inputChannel: Channel<FlateStreamData>,
-//            outputChannel: Channel<FlateStreamData>
-//        ) {
-//            val inflateState = InflateState(lastCheck = 0, byte = options.dictionary?.size ?: 0)
-//            var outputBuffer = AtomicReference(UByteArray(32768))
-//            var pendingInput = AtomicReference(UByteArray(0))
-//            val isFinished = AtomicBoolean(false)
-//            val isFirstChunk = AtomicReference(true)
-//            options.dictionary?.copyInto(outputBuffer.load())
-//            var headerState = if (options.dictionary != null) 1 else 0
-//
-//            scope.launch {
-//                select {
-//                    inputChannel.onReceive { (chunk, isFinal) ->
-//                        pendingInflate(chunk, isFinished, pendingInput)
-//                        if (headerState != 0) {
-//                            if (pendingInput.load().size < 6 && !isFinal) return@onReceive
-//                            pendingInput.store(
-//                                pendingInput.load().copyOfRange(
-//                                    writeZlibStart(pendingInput.load(), headerState  == 1),
-//                                    pendingInput.load().size
-//                                )
-//                            )
-//                            headerState = 0
-//                        }
-//
-//                        if (isFinal) {
-//                            if (pendingInput.load().size < 4) throw IllegalArgumentException("Invalid zlib data")
-//                            pendingInput.store(
-//                                sliceArray(
-//                                    pendingInput.load(),
-//                                    0,
-//                                    pendingInput.load().size - 4
-//                                )
-//                            )
-//                        }
-//                        processInflate(isFinal, isFinished, inflateState, outputBuffer, pendingInput, outputChannel)
-//                    }
-//                }
-//            }
-//        }
-//    }
+    object RawStream {
+
+        fun Compressor(
+            options: DeflateOptions = DeflateOptions(),
+            onData: (chunk: UByteArray, isFinal: Boolean) -> Unit
+        ) = RawStreamCompressor(options, onData)
+
+        fun Decompressor(
+            options: InflateOptions = InflateOptions(),
+            onData: (chunk: UByteArray, isFinal: Boolean) -> Unit
+        ) = RawStreamDecompressor(options, onData)
+    }
+
+    object GzipStream {
+        fun Compressor(
+            options: GzipOptions = GzipOptions(),
+            onData: (chunk: UByteArray, isFinal: Boolean) -> Unit
+        ) = GzipStreamCompressor(options, onData)
+
+        fun Decompressor(
+            options: InflateOptions = InflateOptions(),
+            onData: (chunk: UByteArray, isFinal: Boolean) -> Unit
+        ) = GzipStreamDecompressor(options, onData)
+    }
+
+    object ZlibStream {
+        fun Compressor(
+            options: DeflateOptions = DeflateOptions(),
+            onData: (chunk: UByteArray, isFinal: Boolean) -> Unit
+        ) = ZlibStreamCompressor(options, onData)
+
+        fun Decompressor(
+            options: InflateOptions = InflateOptions(),
+            onData: (chunk: UByteArray, isFinal: Boolean) -> Unit
+        ) = ZlibStreamDecompressor(options, onData)
+    }
+
+    open class RawStreamCompressor(
+        open val options: DeflateOptions = DeflateOptions(),
+        val onData: (chunk: UByteArray, isFinal: Boolean) -> Unit
+    ) {
+
+        val deflateState = DeflateState(isLastChunk = 0, index = 32768, waitIndex = 32768, endIndex = 32768)
+        var buffer = UByteArray(98304)
+
+        init {
+            options.dictionary?.let {
+                it.copyInto(buffer, destinationOffset = 32768 - it.size)
+                deflateState.index = 32768 - it.size
+            }
+        }
+
+        protected open fun processDeflate(
+            chunk: UByteArray,
+            isFinal: Boolean,
+        ) {
+            onData(deflateWithOptions(chunk, options, 0, 0, deflateState), isFinal)
+        }
+
+        protected open fun push(chunk: UByteArray, isFinal: Boolean) {
+            if (deflateState.isLastChunk != 0) createFlateError(FlateErrorCode.STREAM_FINISHED.code)
+
+            val endLength = chunk.size + deflateState.endIndex
+            if (endLength > buffer.size) {
+                if (endLength > 2 * buffer.size - 32768) {
+                    val newBuffer = UByteArray(endLength and -32768)
+                    buffer.copyInto(newBuffer, endIndex = deflateState.endIndex)
+                    buffer = newBuffer
+                }
+
+                val split = buffer.size - deflateState.endIndex
+                chunk.copyInto(buffer, destinationOffset = deflateState.endIndex, endIndex = split)
+                deflateState.endIndex = buffer.size
+                processDeflate(buffer, false)
+
+                buffer.copyInto(buffer, destinationOffset = 0, startIndex = buffer.size - 32768)
+                chunk.copyInto(buffer, destinationOffset = 32768, startIndex = split)
+                deflateState.endIndex = chunk.size - split + 32768
+                deflateState.index = 32766
+                deflateState.waitIndex = 32768
+            } else {
+                chunk.copyInto(buffer, destinationOffset = deflateState.endIndex)
+                deflateState.endIndex += chunk.size
+            }
+
+            deflateState.isLastChunk = if (isFinal) 1 else 0
+            if (deflateState.endIndex > deflateState.waitIndex + 8191 || isFinal) {
+                processDeflate(buffer, isFinal)
+                deflateState.waitIndex = deflateState.index
+                deflateState.index -= 2
+            }
+        }
+
+        protected open fun flush() {
+            if (deflateState.isLastChunk != 0) createFlateError(FlateErrorCode.STREAM_FINISHED.code)
+            push(buffer, false)
+            deflateState.waitIndex = deflateState.index
+            deflateState.index -= 2
+        }
+    }
+
+    open class RawStreamDecompressor(
+        options: InflateOptions = InflateOptions(),
+        val onData: (chunk: UByteArray, isFinal: Boolean) -> Unit
+    ) {
+
+        val inflateState = InflateState(lastCheck = 0, byte = options.dictionary?.size ?: 0)
+        var outputBuffer = UByteArray(32768)
+        var pendingBuffer = UByteArray(0)
+        val isFinished = false
+
+        init {
+            options.dictionary?.copyInto(outputBuffer)
+        }
+
+        protected fun accumulateChunk(
+            chunk: UByteArray,
+        ) {
+            if (isFinished) createFlateError(FlateErrorCode.STREAM_FINISHED.code)
+            if (pendingBuffer.isEmpty()) {
+                pendingBuffer.copyInto(chunk)
+            } else {
+                val newPendingInput = UByteArray(pendingBuffer.size + chunk.size)
+                pendingBuffer.copyInto(newPendingInput)
+                chunk.copyInto(newPendingInput, pendingBuffer.size, 0, chunk.size)
+                pendingBuffer = newPendingInput
+            }
+        }
+
+        protected fun processInput(
+            isFinal: Boolean,
+        ) {
+            inflateState.lastCheck = if (isFinal) 1 else 0
+            val result = inflate(pendingBuffer, inflateState, outputBuffer)
+            onData(
+                sliceArray(result, 0, inflateState.byte),
+                isFinished
+            )
+            outputBuffer = sliceArray(result, inflateState.byte!! - 32768)
+            inflateState.byte = outputBuffer.size
+            pendingBuffer = sliceArray(pendingBuffer, (inflateState.position!! / 8))
+            inflateState.position = inflateState.position!! and 7
+        }
+
+
+        open fun push(
+            chunk: UByteArray,
+            isFinal: Boolean,
+        ) {
+            accumulateChunk(chunk)
+            processInput(isFinal)
+        }
+    }
+
+    class GzipStreamCompressor(
+        override val options: GzipOptions = GzipOptions(),
+        onData: (chunk: UByteArray, isFinal: Boolean) -> Unit
+    ) : RawStreamCompressor(options, onData) {
+
+        var totalUncompressedLength = 0
+        var isFirstChunk = true
+        val crc = Crc32Checksum()
+
+        init {
+            options.dictionary?.let {
+                it.copyInto(buffer, destinationOffset = 32768 - it.size)
+                deflateState.index = 32768 - it.size
+            }
+        }
+
+        override fun push(
+            chunk: UByteArray,
+            isFinal: Boolean,
+        ) {
+            crc.update(chunk)
+            totalUncompressedLength += chunk.size
+            super.push(chunk, isFinal)
+        }
+
+        override fun processDeflate(chunk: UByteArray, isFinal: Boolean) {
+            val raw = deflateWithOptions(chunk, options, getGzipHeaderSize(options), if (isFinal) 8 else 0, deflateState)
+            if (isFirstChunk) {
+                writeGzipHeader(raw, options)
+                isFirstChunk = false
+            }
+
+            if (isFinal) {
+                writeBytes(raw, raw.size - 8, crc.getChecksum().toLong())
+                writeBytes(raw, raw.size - 4, totalUncompressedLength.toLong())
+            }
+            onData(raw, isFinal)
+        }
+    }
+
+    class GzipStreamDecompressor(
+        options: InflateOptions = InflateOptions(),
+        onData: (chunk: UByteArray, isFinal: Boolean) -> Unit
+    ) : RawStreamDecompressor(options, onData) {
+
+        var headerLength = 1
+        var totalBytesRead = 0
+        override fun push(
+            chunk: UByteArray,
+            isFinal: Boolean,
+        ) {
+            super.accumulateChunk(chunk)
+            totalBytesRead += chunk.size
+            if (headerLength != 0) {
+                val pendingBufferCopy = pendingBuffer.sliceArray(headerLength - 1 until pendingBuffer.size)
+                val size = if (pendingBufferCopy.size > 3)
+                    writeGzipStart(pendingBufferCopy)
+                else
+                    4
+                if (size > pendingBufferCopy.size) {
+                    if (!isFinal) return
+                }
+                pendingBuffer = pendingBufferCopy.sliceArray(size until pendingBufferCopy.size)
+                headerLength = 0
+            }
+
+            super.processInput(isFinal)
+
+            if (inflateState.finalFlag == null && inflateState.literalMap != null) {
+                headerLength = shiftToNextByte((inflateState.position ?: 0) + 9)
+                inflateState.lastCheck = 0
+                outputBuffer = UByteArray(0)
+                super.push(chunk, isFinal)
+            } else if (isFinal) {
+                super.push(chunk, isFinal)
+            }
+        }
+    }
+
+    class ZlibStreamCompressor(
+        override val options: DeflateOptions = DeflateOptions(),
+        onData: (chunk: UByteArray, isFinal: Boolean) -> Unit
+    ) : RawStreamCompressor(options, onData) {
+
+        var isFirstChunk = true
+        val adler = Adler32Checksum()
+
+        init {
+            options.dictionary?.let {
+                it.copyInto(buffer, destinationOffset = 32768 - it.size)
+                deflateState.index = 32768 - it.size
+            }
+        }
+
+        override fun push(chunk: UByteArray, isFinal: Boolean) {
+            adler.update(chunk)
+            super.push(chunk, isFinal)
+        }
+
+        override fun processDeflate(chunk: UByteArray, isFinal: Boolean) {
+            val headerLength = if (isFirstChunk) {
+                if (options.dictionary == null) 6 else 2
+            } else
+                0
+
+            val raw = deflateWithOptions(chunk, options, headerLength, if (isFinal) 4 else 0, deflateState)
+            if (isFirstChunk) {
+                writeZlibHeader(raw, options)
+                isFirstChunk = false
+            }
+            if (isFinal) {
+                writeBytes(raw, raw.size - 4, adler.getChecksum().toLong())
+            }
+            onData(raw, isFinal)
+        }
+    }
+
+    class ZlibStreamDecompressor(
+        options: InflateOptions = InflateOptions(),
+        onData: (chunk: UByteArray, isFinal: Boolean) -> Unit
+    ) : RawStreamDecompressor(options, onData) {
+        var headerState = if (options.dictionary != null) 1 else 0
+        override fun push(chunk: UByteArray, isFinal: Boolean) {
+            accumulateChunk(chunk)
+            if (headerState != 0) {
+                if (pendingBuffer.size < 6 && !isFinal) return
+                pendingBuffer = pendingBuffer.copyOfRange(
+                    writeZlibStart(pendingBuffer, headerState == 1),
+                    pendingBuffer.size
+                )
+                headerState = 0
+            }
+
+            if (isFinal) {
+                if (pendingBuffer.size < 4) throw IllegalArgumentException("Invalid zlib data")
+                pendingBuffer = sliceArray(
+                    pendingBuffer,
+                    0,
+                    pendingBuffer.size - 4
+                )
+            }
+            processInput(isFinal)
+        }
+    }
 }
