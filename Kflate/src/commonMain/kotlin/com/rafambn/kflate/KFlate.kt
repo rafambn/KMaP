@@ -2,6 +2,15 @@
 
 package com.rafambn.kflate
 
+import com.rafambn.kflate.checksum.Adler32Checksum
+import com.rafambn.kflate.checksum.Crc32Checksum
+import com.rafambn.kflate.error.FlateErrorCode
+import com.rafambn.kflate.error.createFlateError
+import com.rafambn.kflate.options.DeflateOptions
+import com.rafambn.kflate.options.GzipOptions
+import com.rafambn.kflate.options.InflateOptions
+import kotlin.UByteArray
+
 object KFlate {
 
     object Raw {
@@ -29,12 +38,12 @@ object KFlate {
         fun decompress(data: UByteArray, options: DeflateOptions = DeflateOptions()): UByteArray {
             val start = writeGzipStart(data)
             if (start + 8 > data.size) {
-                createFlateError(6)//TODO , "invalid gzip data"
+                createFlateError(FlateErrorCode.INVALID_HEADER)
             }
             return inflate(
                 data.copyOfRange(start, data.size - 8),
                 InflateState(lastCheck = 2),
-                null,
+                UByteArray(getGzipUncompressedSize(data).toInt()),
                 options.dictionary
             )
         }

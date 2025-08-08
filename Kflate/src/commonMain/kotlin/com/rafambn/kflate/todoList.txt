@@ -1,5 +1,3 @@
-improve error handling;
-separe code from Index to other files;
 try to make code use byteArray instead of uByteArray;
 port zip functionality;
 create streams;

@@ -2,6 +2,7 @@
 
 package com.rafambn.kflate
 
+import com.rafambn.kflate.options.InflateOptions
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.zip.Deflater
@@ -68,7 +69,7 @@ class BlockingValidityTest {
         for (fileName in testFiles) {
             val originalData = readResourceFile(fileName)
 
-            val compressedData = KFlate.Raw.deflate(originalData.toUByteArray(), DeflateOptions())
+            val compressedData = KFlate.Raw.deflate(originalData.toUByteArray())
 
             val inflater = Inflater(true)
             val inputStream = ByteArrayInputStream(compressedData.toByteArray())
@@ -114,7 +115,7 @@ class BlockingValidityTest {
         for (fileName in testFiles) {
             val originalData = readResourceFile(fileName)
 
-            val compressedData = KFlate.Gzip.compress(originalData.toUByteArray(), GzipOptions())
+            val compressedData = KFlate.Gzip.compress(originalData.toUByteArray())
 
             val inputStream = ByteArrayInputStream(compressedData.toByteArray())
             val gzipInputStream = GZIPInputStream(inputStream)
@@ -141,7 +142,7 @@ class BlockingValidityTest {
 
             val compressedData = outputStream.toByteArray()
 
-            val decompressedData = KFlate.Gzip.decompress(compressedData.toUByteArray(), DeflateOptions())
+            val decompressedData = KFlate.Gzip.decompress(compressedData.toUByteArray())
 
             assertContentEquals(originalData, decompressedData.toByteArray(), "Failed on file: $fileName")
         }
@@ -154,7 +155,7 @@ class BlockingValidityTest {
         for (fileName in testFiles) {
             val originalData = readResourceFile(fileName)
 
-            val compressedData = KFlate.Zlib.compress(originalData.toUByteArray(), DeflateOptions())
+            val compressedData = KFlate.Zlib.compress(originalData.toUByteArray())
 
             val inflater = Inflater()
             val inputStream = ByteArrayInputStream(compressedData.toByteArray())
