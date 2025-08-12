@@ -1,3 +1,3 @@
 try to make code use byteArray instead of uByteArray;
-port zip functionality;
 create streams;
+examine jvm impl for improvements on this lib;
