@@ -1,5 +1,6 @@
-package com.rafambn.mvtparser
+package com.rafambn.kmapvectorsupport
 
+import com.rafambn.kmapvectorsupport.tileSpec.*
 import kotlin.test.*
 
 class MVTParserTest {
@@ -104,12 +105,11 @@ class MVTParserTest {
             )
         )
 
-        val decoded = decodeFeatureGeometry(feature)
+        val decodedCoordinates = decodeFeatureGeometry(feature)
 
-        assertEquals(GeomType.POINT, decoded.type)
-        assertEquals(1, decoded.coordinates.size)
-        assertEquals(1, decoded.coordinates[0].size)
-        assertEquals(Pair(1, 2), decoded.coordinates[0][0])
+        assertEquals(1, decodedCoordinates.size)
+        assertEquals(1, decodedCoordinates[0].size)
+        assertEquals(Pair(1, 2), decodedCoordinates[0][0])
     }
 
     @Test
@@ -125,14 +125,13 @@ class MVTParserTest {
             )
         )
 
-        val decoded = decodeFeatureGeometry(feature)
+        val decodedCoordinates = decodeFeatureGeometry(feature)
 
-        assertEquals(GeomType.LINESTRING, decoded.type)
-        assertEquals(1, decoded.coordinates.size)
-        assertEquals(3, decoded.coordinates[0].size)
-        assertEquals(Pair(1, 2), decoded.coordinates[0][0])
-        assertEquals(Pair(2, 3), decoded.coordinates[0][1])
-        assertEquals(Pair(3, 4), decoded.coordinates[0][2])
+        assertEquals(1, decodedCoordinates.size)
+        assertEquals(3, decodedCoordinates[0].size)
+        assertEquals(Pair(1, 2), decodedCoordinates[0][0])
+        assertEquals(Pair(2, 3), decodedCoordinates[0][1])
+        assertEquals(Pair(3, 4), decodedCoordinates[0][2])
     }
 
     @Test
@@ -150,15 +149,14 @@ class MVTParserTest {
             )
         )
 
-        val decoded = decodeFeatureGeometry(feature)
+        val decodedCoordinates = decodeFeatureGeometry(feature)
 
-        assertEquals(GeomType.POLYGON, decoded.type)
-        assertEquals(1, decoded.coordinates.size)
-        assertEquals(4, decoded.coordinates[0].size)
-        assertEquals(Pair(1, 1), decoded.coordinates[0][0])
-        assertEquals(Pair(2, 1), decoded.coordinates[0][1])
-        assertEquals(Pair(2, 2), decoded.coordinates[0][2])
-        assertEquals(Pair(1, 1), decoded.coordinates[0][3])
+        assertEquals(1, decodedCoordinates.size)
+        assertEquals(4, decodedCoordinates[0].size)
+        assertEquals(Pair(1, 1), decodedCoordinates[0][0])
+        assertEquals(Pair(2, 1), decodedCoordinates[0][1])
+        assertEquals(Pair(2, 2), decodedCoordinates[0][2])
+        assertEquals(Pair(1, 1), decodedCoordinates[0][3])
     }
 
     @Test
@@ -173,14 +171,13 @@ class MVTParserTest {
             )
         )
 
-        val decoded = decodeFeatureGeometry(feature)
+        val decodedCoordinates = decodeFeatureGeometry(feature)
 
-        assertEquals(GeomType.POINT, decoded.type)
-        assertEquals(2, decoded.coordinates.size)
-        assertEquals(1, decoded.coordinates[0].size)
-        assertEquals(1, decoded.coordinates[1].size)
-        assertEquals(Pair(1, 2), decoded.coordinates[0][0])
-        assertEquals(Pair(3, 5), decoded.coordinates[1][0])
+        assertEquals(2, decodedCoordinates.size)
+        assertEquals(1, decodedCoordinates[0].size)
+        assertEquals(1, decodedCoordinates[1].size)
+        assertEquals(Pair(1, 2), decodedCoordinates[0][0])
+        assertEquals(Pair(3, 5), decodedCoordinates[1][0])
     }
 
     @Test
@@ -190,10 +187,9 @@ class MVTParserTest {
             geometry = emptyList()
         )
 
-        val decoded = decodeFeatureGeometry(feature)
+        val decodedCoordinates = decodeFeatureGeometry(feature)
 
-        assertEquals(GeomType.UNKNOWN, decoded.type)
-        assertTrue(decoded.coordinates.isEmpty())
+        assertTrue(decodedCoordinates.isEmpty())
     }
 
     @Test

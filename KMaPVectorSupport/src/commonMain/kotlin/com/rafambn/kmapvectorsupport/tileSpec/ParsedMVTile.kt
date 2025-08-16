@@ -1,4 +1,4 @@
-package com.rafambn.mvtparser
+package com.rafambn.kmapvectorsupport.tileSpec
 
 data class ParsedMVTile(
     val layers: List<ParsedLayer>

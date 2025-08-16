@@ -32,7 +32,7 @@ kotlin {
         iosSimulatorArm64()
     ).forEach {
         it.binaries.framework {
-            baseName = "MVTParser"
+            baseName = "KMaPVectorSupport"
             isStatic = true
         }
     }
@@ -40,6 +40,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(libs.kotlinx.serialization.protobuf)
+            implementation(libs.kotlinx.serialization.json)
         }
 
         commonTest.dependencies {
@@ -49,7 +50,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.rafambn.mvtparser"
+    namespace = "com.rafambn.kmapvectorsupport"
     compileSdk = 35
 
     defaultConfig {

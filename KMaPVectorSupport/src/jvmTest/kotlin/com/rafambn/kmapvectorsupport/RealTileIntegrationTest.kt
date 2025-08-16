@@ -1,5 +1,15 @@
-package com.rafambn.mvtparser
+package com.rafambn.kmapvectorsupport
 
+import com.rafambn.kmapvectorsupport.tileSpec.CMD_MOVETO
+import com.rafambn.kmapvectorsupport.tileSpec.Feature
+import com.rafambn.kmapvectorsupport.tileSpec.GeomType
+import com.rafambn.kmapvectorsupport.tileSpec.Layer
+import com.rafambn.kmapvectorsupport.tileSpec.MVTile
+import com.rafambn.kmapvectorsupport.tileSpec.Value
+import com.rafambn.kmapvectorsupport.tileSpec.deparseMVT
+import com.rafambn.kmapvectorsupport.tileSpec.deserializeMVT
+import com.rafambn.kmapvectorsupport.tileSpec.parseMVT
+import com.rafambn.kmapvectorsupport.tileSpec.serializeMVT
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import kotlin.test.Test

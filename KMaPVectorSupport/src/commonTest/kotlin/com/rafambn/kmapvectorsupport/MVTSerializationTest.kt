@@ -1,5 +1,6 @@
-package com.rafambn.mvtparser
+package com.rafambn.kmapvectorsupport
 
+import com.rafambn.kmapvectorsupport.tileSpec.*
 import kotlin.test.*
 
 class MVTSerializationTest {
@@ -105,10 +106,9 @@ class MVTSerializationTest {
             val encoded = encodeFeatureGeometry(coordinates, type)
 
             val feature = Feature(type = type, geometry = encoded)
-            val decoded = decodeFeatureGeometry(feature)
+            val decodedCoordinates = decodeFeatureGeometry(feature)
 
-            assertEquals(type, decoded.type, "Geometry type mismatch for $description")
-            assertEquals(coordinates, decoded.coordinates, "Coordinates mismatch for $description")
+            assertEquals(coordinates, decodedCoordinates, "Coordinates mismatch for $description")
         }
     }
 

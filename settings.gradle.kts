@@ -1,7 +1,7 @@
 rootProject.name = "KMaP"
 include(":KMaPDemo")
 include(":KMaP")
-include(":MVTParser")
+include(":KMaPVectorSupport")
 include(":Kflate")
 
 pluginManagement {

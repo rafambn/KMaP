@@ -1,4 +1,4 @@
-package com.rafambn.mvtparser
+package com.rafambn.kmapvectorsupport.tileSpec
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.protobuf.ProtoBuf
@@ -6,11 +6,6 @@ import kotlinx.serialization.protobuf.ProtoBuf
 const val CMD_MOVETO = 1
 const val CMD_LINETO = 2
 const val CMD_CLOSEPATH = 7
-
-data class DecodedGeometry(
-    val type: GeomType,
-    val coordinates: List<List<Pair<Int, Int>>>
-)
 
 @OptIn(ExperimentalSerializationApi::class)
 fun deserializeMVT(decompressedBytes: ByteArray): MVTile {
@@ -31,7 +26,7 @@ fun parseMVT(mvtTile: MVTile): ParsedMVTile {
             ParsedFeature(
                 id = if (feature.id != 0L) feature.id else null,
                 type = feature.type,
-                geometry = decodedGeometry.coordinates,
+                geometry = decodedGeometry,
                 properties = properties
             )
         }
@@ -75,8 +70,7 @@ fun deparseMVT(parsedMVTile: ParsedMVTile): MVTile {
     return MVTile(layers = layers)
 }
 
-
-fun decodeZigZag(n: Int): Int {
+internal fun decodeZigZag(n: Int): Int {
     return if (n and 1 == 1) {
         -((n shr 1) + 1)
     } else {
@@ -84,13 +78,12 @@ fun decodeZigZag(n: Int): Int {
     }
 }
 
-fun encodeZigZag(n: Int): Int {
+internal fun encodeZigZag(n: Int): Int {
     return (n shl 1) xor (n shr 31)
 }
 
-fun decodeFeatureGeometry(feature: Feature): DecodedGeometry {
+internal fun decodeFeatureGeometry(feature: Feature): List<List<Pair<Int, Int>>> {
     val geometry = feature.geometry
-    val geomType = feature.type
     var cursor = 0
     var x = 0
     var y = 0
@@ -141,10 +134,10 @@ fun decodeFeatureGeometry(feature: Feature): DecodedGeometry {
         allParts.add(currentPart)
     }
 
-    return DecodedGeometry(geomType, allParts)
+    return allParts
 }
 
-fun encodeFeatureGeometry(coordinates: List<List<Pair<Int, Int>>>, type: GeomType): List<Int> {
+internal fun encodeFeatureGeometry(coordinates: List<List<Pair<Int, Int>>>, type: GeomType): List<Int> {
     if (coordinates.isEmpty()) return emptyList()
 
     val geometry = mutableListOf<Int>()
@@ -187,7 +180,7 @@ fun encodeFeatureGeometry(coordinates: List<List<Pair<Int, Int>>>, type: GeomTyp
     return geometry
 }
 
-fun resolveFeatureProperties(feature: Feature, layer: Layer): Map<String, Any?> {
+internal fun resolveFeatureProperties(feature: Feature, layer: Layer): Map<String, Any?> {
     val properties = mutableMapOf<String, Any?>()
     val tags = feature.tags
 
@@ -217,7 +210,7 @@ fun resolveFeatureProperties(feature: Feature, layer: Layer): Map<String, Any?> 
     return properties
 }
 
-fun encodeFeatureProperties(properties: Map<String, Any?>, keys: MutableList<String>, values: MutableList<Value>): List<Int> {
+internal fun encodeFeatureProperties(properties: Map<String, Any?>, keys: MutableList<String>, values: MutableList<Value>): List<Int> {
     val tags = mutableListOf<Int>()
 
     properties.forEach { (key, value) ->

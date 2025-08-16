@@ -1,5 +1,6 @@
-package com.rafambn.mvtparser
+package com.rafambn.kmapvectorsupport
 
+import com.rafambn.kmapvectorsupport.tileSpec.*
 import kotlin.test.*
 import kotlin.time.measureTime
 

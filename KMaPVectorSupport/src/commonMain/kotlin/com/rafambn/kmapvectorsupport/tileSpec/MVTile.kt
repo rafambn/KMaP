@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalSerializationApi::class)
 
-package com.rafambn.mvtparser
+package com.rafambn.kmapvectorsupport.tileSpec
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
@@ -37,10 +37,10 @@ data class Feature(
 data class Layer(
     @ProtoNumber(15) val version: Int = 1,
     @ProtoNumber(1) val name: String,
-    @ProtoNumber(5) val extent: Int = 4096,
+    @ProtoNumber(2) val features: List<Feature> = emptyList(),
     @ProtoNumber(3) val keys: List<String> = emptyList(),
     @ProtoNumber(4) val values: List<Value> = emptyList(),
-    @ProtoNumber(2) val features: List<Feature> = emptyList()
+    @ProtoNumber(5) val extent: Int = 4096,
 )
 
 @Serializable
