@@ -23,7 +23,7 @@ data class Style(
     val pitch: Double? = null,
     val light: Light? = null,
     val sources: Map<String, Source>,
-    val layers: List<Layer>,
+    val layers: List<StyleLayer>,
     val sprite: String? = null,
     val glyphs: String? = null,
     val transition: Transition? = null
@@ -36,7 +36,7 @@ data class Style(
                 subclass(GeoJSONSource::class)
             }
 
-            polymorphic(Layer::class) {
+            polymorphic(StyleLayer::class) {
                 subclass(BackgroundLayer::class)
                 subclass(FillLayer::class)
                 subclass(LineLayer::class)
@@ -110,7 +110,8 @@ data class GeoJSONSource(
 ) : Source()
 
 @Serializable
-sealed class Layer {
+@SerialName("layer")
+sealed class StyleLayer {
     abstract val id: String
     abstract val type: String
     abstract val source: String?
@@ -134,7 +135,7 @@ data class BackgroundLayer(
     override val filter: List<String>? = null,
     override val layout: Map<String, String>? = null,
     override val paint: Map<String, String>? = null
-) : Layer()
+) : StyleLayer()
 
 @Serializable
 @SerialName("fill")
@@ -148,7 +149,7 @@ data class FillLayer(
     override val filter: List<String>? = null,
     override val layout: Map<String, String>? = null,
     override val paint: Map<String, String>? = null
-) : Layer()
+) : StyleLayer()
 
 @Serializable
 @SerialName("line")
@@ -162,7 +163,7 @@ data class LineLayer(
     override val filter: List<String>? = null,
     override val layout: Map<String, String>? = null,
     override val paint: Map<String, String>? = null
-) : Layer()
+) : StyleLayer()
 
 @Serializable
 @SerialName("symbol")
@@ -176,7 +177,7 @@ data class SymbolLayer(
     override val filter: List<String>? = null,
     override val layout: Map<String, String>? = null,
     override val paint: Map<String, String>? = null
-) : Layer()
+) : StyleLayer()
 
 @Serializable
 @SerialName("raster")
@@ -190,7 +191,7 @@ data class RasterLayer(
     override val filter: List<String>? = null,
     override val layout: Map<String, String>? = null,
     override val paint: Map<String, String>? = null
-) : Layer()
+) : StyleLayer()
 
 @Serializable
 @SerialName("circle")
@@ -204,7 +205,7 @@ data class CircleLayer(
     override val filter: List<String>? = null,
     override val layout: Map<String, String>? = null,
     override val paint: Map<String, String>? = null
-) : Layer()
+) : StyleLayer()
 
 @Serializable
 @SerialName("fill-extrusion")
@@ -218,7 +219,7 @@ data class FillExtrusionLayer(
     override val filter: List<String>? = null,
     override val layout: Map<String, String>? = null,
     override val paint: Map<String, String>? = null
-) : Layer()
+) : StyleLayer()
 
 @Serializable
 @SerialName("heatmap")
@@ -232,7 +233,7 @@ data class HeatmapLayer(
     override val filter: List<String>? = null,
     override val layout: Map<String, String>? = null,
     override val paint: Map<String, String>? = null
-) : Layer()
+) : StyleLayer()
 
 @Serializable
 @SerialName("hillshade")
@@ -246,4 +247,4 @@ data class HillshadeLayer(
     override val filter: List<String>? = null,
     override val layout: Map<String, String>? = null,
     override val paint: Map<String, String>? = null
-) : Layer()
+) : StyleLayer()

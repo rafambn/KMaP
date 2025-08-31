@@ -1,32 +1,30 @@
 @file:OptIn(ExperimentalSerializationApi::class)
 
 import com.rafambn.kmap.utils.vectorTile.CMD_MOVETO
-import com.rafambn.kmap.utils.vectorTile.Feature
-import com.rafambn.kmap.utils.vectorTile.GeomType
-import com.rafambn.kmap.utils.vectorTile.Layer
-import com.rafambn.kmap.utils.vectorTile.MVTile
-import com.rafambn.kmap.utils.vectorTile.Value
+import com.rafambn.kmap.utils.vectorTile.RawMVTFeature
+import com.rafambn.kmap.utils.vectorTile.RawMVTGeomType
+import com.rafambn.kmap.utils.vectorTile.RawMVTLayer
+import com.rafambn.kmap.utils.vectorTile.RawMVTile
+import com.rafambn.kmap.utils.vectorTile.RawMVTValue
 import com.rafambn.kmap.utils.vectorTile.deparse
 import com.rafambn.kmap.utils.vectorTile.parse
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.protobuf.ProtoBuf
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
-import kotlin.collections.get
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import kotlin.text.get
 
 class RealTileIntegrationTest {
 
-    fun deserializeMVT(decompressedBytes: ByteArray): MVTile {
-        return ProtoBuf.decodeFromByteArray(MVTile.serializer(), decompressedBytes)
+    fun deserializeMVT(decompressedBytes: ByteArray): RawMVTile {
+        return ProtoBuf.decodeFromByteArray(RawMVTile.serializer(), decompressedBytes)
     }
 
-    fun serializeMVT(mvtTile: MVTile): ByteArray {
-        return ProtoBuf.encodeToByteArray(MVTile.serializer(), mvtTile)
+    fun serializeMVT(mvtTile: RawMVTile): ByteArray {
+        return ProtoBuf.encodeToByteArray(RawMVTile.serializer(), mvtTile)
     }
 
     private fun loadData(tileName: String): ByteArray {
@@ -103,7 +101,7 @@ class RealTileIntegrationTest {
                 assertTrue(layer.extent > 0)
 
                 layer.features.forEach { feature ->
-                    assertTrue(feature.geometry.isNotEmpty() || feature.type == GeomType.UNKNOWN)
+                    assertTrue(feature.geometry.isNotEmpty() || feature.type == RawMVTGeomType.UNKNOWN)
                     feature.geometry.forEach { part ->
                         assertTrue(part.isNotEmpty())
                     }
@@ -118,22 +116,22 @@ class RealTileIntegrationTest {
 
     @Test
     fun testEdgeCases() {
-        val emptyTile = MVTile(layers = emptyList())
+        val emptyTile = RawMVTile(layers = emptyList())
         val emptyTileData = serializeMVT(emptyTile)
         val parsedEmptyTile = deserializeMVT(emptyTileData).parse()
         assertTrue(parsedEmptyTile.layers.isEmpty())
 
-        val singleFeatureTile = MVTile(
+        val singleFeatureTile = RawMVTile(
             layers = listOf(
-                Layer(
+                RawMVTLayer(
                     name = "single",
                     extent = 4096,
                     keys = listOf("test"),
-                    values = listOf(Value(string_value = "value")),
+                    values = listOf(RawMVTValue(string_value = "value")),
                     features = listOf(
-                        Feature(
+                        RawMVTFeature(
                             id = 1L,
-                            type = GeomType.POINT,
+                            type = RawMVTGeomType.POINT,
                             geometry = listOf((CMD_MOVETO or (1 shl 3)), 2048, 2048),
                             tags = listOf(0, 0)
                         )

@@ -1,17 +1,16 @@
 package com.rafambn.kmap.utils.vectorTile
 
-
 const val CMD_MOVETO = 1
 const val CMD_LINETO = 2
 const val CMD_CLOSEPATH = 7
 
-fun MVTile.parse(): ParsedMVTile {
+fun RawMVTile.parse(): MVTile {
     val parsedLayers = this.layers.map { layer ->
         val parsedFeatures = layer.features.map { feature ->
             val decodedGeometry = decodeFeatureGeometry(feature)
             val properties = resolveFeatureProperties(feature, layer)
 
-            ParsedFeature(
+            MVTFeature(
                 id = if (feature.id != 0L) feature.id else null,
                 type = feature.type,
                 geometry = decodedGeometry,
@@ -19,26 +18,26 @@ fun MVTile.parse(): ParsedMVTile {
             )
         }
 
-        ParsedLayer(
+        MVTLayer(
             name = layer.name,
             extent = layer.extent,
             features = parsedFeatures
         )
     }
 
-    return ParsedMVTile(parsedLayers)
+    return MVTile(parsedLayers)
 }
 
-fun ParsedMVTile.deparse(): MVTile {
+fun MVTile.deparse(): RawMVTile {
     val layers = this.layers.map { parsedLayer ->
         val keys = mutableListOf<String>()
-        val values = mutableListOf<Value>()
+        val values = mutableListOf<RawMVTValue>()
 
         val features = parsedLayer.features.map { parsedFeature ->
             val geometry = encodeFeatureGeometry(parsedFeature.geometry, parsedFeature.type)
             val tags = encodeFeatureProperties(parsedFeature.properties, keys, values)
 
-            Feature(
+            RawMVTFeature(
                 id = parsedFeature.id ?: 0L,
                 tags = tags,
                 type = parsedFeature.type,
@@ -46,7 +45,7 @@ fun ParsedMVTile.deparse(): MVTile {
             )
         }
 
-        Layer(
+        RawMVTLayer(
             name = parsedLayer.name,
             extent = parsedLayer.extent,
             keys = keys,
@@ -55,7 +54,7 @@ fun ParsedMVTile.deparse(): MVTile {
         )
     }
 
-    return MVTile(layers = layers)
+    return RawMVTile(layers = layers)
 }
 
 internal fun decodeZigZag(n: Int): Int {
@@ -70,7 +69,7 @@ internal fun encodeZigZag(n: Int): Int {
     return (n shl 1) xor (n shr 31)
 }
 
-internal fun decodeFeatureGeometry(feature: Feature): List<List<Pair<Int, Int>>> {
+internal fun decodeFeatureGeometry(feature: RawMVTFeature): List<List<Pair<Int, Int>>> {
     val geometry = feature.geometry
     var cursor = 0
     var x = 0
@@ -125,7 +124,7 @@ internal fun decodeFeatureGeometry(feature: Feature): List<List<Pair<Int, Int>>>
     return allParts
 }
 
-internal fun encodeFeatureGeometry(coordinates: List<List<Pair<Int, Int>>>, type: GeomType): List<Int> {
+internal fun encodeFeatureGeometry(coordinates: List<List<Pair<Int, Int>>>, type: RawMVTGeomType): List<Int> {
     if (coordinates.isEmpty()) return emptyList()
 
     val geometry = mutableListOf<Int>()
@@ -160,7 +159,7 @@ internal fun encodeFeatureGeometry(coordinates: List<List<Pair<Int, Int>>>, type
             }
         }
 
-        if (type == GeomType.POLYGON) {
+        if (type == RawMVTGeomType.POLYGON) {
             geometry.add(CMD_CLOSEPATH)
         }
     }
@@ -168,7 +167,7 @@ internal fun encodeFeatureGeometry(coordinates: List<List<Pair<Int, Int>>>, type
     return geometry
 }
 
-internal fun resolveFeatureProperties(feature: Feature, layer: Layer): Map<String, Any?> {
+internal fun resolveFeatureProperties(feature: RawMVTFeature, layer: RawMVTLayer): Map<String, Any?> {
     val properties = mutableMapOf<String, Any?>()
     val tags = feature.tags
 
@@ -198,7 +197,7 @@ internal fun resolveFeatureProperties(feature: Feature, layer: Layer): Map<Strin
     return properties
 }
 
-internal fun encodeFeatureProperties(properties: Map<String, Any?>, keys: MutableList<String>, values: MutableList<Value>): List<Int> {
+internal fun encodeFeatureProperties(properties: Map<String, Any?>, keys: MutableList<String>, values: MutableList<RawMVTValue>): List<Int> {
     val tags = mutableListOf<Int>()
 
     properties.forEach { (key, value) ->
@@ -214,13 +213,13 @@ internal fun encodeFeatureProperties(properties: Map<String, Any?>, keys: Mutabl
         }
 
         val valueObj = when (value) {
-            is String -> Value(string_value = value)
-            is Float -> Value(float_value = value)
-            is Double -> Value(double_value = value)
-            is Int -> Value(int_value = value.toLong())
-            is Long -> Value(int_value = value)
-            is Boolean -> Value(bool_value = value)
-            else -> Value(string_value = value.toString())
+            is String -> RawMVTValue(string_value = value)
+            is Float -> RawMVTValue(float_value = value)
+            is Double -> RawMVTValue(double_value = value)
+            is Int -> RawMVTValue(int_value = value.toLong())
+            is Long -> RawMVTValue(int_value = value)
+            is Boolean -> RawMVTValue(bool_value = value)
+            else -> RawMVTValue(string_value = value.toString())
         }
 
         val valueIndex = values.indexOfFirst { existingValue ->

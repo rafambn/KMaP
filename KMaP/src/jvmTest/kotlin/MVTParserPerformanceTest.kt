@@ -4,12 +4,12 @@ import kotlin.time.measureTime
 
 class MVTParserPerformanceTest {
 
-    private fun createLargeTestTile(layerCount: Int = 5, featuresPerLayer: Int = 1000): MVTile {
+    private fun createLargeTestTile(layerCount: Int = 5, featuresPerLayer: Int = 1000): RawMVTile {
         val layers = (1..layerCount).map { layerIndex ->
             val features = (1..featuresPerLayer).map { featureIndex ->
-                Feature(
+                RawMVTFeature(
                     id = featureIndex.toLong(),
-                    type = GeomType.POINT,
+                    type = RawMVTGeomType.POINT,
                     geometry = listOf(
                         (CMD_MOVETO or (1 shl 3)),
                         featureIndex * 2, featureIndex * 4
@@ -18,23 +18,23 @@ class MVTParserPerformanceTest {
                 )
             }
 
-            Layer(
+            RawMVTLayer(
                 name = "layer_$layerIndex",
                 extent = 4096,
                 keys = listOf("name", "type", "id"),
                 values = listOf(
-                    Value(string_value = "feature_name"),
-                    Value(string_value = "point"),
-                    Value(int_value = 123L)
+                    RawMVTValue(string_value = "feature_name"),
+                    RawMVTValue(string_value = "point"),
+                    RawMVTValue(int_value = 123L)
                 ),
                 features = features
             )
         }
 
-        return MVTile(layers = layers)
+        return RawMVTile(layers = layers)
     }
 
-    private fun createComplexGeometryFeature(pointCount: Int): Feature {
+    private fun createComplexGeometryFeature(pointCount: Int): RawMVTFeature {
         val geometry = mutableListOf<Int>()
 
         geometry.add(CMD_MOVETO or (1 shl 3))
@@ -49,9 +49,9 @@ class MVTParserPerformanceTest {
             }
         }
 
-        return Feature(
+        return RawMVTFeature(
             id = 1L,
-            type = GeomType.LINESTRING,
+            type = RawMVTGeomType.LINESTRING,
             geometry = geometry,
             tags = listOf(0, 0)
         )
@@ -113,10 +113,10 @@ class MVTParserPerformanceTest {
         propertyCounts.forEach { propCount ->
             val tags = (0 until propCount * 2).toList()
             val keys = (0 until propCount).map { "key_$it" }
-            val values = (0 until propCount).map { Value(string_value = "value_$it") }
+            val values = (0 until propCount).map { RawMVTValue(string_value = "value_$it") }
 
-            val feature = Feature(tags = tags)
-            val layer = Layer(name = "test", keys = keys, values = values)
+            val feature = RawMVTFeature(tags = tags)
+            val layer = RawMVTLayer(name = "test", keys = keys, values = values)
 
             val resolveTime = measureTime {
                 repeat(1000) {
