@@ -53,6 +53,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.core)
             implementation(libs.kotlinx.serialization.protobuf)
+            implementation(libs.kotlinx.serialization.json)
         }
 
         jvmTest.dependencies {

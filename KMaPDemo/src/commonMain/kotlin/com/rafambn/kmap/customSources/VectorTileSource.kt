@@ -27,7 +27,7 @@ class VectorTileSource : TileSource {
 //            val rawMVTile = ProtoBuf.decodeFromByteArray(RawMVTile.serializer(), compressedBytes)
 //            val mvTile = rawMVTile.parse()
 
-            val compressedBytes = client.get("https://api.maptiler.com/tiles/v3/$zoom/$row/$column.pbf?key=FyN1IF510B9K7M97ms7e") {
+            val compressedBytes = client.get("https://api.maptiler.com/tiles/v3/$zoom/$row/$column.pbf?key=") {
                 contentType(ContentType.Application.ProtoBuf)
             }.readRawBytes()
             val rawMVTile = ProtoBuf.decodeFromByteArray(RawMVTile.serializer(), compressedBytes)
