@@ -1,23 +1,34 @@
-package com.rafambn.kmapvectorsupport
+@file:OptIn(ExperimentalSerializationApi::class)
 
-import com.rafambn.kmapvectorsupport.tileSpec.CMD_MOVETO
-import com.rafambn.kmapvectorsupport.tileSpec.Feature
-import com.rafambn.kmapvectorsupport.tileSpec.GeomType
-import com.rafambn.kmapvectorsupport.tileSpec.Layer
-import com.rafambn.kmapvectorsupport.tileSpec.MVTile
-import com.rafambn.kmapvectorsupport.tileSpec.Value
-import com.rafambn.kmapvectorsupport.tileSpec.deparseMVT
-import com.rafambn.kmapvectorsupport.tileSpec.deserializeMVT
-import com.rafambn.kmapvectorsupport.tileSpec.parseMVT
-import com.rafambn.kmapvectorsupport.tileSpec.serializeMVT
+import com.rafambn.kmap.utils.vectorTile.CMD_MOVETO
+import com.rafambn.kmap.utils.vectorTile.Feature
+import com.rafambn.kmap.utils.vectorTile.GeomType
+import com.rafambn.kmap.utils.vectorTile.Layer
+import com.rafambn.kmap.utils.vectorTile.MVTile
+import com.rafambn.kmap.utils.vectorTile.Value
+import com.rafambn.kmap.utils.vectorTile.deparse
+import com.rafambn.kmap.utils.vectorTile.parse
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.protobuf.ProtoBuf
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
+import kotlin.collections.get
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import kotlin.text.get
 
 class RealTileIntegrationTest {
+
+    fun deserializeMVT(decompressedBytes: ByteArray): MVTile {
+        return ProtoBuf.decodeFromByteArray(MVTile.serializer(), decompressedBytes)
+    }
+
+    fun serializeMVT(mvtTile: MVTile): ByteArray {
+        return ProtoBuf.encodeToByteArray(MVTile.serializer(), mvtTile)
+    }
+
     private fun loadData(tileName: String): ByteArray {
         val resourcePath = "tiles/$tileName"
 
@@ -46,15 +57,15 @@ class RealTileIntegrationTest {
     @Test
     fun testParseVariousZoomLevels() {
         val tile10 = getTileLevel10()
-        val parsed10 = parseMVT(deserializeMVT(tile10))
+        val parsed10 = deserializeMVT(tile10).parse()
         assertTrue(parsed10.layers.isNotEmpty())
 
         val tile14 = getTileLevel14()
-        val parsed14 = parseMVT(deserializeMVT(tile14))
+        val parsed14 = deserializeMVT(tile14).parse()
         assertTrue(parsed14.layers.isNotEmpty())
 
         val tile16 = getTileLevel16()
-        val parsed16 = parseMVT(deserializeMVT(tile16))
+        val parsed16 = deserializeMVT(tile16).parse()
         assertTrue(parsed16.layers.isNotEmpty())
     }
 
@@ -62,12 +73,12 @@ class RealTileIntegrationTest {
     fun testRoundTripSerializationForDetailedTile() {
         val originalTileData = getTileLevel14()
         val mvtTile = deserializeMVT(originalTileData)
-        val parsedTile = parseMVT(mvtTile)
+        val parsedTile = mvtTile.parse()
 
-        val deparsedTile = deparseMVT(parsedTile)
+        val deparsedTile = parsedTile.deparse()
         val reserializedBytes = serializeMVT(deparsedTile)
         val finalTile = deserializeMVT(reserializedBytes)
-        val finalParsed = parseMVT(finalTile)
+        val finalParsed = finalTile.parse()
 
         assertEquals(parsedTile.layers.size, finalParsed.layers.size)
 
@@ -84,7 +95,7 @@ class RealTileIntegrationTest {
         val testTiles = listOf(getTileLevel10(), getTileLevel14(), getTileLevel16())
 
         testTiles.forEach { tileData ->
-            val parsedTile = parseMVT(deserializeMVT(tileData))
+            val parsedTile = deserializeMVT(tileData).parse()
             assertTrue(parsedTile.layers.isNotEmpty())
 
             parsedTile.layers.forEach { layer ->
@@ -109,7 +120,7 @@ class RealTileIntegrationTest {
     fun testEdgeCases() {
         val emptyTile = MVTile(layers = emptyList())
         val emptyTileData = serializeMVT(emptyTile)
-        val parsedEmptyTile = parseMVT(deserializeMVT(emptyTileData))
+        val parsedEmptyTile = deserializeMVT(emptyTileData).parse()
         assertTrue(parsedEmptyTile.layers.isEmpty())
 
         val singleFeatureTile = MVTile(
@@ -131,7 +142,7 @@ class RealTileIntegrationTest {
             )
         )
         val singleFeatureData = serializeMVT(singleFeatureTile)
-        val parsedSingleFeature = parseMVT(deserializeMVT(singleFeatureData))
+        val parsedSingleFeature = deserializeMVT(singleFeatureData).parse()
         assertEquals(1, parsedSingleFeature.layers.size)
         assertEquals(1, parsedSingleFeature.layers[0].features.size)
     }

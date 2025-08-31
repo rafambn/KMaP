@@ -1,7 +1,11 @@
-package com.rafambn.kmapvectorsupport.styleSpec
+package com.rafambn.kmap.utils.style
 
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.subclass
 import kotlinx.serialization.Serializable
+
 
 /**
  * Represents a MapBox/MapLibre style specification.
@@ -23,7 +27,29 @@ data class Style(
     val sprite: String? = null,
     val glyphs: String? = null,
     val transition: Transition? = null
-)
+){
+    companion object {
+        val serializerModule = SerializersModule {
+            polymorphic(Source::class) {
+                subclass(VectorSource::class)
+                subclass(RasterSource::class)
+                subclass(GeoJSONSource::class)
+            }
+
+            polymorphic(Layer::class) {
+                subclass(BackgroundLayer::class)
+                subclass(FillLayer::class)
+                subclass(LineLayer::class)
+                subclass(SymbolLayer::class)
+                subclass(RasterLayer::class)
+                subclass(CircleLayer::class)
+                subclass(FillExtrusionLayer::class)
+                subclass(HeatmapLayer::class)
+                subclass(HillshadeLayer::class)
+            }
+        }
+    }
+}
 
 @Serializable
 data class Light(

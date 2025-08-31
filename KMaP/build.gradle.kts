@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.compose)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.serialization)
     id("com.vanniktech.maven.publish") version "0.33.0"
 }
 
@@ -50,6 +51,12 @@ kotlin {
             implementation(compose.material3)
             implementation(compose.components.resources)
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.serialization.core)
+            implementation(libs.kotlinx.serialization.protobuf)
+        }
+
+        jvmTest.dependencies {
+            implementation(kotlin("test"))
         }
     }
 

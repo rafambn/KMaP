@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalSerializationApi::class)
 
-package com.rafambn.kmapvectorsupport.tileSpec
+package com.rafambn.kmap.utils.vectorTile
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable

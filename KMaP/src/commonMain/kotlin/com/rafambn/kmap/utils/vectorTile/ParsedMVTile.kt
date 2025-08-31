@@ -1,4 +1,4 @@
-package com.rafambn.kmapvectorsupport.tileSpec
+package com.rafambn.kmap.utils.vectorTile
 
 data class ParsedMVTile(
     val layers: List<ParsedLayer>

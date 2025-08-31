@@ -1,6 +1,4 @@
-package com.rafambn.kmapvectorsupport
-
-import com.rafambn.kmapvectorsupport.tileSpec.*
+import com.rafambn.kmap.utils.vectorTile.*
 import kotlin.test.*
 import kotlin.time.measureTime
 
@@ -75,7 +73,7 @@ class MVTParserPerformanceTest {
 
             val parseTime = measureTime {
                 repeat(10) {
-                    parseMVT(testTile)
+                    testTile.parse()
                 }
             }
 
@@ -159,7 +157,7 @@ class MVTParserPerformanceTest {
 
         val fullParseTime = measureTime {
             repeat(5) {
-                val parsed = parseMVT(testTile)
+                val parsed = testTile.parse()
 
                 var totalFeatures = 0
                 var totalCoordinates = 0
@@ -192,7 +190,7 @@ class MVTParserPerformanceTest {
         println("\n=== Memory Usage Estimation ===")
 
         val testTile = createLargeTestTile(layerCount = 3, featuresPerLayer = 1000)
-        val parsed = parseMVT(testTile)
+        val parsed = testTile.parse()
 
         var totalFeatures = 0
         var totalCoordinates = 0

@@ -1,6 +1,4 @@
-package com.rafambn.kmapvectorsupport
-
-import com.rafambn.kmapvectorsupport.tileSpec.*
+import com.rafambn.kmap.utils.vectorTile.*
 import kotlin.test.*
 
 class MVTParserTest {
@@ -196,7 +194,7 @@ class MVTParserTest {
     fun testParseMVTWithEmptyTile() {
         val mvtTile = MVTile(layers = emptyList())
 
-        val parsed = parseMVT(mvtTile)
+        val parsed = mvtTile.parse()
 
         assertTrue(parsed.layers.isEmpty())
     }
@@ -223,7 +221,7 @@ class MVTParserTest {
 
         val mvtTile = MVTile(layers = listOf(layer))
 
-        val parsed = parseMVT(mvtTile)
+        val parsed = mvtTile.parse()
 
         assertEquals(1, parsed.layers.size)
         val parsedLayer = parsed.layers[0]
@@ -256,7 +254,7 @@ class MVTParserTest {
         )
 
         val mvtTile = MVTile(layers = listOf(layer))
-        val parsed = parseMVT(mvtTile)
+        val parsed = mvtTile.parse()
 
         assertNull(parsed.layers[0].features[0].id)
     }

@@ -1,24 +1,12 @@
-package com.rafambn.kmapvectorsupport.tileSpec
+package com.rafambn.kmap.utils.vectorTile
 
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.protobuf.ProtoBuf
 
 const val CMD_MOVETO = 1
 const val CMD_LINETO = 2
 const val CMD_CLOSEPATH = 7
 
-@OptIn(ExperimentalSerializationApi::class)
-fun deserializeMVT(decompressedBytes: ByteArray): MVTile {
-    return ProtoBuf.decodeFromByteArray(MVTile.serializer(), decompressedBytes)
-}
-
-@OptIn(ExperimentalSerializationApi::class)
-fun serializeMVT(mvtTile: MVTile): ByteArray {
-    return ProtoBuf.encodeToByteArray(MVTile.serializer(), mvtTile)
-}
-
-fun parseMVT(mvtTile: MVTile): ParsedMVTile {
-    val parsedLayers = mvtTile.layers.map { layer ->
+fun MVTile.parse(): ParsedMVTile {
+    val parsedLayers = this.layers.map { layer ->
         val parsedFeatures = layer.features.map { feature ->
             val decodedGeometry = decodeFeatureGeometry(feature)
             val properties = resolveFeatureProperties(feature, layer)
@@ -41,8 +29,8 @@ fun parseMVT(mvtTile: MVTile): ParsedMVTile {
     return ParsedMVTile(parsedLayers)
 }
 
-fun deparseMVT(parsedMVTile: ParsedMVTile): MVTile {
-    val layers = parsedMVTile.layers.map { parsedLayer ->
+fun ParsedMVTile.deparse(): MVTile {
+    val layers = this.layers.map { parsedLayer ->
         val keys = mutableListOf<String>()
         val values = mutableListOf<Value>()
 

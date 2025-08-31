@@ -1,9 +1,19 @@
-package com.rafambn.kmapvectorsupport
+@file:OptIn(ExperimentalSerializationApi::class)
 
-import com.rafambn.kmapvectorsupport.tileSpec.*
+import com.rafambn.kmap.utils.vectorTile.*
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.protobuf.ProtoBuf
 import kotlin.test.*
 
 class MVTSerializationTest {
+
+    fun deserializeMVT(decompressedBytes: ByteArray): MVTile {
+        return ProtoBuf.decodeFromByteArray(MVTile.serializer(), decompressedBytes)
+    }
+
+    fun serializeMVT(mvtTile: MVTile): ByteArray {
+        return ProtoBuf.encodeToByteArray(MVTile.serializer(), mvtTile)
+    }
 
     @Test
     fun testEncodeDecodeZigZag() {
@@ -48,11 +58,11 @@ class MVTSerializationTest {
     fun testRoundTripParsing() {
         val originalTile = createTestMVTile()
 
-        val parsedTile = parseMVT(originalTile)
+        val parsedTile = originalTile.parse()
 
-        val deparsedTile = deparseMVT(parsedTile)
+        val deparsedTile = parsedTile.deparse()
 
-        val reparsedTile = parseMVT(deparsedTile)
+        val reparsedTile = deparsedTile.parse()
 
         assertEquals(parsedTile.layers.size, reparsedTile.layers.size)
 
@@ -78,8 +88,8 @@ class MVTSerializationTest {
 
         val serialized1 = serializeMVT(originalTile)
         val deserialized1 = deserializeMVT(serialized1)
-        val parsed = parseMVT(deserialized1)
-        val deparsed = deparseMVT(parsed)
+        val parsed = deserialized1.parse()
+        val deparsed = parsed.deparse()
         val serialized2 = serializeMVT(deparsed)
         val deserialized2 = deserializeMVT(serialized2)
 
@@ -158,8 +168,8 @@ class MVTSerializationTest {
         val emptyLayer = Layer(name = "empty", features = emptyList())
         val tile = MVTile(layers = listOf(emptyLayer))
 
-        val parsed = parseMVT(tile)
-        val deparsed = deparseMVT(parsed)
+        val parsed = tile.parse()
+        val deparsed = parsed.deparse()
 
         assertEquals(1, deparsed.layers.size)
         assertEquals("empty", deparsed.layers[0].name)
