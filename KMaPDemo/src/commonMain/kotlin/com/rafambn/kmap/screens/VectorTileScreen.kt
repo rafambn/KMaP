@@ -6,6 +6,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.components.CanvasParameters
@@ -17,10 +20,20 @@ import com.rafambn.kmap.getGestureDetector
 import com.rafambn.kmap.mapProperties.border.BoundMapBorder
 import com.rafambn.kmap.mapProperties.border.MapBorderType
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
+import com.rafambn.kmap.styleString
+import com.rafambn.kmap.utils.style.Style
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
+import org.jetbrains.compose.resources.InternalResourceApi
+import org.jetbrains.compose.resources.readResourceBytes
 import org.jetbrains.compose.resources.vectorResource
 
+@OptIn(InternalResourceApi::class)
 @Composable
 fun VectorTileScreen(
     navigateBack: () -> Unit
@@ -31,13 +44,19 @@ fun VectorTileScreen(
             outsideTiles = OutsideTilesType.NONE
         )
     )
+    val json = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
+        useArrayPolymorphism = false
+    }
+    val style = json.decodeFromString<Style>(styleString)
     Box {
         KMaP(
             modifier = Modifier.fillMaxSize(),
             mapState = mapState,
         ) {
             canvas(
-                parameters = CanvasParameters(id = 1, tileSource = VectorTileSource()::getTile),
+                parameters = CanvasParameters(id = 1, tileSource = VectorTileSource()::getTile, style = style),
                 gestureWrapper = getGestureDetector(mapState.motionController)
             )
         }

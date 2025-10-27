@@ -3,6 +3,7 @@ package com.rafambn.kmap.customSources
 import com.rafambn.kmap.tiles.TileResult
 import com.rafambn.kmap.tiles.TileSource
 import com.rafambn.kmap.tiles.TileSpecs
+import com.rafambn.kmap.tiles.VectorTile
 import com.rafambn.kmap.utils.style.Style
 import com.rafambn.kmap.utils.vectorTile.RawMVTile
 import com.rafambn.kmap.utils.vectorTile.parse
@@ -36,14 +37,11 @@ class VectorTileSource : TileSource {
 //            val rawMVTile = ProtoBuf.decodeFromByteArray(RawMVTile.serializer(), compressedBytes)
 //            val mvTile = rawMVTile.parse()
 
-            val compressedBytes = client.get("https://api.maptiler.com/tiles/v3/$zoom/$row/$column.pbf?key=") {
+            val compressedBytes = client.get("https://api.maptiler.com/tiles/v3/$zoom/$row/$column.pbf?key=GCqxEKWuBP1S6iQ1aSBG") {
                 contentType(ContentType.Application.ProtoBuf)
             }.readRawBytes()
             val rawMVTile = ProtoBuf.decodeFromByteArray(RawMVTile.serializer(), compressedBytes)
             val mvTile = rawMVTile.parse()
-            val styleJson = readResourceBytes("style.json").decodeToString()
-            val style = json.decodeFromString<Style>(styleJson)
-            println("Parsed tile with ${mvTile.layers.size} layers and style ${style.layers.size}")
 
 //            val compressedBytes = client.get("https://tiles.versatiles.org/tiles/osm/$zoom/$row/$column") {
 //                contentType(ContentType.Application.ProtoBuf)
@@ -58,7 +56,7 @@ class VectorTileSource : TileSource {
 //            parsedMVTile.layers.forEach { layer ->
 //                println("Layer: ${layer.name} with ${layer.features.size} features")
 //            }
-
+            return TileResult.Success(VectorTile(zoom, row, column, mvTile))
         } catch (ex: Exception) {
             println(ex)
         }

@@ -50,7 +50,8 @@ class KMaPContent(
                     rotationDegrees = mapState.cameraState.angleDegrees.toFloat(),
                     translation = mapState.cameraState.canvasSize.asOffset() / 2F,
                     gestureWrapper = gestureWrapper,
-                    tileLayers = mapState.canvasKernel.getTileLayers(parameters.id)
+                    tileLayers = mapState.canvasKernel.getTileLayers(parameters.id),
+                    style = parameters.style,
                 )
             }
         )

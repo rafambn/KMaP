@@ -12,6 +12,7 @@ import com.rafambn.kmap.tiles.TileResult
 import com.rafambn.kmap.utils.Degrees
 import com.rafambn.kmap.utils.Coordinates
 import com.rafambn.kmap.utils.ProjectedCoordinates
+import com.rafambn.kmap.utils.style.Style
 
 sealed interface Parameters
 
@@ -57,4 +58,5 @@ open class CanvasParameters(
     val zIndex: Float = 0F,
     val maxCacheTiles: Int = 20,
     val tileSource: suspend (zoom: Int, row: Int, column: Int) -> TileResult,
+    val style: Style? = null,
 ) : Parameters

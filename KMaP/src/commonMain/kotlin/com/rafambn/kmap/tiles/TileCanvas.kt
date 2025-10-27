@@ -20,6 +20,7 @@ import com.rafambn.kmap.gestures.detectMapGestures
 import com.rafambn.kmap.gestures.sharedPointerInput
 import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.ScreenOffset
+import com.rafambn.kmap.utils.style.Style
 import com.rafambn.kmap.utils.toIntFloor
 import kotlin.math.pow
 
@@ -32,7 +33,8 @@ internal fun TileCanvas(
     rotationDegrees: Float,
     translation: Offset,
     gestureWrapper: MapGestureWrapper?,
-    tileLayers: TileLayers
+    tileLayers: TileLayers,
+    style: Style?
 ) {
     Layout(
         modifier = Modifier
@@ -63,14 +65,16 @@ internal fun TileCanvas(
                             tileSize,
                             positionOffset,
                             2F.pow(tileLayers.frontLayer.level - tileLayers.backLayer.level),
-                            canvas
+                            canvas,
+                            style
                         )
                         drawTiles(
                             tileLayers.frontLayer.tiles,
                             tileSize,
                             positionOffset,
                             1F,
-                            canvas
+                            canvas,
+                            style
                         )
                     }
                 }
@@ -85,7 +89,8 @@ private fun DrawScope.drawTiles(
     tileSize: TileDimension,
     positionOffset: CanvasDrawReference,
     scaleAdjustment: Float = 1F,
-    canvas: Canvas
+    canvas: Canvas,
+    style: Style? = null,
 ) {
     tiles.forEach { tile ->
         when (tile) {
@@ -106,6 +111,22 @@ private fun DrawScope.drawTiles(
                     }
                 )
             }
+            is VectorTile ->{
+                style?.let {
+                    drawVectorTile(tile, tileSize, positionOffset, scaleAdjustment, canvas, style)
+                }
+            }
         }
     }
+}
+
+private fun DrawScope.drawVectorTile(
+    tile: VectorTile,
+    tileSize: TileDimension,
+    positionOffset: CanvasDrawReference,
+    scaleAdjustment: Float = 1F,
+    canvas: Canvas,
+    style: Style?
+){
+
 }
