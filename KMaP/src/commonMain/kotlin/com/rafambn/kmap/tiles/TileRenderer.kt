@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 
 class TileRenderer(
-    private val getTile: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult,
+    private val getTile: suspend (zoom: Int, row: Int, column: Int) -> TileResult,
     maxCacheTiles: Int,
     coroutineScope: CoroutineScope
 ) {
@@ -32,7 +32,7 @@ class TileRenderer(
     }.stateIn(coroutineScope, SharingStarted.Eagerly, emptyList())
 
     private val tilesToProcessChannel = Channel<List<TileSpecs>>(capacity = Channel.UNLIMITED)
-    private val workerResultSuccessChannel = Channel<TileRenderResult>(capacity = Channel.UNLIMITED)
+    private val workerResultSuccessChannel = Channel<TileResult>(capacity = Channel.UNLIMITED)
 
     init {
         coroutineScope.tilesKernel(tilesToProcessChannel, workerResultSuccessChannel)
@@ -44,7 +44,7 @@ class TileRenderer(
 
     private fun CoroutineScope.tilesKernel(
         tilesToProcess: ReceiveChannel<List<TileSpecs>>,
-        tilesProcessResult: Channel<TileRenderResult>
+        tilesProcessResult: Channel<TileResult>
     ) = launch(Dispatchers.Default + SupervisorJob()) {
         val specsBeingProcessed = mutableListOf<TileSpecs>()
         val tilesBeingProcessed = mutableListOf<TileSpecs>()
@@ -69,7 +69,7 @@ class TileRenderer(
                 }
                 tilesProcessResult.onReceive { tileResult ->
                     when (tileResult) {
-                        is TileRenderResult.Success -> {
+                        is TileResult.Success -> {
                             _renderedTilesFlow.emit(tileResult.tile)
                             tilesBeingProcessed.remove(tileResult.tile)
                             specsBeingProcessed.removeAll {
@@ -81,7 +81,7 @@ class TileRenderer(
                             }
                         }
 
-                        is TileRenderResult.Failure -> {
+                        is TileResult.Failure -> {
                             tilesBeingProcessed.remove(tileResult.specs)
                             specsBeingProcessed.removeAll {
                                 TileSpecs(
@@ -99,13 +99,13 @@ class TileRenderer(
 
     private fun CoroutineScope.worker(
         tileToProcess: TileSpecs,
-        tilesProcessResult: SendChannel<TileRenderResult>
+        tilesProcessResult: SendChannel<TileResult>
     ) = launch(Dispatchers.Default) {
         try {
             tilesProcessResult.send(getTile(tileToProcess.zoom, tileToProcess.row, tileToProcess.col))
         } catch (ex: Exception) {
             println("Failed to process tile: $ex")
-            tilesProcessResult.send(TileRenderResult.Failure(tileToProcess))
+            tilesProcessResult.send(TileResult.Failure(tileToProcess))
         }
     }
 }

@@ -1,6 +1,6 @@
 package com.rafambn.kmap.customSources
 
-import com.rafambn.kmap.tiles.TileRenderResult
+import com.rafambn.kmap.tiles.TileResult
 import com.rafambn.kmap.tiles.TileSource
 import com.rafambn.kmap.tiles.TileSpecs
 import com.rafambn.kmap.utils.style.Style
@@ -28,7 +28,7 @@ class VectorTileSource : TileSource {
     }
 
     @OptIn(ExperimentalResourceApi::class, InternalResourceApi::class, ExperimentalUnsignedTypes::class, ExperimentalSerializationApi::class)
-    override suspend fun getTile(zoom: Int, row: Int, column: Int): TileRenderResult {
+    override suspend fun getTile(zoom: Int, row: Int, column: Int): TileResult {
         try {
 //            val compressedBytes = client.get("https://vtiles.openhistoricalmap.org/maps/osm/$zoom/$row/$column") {
 //                contentType(ContentType.Application.ProtoBuf)
@@ -62,6 +62,6 @@ class VectorTileSource : TileSource {
         } catch (ex: Exception) {
             println(ex)
         }
-        return TileRenderResult.Failure(TileSpecs(zoom, row, column))
+        return TileResult.Failure(TileSpecs(zoom, row, column))
     }
 }

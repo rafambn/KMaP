@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 
 class CanvasEngine(
     maxCacheTiles: Int = 20,
-    getTile: suspend (zoom: Int, row: Int, column: Int) -> TileRenderResult,
+    getTile: suspend (zoom: Int, row: Int, column: Int) -> TileResult,
     val coroutineScope: CoroutineScope
 ) {
 
