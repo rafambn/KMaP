@@ -88,22 +88,24 @@ private fun DrawScope.drawTiles(
     canvas: Canvas
 ) {
     tiles.forEach { tile ->
-        tile.imageBitmap?.let {
-            canvas.drawImageRect(
-                image = it,
-                dstOffset = IntOffset(
-                    (tileSize.width * tile.row * scaleAdjustment + positionOffset.x).dp.toPx().toIntFloor(),
-                    (tileSize.height * tile.col * scaleAdjustment + positionOffset.y).dp.toPx().toIntFloor()
-                ),
-                dstSize = IntSize(
-                    (tileSize.width.dp.toPx() * scaleAdjustment).toIntFloor(),
-                    (tileSize.height.dp.toPx() * scaleAdjustment).toIntFloor()
-                ),
-                paint = Paint().apply {
-                    isAntiAlias = false
-                    filterQuality = FilterQuality.High
-                }
-            )
+        when (tile) {
+            is RasterTile -> tile.imageBitmap?.let {
+                canvas.drawImageRect(
+                    image = it,
+                    dstOffset = IntOffset(
+                        (tileSize.width * tile.row * scaleAdjustment + positionOffset.x).dp.toPx().toIntFloor(),
+                        (tileSize.height * tile.col * scaleAdjustment + positionOffset.y).dp.toPx().toIntFloor()
+                    ),
+                    dstSize = IntSize(
+                        (tileSize.width.dp.toPx() * scaleAdjustment).toIntFloor(),
+                        (tileSize.height.dp.toPx() * scaleAdjustment).toIntFloor()
+                    ),
+                    paint = Paint().apply {
+                        isAntiAlias = false
+                        filterQuality = FilterQuality.High
+                    }
+                )
+            }
         }
     }
 }

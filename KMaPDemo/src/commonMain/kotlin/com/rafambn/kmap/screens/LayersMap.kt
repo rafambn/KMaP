@@ -21,7 +21,7 @@ import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
 import com.rafambn.kmap.getGestureDetector
-import com.rafambn.kmap.tiles.Tile
+import com.rafambn.kmap.tiles.RasterTile
 import com.rafambn.kmap.tiles.TileResult
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
@@ -68,6 +68,6 @@ class LayerMapTileSource : TileSource {
         val resourcePath = "drawable/map_overlay_${(row + column) % 2}.png"
         val bytes = Res.readBytes(resourcePath)
         val imageBitmap = bytes.decodeToImageBitmap()
-        return TileResult.Success(Tile(zoom, row, column, imageBitmap))
+        return TileResult.Success(RasterTile(zoom, row, column, imageBitmap))
     }
 }

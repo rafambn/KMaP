@@ -71,7 +71,11 @@ class TileRenderer(
                     when (tileResult) {
                         is TileResult.Success -> {
                             _renderedTilesFlow.emit(tileResult.tile)
-                            tilesBeingProcessed.remove(tileResult.tile)
+                            when (tileResult.tile) {
+                                is RasterTile -> {
+                                    tilesBeingProcessed.remove(tileResult.tile as TileSpecs)
+                                }
+                            }
                             specsBeingProcessed.removeAll {
                                 TileSpecs(
                                     it.zoom,

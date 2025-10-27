@@ -41,9 +41,7 @@ class KMaPContent(
         gestureWrapper: MapGestureWrapper? = null
     ) {
         canvas.add(
-            Canvas(
-                parameters
-            ) {
+            Canvas(parameters) {
                 TileCanvas(
                     canvasSize = mapState.cameraState.canvasSize,
                     magnifierScale = mapState.cameraState.zoom - mapState.cameraState.zoom.toIntFloor(),

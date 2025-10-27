@@ -22,17 +22,27 @@ fun TileLayers.changeLayer(frontLayerLevel: Int) {
 }
 
 fun TileLayers.insertNewTileBitmap(tile: Tile) {
-    val layer = if (tile.zoom == frontLayer.level) frontLayer else if (tile.zoom == backLayer.level) backLayer else return
+    when (tile) {
+        is RasterTile ->{
+            val layer = if (tile.zoom == frontLayer.level) frontLayer else if (tile.zoom == backLayer.level) backLayer else return
 
-    layer.tiles.forEach {
-        if (tile == TileSpecs(
-                it.zoom,
-                it.row.loopInZoom(it.zoom),
-                it.col.loopInZoom(it.zoom)
-            )
-        )
-            it.imageBitmap = tile.imageBitmap
+            layer.tiles.forEach {
+                it as RasterTile
+                if (tile == TileSpecs(it.zoom, it.row.loopInZoom(it.zoom), it.col.loopInZoom(it.zoom)))
+                    it.imageBitmap = tile.imageBitmap
+            }
+        }
+        is VectorTile ->{
+            val layer = if (tile.zoom == frontLayer.level) frontLayer else if (tile.zoom == backLayer.level) backLayer else return
+
+            layer.tiles.forEach {
+                it as VectorTile
+                if (tile == TileSpecs(it.zoom, it.row.loopInZoom(it.zoom), it.col.loopInZoom(it.zoom)))
+                    it.mvtile = tile.mvtile
+            }
+        }
     }
+
 }
 
 fun TileLayers.updateFrontLayerTiles(tiles: List<Tile>) {

@@ -60,11 +60,27 @@ class CanvasEngine(
                 }
 
                 foundInRenderedTiles != null -> {
-                    newFrontLayer.add(Tile(tileSpecs.zoom, tileSpecs.row, tileSpecs.col, foundInRenderedTiles.imageBitmap))
+                    when (foundInRenderedTiles) {
+                        is RasterTile -> {
+                            newFrontLayer.add(RasterTile(tileSpecs.zoom, tileSpecs.row, tileSpecs.col, foundInRenderedTiles.imageBitmap))
+                        }
+
+                        is VectorTile -> {
+                            newFrontLayer.add(VectorTile(tileSpecs.zoom, tileSpecs.row, tileSpecs.col, foundInRenderedTiles.mvtile))
+                        }
+                    }
                 }
 
                 else -> {
-                    newFrontLayer.add(Tile(tileSpecs.zoom, tileSpecs.row, tileSpecs.col, null))
+                    when (foundInRenderedTiles) {
+                        is RasterTile -> {
+                            newFrontLayer.add(RasterTile(tileSpecs.zoom, tileSpecs.row, tileSpecs.col, null))
+                        }
+
+                        is VectorTile -> {
+                            newFrontLayer.add(VectorTile(tileSpecs.zoom, tileSpecs.row, tileSpecs.col, null))
+                        }
+                    }
                     tilesToRender.add(tileSpecs)
                 }
             }

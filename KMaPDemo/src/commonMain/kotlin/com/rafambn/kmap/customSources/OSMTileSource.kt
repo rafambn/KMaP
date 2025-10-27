@@ -1,8 +1,8 @@
 package com.rafambn.kmap.customSources
 
 import androidx.compose.ui.graphics.ImageBitmap
+import com.rafambn.kmap.tiles.RasterTile
 import com.rafambn.kmap.tiles.TileSource
-import com.rafambn.kmap.tiles.Tile
 import com.rafambn.kmap.tiles.TileResult
 import com.rafambn.kmap.tiles.TileSpecs
 import io.ktor.client.HttpClient
@@ -23,7 +23,7 @@ class OSMTileSource(private val userAgent: String) : TileSource {
                 header("User-Agent", userAgent)
             }.readRawBytes()
             imageBitmap = byteArray.decodeToImageBitmap()
-            return TileResult.Success(Tile(zoom, row, column, imageBitmap))
+            return TileResult.Success(RasterTile(zoom, row, column, imageBitmap))
         } catch (ex: Exception) {
             println(ex)
             return TileResult.Failure(TileSpecs(zoom, row, column))
