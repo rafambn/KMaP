@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -28,7 +29,7 @@ import com.rafambn.kmap.theme.AppTheme
 
 @Composable
 fun App() = AppTheme {
-    Surface(modifier = Modifier.fillMaxSize()) {
+    Surface(modifier = Modifier.systemBarsPadding().fillMaxSize()) {
         val navigationController = rememberNavController()
         NavHost(
             navController = navigationController,

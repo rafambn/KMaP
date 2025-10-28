@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.copy
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import com.rafambn.kmap.core.MapState
 import com.rafambn.kmap.gestures.MapGestureWrapper
@@ -17,9 +18,7 @@ import com.rafambn.kmap.gestures.sharedPointerInput
 import com.rafambn.kmap.tiles.TileCanvas
 import com.rafambn.kmap.utils.ProjectedCoordinates
 import com.rafambn.kmap.utils.ScreenOffset
-import com.rafambn.kmap.utils.asOffset
 import com.rafambn.kmap.utils.plus
-import com.rafambn.kmap.utils.toIntFloor
 
 class KMaPContent(
     content: KMaPContent.() -> Unit,
@@ -126,8 +125,8 @@ class KMaPContent(
                                     convertScreenOffsetToProjectedCoordinates = {
                                         val untranslatedPoint = it.plus(ScreenOffset(bounds.left - padding, bounds.top - padding))
                                         return@detectPathGestures ProjectedCoordinates(
-                                            untranslatedPoint.x * orientationX / (scaleX*mapState.density.density),
-                                            untranslatedPoint.y * orientationY / (scaleY*mapState.density.density),
+                                            untranslatedPoint.x * orientationX / (scaleX * mapState.density.density),
+                                            untranslatedPoint.y * orientationY / (scaleY * mapState.density.density),
                                         )
                                     }
                                 )

@@ -85,7 +85,6 @@ class MapState(
         )
     )
 
-
     operator fun MutableState<CameraState>.setValue(thisObj: Any?, property: KProperty<*>, value: CameraState) {
         this.value = value
         val topLeft = ScreenOffset.Zero.toTilePoint()

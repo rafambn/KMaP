@@ -69,7 +69,7 @@ internal fun TileCanvas(
                     )
                 }
             } ?: Modifier)
-            .then(gestureWrapper?.onScroll?.let {//TODO quick fix of scroll, check pointer event order behavior has changed and fix code properly
+            .then(gestureWrapper?.onScroll?.let {//TODO quick fix of scroll, fix code properly
                 Modifier.pointerInput(Unit) {
                     awaitPointerEventScope {
                         while (true) {
