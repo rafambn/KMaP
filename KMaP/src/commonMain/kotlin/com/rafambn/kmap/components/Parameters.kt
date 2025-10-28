@@ -8,7 +8,8 @@ import androidx.compose.ui.graphics.drawscope.DrawScope.Companion.DefaultBlendMo
 import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Fill
 import com.rafambn.kmap.core.DrawPosition
-import com.rafambn.kmap.tiles.TileResult
+import com.rafambn.kmap.mapSource.tiled.raster.RasterTileResult
+import com.rafambn.kmap.mapSource.tiled.vector.VectorTileResult
 import com.rafambn.kmap.utils.Degrees
 import com.rafambn.kmap.utils.Coordinates
 import com.rafambn.kmap.utils.ProjectedCoordinates
@@ -57,6 +58,21 @@ open class CanvasParameters(
     val alpha: Float = 1F,
     val zIndex: Float = 0F,
     val maxCacheTiles: Int = 20,
-    val tileSource: suspend (zoom: Int, row: Int, column: Int) -> TileResult,
-    val style: Style? = null,
 ) : Parameters
+
+open class RasterCanvasParameters(
+    id: Int,
+    alpha: Float = 1F,
+    zIndex: Float = 0F,
+    maxCacheTiles: Int = 20,
+    val tileSource: suspend (zoom: Int, row: Int, column: Int) -> RasterTileResult,
+) : CanvasParameters(id, alpha, zIndex, maxCacheTiles)
+
+open class VectorCanvasParameters(
+    id: Int,
+    alpha: Float = 1F,
+    zIndex: Float = 0F,
+    maxCacheTiles: Int = 20,
+    val tileSource: suspend (zoom: Int, row: Int, column: Int) -> VectorTileResult,
+    val style: Style,
+) : CanvasParameters(id, alpha, zIndex, maxCacheTiles)

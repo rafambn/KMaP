@@ -1,4 +1,4 @@
-package com.rafambn.kmap.tiles
+package com.rafambn.kmap.mapSource.tiled
 
 import androidx.compose.ui.graphics.ImageBitmap
 import com.rafambn.kmap.utils.vectorTile.MVTile
@@ -35,7 +35,7 @@ class RasterTile(
     zoom: Int,
     row: Int,
     col: Int,
-    var imageBitmap: ImageBitmap?
+    val imageBitmap: ImageBitmap?
 ) : Tile(zoom, row, col) {
 
     override fun hashCode(): Int {
@@ -60,7 +60,7 @@ class VectorTile(
     zoom: Int,
     row: Int,
     col: Int,
-    var mvtile: MVTile?
+    val mvtile: MVTile?
 ) : Tile(zoom, row, col){
 
     override fun hashCode(): Int {

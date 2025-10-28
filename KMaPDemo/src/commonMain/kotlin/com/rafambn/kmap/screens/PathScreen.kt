@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.components.CanvasParameters
 import com.rafambn.kmap.components.MarkerParameters
 import com.rafambn.kmap.components.PathParameters
+import com.rafambn.kmap.components.RasterCanvasParameters
 import com.rafambn.kmap.core.DrawPosition
 import com.rafambn.kmap.core.KMaP
 import com.rafambn.kmap.core.rememberMapState
@@ -64,8 +65,8 @@ fun PathScreen(
             modifier = Modifier.fillMaxSize(),
             mapState = mapState,
         ) {
-            canvas(
-                parameters = CanvasParameters(id = 1, tileSource = SimpleMapTileSource()::getTile),
+            rasterCanvas(
+                parameters = RasterCanvasParameters(id = 1, tileSource = SimpleMapTileSource()::getTile),
                 gestureWrapper = getGestureDetector(mapState.motionController)
             )
             path(

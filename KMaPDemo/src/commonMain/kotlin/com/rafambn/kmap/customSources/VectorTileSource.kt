@@ -1,10 +1,9 @@
 package com.rafambn.kmap.customSources
 
-import com.rafambn.kmap.tiles.TileResult
-import com.rafambn.kmap.tiles.TileSource
-import com.rafambn.kmap.tiles.TileSpecs
-import com.rafambn.kmap.tiles.VectorTile
-import com.rafambn.kmap.utils.style.Style
+import com.rafambn.kmap.mapSource.tiled.TileSpecs
+import com.rafambn.kmap.mapSource.tiled.VectorTile
+import com.rafambn.kmap.mapSource.tiled.vector.VectorTileResult
+import com.rafambn.kmap.mapSource.tiled.vector.VectorTileSource
 import com.rafambn.kmap.utils.vectorTile.RawMVTile
 import com.rafambn.kmap.utils.vectorTile.parse
 import io.ktor.client.HttpClient
@@ -17,9 +16,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.InternalResourceApi
-import org.jetbrains.compose.resources.readResourceBytes
 
-class VectorTileSource : TileSource {
+class VectorTileSource : VectorTileSource {
     private val client = HttpClient()
 
     private val json = Json {
@@ -29,7 +27,7 @@ class VectorTileSource : TileSource {
     }
 
     @OptIn(ExperimentalResourceApi::class, InternalResourceApi::class, ExperimentalUnsignedTypes::class, ExperimentalSerializationApi::class)
-    override suspend fun getTile(zoom: Int, row: Int, column: Int): TileResult {
+    override suspend fun getTile(zoom: Int, row: Int, column: Int): VectorTileResult {
         try {
 //            val compressedBytes = client.get("https://vtiles.openhistoricalmap.org/maps/osm/$zoom/$row/$column") {
 //                contentType(ContentType.Application.ProtoBuf)
@@ -56,10 +54,10 @@ class VectorTileSource : TileSource {
 //            parsedMVTile.layers.forEach { layer ->
 //                println("Layer: ${layer.name} with ${layer.features.size} features")
 //            }
-            return TileResult.Success(VectorTile(zoom, row, column, mvTile))
+            return VectorTileResult.Success(VectorTile(zoom, row, column, mvTile))
         } catch (ex: Exception) {
             println(ex)
         }
-        return TileResult.Failure(TileSpecs(zoom, row, column))
+        return VectorTileResult.Failure(TileSpecs(zoom, row, column))
     }
 }

@@ -14,8 +14,8 @@ import androidx.compose.ui.unit.Density
 import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.ZoomLevelRange
 import com.rafambn.kmap.mapProperties.border.MapBorderType
-import com.rafambn.kmap.tiles.CanvasKernel
-import com.rafambn.kmap.tiles.TileLayers
+import com.rafambn.kmap.mapSource.tiled.CanvasKernel
+import com.rafambn.kmap.mapSource.tiled.TileLayers
 import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.TilePoint
 import com.rafambn.kmap.utils.DifferentialScreenOffset
@@ -97,7 +97,7 @@ class MapState(
             maxOf(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x).toFloat(),
             maxOf(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y).toFloat()
         )
-        canvasKernel.renderTile(viewPort, value.zoom.toIntFloor(), mapProperties)
+        canvasKernel.resolveVisibleTiles(viewPort, value.zoom.toIntFloor(), mapProperties)
     }
 
     //Draw variables

@@ -8,14 +8,14 @@ import androidx.compose.ui.graphics.copy
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.withTransform
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import com.rafambn.kmap.core.MapState
 import com.rafambn.kmap.gestures.MapGestureWrapper
 import com.rafambn.kmap.gestures.PathGestureWrapper
 import com.rafambn.kmap.gestures.detectPathGestures
 import com.rafambn.kmap.gestures.sharedPointerInput
-import com.rafambn.kmap.tiles.TileCanvas
+import com.rafambn.kmap.mapSource.tiled.raster.RasterTileCanvas
+import com.rafambn.kmap.mapSource.tiled.vector.VectorTileCanvas
 import com.rafambn.kmap.utils.ProjectedCoordinates
 import com.rafambn.kmap.utils.ScreenOffset
 import com.rafambn.kmap.utils.plus
@@ -32,16 +32,41 @@ class KMaPContent(
 
     init {
         apply(content)
+        val canvasIds = canvas.map { it.parameters.id }
+        require(canvasIds.size == canvasIds.toSet().size) {
+            "Canvas must have different ids"
+        }
         mapState.canvasKernel.refreshCanvas(canvas.map { it.parameters })
     }
 
-    fun canvas(
-        parameters: CanvasParameters,
+    fun rasterCanvas(
+        parameters: RasterCanvasParameters,
         gestureWrapper: MapGestureWrapper? = null
     ) {
         canvas.add(
             Canvas(parameters) {
-                TileCanvas(
+                RasterTileCanvas(
+                    id = parameters.id,
+                    canvasSize = mapState.cameraState.canvasSize,
+                    gestureWrapper = gestureWrapper,
+                    tileLayers = mapState.drawTileLayers,
+                    magnifierScale = mapState.drawMagScale,
+                    positionOffset = mapState.drawReference,
+                    tileSize = mapState.drawTileSize,
+                    rotationDegrees = mapState.drawRotationDegrees,
+                    translation = mapState.drawTranslation,
+                )
+            }
+        )
+    }
+
+    fun vectorCanvas(
+        parameters: VectorCanvasParameters,
+        gestureWrapper: MapGestureWrapper? = null
+    ) {
+        canvas.add(
+            Canvas(parameters) {
+                VectorTileCanvas(
                     id = parameters.id,
                     canvasSize = mapState.cameraState.canvasSize,
                     gestureWrapper = gestureWrapper,

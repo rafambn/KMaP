@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.components.CanvasParameters
+import com.rafambn.kmap.components.RasterCanvasParameters
 import com.rafambn.kmap.core.KMaP
 import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
@@ -28,8 +29,8 @@ fun SimpleMapScreen(
             modifier = Modifier.fillMaxSize(),
             mapState = mapState,
         ) {
-            canvas(
-                parameters = CanvasParameters(id = 1, tileSource = SimpleMapTileSource()::getTile),
+            rasterCanvas(
+                parameters = RasterCanvasParameters(id = 1, tileSource = SimpleMapTileSource()::getTile),
                 gestureWrapper = getGestureDetector(mapState.motionController)
             )
         }

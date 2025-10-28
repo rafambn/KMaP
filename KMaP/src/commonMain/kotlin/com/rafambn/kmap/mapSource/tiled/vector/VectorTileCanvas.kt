@@ -1,15 +1,15 @@
-package com.rafambn.kmap.tiles
+package com.rafambn.kmap.mapSource.tiled.vector
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Canvas
-import androidx.compose.ui.graphics.Path as ComposePath
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
+import androidx.compose.ui.graphics.Path as ComposePath
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -25,6 +25,11 @@ import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.gestures.MapGestureWrapper
 import com.rafambn.kmap.gestures.detectMapGestures
 import com.rafambn.kmap.gestures.sharedPointerInput
+import com.rafambn.kmap.mapSource.tiled.RasterTile
+import com.rafambn.kmap.mapSource.tiled.Tile
+import com.rafambn.kmap.mapSource.tiled.TileDimension
+import com.rafambn.kmap.mapSource.tiled.TileLayers
+import com.rafambn.kmap.mapSource.tiled.VectorTile
 import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.ScreenOffset
 import com.rafambn.kmap.utils.asScreenOffset
@@ -37,10 +42,12 @@ import com.rafambn.kmap.utils.vectorTile.RawMVTGeomType
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonPrimitive
+import kotlin.math.abs
 import kotlin.math.pow
 
+
 @Composable
-internal fun TileCanvas(
+internal fun VectorTileCanvas(
     id: Int,
     canvasSize: ScreenOffset,
     gestureWrapper: MapGestureWrapper?,
@@ -603,9 +610,9 @@ private fun parseHslColor(hslStr: String): Color {
  * h, s, l are normalized to [0, 1] range
  */
 private fun hslToRgb(h: Double, s: Double, l: Double): Triple<Int, Int, Int> {
-    val c = (1 - kotlin.math.abs(2 * l - 1)) * s
+    val c = (1 - abs(2 * l - 1)) * s
     val hPrime = h * 6
-    val x = c * (1 - kotlin.math.abs((hPrime % 2) - 1))
+    val x = c * (1 - abs((hPrime % 2) - 1))
 
     val (rPrime, gPrime, bPrime) = when {
         hPrime < 1 -> Triple(c, x, 0.0)
