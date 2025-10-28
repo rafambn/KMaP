@@ -38,14 +38,15 @@ import kotlin.math.pow
 
 @Composable
 internal fun TileCanvas(
+    id: Int,
     canvasSize: ScreenOffset,
-    magnifierScale: Float,
-    positionOffset: CanvasDrawReference,
-    tileSize: TileDimension,
-    rotationDegrees: Float,
-    translation: Offset,
     gestureWrapper: MapGestureWrapper?,
-    tileLayers: TileLayers,
+    magnifierScale: () -> Float,
+    positionOffset: () -> CanvasDrawReference,
+    tileSize: () -> TileDimension,
+    rotationDegrees: () -> Float,
+    translation: () -> Offset,
+    tileLayers: (Int) -> TileLayers,
     style: Style?
 ) {
     Layout(
@@ -66,9 +67,15 @@ internal fun TileCanvas(
                 }
             } ?: Modifier)
             .drawBehind {
+                val translation = translation()
+                val rotation = rotationDegrees()
+                val magnifierScale = magnifierScale()
+                val tileSize = tileSize()
+                val positionOffset = positionOffset()
+                val tileLayers = tileLayers(id)
                 withTransform({
                     translate(translation.x, translation.y)
-                    rotate(rotationDegrees, Offset.Zero)
+                    rotate(rotation, Offset.Zero)
                     scale(2F.pow(magnifierScale), Offset.Zero)
                 }) {
                     drawIntoCanvas { canvas ->
@@ -123,7 +130,8 @@ private fun DrawScope.drawTiles(
                     }
                 )
             }
-            is VectorTile ->{
+
+            is VectorTile -> {
                 style?.let {
                     drawVectorTile(tile, tileSize, positionOffset, scaleAdjustment, canvas, style)
                 }
@@ -139,7 +147,7 @@ private fun DrawScope.drawVectorTile(
     scaleAdjustment: Float = 1F,
     canvas: Canvas,
     style: Style?
-){
+) {
     tile.mvtile?.let { mvTile ->
         style?.let { styleSpec ->
             // Calculate tile offset in canvas space
@@ -168,12 +176,15 @@ private fun DrawScope.drawVectorTile(
                     "fill" -> renderFillLayer(
                         mvtLayer, styleLayer, tileOffsetPx, tileSize, scaleAdjustment, canvas
                     )
+
                     "line" -> renderLineLayer(
                         mvtLayer, styleLayer, tileOffsetPx, tileSize, scaleAdjustment, canvas
                     )
+
                     "symbol" -> renderSymbolLayer(
                         mvtLayer, styleLayer, tileOffsetPx, tileSize, scaleAdjustment, canvas
                     )
+
                     "circle" -> renderCircleLayer(
                         mvtLayer, styleLayer, tileOffsetPx, tileSize, scaleAdjustment, canvas
                     )
@@ -430,9 +441,11 @@ private fun extractOpacityProperty(
             element is JsonPrimitive && element.isString -> {
                 element.content.toDoubleOrNull() ?: defaultOpacity
             }
+
             element is JsonPrimitive && !element.isString -> {
                 element.jsonPrimitive.content.toDoubleOrNull() ?: defaultOpacity
             }
+
             else -> defaultOpacity
         }
     }
@@ -452,6 +465,7 @@ private fun extractNumberProperty(
             element is JsonPrimitive && !element.isString -> {
                 element.jsonPrimitive.content.toDoubleOrNull() ?: defaultValue
             }
+
             else -> defaultValue
         }
     }
@@ -489,6 +503,7 @@ private fun parseColor(element: JsonElement, defaultColor: Color): Color {
                 else -> parseNamedColor(colorStr) ?: defaultColor
             }
         }
+
         else -> defaultColor
     }
 }
@@ -505,12 +520,14 @@ private fun parseHexColor(hex: String): Color {
             val b = cleanHex[2].toString().repeat(2).toInt(16)
             Color(red = r, green = g, blue = b)
         }
+
         6 -> { // #RRGGBB
             val r = cleanHex.substring(0, 2).toInt(16)
             val g = cleanHex.substring(2, 4).toInt(16)
             val b = cleanHex.substring(4, 6).toInt(16)
             Color(red = r, green = g, blue = b)
         }
+
         8 -> { // #RRGGBBAA
             val r = cleanHex.substring(0, 2).toInt(16)
             val g = cleanHex.substring(2, 4).toInt(16)
@@ -518,6 +535,7 @@ private fun parseHexColor(hex: String): Color {
             val a = cleanHex.substring(6, 8).toInt(16)
             Color(red = r, green = g, blue = b, alpha = a)
         }
+
         else -> Color.Black
     }
 }

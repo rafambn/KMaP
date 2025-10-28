@@ -15,6 +15,7 @@ import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.ZoomLevelRange
 import com.rafambn.kmap.mapProperties.border.MapBorderType
 import com.rafambn.kmap.tiles.CanvasKernel
+import com.rafambn.kmap.tiles.TileLayers
 import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.TilePoint
 import com.rafambn.kmap.utils.DifferentialScreenOffset
@@ -24,6 +25,7 @@ import com.rafambn.kmap.utils.ScreenOffset
 import com.rafambn.kmap.utils.asCanvasDrawReference
 import com.rafambn.kmap.utils.asCanvasPosition
 import com.rafambn.kmap.utils.asDifferentialScreenOffset
+import com.rafambn.kmap.utils.asOffset
 import com.rafambn.kmap.utils.asScreenOffset
 import com.rafambn.kmap.utils.div
 import com.rafambn.kmap.utils.loopInRange
@@ -52,7 +54,7 @@ fun rememberMapState(
             mapProperties = mapProperties,
             zoomLevelPreference = zoomLevelPreference,
             density = density,
-            cameraState = null,
+            initialCameraState = null,
             coroutineScope
         )
     }
@@ -62,7 +64,7 @@ class MapState(
     val mapProperties: MapProperties,
     zoomLevelPreference: ZoomLevelRange? = null,
     var density: Density = Density(1F),
-    cameraState: CameraState? = null,
+    initialCameraState: CameraState? = null,
     coroutineScope: CoroutineScope
 ) {
     val motionController = MotionController(this)
@@ -77,11 +79,12 @@ class MapState(
 
     //State variables
     var cameraState by mutableStateOf(
-        cameraState ?: CameraState(
+        initialCameraState ?: CameraState(
             tilePoint = TilePoint(mapProperties.tileSize.width / 2.0, mapProperties.tileSize.height / 2.0),
             coordinates = TilePoint(mapProperties.tileSize.width / 2.0, mapProperties.tileSize.height / 2.0).toCoordinates()
         )
     )
+
 
     operator fun MutableState<CameraState>.setValue(thisObj: Any?, property: KProperty<*>, value: CameraState) {
         this.value = value
@@ -98,9 +101,15 @@ class MapState(
         canvasKernel.renderTile(viewPort, value.zoom.toIntFloor(), mapProperties)
     }
 
+    //Draw variables
+    val drawMagScale = { cameraState.zoom - cameraState.zoom.toIntFloor() }
+    val drawReference = { cameraState.tilePoint.toCanvasDrawReference() }
+    val drawTileSize = { mapProperties.tileSize }
+    val drawRotationDegrees = { cameraState.angleDegrees.toFloat() }
+    val drawTranslation = { cameraState.canvasSize.asOffset() / 2F }
+    val drawTileLayers: (Int) -> TileLayers = { canvasKernel.getTileLayers(it) }
+
     //Derivative variables
-    val drawReference
-        get() = cameraState.tilePoint.toCanvasDrawReference()
     private val zoomLevel
         get() = cameraState.zoom.toIntFloor()
 
@@ -244,7 +253,7 @@ class MapState(
                         }
                     },
                     density = Density(map["density"] as Float),
-                    cameraState = CameraState(
+                    initialCameraState = CameraState(
                         canvasSize = (map["canvasSize"] as Pair<*, *>).let { ScreenOffset(it.first as Float, it.second as Float) },
                         zoom = map["zoom"] as Float,
                         angleDegrees = map["angleDegrees"] as Double,

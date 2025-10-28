@@ -43,15 +43,16 @@ class KMaPContent(
         canvas.add(
             Canvas(parameters) {
                 TileCanvas(
+                    id = parameters.id,
                     canvasSize = mapState.cameraState.canvasSize,
-                    magnifierScale = mapState.cameraState.zoom - mapState.cameraState.zoom.toIntFloor(),
-                    positionOffset = mapState.drawReference,
-                    tileSize = mapState.mapProperties.tileSize,
-                    rotationDegrees = mapState.cameraState.angleDegrees.toFloat(),
-                    translation = mapState.cameraState.canvasSize.asOffset() / 2F,
                     gestureWrapper = gestureWrapper,
-                    tileLayers = mapState.canvasKernel.getTileLayers(parameters.id),
+                    tileLayers = mapState.drawTileLayers,
                     style = parameters.style,
+                    magnifierScale = mapState.drawMagScale,
+                    positionOffset = mapState.drawReference,
+                    tileSize = mapState.drawTileSize,
+                    rotationDegrees = mapState.drawRotationDegrees,
+                    translation = mapState.drawTranslation,
                 )
             }
         )
