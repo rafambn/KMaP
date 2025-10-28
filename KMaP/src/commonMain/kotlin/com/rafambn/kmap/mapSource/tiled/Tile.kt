@@ -2,6 +2,7 @@ package com.rafambn.kmap.mapSource.tiled
 
 import androidx.compose.ui.graphics.ImageBitmap
 import com.rafambn.kmap.utils.vectorTile.MVTile
+import com.rafambn.kmap.utils.vectorTile.OptimizedMVTile
 
 open class TileSpecs(
     val zoom: Int,
@@ -78,5 +79,30 @@ class VectorTile(
 
     override fun toString(): String {
         return "Tile(zoom=$zoom, row=$row, col=$col, mvtile=$mvtile)"
+    }
+}
+
+class OptimizedVectorTile(
+    zoom: Int,
+    row: Int,
+    col: Int,
+    val optimizedTile: OptimizedMVTile?
+) : Tile(zoom, row, col){
+
+    override fun hashCode(): Int {
+        var result = super.hashCode()
+        result = 31 * result + (optimizedTile?.hashCode() ?: 0)
+        return result
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (!super.equals(other)) return false
+        if (other is VectorTile && optimizedTile != other.mvtile) return false
+        return true
+    }
+
+    override fun toString(): String {
+        return "Tile(zoom=$zoom, row=$row, col=$col, optimizedTile=$optimizedTile)"
     }
 }

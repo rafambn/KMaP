@@ -26,7 +26,7 @@ class RasterCanvasEngine(
         coroutineScope.launch {
             while (isActive) {
                 select {
-                    rasterTileRenderer.tilesProcessedChannel.onReceive {
+                    rasterTileRenderer.tilesProcessedChannel.onReceive {//TODO understand why this part is being broken with viewmodel
                         val newCache = cachedTiles.toMutableList()
                         newCache.add(it)
                         if (cachedTiles.size > maxCacheTiles)

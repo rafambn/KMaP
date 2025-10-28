@@ -5,13 +5,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Canvas
-import androidx.compose.ui.graphics.Path as ComposePath
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.PaintingStyle
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
@@ -27,22 +22,12 @@ import com.rafambn.kmap.gestures.detectMapGestures
 import com.rafambn.kmap.gestures.sharedPointerInput
 import com.rafambn.kmap.mapSource.tiled.RasterTile
 import com.rafambn.kmap.mapSource.tiled.Tile
-import com.rafambn.kmap.mapSource.tiled.VectorTile
 import com.rafambn.kmap.mapSource.tiled.TileDimension
 import com.rafambn.kmap.mapSource.tiled.TileLayers
 import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.ScreenOffset
 import com.rafambn.kmap.utils.asScreenOffset
-import com.rafambn.kmap.utils.style.Style
-import com.rafambn.kmap.utils.style.StyleLayer
 import com.rafambn.kmap.utils.toIntFloor
-import com.rafambn.kmap.utils.vectorTile.MVTFeature
-import com.rafambn.kmap.utils.vectorTile.MVTLayer
-import com.rafambn.kmap.utils.vectorTile.RawMVTGeomType
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonPrimitive
-import kotlin.math.abs
 import kotlin.math.pow
 
 @Composable
@@ -55,7 +40,7 @@ internal fun RasterTileCanvas(
     tileSize: () -> TileDimension,
     rotationDegrees: () -> Float,
     translation: () -> Offset,
-    tileLayers: (Int) -> TileLayers,
+    tileLayers: () -> TileLayers,
 ) {
     Layout(
         modifier = Modifier
@@ -95,21 +80,21 @@ internal fun RasterTileCanvas(
                 val magnifierScale = magnifierScale()
                 val tileSize = tileSize()
                 val positionOffset = positionOffset()
-                val tileLayers = tileLayers(id)
+                val tileLayers = tileLayers()
                 withTransform({
                     translate(translation.x, translation.y)
                     rotate(rotation, Offset.Zero)
                     scale(2F.pow(magnifierScale), Offset.Zero)
                 }) {
                     drawIntoCanvas { canvas ->
-                        drawTiles(
+                        drawRasterTiles(
                             tileLayers.backLayer.tiles,
                             tileSize,
                             positionOffset,
                             2F.pow(tileLayers.frontLayer.level - tileLayers.backLayer.level),
                             canvas,
                         )
-                        drawTiles(
+                        drawRasterTiles(
                             tileLayers.frontLayer.tiles,
                             tileSize,
                             positionOffset,
@@ -124,7 +109,7 @@ internal fun RasterTileCanvas(
     }
 }
 
-private fun DrawScope.drawTiles(
+private fun DrawScope.drawRasterTiles(
     tiles: List<Tile>,
     tileSize: TileDimension,
     positionOffset: CanvasDrawReference,

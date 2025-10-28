@@ -106,7 +106,6 @@ class MapState(
     val drawTileSize = { mapProperties.tileSize }
     val drawRotationDegrees = { cameraState.angleDegrees.toFloat() }
     val drawTranslation = { cameraState.canvasSize.asOffset() / 2F }
-    val drawTileLayers: (Int) -> TileLayers = { canvasKernel.getTileLayers(it) }
 
     //Derivative variables
     private val zoomLevel
