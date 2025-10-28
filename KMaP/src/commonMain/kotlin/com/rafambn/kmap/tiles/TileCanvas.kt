@@ -16,6 +16,8 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
@@ -25,6 +27,7 @@ import com.rafambn.kmap.gestures.detectMapGestures
 import com.rafambn.kmap.gestures.sharedPointerInput
 import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.ScreenOffset
+import com.rafambn.kmap.utils.asScreenOffset
 import com.rafambn.kmap.utils.style.Style
 import com.rafambn.kmap.utils.style.StyleLayer
 import com.rafambn.kmap.utils.toIntFloor
@@ -62,8 +65,23 @@ internal fun TileCanvas(
                         onGesture = gestureWrapper.onGesture,
                         onTwoFingersTap = gestureWrapper.onTwoFingersTap,
                         onHover = gestureWrapper.onHover,
-                        onScroll = gestureWrapper.onScroll,//TODO fix scroll no working
+                        onScroll = null,
                     )
+                }
+            } ?: Modifier)
+            .then(gestureWrapper?.onScroll?.let {//TODO quick fix of scroll, check pointer event order behavior has changed and fix code properly
+                Modifier.pointerInput(Unit) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            val pointerEvent = awaitPointerEvent()
+                            if (pointerEvent.type == PointerEventType.Scroll) {
+                                pointerEvent.changes.forEach {
+                                    if (it.scrollDelta.y != 0F)
+                                        gestureWrapper.onScroll.invoke(it.position.asScreenOffset(), it.scrollDelta.y / 5)
+                                }
+                            }
+                        }
+                    }
                 }
             } ?: Modifier)
             .drawBehind {
