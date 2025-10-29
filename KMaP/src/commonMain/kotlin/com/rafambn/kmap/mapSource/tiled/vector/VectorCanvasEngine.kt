@@ -33,10 +33,19 @@ class VectorCanvasEngine(
                     vectorTileRenderer.tilesProcessedChannel.onReceive {//TODO understand why this part is being broken with viewmodel
                         val newCache = cachedTiles.toMutableList()
                         newCache.add(it)
-                        cachedTiles = if (cachedTiles.size > maxCacheTiles)
-                            newCache.drop(maxCacheTiles - newCache.size)
+                        cachedTiles = if (newCache.size > maxCacheTiles)
+                            newCache.takeLast(maxCacheTiles)
                         else
                             newCache.toList()
+
+                        if (it.zoom == tileLayers.value.frontLayer.level)
+                            tileLayers.value = tileLayers.value.copy(
+                                frontLayer = Layer(it.zoom, tileLayers.value.frontLayer.tiles.toMutableList().apply { add(it) })
+                            )
+                        else if (it.zoom == tileLayers.value.backLayer.level)
+                            tileLayers.value = tileLayers.value.copy(
+                                backLayer = Layer(it.zoom, tileLayers.value.frontLayer.tiles.toMutableList().apply { add(it) })
+                            )
                     }
                 }
             }

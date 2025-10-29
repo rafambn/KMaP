@@ -49,7 +49,7 @@ class KMaPContent(
                     id = parameters.id,
                     canvasSize = mapState.cameraState.canvasSize,
                     gestureWrapper = gestureWrapper,
-                    tileLayers = { mapState.canvasKernel.getTileLayers(parameters.id)},//TODO fix issue where the canvas is not update when the tile is rendered
+                    tileLayers = { mapState.canvasKernel.getTileLayers(parameters.id)},
                     magnifierScale = mapState.drawMagScale,
                     positionOffset = mapState.drawReference,
                     tileSize = mapState.drawTileSize,
