@@ -21,12 +21,13 @@ class RasterCanvasEngine(
 
     override val tileLayers = mutableStateOf(TileLayers())
     var cachedTiles = listOf<RasterTile>()
+    val rasterTileRenderer = RasterTileRenderer(getTile, coroutineScope)
 
     init {
         coroutineScope.launch {
             while (isActive) {
                 select {
-                    rasterTileRenderer.tilesProcessedChannel.onReceive {//TODO understand why this part is being broken with viewmodel
+                    rasterTileRenderer.tilesProcessedChannel.onReceive {
                         val newCache = cachedTiles.toMutableList()
                         newCache.add(it)
                         cachedTiles = if (newCache.size > maxCacheTiles)
@@ -47,8 +48,6 @@ class RasterCanvasEngine(
             }
         }
     }
-
-    val rasterTileRenderer = RasterTileRenderer(getTile, coroutineScope)
 
     override fun renderTiles(visibleTiles: List<TileSpecs>, zoomLevel: Int) {
         val needsToChangeLevel = zoomLevel != tileLayers.value.frontLayer.level

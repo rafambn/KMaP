@@ -25,12 +25,13 @@ class VectorCanvasEngine(
 
     override val tileLayers = mutableStateOf(TileLayers())
     var cachedTiles = listOf<OptimizedVectorTile>()
+    val vectorTileRenderer = VectorTileRenderer(getTile, coroutineScope, style)
 
     init {
         coroutineScope.launch {
             while (isActive) {
                 select {
-                    vectorTileRenderer.tilesProcessedChannel.onReceive {//TODO understand why this part is being broken with viewmodel
+                    vectorTileRenderer.tilesProcessedChannel.onReceive {
                         val newCache = cachedTiles.toMutableList()
                         newCache.add(it)
                         cachedTiles = if (newCache.size > maxCacheTiles)
@@ -51,8 +52,6 @@ class VectorCanvasEngine(
             }
         }
     }
-
-    val vectorTileRenderer = VectorTileRenderer(getTile, coroutineScope, style)
 
     override fun renderTiles(visibleTiles: List<TileSpecs>, zoomLevel: Int) {
         val needsToChangeLevel = zoomLevel != tileLayers.value.frontLayer.level
