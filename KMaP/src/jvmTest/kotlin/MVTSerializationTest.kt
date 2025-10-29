@@ -3,7 +3,9 @@
 import com.rafambn.kmap.utils.vectorTile.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.protobuf.ProtoBuf
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 
 class MVTSerializationTest {
 

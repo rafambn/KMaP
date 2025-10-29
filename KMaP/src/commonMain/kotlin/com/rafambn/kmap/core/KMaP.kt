@@ -8,8 +8,8 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.onGloballyPositioned
 import com.rafambn.kmap.components.KMaPContent
-import com.rafambn.kmap.components.rememberComponentProviderLambda
 import com.rafambn.kmap.components.rememberComponentMeasurePolicy
+import com.rafambn.kmap.components.rememberComponentProviderLambda
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

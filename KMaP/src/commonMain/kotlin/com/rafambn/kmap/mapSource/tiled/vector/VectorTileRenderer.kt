@@ -6,19 +6,10 @@ import com.rafambn.kmap.mapSource.tiled.TileSpecs
 import com.rafambn.kmap.utils.loopInZoom
 import com.rafambn.kmap.utils.style.Style
 import com.rafambn.kmap.utils.style.StyleLayer
-import com.rafambn.kmap.utils.vectorTile.MVTFeature
-import com.rafambn.kmap.utils.vectorTile.OptimizedGeometry
-import com.rafambn.kmap.utils.vectorTile.OptimizedMVTile
-import com.rafambn.kmap.utils.vectorTile.OptimizedPaintProperties
-import com.rafambn.kmap.utils.vectorTile.OptimizedRenderFeature
-import com.rafambn.kmap.utils.vectorTile.RawMVTGeomType
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import com.rafambn.kmap.utils.vectorTile.*
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 
 class VectorTileRenderer(

@@ -5,10 +5,9 @@ import com.rafambn.kmap.mapSource.tiled.RasterTile
 import com.rafambn.kmap.mapSource.tiled.TileSpecs
 import com.rafambn.kmap.mapSource.tiled.raster.RasterTileResult
 import com.rafambn.kmap.mapSource.tiled.raster.RasterTileSource
-import io.ktor.client.HttpClient
-import io.ktor.client.request.get
-import io.ktor.client.request.header
-import io.ktor.client.statement.readRawBytes
+import io.ktor.client.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.decodeToImageBitmap
 

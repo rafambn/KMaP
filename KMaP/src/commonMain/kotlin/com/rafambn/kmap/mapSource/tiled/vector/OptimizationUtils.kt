@@ -1,13 +1,13 @@
 package com.rafambn.kmap.mapSource.tiled.vector
 
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path as ComposePath
 import com.rafambn.kmap.utils.style.StyleLayer
 import com.rafambn.kmap.utils.vectorTile.MVTFeature
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.math.abs
+import androidx.compose.ui.graphics.Path as ComposePath
 
 internal fun parseColor(element: JsonElement?, defaultColor: Color): Color {
     return when {

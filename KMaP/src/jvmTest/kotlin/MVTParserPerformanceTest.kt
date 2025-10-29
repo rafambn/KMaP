@@ -1,5 +1,5 @@
 import com.rafambn.kmap.utils.vectorTile.*
-import kotlin.test.*
+import kotlin.test.Test
 import kotlin.time.measureTime
 
 class MVTParserPerformanceTest {

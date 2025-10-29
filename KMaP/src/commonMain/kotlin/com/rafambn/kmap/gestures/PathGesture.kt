@@ -6,12 +6,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathHitTester
 import androidx.compose.ui.graphics.PathMeasure
-import androidx.compose.ui.input.pointer.PointerEvent
-import androidx.compose.ui.input.pointer.PointerEventTimeoutCancellationException
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.PointerInputChange
-import androidx.compose.ui.input.pointer.PointerInputScope
-import androidx.compose.ui.input.pointer.isOutOfBounds
+import androidx.compose.ui.input.pointer.*
 import com.rafambn.kmap.utils.ProjectedCoordinates
 import com.rafambn.kmap.utils.ScreenOffset
 import com.rafambn.kmap.utils.asScreenOffset

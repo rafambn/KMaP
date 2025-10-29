@@ -6,13 +6,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.rafambn.kmap.components.CanvasParameters
-import com.rafambn.kmap.components.RasterCanvasParameters
 import com.rafambn.kmap.components.VectorCanvasParameters
 import com.rafambn.kmap.core.KMaP
 import com.rafambn.kmap.core.rememberMapState
@@ -26,13 +21,8 @@ import com.rafambn.kmap.styleString
 import com.rafambn.kmap.utils.style.Style
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.InternalResourceApi
-import org.jetbrains.compose.resources.readResourceBytes
 import org.jetbrains.compose.resources.vectorResource
 
 @OptIn(InternalResourceApi::class)

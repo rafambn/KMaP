@@ -1,8 +1,8 @@
 package com.rafambn.kmap.core
 
-import com.rafambn.kmap.utils.TilePoint
 import com.rafambn.kmap.utils.Coordinates
 import com.rafambn.kmap.utils.ScreenOffset
+import com.rafambn.kmap.utils.TilePoint
 
 data class CameraState(
     val canvasSize: ScreenOffset = ScreenOffset.Zero,

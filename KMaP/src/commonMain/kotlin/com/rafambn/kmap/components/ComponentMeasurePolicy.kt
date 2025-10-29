@@ -15,7 +15,6 @@ import com.rafambn.kmap.core.MapState
 import com.rafambn.kmap.core.getViewPort
 import com.rafambn.kmap.utils.asOffset
 import com.rafambn.kmap.utils.asScreenOffset
-import kotlin.let
 
 @ExperimentalFoundationApi
 @Composable

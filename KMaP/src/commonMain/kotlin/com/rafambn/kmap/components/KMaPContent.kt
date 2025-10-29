@@ -46,7 +46,6 @@ class KMaPContent(
         canvas.add(
             Canvas(parameters) {
                 RasterTileCanvas(
-                    id = parameters.id,
                     canvasSize = mapState.cameraState.canvasSize,
                     gestureWrapper = gestureWrapper,
                     tileLayers = { mapState.canvasKernel.getTileLayers(parameters.id)},
@@ -67,7 +66,6 @@ class KMaPContent(
         canvas.add(
             Canvas(parameters) {
                 VectorTileCanvas(
-                    id = parameters.id,
                     canvasSize = mapState.cameraState.canvasSize,
                     gestureWrapper = gestureWrapper,
                     tileLayers = { mapState.canvasKernel.getTileLayers(parameters.id)},

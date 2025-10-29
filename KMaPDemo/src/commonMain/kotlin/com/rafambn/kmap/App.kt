@@ -15,16 +15,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.rafambn.kmap.core.MotionController
 import com.rafambn.kmap.gestures.MapGestureWrapper
-import com.rafambn.kmap.screens.AnimationScreen
-import com.rafambn.kmap.screens.ClusteringScreen
-import com.rafambn.kmap.screens.LayersScreen
-import com.rafambn.kmap.screens.MarkersScreen
-import com.rafambn.kmap.screens.OSMRemoteScreen
-import com.rafambn.kmap.screens.PathScreen
-import com.rafambn.kmap.screens.SimpleMapScreen
-import com.rafambn.kmap.screens.StartScreen
-import com.rafambn.kmap.screens.VectorTileScreen
-import com.rafambn.kmap.screens.ViewmodelScreen
+import com.rafambn.kmap.screens.*
 import com.rafambn.kmap.theme.AppTheme
 
 @Composable

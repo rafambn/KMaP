@@ -10,8 +10,8 @@ import androidx.compose.ui.graphics.drawscope.Fill
 import com.rafambn.kmap.core.DrawPosition
 import com.rafambn.kmap.mapSource.tiled.raster.RasterTileResult
 import com.rafambn.kmap.mapSource.tiled.vector.VectorTileResult
-import com.rafambn.kmap.utils.Degrees
 import com.rafambn.kmap.utils.Coordinates
+import com.rafambn.kmap.utils.Degrees
 import com.rafambn.kmap.utils.ProjectedCoordinates
 import com.rafambn.kmap.utils.style.Style
 

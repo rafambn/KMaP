@@ -1,13 +1,9 @@
 package com.rafambn.kmap.customSources
 
-import com.rafambn.kmap.mapProperties.MapProperties
+import com.rafambn.kmap.mapProperties.*
 import com.rafambn.kmap.mapProperties.border.BoundMapBorder
 import com.rafambn.kmap.mapProperties.border.MapBorderType
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
-import com.rafambn.kmap.mapProperties.CoordinatesRange
-import com.rafambn.kmap.mapProperties.Latitude
-import com.rafambn.kmap.mapProperties.Longitude
-import com.rafambn.kmap.mapProperties.ZoomLevelRange
 import com.rafambn.kmap.mapSource.tiled.TileDimension
 import com.rafambn.kmap.utils.Coordinates
 import com.rafambn.kmap.utils.ProjectedCoordinates

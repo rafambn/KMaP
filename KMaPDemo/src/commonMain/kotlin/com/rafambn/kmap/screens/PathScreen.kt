@@ -9,11 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -26,7 +22,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.PathData
 import androidx.compose.ui.graphics.vector.toPath
 import androidx.compose.ui.unit.dp
-import com.rafambn.kmap.components.CanvasParameters
 import com.rafambn.kmap.components.MarkerParameters
 import com.rafambn.kmap.components.PathParameters
 import com.rafambn.kmap.components.RasterCanvasParameters

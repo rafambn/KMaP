@@ -5,12 +5,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Canvas
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.PaintingStyle
-import androidx.compose.ui.graphics.Path as ComposePath
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
@@ -18,7 +12,6 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.gestures.MapGestureWrapper
 import com.rafambn.kmap.gestures.detectMapGestures
 import com.rafambn.kmap.gestures.sharedPointerInput
@@ -26,24 +19,13 @@ import com.rafambn.kmap.mapSource.tiled.OptimizedVectorTile
 import com.rafambn.kmap.mapSource.tiled.Tile
 import com.rafambn.kmap.mapSource.tiled.TileDimension
 import com.rafambn.kmap.mapSource.tiled.TileLayers
-import com.rafambn.kmap.mapSource.tiled.VectorTile
 import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.ScreenOffset
 import com.rafambn.kmap.utils.asScreenOffset
-import com.rafambn.kmap.utils.style.Style
-import com.rafambn.kmap.utils.style.StyleLayer
-import com.rafambn.kmap.utils.vectorTile.MVTFeature
-import com.rafambn.kmap.utils.vectorTile.MVTLayer
-import com.rafambn.kmap.utils.vectorTile.RawMVTGeomType
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonPrimitive
-import kotlin.math.abs
 import kotlin.math.pow
 
 @Composable
 internal fun VectorTileCanvas(
-    id: Int,
     canvasSize: ScreenOffset,
     gestureWrapper: MapGestureWrapper?,
     magnifierScale: () -> Float,
@@ -51,7 +33,7 @@ internal fun VectorTileCanvas(
     tileSize: () -> TileDimension,
     rotationDegrees: () -> Float,
     translation: () -> Offset,
-    tileLayers: (Int) -> TileLayers,
+    tileLayers: () -> TileLayers,
 ) {
     Layout(
         modifier = Modifier
@@ -66,11 +48,10 @@ internal fun VectorTileCanvas(
                         onGesture = gestureWrapper.onGesture,
                         onTwoFingersTap = gestureWrapper.onTwoFingersTap,
                         onHover = gestureWrapper.onHover,
-                        onScroll = null,
                     )
                 }
             } ?: Modifier)
-            .then(gestureWrapper?.onScroll?.let {//TODO quick fix of scroll, fix code properly
+            .then(gestureWrapper?.onScroll?.let {
                 Modifier.pointerInput(Unit) {
                     awaitPointerEventScope {
                         while (true) {
@@ -78,7 +59,7 @@ internal fun VectorTileCanvas(
                             if (pointerEvent.type == PointerEventType.Scroll) {
                                 pointerEvent.changes.forEach {
                                     if (it.scrollDelta.y != 0F)
-                                        gestureWrapper.onScroll.invoke(it.position.asScreenOffset(), it.scrollDelta.y / 5)
+                                        gestureWrapper.onScroll.invoke(it.position.asScreenOffset(), it.scrollDelta.y)
                                 }
                             }
                         }
@@ -91,7 +72,7 @@ internal fun VectorTileCanvas(
                 val magnifierScale = magnifierScale()
                 val tileSize = tileSize()
                 val positionOffset = positionOffset()
-                val tileLayers = tileLayers(id)
+                val tileLayers = tileLayers()
                 withTransform({
                     translate(translation.x, translation.y)
                     rotate(rotation, Offset.Zero)

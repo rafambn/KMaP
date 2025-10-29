@@ -1,12 +1,7 @@
 package com.rafambn.kmap.mapSource.tiled.vector
 
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Canvas
-import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.PaintingStyle
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import com.rafambn.kmap.mapSource.tiled.OptimizedVectorTile
 import com.rafambn.kmap.mapSource.tiled.TileDimension

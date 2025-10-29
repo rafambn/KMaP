@@ -1,5 +1,8 @@
 import com.rafambn.kmap.utils.vectorTile.*
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class MVTParserTest {
 

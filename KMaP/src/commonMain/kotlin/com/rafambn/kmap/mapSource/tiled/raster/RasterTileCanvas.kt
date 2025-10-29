@@ -32,7 +32,6 @@ import kotlin.math.pow
 
 @Composable
 internal fun RasterTileCanvas(
-    id: Int,
     canvasSize: ScreenOffset,
     gestureWrapper: MapGestureWrapper?,
     magnifierScale: () -> Float,
@@ -55,11 +54,10 @@ internal fun RasterTileCanvas(
                         onGesture = gestureWrapper.onGesture,
                         onTwoFingersTap = gestureWrapper.onTwoFingersTap,
                         onHover = gestureWrapper.onHover,
-                        onScroll = null,
                     )
                 }
             } ?: Modifier)
-            .then(gestureWrapper?.onScroll?.let {//TODO quick fix of scroll, fix code properly
+            .then(gestureWrapper?.onScroll?.let {
                 Modifier.pointerInput(Unit) {
                     awaitPointerEventScope {
                         while (true) {
@@ -67,7 +65,7 @@ internal fun RasterTileCanvas(
                             if (pointerEvent.type == PointerEventType.Scroll) {
                                 pointerEvent.changes.forEach {
                                     if (it.scrollDelta.y != 0F)
-                                        gestureWrapper.onScroll.invoke(it.position.asScreenOffset(), it.scrollDelta.y / 5)
+                                        gestureWrapper.onScroll.invoke(it.position.asScreenOffset(), it.scrollDelta.y)
                                 }
                             }
                         }

@@ -1,16 +1,8 @@
 package com.rafambn.kmap.gestures
 
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.calculateCentroid
-import androidx.compose.foundation.gestures.calculateCentroidSize
-import androidx.compose.foundation.gestures.calculatePan
-import androidx.compose.foundation.gestures.calculateRotation
+import androidx.compose.foundation.gestures.*
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.pointer.PointerEvent
-import androidx.compose.ui.input.pointer.PointerEventTimeoutCancellationException
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.PointerInputScope
-import androidx.compose.ui.input.pointer.isOutOfBounds
+import androidx.compose.ui.input.pointer.*
 import com.rafambn.kmap.utils.DifferentialScreenOffset
 import com.rafambn.kmap.utils.ScreenOffset
 import com.rafambn.kmap.utils.asDifferentialScreenOffset
@@ -32,7 +24,6 @@ suspend fun PointerInputScope.detectMapGestures(
 
     // jvm/web use
     onHover: ((screenOffset: ScreenOffset) -> Unit)? = null,
-    onScroll: ((screenOffset: ScreenOffset, scrollAmount: Float) -> Unit)? = null,
 ) = coroutineScope {
     awaitEachGesture {
         //Parameters
@@ -47,24 +38,13 @@ suspend fun PointerInputScope.detectMapGestures(
         do {
             event = awaitPointerEventWithTimeout()
         } while (
-            !(event.type == PointerEventType.Scroll && onScroll != null) &&
+            event.type != PointerEventType.Scroll &&
             !(event.type == PointerEventType.Press && (onTap != null || onDoubleTap != null || onLongPress != null ||
                     onTapLongPress != null || onTapSwipe != null || onTwoFingersTap != null || onGesture != null)) &&
             !(event.type == PointerEventType.Move && onHover != null)
         )
 
         when (event.type) {
-            PointerEventType.Scroll -> {
-                onScroll?.let { scrollLambda ->
-                    event.changes.forEach {
-                        if (it.scrollDelta.y != 0F) {
-                            scrollLambda.invoke(it.position.asScreenOffset(), it.scrollDelta.y)
-                        }
-                    }
-                }
-                return@awaitEachGesture
-            }
-
             PointerEventType.Press -> {
                 mapGestureState = MapGestureState.WAITING_UP
             }
@@ -101,16 +81,6 @@ suspend fun PointerInputScope.detectMapGestures(
                                 event.changes.forEach {
                                     if (!it.isOutOfBounds(size, extendedTouchPadding)) {
                                         onHover?.invoke(it.position.asScreenOffset())
-                                    }
-                                }
-                            }
-
-                            PointerEventType.Scroll -> {
-                                onScroll?.let { scrollLambda ->
-                                    event.changes.forEach {
-                                        if (it.scrollDelta.y != 0F) {
-                                            scrollLambda.invoke(it.position.asScreenOffset(), it.scrollDelta.y)
-                                        }
                                     }
                                 }
                             }
@@ -157,16 +127,6 @@ suspend fun PointerInputScope.detectMapGestures(
                                         break
                                     }
                                 }
-
-                                PointerEventType.Scroll -> {
-                                    onScroll?.let { scrollLambda ->
-                                        event.changes.forEach {
-                                            if (it.scrollDelta.y != 0F) {
-                                                scrollLambda.invoke(it.position.asScreenOffset(), it.scrollDelta.y)
-                                            }
-                                        }
-                                    }
-                                }
                             }
                         } catch (_: PointerEventTimeoutCancellationException) {
                             onLongPress?.invoke(event.changes[0].position.asScreenOffset())
@@ -201,16 +161,6 @@ suspend fun PointerInputScope.detectMapGestures(
                                         return@awaitEachGesture
                                     }
                                 }
-
-                                PointerEventType.Scroll -> {
-                                    onScroll?.let { scrollLambda ->
-                                        event.changes.forEach {
-                                            if (it.scrollDelta.y != 0F) {
-                                                scrollLambda.invoke(it.position.asScreenOffset(), it.scrollDelta.y)
-                                            }
-                                        }
-                                    }
-                                }
                             }
                         } catch (_: PointerEventTimeoutCancellationException) {
                             onTap?.invoke(event.changes[0].position.asScreenOffset())
@@ -238,16 +188,6 @@ suspend fun PointerInputScope.detectMapGestures(
                                     if (panSlop.getDistance() > touchSlop && onTapSwipe != null) {
                                         mapGestureState = MapGestureState.TAP_SWIPE
                                         break
-                                    }
-                                }
-
-                                PointerEventType.Scroll -> {
-                                    onScroll?.let { scrollLambda ->
-                                        event.changes.forEach {
-                                            if (it.scrollDelta.y != 0F) {
-                                                scrollLambda.invoke(it.position.asScreenOffset(), it.scrollDelta.y)
-                                            }
-                                        }
                                     }
                                 }
                             }
@@ -280,16 +220,6 @@ suspend fun PointerInputScope.detectMapGestures(
                                     previousCentroid.angle() - currentCentroid.angle()
                                 )
                             }
-
-                            PointerEventType.Scroll -> {
-                                onScroll?.let { scrollLambda ->
-                                    event.changes.forEach {
-                                        if (it.scrollDelta.y != 0F) {
-                                            scrollLambda.invoke(it.position.asScreenOffset(), it.scrollDelta.y)
-                                        }
-                                    }
-                                }
-                            }
                         }
                     } while (!event.changes.all { it.isOutOfBounds(size, extendedTouchPadding) })
                 }
@@ -316,16 +246,6 @@ suspend fun PointerInputScope.detectMapGestures(
                                         if (panSlop.getDistance() > touchSlop) {
                                             mapGestureState = MapGestureState.GESTURE
                                             break
-                                        }
-                                    }
-                                }
-
-                                PointerEventType.Scroll -> {
-                                    onScroll?.let { scrollLambda ->
-                                        event.changes.forEach {
-                                            if (it.scrollDelta.y != 0F) {
-                                                scrollLambda.invoke(it.position.asScreenOffset(), it.scrollDelta.y)
-                                            }
                                         }
                                     }
                                 }
@@ -370,16 +290,6 @@ suspend fun PointerInputScope.detectMapGestures(
                                         zoomChange,
                                         rotationChange
                                     )
-                                }
-                            }
-
-                            PointerEventType.Scroll -> {
-                                onScroll?.let { scrollLambda ->
-                                    event.changes.forEach {
-                                        if (it.scrollDelta.y != 0F) {
-                                            scrollLambda.invoke(it.position.asScreenOffset(), it.scrollDelta.y)
-                                        }
-                                    }
                                 }
                             }
                         }

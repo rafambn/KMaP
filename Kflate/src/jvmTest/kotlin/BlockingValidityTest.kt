@@ -5,12 +5,7 @@ package com.rafambn.kflate
 import com.rafambn.kflate.options.InflateOptions
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.util.zip.Deflater
-import java.util.zip.DeflaterOutputStream
-import java.util.zip.GZIPInputStream
-import java.util.zip.GZIPOutputStream
-import java.util.zip.Inflater
-import java.util.zip.InflaterInputStream
+import java.util.zip.*
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 

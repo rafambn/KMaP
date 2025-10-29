@@ -8,7 +8,6 @@ import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapSource.tiled.raster.RasterCanvasEngine
 import com.rafambn.kmap.mapSource.tiled.vector.VectorCanvasEngine
 import kotlinx.coroutines.CoroutineScope
-import kotlin.collections.forEach
 
 class CanvasKernel(
     val coroutineScope: CoroutineScope

@@ -9,7 +9,6 @@ import com.rafambn.kflate.error.createFlateError
 import com.rafambn.kflate.options.DeflateOptions
 import com.rafambn.kflate.options.GzipOptions
 import com.rafambn.kflate.options.InflateOptions
-import kotlin.UByteArray
 
 object KFlate {
 

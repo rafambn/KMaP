@@ -6,11 +6,10 @@ import com.rafambn.kmap.mapSource.tiled.vector.VectorTileResult
 import com.rafambn.kmap.mapSource.tiled.vector.VectorTileSource
 import com.rafambn.kmap.utils.vectorTile.RawMVTile
 import com.rafambn.kmap.utils.vectorTile.parse
-import io.ktor.client.HttpClient
-import io.ktor.client.request.get
-import io.ktor.client.statement.readRawBytes
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
+import io.ktor.client.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
