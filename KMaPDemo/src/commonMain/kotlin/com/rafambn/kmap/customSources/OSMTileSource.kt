@@ -25,7 +25,7 @@ class OSMTileSource(private val userAgent: String) : RasterTileSource {
             imageBitmap = byteArray.decodeToImageBitmap()
             return RasterTileResult.Success(RasterTile(zoom, row, column, imageBitmap))
         } catch (ex: Exception) {
-            println(ex) //TODO understand error after libs upgrade
+            println(ex)
             return RasterTileResult.Failure(TileSpecs(zoom, row, column))
         }
     }

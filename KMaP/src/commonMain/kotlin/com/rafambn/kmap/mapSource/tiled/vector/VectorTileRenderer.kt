@@ -31,7 +31,7 @@ class VectorTileRenderer(
     private val workerResultChannel = Channel<OptimizedVectorTileResult>(capacity = Channel.UNLIMITED)
 
     init {
-        coroutineScope.launch(Dispatchers.Default + SupervisorJob()) { //TODO add cancellation handler because failed child coroutines might lead to unhandled tiles
+        coroutineScope.launch(Dispatchers.Default + SupervisorJob()) {
             val specsBeingProcessed = mutableListOf<TileSpecs>()
             val tilesBeingProcessed = mutableListOf<TileSpecs>()
 

@@ -21,7 +21,7 @@ class RasterTileRenderer(
     private val workerResultChannel = Channel<RasterTileResult>(capacity = Channel.UNLIMITED)
 
     init {
-        coroutineScope.launch(Dispatchers.Default + SupervisorJob()) { //TODO add cancellation handler because failed child coroutines might lead to unhandled tiles
+        coroutineScope.launch(Dispatchers.Default + SupervisorJob()) {
             val specsBeingProcessed = mutableListOf<TileSpecs>()
             val tilesBeingProcessed = mutableListOf<TileSpecs>()
 

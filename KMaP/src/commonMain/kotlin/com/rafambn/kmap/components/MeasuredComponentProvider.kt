@@ -18,7 +18,7 @@ internal class MeasuredComponentProvider(
     private fun getAndMeasure(index: Int): MeasuredComponent =
         MeasuredComponent(
             index = index,
-            placeables = measureScope.measure(index, childConstraints),//TODO update deprecated method
+            placeables = measureScope.compose(index).map { it.measure(childConstraints) },
             parameters = componentProvider.getParameters(index)
         )
 
