@@ -49,7 +49,7 @@ class KMaPContent(
                     id = parameters.id,
                     canvasSize = mapState.cameraState.canvasSize,
                     gestureWrapper = gestureWrapper,
-                    tileLayers = { mapState.canvasKernel.getTileLayers(parameters.id)},
+                    tileLayers = { mapState.canvasKernel.getTileLayers(parameters.id)},//TODO fix issue where the canvas is not update when the tile is rendered
                     magnifierScale = mapState.drawMagScale,
                     positionOffset = mapState.drawReference,
                     tileSize = mapState.drawTileSize,
@@ -158,7 +158,7 @@ class KMaPContent(
                         } ?: Modifier)
                         .drawBehind {
                             withTransform({ translate(-bounds.left + padding, -bounds.top + padding) }) {
-                                drawIntoCanvas { canvas ->
+                                drawIntoCanvas {
                                     drawPath(
                                         path = originalPath,
                                         color = parameters.color,
@@ -168,7 +168,7 @@ class KMaPContent(
                                     )
                                 }
                             }
-                        }) { _, constraints ->
+                        }) { _, _ ->
                     layout((bounds.width + padding * 2).toInt(), (bounds.height + padding * 2).toInt()) {}
                 }
             }
