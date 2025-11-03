@@ -243,7 +243,7 @@ class VectorTileRenderer(
 
             "background" -> {
                 OptimizedPaintProperties(
-                    backgroundColor = extractColorProperty(styleLayer.paint, "background-color", Color.White),
+                    backgroundColor = extractColorProperty(styleLayer.paint, "background-color", Color.Magenta),
                     backgroundOpacity = extractOpacityProperty(styleLayer.paint, "background-opacity", 1.0).toFloat()
                 )
             }

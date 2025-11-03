@@ -35,9 +35,9 @@ class VectorTileSource : VectorTileSource {
 //            val rawMVTile = ProtoBuf.decodeFromByteArray(RawMVTile.serializer(), compressedBytes)
 //            val mvTile = rawMVTile.parse()
 
-            val compressedBytes = client.get("https://api.maptiler.com/tiles/v4/$zoom/$row/$column.pbf?key=GCqxEKWuBP1S6iQ1aSBG") {
-                contentType(ContentType.Application.ProtoBuf)
-            }.readRawBytes()
+//            val compressedBytes = client.get("https://api.maptiler.com/tiles/v4/$zoom/$row/$column.pbf?key=GCqxEKWuBP1S6iQ1aSBG") {
+//                contentType(ContentType.Application.ProtoBuf)
+//            }.readRawBytes()
 //            val rawMVTile = ProtoBuf.decodeFromByteArray(RawMVTile.serializer(), compressedBytes)
             val rawMVTile = json.decodeFromString(RawMVTile.serializer(), readResourceBytes("tile.json").decodeToString())
             val mvTile = rawMVTile.parse()
