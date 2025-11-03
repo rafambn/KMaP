@@ -21,21 +21,29 @@ internal fun DrawScope.drawVectorTile(
         val tileOffsetY = tileSize.height * tile.col * scaleAdjustment + positionOffset.y
         val tileOffsetPx = Offset(tileOffsetX.toFloat(), tileOffsetY.toFloat())
 
+        canvas.save()
+        canvas.translate(tileOffsetPx.x, tileOffsetPx.y)
+
+        val scaleX = (tileSize.width * scaleAdjustment) / optimizedData.extent
+        val scaleY = (tileSize.height * scaleAdjustment) / optimizedData.extent
+        canvas.scale(scaleX, scaleY)
+
         optimizedData.renderFeature.forEach { renderFeature ->
             when (renderFeature.geometry) {
                 is OptimizedGeometry.Polygon -> drawFillFeature(
-                    canvas, renderFeature.geometry, renderFeature.paintProperties, tileOffsetPx, tileSize, optimizedData.extent, scaleAdjustment
+                    canvas, renderFeature.geometry, renderFeature.paintProperties
                 )
 
                 is OptimizedGeometry.LineString -> drawLineFeature(
-                    canvas, renderFeature.geometry, renderFeature.paintProperties, tileOffsetPx, tileSize, optimizedData.extent, scaleAdjustment
+                    canvas, renderFeature.geometry, renderFeature.paintProperties, scaleAdjustment
                 )
 
                 is OptimizedGeometry.Point -> drawSymbolFeature(
-                    canvas, renderFeature.geometry, renderFeature.paintProperties, tileOffsetPx, tileSize, optimizedData.extent, scaleAdjustment
+                    canvas, renderFeature.geometry, renderFeature.paintProperties
                 )
             }
         }
+        canvas.restore()
     }
 }
 
@@ -43,19 +51,16 @@ private fun drawFillFeature(
     canvas: Canvas,
     geometry: OptimizedGeometry.Polygon,
     properties: OptimizedPaintProperties,
-    tileOffset: Offset,
-    tileSize: TileDimension,
-    mvtExtent: Int,
-    scaleAdjustment: Float,
 ) {
     geometry.paths.forEach { path ->
-        canvas.save()
-        transformCanvasForTile(canvas, tileOffset, tileSize, mvtExtent, scaleAdjustment)
+        val fillColor = (properties.backgroundColor ?: properties.fillColor)?.copy(
+            alpha = (properties.backgroundColor?.let { properties.backgroundOpacity } ?: properties.fillOpacity)
+        ) ?: Color.Red
 
         canvas.drawPath(
             path,
             Paint().apply {
-                color = properties.fillColor?.copy(alpha = properties.fillOpacity) ?: Color.Red
+                color = fillColor
                 isAntiAlias = true
                 style = PaintingStyle.Fill
             }
@@ -72,8 +77,6 @@ private fun drawFillFeature(
                 }
             )
         }
-
-        canvas.restore()
     }
 }
 
@@ -81,14 +84,8 @@ private fun drawLineFeature(
     canvas: Canvas,
     geometry: OptimizedGeometry.LineString,
     properties: OptimizedPaintProperties,
-    tileOffset: Offset,
-    tileSize: TileDimension,
-    mvtExtent: Int,
     scaleAdjustment: Float,
 ) {
-    canvas.save()
-    transformCanvasForTile(canvas, tileOffset, tileSize, mvtExtent, scaleAdjustment)
-
     canvas.drawPath(
         geometry.path,
         Paint().apply {
@@ -108,18 +105,12 @@ private fun drawLineFeature(
             }
         }
     )
-
-    canvas.restore()
 }
 
 private fun drawSymbolFeature(
     canvas: Canvas,
     geometry: OptimizedGeometry.Point,
     properties: OptimizedPaintProperties,
-    tileOffset: Offset,
-    tileSize: TileDimension,
-    mvtExtent: Int,
-    scaleAdjustment: Float,
 ) {
     // Symbol layer rendering would go here
     // This includes text rendering with style properties like:
@@ -127,20 +118,4 @@ private fun drawSymbolFeature(
     // - textSize, textColor, textOpacity
     // - text-offset, text-anchor, text-justify
     // For now, this is left as a placeholder pending font rendering implementation
-}
-
-private fun transformCanvasForTile(
-    canvas: Canvas,
-    tileOffset: Offset,
-    tileSize: TileDimension,
-    mvtExtent: Int,
-    scaleAdjustment: Float,
-) {
-    // Translate to tile position
-    canvas.translate(tileOffset.x, tileOffset.y)
-
-    // Scale from MVT extent coordinates to tile size
-    val scaleX = (tileSize.width * scaleAdjustment) / mvtExtent
-    val scaleY = (tileSize.height * scaleAdjustment) / mvtExtent
-    canvas.scale(scaleX, scaleY)
 }

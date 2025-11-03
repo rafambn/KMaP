@@ -40,6 +40,10 @@ data class OptimizedPaintProperties(//TODO this could be separated
     val circleStrokeColor: Color? = null,
     val circleStrokeWidth: Float = 0.0f,
 
+    // Background properties
+    val backgroundColor: Color? = null,
+    val backgroundOpacity: Float = 1.0f,
+
     // Symbol properties (text labels - future enhancement)
     val textField: String? = null,
     val textSize: Float = 12.0f,

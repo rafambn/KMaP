@@ -11,6 +11,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.selects.select
+import kotlin.collections.emptyList
 
 class VectorTileRenderer(
     private val getTile: suspend (zoom: Int, row: Int, column: Int) -> VectorTileResult,
@@ -124,9 +125,35 @@ class VectorTileRenderer(
         val mvtData = tile.mvtile ?: return OptimizedVectorTile(tile.zoom, tile.row, tile.col, null)
 
         val renderLayers = mutableListOf<OptimizedRenderFeature>()
+        val extent = mvtData.layers.firstOrNull()?.extent ?: 4096
 
         style.layers.forEach { styleLayer ->
-            if (styleLayer.type == "background") return@forEach
+            if (styleLayer.type == "background") {
+                val backgroundPath = buildPolygonPathFromGeometry(
+                    listOf(listOf(
+                        Pair(0, 0),
+                        Pair(extent, 0),
+                        Pair(extent, extent),
+                        Pair(0, extent)
+                    )),
+                    extent
+                )
+
+                val paintProperties = resolvePaintProperties(styleLayer, MVTFeature(
+                    id = 0L,
+                    type = RawMVTGeomType.POLYGON,
+                    geometry = emptyList(),
+                    properties = emptyMap()
+                ))
+
+                renderLayers.add(OptimizedRenderFeature(
+                    geometry = OptimizedGeometry.Polygon(listOf(backgroundPath)),
+                    properties = emptyMap(),
+                    paintProperties = paintProperties
+                ))
+                return@forEach
+            }
+
             if (!isLayerVisibleAtZoom(styleLayer, tile.zoom)) return@forEach
 
             val sourceLayerName = styleLayer.sourceLayer ?: return@forEach
@@ -158,7 +185,7 @@ class VectorTileRenderer(
         }
 
         val optimizedData = OptimizedMVTile(
-            extent = mvtData.layers.firstOrNull()?.extent ?: 4096,
+            extent = extent,
             renderFeature = renderLayers
         )
 
@@ -198,15 +225,15 @@ class VectorTileRenderer(
         return when (styleLayer.type) {
             "fill" -> {
                 OptimizedPaintProperties(
-                    fillColor = extractColorProperty(styleLayer.paint, "fill-color", Color(0xFF0000)),
+                    fillColor = extractColorProperty(styleLayer.paint, "fill-color", Color.Magenta),
                     fillOpacity = extractOpacityProperty(styleLayer.paint, "fill-opacity", 1.0).toFloat(),
-                    fillOutlineColor = extractColorProperty(styleLayer.paint, "fill-outline-color", Color.Black)
+                    fillOutlineColor = extractColorProperty(styleLayer.paint, "fill-outline-color", Color.Magenta)
                 )
             }
 
             "line" -> {
                 OptimizedPaintProperties(
-                    lineColor = extractColorProperty(styleLayer.paint, "line-color", Color.Black),
+                    lineColor = extractColorProperty(styleLayer.paint, "line-color", Color.Magenta),
                     lineWidth = extractNumberProperty(styleLayer.paint, "line-width", 1.0).toFloat(),
                     lineOpacity = extractOpacityProperty(styleLayer.paint, "line-opacity", 1.0).toFloat(),
                     lineCap = extractStringProperty(styleLayer.layout, "line-cap", "butt"),
@@ -214,11 +241,18 @@ class VectorTileRenderer(
                 )
             }
 
+            "background" -> {
+                OptimizedPaintProperties(
+                    backgroundColor = extractColorProperty(styleLayer.paint, "background-color", Color.White),
+                    backgroundOpacity = extractOpacityProperty(styleLayer.paint, "background-opacity", 1.0).toFloat()
+                )
+            }
+
             "symbol" -> {
                 OptimizedPaintProperties(
                     textField = extractStringProperty(styleLayer.layout, "text-field", ""),
                     textSize = extractNumberProperty(styleLayer.layout, "text-size", 12.0).toFloat(),
-                    textColor = extractColorProperty(styleLayer.paint, "text-color", Color.Black),
+                    textColor = extractColorProperty(styleLayer.paint, "text-color", Color.Magenta),
                     textOpacity = extractOpacityProperty(styleLayer.paint, "text-opacity", 1.0).toFloat()
                 )
             }//TODO has a lot of other logic's here
