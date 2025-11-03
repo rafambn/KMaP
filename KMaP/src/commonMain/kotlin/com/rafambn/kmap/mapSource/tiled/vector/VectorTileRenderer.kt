@@ -171,7 +171,7 @@ class VectorTileRenderer(
     ): OptimizedGeometry? {
         return when (feature.type) {
             RawMVTGeomType.POLYGON -> {
-                val paths = feature.geometry.map { ring -> buildPathFromGeometry(listOf(ring), extent) }
+                val paths = feature.geometry.map { ring -> buildPolygonPathFromGeometry(listOf(ring), extent) }
                 OptimizedGeometry.Polygon(paths)
             }
 

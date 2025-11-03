@@ -201,6 +201,27 @@ internal fun buildPathFromGeometry(
         ring.drop(1).forEach { (x, y) ->
             path.lineTo(x.toFloat(), y.toFloat())
         }
+    }
+
+    return path
+}
+
+internal fun buildPolygonPathFromGeometry(
+    geometry: List<List<Pair<Int, Int>>>,
+    extent: Int,
+    scaleAdjustment: Float = 1.0f
+): ComposePath {
+    val path = ComposePath()
+
+    geometry.forEach { ring ->
+        if (ring.isEmpty()) return@forEach
+
+        val (startX, startY) = ring.first()
+        path.moveTo(startX.toFloat(), startY.toFloat())
+
+        ring.drop(1).forEach { (x, y) ->
+            path.lineTo(x.toFloat(), y.toFloat())
+        }
 
         path.close()
     }

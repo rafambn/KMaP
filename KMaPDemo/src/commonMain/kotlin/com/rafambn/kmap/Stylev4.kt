@@ -1,6 +1,6 @@
 package com.rafambn.kmap
 
-val styleString = """
+val styleV4 = """
     {
   "version": 8,
   "id": "streets-v4",

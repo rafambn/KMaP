@@ -34,7 +34,7 @@ class VectorTileSource : VectorTileSource {
 //            val rawMVTile = ProtoBuf.decodeFromByteArray(RawMVTile.serializer(), compressedBytes)
 //            val mvTile = rawMVTile.parse()
 
-            val compressedBytes = client.get("https://api.maptiler.com/tiles/v4/$zoom/$row/$column.pbf?key=GCqxEKWuBP1S6iQ1aSBG") {
+            val compressedBytes = client.get("https://api.maptiler.com/tiles/v3-openmaptiles/$zoom/$row/$column.pbf?key=GCqxEKWuBP1S6iQ1aSBG") {
                 contentType(ContentType.Application.ProtoBuf)
             }.readRawBytes()
             val rawMVTile = ProtoBuf.decodeFromByteArray(RawMVTile.serializer(), compressedBytes)
@@ -46,13 +46,8 @@ class VectorTileSource : VectorTileSource {
 //            val rawMVTile = ProtoBuf.decodeFromByteArray(RawMVTile.serializer(), compressedBytes)
 //            val mvTile = rawMVTile.parse()
 
-//            val styleJson = readResourceBytes("style.json").decodeToString()
-//            val style = deserialize(styleJson)
-//            val decompressedBytes = KFlate.Gzip.decompress(compressedBytes.toUByteArray())
-//            println("Parsed tile with ${parsedMVTile.layers.size} layers and style ${style.layers.size}")
-//            parsedMVTile.layers.forEach { layer ->
-//                println("Layer: ${layer.name} with ${layer.features.size} features")
-//            }
+//            val jsonTile = Json.encodeToString(RawMVTile.serializer(),rawMVTile)
+//            println(jsonTile)
             return VectorTileResult.Success(VectorTile(zoom, row, column, mvTile))
         } catch (ex: Exception) {
             println(ex)

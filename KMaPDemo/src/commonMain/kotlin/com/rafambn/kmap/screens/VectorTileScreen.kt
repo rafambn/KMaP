@@ -17,7 +17,7 @@ import com.rafambn.kmap.getGestureDetector
 import com.rafambn.kmap.mapProperties.border.BoundMapBorder
 import com.rafambn.kmap.mapProperties.border.MapBorderType
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
-import com.rafambn.kmap.styleString
+import com.rafambn.kmap.styleBasic
 import com.rafambn.kmap.utils.style.Style
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
@@ -41,7 +41,7 @@ fun VectorTileScreen(
         isLenient = true
         useArrayPolymorphism = false
     }
-    val style = json.decodeFromString<Style>(styleString)
+    val style = json.decodeFromString<Style>(styleBasic)
     Box {
         KMaP(
             modifier = Modifier.fillMaxSize(),
