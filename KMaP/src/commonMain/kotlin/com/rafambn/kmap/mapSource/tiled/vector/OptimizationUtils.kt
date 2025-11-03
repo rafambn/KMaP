@@ -196,15 +196,10 @@ internal fun buildPathFromGeometry(
         if (ring.isEmpty()) return@forEach
 
         val (startX, startY) = ring.first()
-        val startCanvasX = (startX.toFloat() / extent) * scaleAdjustment
-        val startCanvasY = (startY.toFloat() / extent) * scaleAdjustment
-
-        path.moveTo(startCanvasX, startCanvasY)
+        path.moveTo(startX.toFloat(), startY.toFloat())
 
         ring.drop(1).forEach { (x, y) ->
-            val canvasX = (x.toFloat() / extent) * scaleAdjustment
-            val canvasY = (y.toFloat() / extent) * scaleAdjustment
-            path.lineTo(canvasX, canvasY)
+            path.lineTo(x.toFloat(), y.toFloat())
         }
 
         path.close()

@@ -24,15 +24,15 @@ internal fun DrawScope.drawVectorTile(
         optimizedData.renderFeature.forEach { renderFeature ->
             when (renderFeature.geometry) {
                 is OptimizedGeometry.Polygon -> drawFillFeature(
-                    canvas, renderFeature.geometry, renderFeature.paintProperties, tileOffsetPx, tileSize, scaleAdjustment
+                    canvas, renderFeature.geometry, renderFeature.paintProperties, tileOffsetPx, tileSize, optimizedData.extent, scaleAdjustment
                 )
 
                 is OptimizedGeometry.LineString -> drawLineFeature(
-                    canvas, renderFeature.geometry, renderFeature.paintProperties, tileOffsetPx, tileSize, scaleAdjustment
+                    canvas, renderFeature.geometry, renderFeature.paintProperties, tileOffsetPx, tileSize, optimizedData.extent, scaleAdjustment
                 )
 
                 is OptimizedGeometry.Point -> drawSymbolFeature(
-                    canvas, renderFeature.geometry, renderFeature.paintProperties, tileOffsetPx, tileSize, scaleAdjustment
+                    canvas, renderFeature.geometry, renderFeature.paintProperties, tileOffsetPx, tileSize, optimizedData.extent, scaleAdjustment
                 )
             }
         }
@@ -45,15 +45,17 @@ private fun drawFillFeature(
     properties: OptimizedPaintProperties,
     tileOffset: Offset,
     tileSize: TileDimension,
+    mvtExtent: Int,
     scaleAdjustment: Float,
 ) {
     geometry.paths.forEach { path ->
-        val transformedPath = transformPathToTile(path, tileOffset, tileSize, scaleAdjustment)
+        canvas.save()
+        transformCanvasForTile(canvas, tileOffset, tileSize, mvtExtent, scaleAdjustment)
 
         canvas.drawPath(
-            transformedPath,
+            path,
             Paint().apply {
-                color = properties.fillColor?.copy(alpha = properties.fillOpacity) ?: androidx.compose.ui.graphics.Color.Red
+                color = properties.fillColor?.copy(alpha = properties.fillOpacity) ?: Color.Red
                 isAntiAlias = true
                 style = PaintingStyle.Fill
             }
@@ -61,7 +63,7 @@ private fun drawFillFeature(
 
         if (properties.fillOutlineColor != null) {
             canvas.drawPath(
-                transformedPath,
+                path,
                 Paint().apply {
                     color = properties.fillOutlineColor
                     isAntiAlias = true
@@ -70,6 +72,8 @@ private fun drawFillFeature(
                 }
             )
         }
+
+        canvas.restore()
     }
 }
 
@@ -79,14 +83,16 @@ private fun drawLineFeature(
     properties: OptimizedPaintProperties,
     tileOffset: Offset,
     tileSize: TileDimension,
+    mvtExtent: Int,
     scaleAdjustment: Float,
 ) {
-    val transformedPath = transformPathToTile(geometry.path, tileOffset, tileSize, scaleAdjustment)
+    canvas.save()
+    transformCanvasForTile(canvas, tileOffset, tileSize, mvtExtent, scaleAdjustment)
 
     canvas.drawPath(
-        transformedPath,
+        geometry.path,
         Paint().apply {
-            color = properties.lineColor?.copy(alpha = properties.lineOpacity) ?: androidx.compose.ui.graphics.Color.Black
+            color = properties.lineColor?.copy(alpha = properties.lineOpacity) ?: Color.Black
             isAntiAlias = true
             style = PaintingStyle.Stroke
             strokeWidth = properties.lineWidth * scaleAdjustment
@@ -102,6 +108,8 @@ private fun drawLineFeature(
             }
         }
     )
+
+    canvas.restore()
 }
 
 private fun drawSymbolFeature(
@@ -110,6 +118,7 @@ private fun drawSymbolFeature(
     properties: OptimizedPaintProperties,
     tileOffset: Offset,
     tileSize: TileDimension,
+    mvtExtent: Int,
     scaleAdjustment: Float,
 ) {
     // Symbol layer rendering would go here
@@ -120,15 +129,18 @@ private fun drawSymbolFeature(
     // For now, this is left as a placeholder pending font rendering implementation
 }
 
-private fun transformPathToTile(
-    path: Path,
+private fun transformCanvasForTile(
+    canvas: Canvas,
     tileOffset: Offset,
     tileSize: TileDimension,
+    mvtExtent: Int,
     scaleAdjustment: Float,
-): Path {
-    //TODO fix this transformation
-    // Note: Direct path transformation is not available in Compose Canvas API
-    // In practice, paths should already be in the correct coordinate space when built during optimization
-    // This is a placeholder for future optimization if needed
-    return path
+) {
+    // Translate to tile position
+    canvas.translate(tileOffset.x, tileOffset.y)
+
+    // Scale from MVT extent coordinates to tile size
+    val scaleX = (tileSize.width * scaleAdjustment) / mvtExtent
+    val scaleY = (tileSize.height * scaleAdjustment) / mvtExtent
+    canvas.scale(scaleX, scaleY)
 }

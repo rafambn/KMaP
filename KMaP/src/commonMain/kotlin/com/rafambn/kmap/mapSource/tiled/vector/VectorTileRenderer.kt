@@ -87,6 +87,32 @@ class VectorTileRenderer(
             else if (mvTile is VectorTileResult.Success) {
                 tilesProcessResult.send(OptimizedVectorTileResult.Success(optimizeMVTile(mvTile, style)))
             }
+
+//            val fullTilePath = Path().apply {
+//                moveTo(0f, 0f)
+//                lineTo(4096f, 0f)
+//                lineTo(4096f, 4096f)
+//                lineTo(0f, 4096f)
+//                close()
+//            }
+//
+//            val randomColor = generateTileColor(tileToProcess.zoom, tileToProcess.row, tileToProcess.col)
+//
+//            val feature = OptimizedRenderFeature(
+//                geometry = OptimizedGeometry.Polygon(listOf(fullTilePath)),
+//                properties = emptyMap(),
+//                paintProperties = OptimizedPaintProperties(
+//                    fillColor = randomColor,
+//                    fillOpacity = 1f
+//                )
+//            )
+//            val optimizedData = OptimizedMVTile(
+//                extent = 4096,
+//                renderFeature = listOf(feature)
+//            )
+//            val optimizedTile = OptimizedVectorTile(tileToProcess.zoom, tileToProcess.row, tileToProcess.col, optimizedData)
+//
+//            tilesProcessResult.send(OptimizedVectorTileResult.Success(optimizedTile))
         } catch (ex: Exception) {
             println("Failed to process tile: $ex")
             tilesProcessResult.send(OptimizedVectorTileResult.Failure(tileToProcess))
@@ -199,5 +225,16 @@ class VectorTileRenderer(
 
             else -> OptimizedPaintProperties()
         }
+    }
+
+    private fun generateTileColor(zoom: Int, row: Int, col: Int): Color {
+        val seed = (zoom.toLong() * 31 + row.toLong()) * 31 + col.toLong()
+        val random = kotlin.random.Random(seed)
+
+        val r = random.nextFloat()
+        val g = random.nextFloat()
+        val b = random.nextFloat()
+
+        return Color(r, g, b)
     }
 }
