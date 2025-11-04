@@ -27,7 +27,7 @@ class VectorTileSource : VectorTileSource {
     }
 
     @OptIn(ExperimentalResourceApi::class, InternalResourceApi::class, ExperimentalUnsignedTypes::class, ExperimentalSerializationApi::class)
-    override suspend fun getTile(zoom: Int, row: Int, column: Int): VectorTileResult { //TODO maybe row and column are inverted
+    override suspend fun getTile(zoom: Int, row: Int, column: Int): VectorTileResult {
         try {
 //            val compressedBytes = client.get("https://vtiles.openhistoricalmap.org/maps/osm/$zoom/$row/$column") {
 //                contentType(ContentType.Application.ProtoBuf)
@@ -35,7 +35,7 @@ class VectorTileSource : VectorTileSource {
 //            val rawMVTile = ProtoBuf.decodeFromByteArray(RawMVTile.serializer(), compressedBytes)
 //            val mvTile = rawMVTile.parse()
 
-            val compressedBytes = client.get("https://api.maptiler.com/tiles/v4/$zoom/$row/$column.pbf?key=GCqxEKWuBP1S6iQ1aSBG") {
+            val compressedBytes = client.get("https://api.maptiler.com/tiles/v4/$zoom/$column/$row.pbf?key=GCqxEKWuBP1S6iQ1aSBG") {
                 contentType(ContentType.Application.ProtoBuf)
             }.readRawBytes()
             val rawMVTile = ProtoBuf.decodeFromByteArray(RawMVTile.serializer(), compressedBytes)

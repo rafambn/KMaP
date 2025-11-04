@@ -4,10 +4,15 @@ import androidx.compose.ui.graphics.ImageBitmap
 import com.rafambn.kmap.utils.vectorTile.MVTile
 import com.rafambn.kmap.utils.vectorTile.OptimizedMVTile
 
+/**
+ * Represents tile coordinates in the Web Mercator tile system.
+ * Note: Despite the parameter names, 'row' represents the Y-axis (vertical, latitude)
+ * and 'col' represents the X-axis (horizontal, longitude) in standard tile coordinate systems.
+ */
 open class TileSpecs(
     val zoom: Int,
-    val row: Int,
-    val col: Int
+    val row: Int,  // Y-axis (vertical)
+    val col: Int   // X-axis (horizontal)
 ){
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

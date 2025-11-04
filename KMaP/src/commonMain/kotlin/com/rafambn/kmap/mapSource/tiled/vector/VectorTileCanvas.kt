@@ -162,8 +162,8 @@ private fun DrawScope.drawVectorTileLayerWithClipping(
     canvas: Canvas,
 ) {
     tile.optimizedTile?.let { optimizedData ->
-        val tileOffsetX = tileSize.width * tile.row * scaleAdjustment + positionOffset.x
-        val tileOffsetY = tileSize.height * tile.col * scaleAdjustment + positionOffset.y
+        val tileOffsetX = tileSize.width * tile.col * scaleAdjustment + positionOffset.x
+        val tileOffsetY = tileSize.height * tile.row * scaleAdjustment + positionOffset.y
         val tileOffsetPx = Offset(tileOffsetX.toFloat(), tileOffsetY.toFloat())
 
         canvas.save()

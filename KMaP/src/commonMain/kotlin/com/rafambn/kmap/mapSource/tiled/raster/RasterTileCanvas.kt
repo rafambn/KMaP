@@ -118,8 +118,8 @@ private fun DrawScope.drawRasterTiles(
         canvas.drawImageRect(
             image = (tile as RasterTile).imageBitmap!!,
             dstOffset = IntOffset(
-                (tileSize.width * tile.row * scaleAdjustment + positionOffset.x).dp.toPx().toIntFloor(),
-                (tileSize.height * tile.col * scaleAdjustment + positionOffset.y).dp.toPx().toIntFloor()
+                (tileSize.width * tile.col * scaleAdjustment + positionOffset.x).dp.toPx().toIntFloor(),
+                (tileSize.height * tile.row * scaleAdjustment + positionOffset.y).dp.toPx().toIntFloor()
             ),
             dstSize = IntSize(
                 (tileSize.width.dp.toPx() * scaleAdjustment).toIntFloor(),

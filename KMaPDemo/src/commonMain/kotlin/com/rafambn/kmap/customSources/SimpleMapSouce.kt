@@ -8,7 +8,7 @@ import org.jetbrains.compose.resources.decodeToImageBitmap
 
 class SimpleMapTileSource : RasterTileSource {
     override suspend fun getTile(zoom: Int, row: Int, column: Int): RasterTileResult {
-        val resourcePath = "drawable/${zoom}_${column}_${row}.png"
+        val resourcePath = "drawable/${zoom}_${row}_${column}.png"
         val bytes = Res.readBytes(resourcePath)
         val imageBitmap = bytes.decodeToImageBitmap()
         return RasterTileResult.Success(RasterTile(zoom, row, column, imageBitmap))

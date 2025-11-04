@@ -18,7 +18,7 @@ class OSMTileSource(private val userAgent: String) : RasterTileSource {
     override suspend fun getTile(zoom: Int, row: Int, column: Int): RasterTileResult {
         val imageBitmap: ImageBitmap
         try {
-            val byteArray = client.get("https://tile.openstreetmap.org/$zoom/$row/$column.png") {
+            val byteArray = client.get("https://tile.openstreetmap.org/$zoom/$column/$row.png") {
                 header("User-Agent", userAgent)
             }.readRawBytes()
             imageBitmap = byteArray.decodeToImageBitmap()

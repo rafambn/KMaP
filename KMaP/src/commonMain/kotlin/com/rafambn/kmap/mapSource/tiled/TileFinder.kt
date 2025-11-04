@@ -7,7 +7,6 @@ import com.rafambn.kmap.utils.toIntFloor
 import kotlin.math.pow
 
 object TileFinder {
-
     fun getVisibleTilesForLevel(
         viewPort: ViewPort,
         zoomLevel: Int,
@@ -59,12 +58,12 @@ object TileFinder {
                         continue
                     else
                         yTile = y
-                    visibleTileSpecs.add(TileSpecs(zoomLevel, xTile, yTile))
+                    visibleTileSpecs.add(TileSpecs(zoomLevel, yTile, xTile))
                 }
         } else {
             for (x in horizontalTileIntRange)
                 for (y in verticalTileIntRange)
-                    visibleTileSpecs.add(TileSpecs(zoomLevel, x, y))
+                    visibleTileSpecs.add(TileSpecs(zoomLevel, y, x))
         }
         return visibleTileSpecs
     }
