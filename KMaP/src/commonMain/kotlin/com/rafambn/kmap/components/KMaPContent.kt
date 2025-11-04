@@ -74,6 +74,7 @@ class KMaPContent(
                     tileSize = mapState.drawTileSize,
                     rotationDegrees = mapState.drawRotationDegrees,
                     translation = mapState.drawTranslation,
+                    style = { parameters.style },
                 )
             }
         )

@@ -124,35 +124,11 @@ class VectorTileRenderer(
         val tile = mvtile.tile
         val mvtData = tile.mvtile ?: return OptimizedVectorTile(tile.zoom, tile.row, tile.col, null)
 
-        val renderLayers = mutableListOf<OptimizedRenderFeature>()
+        val layerFeatures = mutableMapOf<String, MutableList<OptimizedRenderFeature>>()
         val extent = mvtData.layers.firstOrNull()?.extent ?: 4096
 
         style.layers.forEach { styleLayer ->
-            if (styleLayer.type == "background") {
-                val backgroundPath = buildPolygonPathFromGeometry(
-                    listOf(listOf(
-                        Pair(0, 0),
-                        Pair(extent, 0),
-                        Pair(extent, extent),
-                        Pair(0, extent)
-                    )),
-                    extent
-                )
-
-                val paintProperties = resolvePaintProperties(styleLayer, MVTFeature(
-                    id = 0L,
-                    type = RawMVTGeomType.POLYGON,
-                    geometry = emptyList(),
-                    properties = emptyMap()
-                ))
-
-                renderLayers.add(OptimizedRenderFeature(
-                    geometry = OptimizedGeometry.Polygon(listOf(backgroundPath)),
-                    properties = emptyMap(),
-                    paintProperties = paintProperties
-                ))
-                return@forEach
-            }
+            if (styleLayer.type == "background") return@forEach
 
             if (!isLayerVisibleAtZoom(styleLayer, tile.zoom)) return@forEach
 
@@ -181,12 +157,14 @@ class VectorTileRenderer(
                     paintProperties = paintProperties
                 )
             }
-            renderLayers.addAll(optimizedFeatures)
+
+            layerFeatures[styleLayer.id] = optimizedFeatures.toMutableList()
         }
 
         val optimizedData = OptimizedMVTile(
             extent = extent,
-            renderFeature = renderLayers
+            layerFeatures = layerFeatures,
+            backgroundFeature = null
         )
 
         return OptimizedVectorTile(tile.zoom, tile.row, tile.col, optimizedData)
@@ -227,7 +205,7 @@ class VectorTileRenderer(
                 OptimizedPaintProperties(
                     fillColor = extractColorProperty(styleLayer.paint, "fill-color", Color.Magenta),
                     fillOpacity = extractOpacityProperty(styleLayer.paint, "fill-opacity", 1.0).toFloat(),
-                    fillOutlineColor = extractColorProperty(styleLayer.paint, "fill-outline-color", Color.Magenta)
+                    fillOutlineColor = extractColorProperty(styleLayer.paint, "fill-outline-color", Color.Transparent)
                 )
             }
 

@@ -8,6 +8,7 @@ import com.rafambn.kmap.mapSource.tiled.TileDimension
 import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.vectorTile.OptimizedGeometry
 import com.rafambn.kmap.utils.vectorTile.OptimizedPaintProperties
+import com.rafambn.kmap.utils.vectorTile.OptimizedRenderFeature
 
 internal fun DrawScope.drawVectorTile(
     tile: OptimizedVectorTile,
@@ -28,22 +29,61 @@ internal fun DrawScope.drawVectorTile(
         val scaleY = (tileSize.height * scaleAdjustment) / optimizedData.extent
         canvas.scale(scaleX, scaleY)
 
-        optimizedData.renderFeature.forEach { renderFeature ->
-            when (renderFeature.geometry) {
-                is OptimizedGeometry.Polygon -> drawFillFeature(
-                    canvas, renderFeature.geometry, renderFeature.paintProperties
-                )
-
-                is OptimizedGeometry.LineString -> drawLineFeature(
-                    canvas, renderFeature.geometry, renderFeature.paintProperties, scaleAdjustment
-                )
-
-                is OptimizedGeometry.Point -> drawSymbolFeature(
-                    canvas, renderFeature.geometry, renderFeature.paintProperties
-                )
+        optimizedData.layerFeatures.forEach { (_, features) ->
+            features.forEach { renderFeature ->
+                drawRenderFeature(canvas, renderFeature, scaleAdjustment)
             }
         }
+
         canvas.restore()
+    }
+}
+
+internal fun DrawScope.drawVectorTileLayer(
+    tile: OptimizedVectorTile,
+    layerId: String,
+    tileSize: TileDimension,
+    positionOffset: CanvasDrawReference,
+    scaleAdjustment: Float = 1F,
+    canvas: Canvas,
+) {
+    tile.optimizedTile?.let { optimizedData ->
+        val tileOffsetX = tileSize.width * tile.row * scaleAdjustment + positionOffset.x
+        val tileOffsetY = tileSize.height * tile.col * scaleAdjustment + positionOffset.y
+        val tileOffsetPx = Offset(tileOffsetX.toFloat(), tileOffsetY.toFloat())
+
+        canvas.save()
+        canvas.translate(tileOffsetPx.x, tileOffsetPx.y)
+
+        val scaleX = (tileSize.width * scaleAdjustment) / optimizedData.extent
+        val scaleY = (tileSize.height * scaleAdjustment) / optimizedData.extent
+        canvas.scale(scaleX, scaleY)
+
+        optimizedData.layerFeatures[layerId]?.forEach { renderFeature ->
+            drawRenderFeature(canvas, renderFeature, scaleAdjustment)
+        }
+
+        canvas.restore()
+    }
+}
+
+private fun drawRenderFeature(
+    canvas: Canvas,
+    renderFeature: OptimizedRenderFeature,
+    scaleAdjustment: Float,
+) {
+    when (renderFeature.geometry) {
+        is OptimizedGeometry.Polygon -> drawFillFeature(
+            canvas, renderFeature.geometry, renderFeature.paintProperties
+        )
+
+        is OptimizedGeometry.LineString -> drawLineFeature(
+            canvas, renderFeature.geometry, renderFeature.paintProperties, scaleAdjustment
+        )
+
+        is OptimizedGeometry.Point -> drawSymbolFeature(
+            canvas, renderFeature.geometry, renderFeature.paintProperties
+        )
     }
 }
 

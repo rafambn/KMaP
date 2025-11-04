@@ -21,6 +21,7 @@ import com.rafambn.kmap.getGestureDetector
 import com.rafambn.kmap.mapProperties.border.BoundMapBorder
 import com.rafambn.kmap.mapProperties.border.MapBorderType
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
+import com.rafambn.kmap.mapSource.tiled.TileDimension
 import com.rafambn.kmap.utils.style.Style
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
@@ -38,7 +39,8 @@ fun VectorTileScreen(
         mapProperties = OSMMapProperties(
             boundMap = BoundMapBorder(horizontal = MapBorderType.BOUND, vertical = MapBorderType.BOUND),
             outsideTiles = OutsideTilesType.NONE,
-            zoomLevels = SimpleZoomLevelRange(max = 14)
+            zoomLevels = SimpleZoomLevelRange(max = 14),
+            tileSize = TileDimension(512, 512)
         )
     )
     val json = Json {

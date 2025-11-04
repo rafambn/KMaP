@@ -5,7 +5,8 @@ import androidx.compose.ui.graphics.Path as ComposePath
 
 data class OptimizedMVTile(
     val extent: Int = 4096,
-    val renderFeature: List<OptimizedRenderFeature> = emptyList()
+    val layerFeatures: Map<String, List<OptimizedRenderFeature>> = emptyMap(),
+    val backgroundFeature: OptimizedRenderFeature? = null
 )
 
 data class OptimizedRenderFeature(
