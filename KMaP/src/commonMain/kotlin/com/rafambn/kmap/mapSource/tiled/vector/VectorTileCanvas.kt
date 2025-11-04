@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
@@ -16,6 +17,7 @@ import com.rafambn.kmap.gestures.MapGestureWrapper
 import com.rafambn.kmap.gestures.detectMapGestures
 import com.rafambn.kmap.gestures.sharedPointerInput
 import com.rafambn.kmap.mapSource.tiled.OptimizedVectorTile
+import com.rafambn.kmap.mapSource.tiled.vector.drawRenderFeature
 import com.rafambn.kmap.mapSource.tiled.Tile
 import com.rafambn.kmap.mapSource.tiled.TileDimension
 import com.rafambn.kmap.mapSource.tiled.TileLayers
@@ -23,6 +25,7 @@ import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.ScreenOffset
 import com.rafambn.kmap.utils.asScreenOffset
 import com.rafambn.kmap.utils.style.Style
+import com.rafambn.kmap.utils.vectorTile.OptimizedRenderFeature
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
@@ -97,7 +100,7 @@ internal fun VectorTileCanvas(
                             )
                         }
 
-                        drawStyleLayersWithoutBackground(
+                        drawStyleLayersWithTileClipping(
                             tileLayers.backLayer.tiles,
                             tileLayers.frontLayer.tiles,
                             2F.pow(tileLayers.frontLayer.level - tileLayers.backLayer.level),
@@ -114,7 +117,7 @@ internal fun VectorTileCanvas(
     }
 }
 
-private fun DrawScope.drawStyleLayersWithoutBackground(
+private fun DrawScope.drawStyleLayersWithTileClipping(
     backTiles: List<Tile>,
     frontTiles: List<Tile>,
     backScaleAdjustment: Float,
@@ -127,7 +130,7 @@ private fun DrawScope.drawStyleLayersWithoutBackground(
         val layerId = styleLayer.id
 
         backTiles.forEach { tile ->
-            drawVectorTileLayer(
+            drawVectorTileLayerWithClipping(
                 tile as OptimizedVectorTile,
                 layerId,
                 tileSize,
@@ -138,7 +141,7 @@ private fun DrawScope.drawStyleLayersWithoutBackground(
         }
 
         frontTiles.forEach { tile ->
-            drawVectorTileLayer(
+            drawVectorTileLayerWithClipping(
                 tile as OptimizedVectorTile,
                 layerId,
                 tileSize,
@@ -147,6 +150,42 @@ private fun DrawScope.drawStyleLayersWithoutBackground(
                 canvas
             )
         }
+    }
+}
+
+private fun DrawScope.drawVectorTileLayerWithClipping(
+    tile: OptimizedVectorTile,
+    layerId: String,
+    tileSize: TileDimension,
+    positionOffset: CanvasDrawReference,
+    scaleAdjustment: Float = 1F,
+    canvas: Canvas,
+) {
+    tile.optimizedTile?.let { optimizedData ->
+        val tileOffsetX = tileSize.width * tile.row * scaleAdjustment + positionOffset.x
+        val tileOffsetY = tileSize.height * tile.col * scaleAdjustment + positionOffset.y
+        val tileOffsetPx = Offset(tileOffsetX.toFloat(), tileOffsetY.toFloat())
+
+        canvas.save()
+        canvas.translate(tileOffsetPx.x, tileOffsetPx.y)
+
+        val tileRect = Rect(
+            0f,
+            0f,
+            tileSize.width * scaleAdjustment,
+            tileSize.height * scaleAdjustment
+        )
+        canvas.clipRect(tileRect)
+
+        val scaleX = (tileSize.width * scaleAdjustment) / optimizedData.extent
+        val scaleY = (tileSize.height * scaleAdjustment) / optimizedData.extent
+        canvas.scale(scaleX, scaleY)
+
+        optimizedData.layerFeatures[layerId]?.forEach { renderFeature ->
+            drawRenderFeature(canvas, renderFeature, scaleAdjustment)
+        }
+
+        canvas.restore()
     }
 }
 

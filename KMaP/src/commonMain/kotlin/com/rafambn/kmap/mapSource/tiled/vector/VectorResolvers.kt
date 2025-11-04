@@ -67,7 +67,7 @@ internal fun DrawScope.drawVectorTileLayer(
     }
 }
 
-private fun drawRenderFeature(
+internal fun drawRenderFeature(
     canvas: Canvas,
     renderFeature: OptimizedRenderFeature,
     scaleAdjustment: Float,
