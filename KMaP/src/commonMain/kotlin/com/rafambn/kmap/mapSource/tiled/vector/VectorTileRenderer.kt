@@ -202,40 +202,40 @@ class VectorTileRenderer(
     ): OptimizedPaintProperties {
         return when (styleLayer.type) {
             "fill" -> {
-                OptimizedPaintProperties(
-                    fillColor = extractColorProperty(styleLayer.paint, "fill-color", Color.Magenta),
-                    fillOpacity = extractOpacityProperty(styleLayer.paint, "fill-opacity", 1.0).toFloat(),
-                    fillOutlineColor = extractColorProperty(styleLayer.paint, "fill-outline-color", Color.Transparent)
+                OptimizedPaintProperties.Fill(
+                    color = extractColorProperty(styleLayer.paint, "fill-color", Color.Magenta),
+                    opacity = extractOpacityProperty(styleLayer.paint, "fill-opacity", 1.0).toFloat(),
+                    outlineColor = extractColorProperty(styleLayer.paint, "fill-outline-color", Color.Transparent)
                 )
             }
 
             "line" -> {
-                OptimizedPaintProperties(
-                    lineColor = extractColorProperty(styleLayer.paint, "line-color", Color.Magenta),
-                    lineWidth = extractNumberProperty(styleLayer.paint, "line-width", 1.0).toFloat(),
-                    lineOpacity = extractOpacityProperty(styleLayer.paint, "line-opacity", 1.0).toFloat(),
-                    lineCap = extractStringProperty(styleLayer.layout, "line-cap", "butt"),
-                    lineJoin = extractStringProperty(styleLayer.layout, "line-join", "miter")
+                OptimizedPaintProperties.Line(
+                    color = extractColorProperty(styleLayer.paint, "line-color", Color.Magenta),
+                    width = extractNumberProperty(styleLayer.paint, "line-width", 1.0).toFloat(),
+                    opacity = extractOpacityProperty(styleLayer.paint, "line-opacity", 1.0).toFloat(),
+                    cap = extractStringProperty(styleLayer.layout, "line-cap", "butt"),
+                    join = extractStringProperty(styleLayer.layout, "line-join", "miter")
                 )
             }
 
             "background" -> {
-                OptimizedPaintProperties(
-                    backgroundColor = extractColorProperty(styleLayer.paint, "background-color", Color.Magenta),
-                    backgroundOpacity = extractOpacityProperty(styleLayer.paint, "background-opacity", 1.0).toFloat()
+                OptimizedPaintProperties.Background(
+                    color = extractColorProperty(styleLayer.paint, "background-color", Color.Magenta),
+                    opacity = extractOpacityProperty(styleLayer.paint, "background-opacity", 1.0).toFloat()
                 )
             }
 
             "symbol" -> {
-                OptimizedPaintProperties(
-                    textField = extractStringProperty(styleLayer.layout, "text-field", ""),
-                    textSize = extractNumberProperty(styleLayer.layout, "text-size", 12.0).toFloat(),
-                    textColor = extractColorProperty(styleLayer.paint, "text-color", Color.Magenta),
-                    textOpacity = extractOpacityProperty(styleLayer.paint, "text-opacity", 1.0).toFloat()
+                OptimizedPaintProperties.Symbol(
+                    field = extractStringProperty(styleLayer.layout, "text-field", ""),
+                    size = extractNumberProperty(styleLayer.layout, "text-size", 12.0).toFloat(),
+                    color = extractColorProperty(styleLayer.paint, "text-color", Color.Magenta),
+                    opacity = extractOpacityProperty(styleLayer.paint, "text-opacity", 1.0).toFloat()
                 )
             }//TODO has a lot of other logic's here
 
-            else -> OptimizedPaintProperties()
+            else -> OptimizedPaintProperties.Fill() // Default to empty fill properties
         }
     }
 

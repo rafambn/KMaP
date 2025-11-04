@@ -21,33 +21,30 @@ sealed class OptimizedGeometry {
     data class Point(val coordinates: List<Pair<Float, Float>>) : OptimizedGeometry()
 }
 
-data class OptimizedPaintProperties(//TODO this could be separated
-    // Fill properties
-    val fillColor: Color? = null,
-    val fillOpacity: Float = 1.0f,
-    val fillOutlineColor: Color? = null,
+sealed class OptimizedPaintProperties {
+    data class Fill(
+        val color: Color? = null,
+        val opacity: Float = 1.0f,
+        val outlineColor: Color? = null
+    ) : OptimizedPaintProperties()
 
-    // Line properties
-    val lineColor: Color? = null,
-    val lineWidth: Float = 1.0f,
-    val lineOpacity: Float = 1.0f,
-    val lineCap: String = "butt",
-    val lineJoin: String = "miter",
+    data class Line(
+        val color: Color? = null,
+        val width: Float = 1.0f,
+        val opacity: Float = 1.0f,
+        val cap: String = "butt",
+        val join: String = "miter"
+    ) : OptimizedPaintProperties()
 
-    // Circle properties
-    val circleRadius: Float = 5.0f,
-    val circleColor: Color? = null,
-    val circleOpacity: Float = 1.0f,
-    val circleStrokeColor: Color? = null,
-    val circleStrokeWidth: Float = 0.0f,
+    data class Background(
+        val color: Color? = null,
+        val opacity: Float = 1.0f
+    ) : OptimizedPaintProperties()
 
-    // Background properties
-    val backgroundColor: Color? = null,
-    val backgroundOpacity: Float = 1.0f,
-
-    // Symbol properties (text labels - future enhancement)
-    val textField: String? = null,
-    val textSize: Float = 12.0f,
-    val textColor: Color? = null,
-    val textOpacity: Float = 1.0f
-)
+    data class Symbol(
+        val field: String? = null,
+        val size: Float = 12.0f,
+        val color: Color? = null,
+        val opacity: Float = 1.0f
+    ) : OptimizedPaintProperties()
+}

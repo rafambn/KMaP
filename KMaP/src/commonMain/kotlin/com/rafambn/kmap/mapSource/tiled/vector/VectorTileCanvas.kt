@@ -17,7 +17,6 @@ import com.rafambn.kmap.gestures.MapGestureWrapper
 import com.rafambn.kmap.gestures.detectMapGestures
 import com.rafambn.kmap.gestures.sharedPointerInput
 import com.rafambn.kmap.mapSource.tiled.OptimizedVectorTile
-import com.rafambn.kmap.mapSource.tiled.vector.drawRenderFeature
 import com.rafambn.kmap.mapSource.tiled.Tile
 import com.rafambn.kmap.mapSource.tiled.TileDimension
 import com.rafambn.kmap.mapSource.tiled.TileLayers
@@ -25,7 +24,6 @@ import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.ScreenOffset
 import com.rafambn.kmap.utils.asScreenOffset
 import com.rafambn.kmap.utils.style.Style
-import com.rafambn.kmap.utils.vectorTile.OptimizedRenderFeature
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
