@@ -97,6 +97,7 @@ fun App() = AppTheme {
                 )
             }
         }
+        FpsMonitor()
     }
 }
 

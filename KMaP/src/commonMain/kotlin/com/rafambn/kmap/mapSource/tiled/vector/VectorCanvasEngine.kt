@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 
 class VectorCanvasEngine(
-    maxCacheTiles: Int = 20,
+    maxCacheTiles: Int,
     getTile: suspend (zoom: Int, row: Int, column: Int) -> VectorTileResult,
     coroutineScope: CoroutineScope,
     style: Style

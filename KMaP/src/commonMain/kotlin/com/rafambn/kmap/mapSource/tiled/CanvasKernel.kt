@@ -28,14 +28,11 @@ class CanvasKernel(
     }
 
     fun refreshCanvas(currentParameters: List<CanvasParameters>) {
-        // Get the set of current parameter IDs
         val currentIds = currentParameters.map { it.id }.toSet()
 
-        // Remove canvas engines that are not in currentParameters
         val keysToRemove = canvas.keys.filter { it !in currentIds }
         keysToRemove.forEach { canvas.remove(it) }
 
-        // Add new canvas engines for parameters not already in canvas
         currentParameters.forEach { parameter ->
             if (parameter.id !in canvas) {
                 if (parameter is RasterCanvasParameters) {

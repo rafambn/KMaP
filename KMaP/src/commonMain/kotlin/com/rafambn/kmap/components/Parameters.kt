@@ -55,9 +55,9 @@ open class PathParameters(
 
 open class CanvasParameters(
     val id: Int,
-    val alpha: Float = 1F,
-    val zIndex: Float = 0F,
-    val maxCacheTiles: Int = 20,
+    val alpha: Float,
+    val zIndex: Float,
+    val maxCacheTiles: Int,
 ) : Parameters
 
 open class RasterCanvasParameters(

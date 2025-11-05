@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 
 class RasterCanvasEngine(
-    maxCacheTiles: Int = 20,
+    maxCacheTiles: Int,
     getTile: suspend (zoom: Int, row: Int, column: Int) -> RasterTileResult,
     coroutineScope: CoroutineScope,
 ) : CanvasEngine(maxCacheTiles, coroutineScope) {

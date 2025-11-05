@@ -85,35 +85,8 @@ class VectorTileRenderer(
             val mvTile = getTile(tileToProcess.zoom, tileToProcess.row, tileToProcess.col)
             if (mvTile is VectorTileResult.Failure)
                 tilesProcessResult.send(OptimizedVectorTileResult.Failure(tileToProcess))
-            else if (mvTile is VectorTileResult.Success) {
+            else if (mvTile is VectorTileResult.Success)
                 tilesProcessResult.send(OptimizedVectorTileResult.Success(optimizeMVTile(mvTile, style)))
-            }
-
-//            val fullTilePath = Path().apply {
-//                moveTo(0f, 0f)
-//                lineTo(4096f, 0f)
-//                lineTo(4096f, 4096f)
-//                lineTo(0f, 4096f)
-//                close()
-//            }
-//
-//            val randomColor = generateTileColor(tileToProcess.zoom, tileToProcess.row, tileToProcess.col)
-//
-//            val feature = OptimizedRenderFeature(
-//                geometry = OptimizedGeometry.Polygon(listOf(fullTilePath)),
-//                properties = emptyMap(),
-//                paintProperties = OptimizedPaintProperties(
-//                    fillColor = randomColor,
-//                    fillOpacity = 1f
-//                )
-//            )
-//            val optimizedData = OptimizedMVTile(
-//                extent = 4096,
-//                renderFeature = listOf(feature)
-//            )
-//            val optimizedTile = OptimizedVectorTile(tileToProcess.zoom, tileToProcess.row, tileToProcess.col, optimizedData)
-//
-//            tilesProcessResult.send(OptimizedVectorTileResult.Success(optimizedTile))
         } catch (ex: Exception) {
             println("Failed to process tile: $ex")
             tilesProcessResult.send(OptimizedVectorTileResult.Failure(tileToProcess))
