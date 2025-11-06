@@ -15,7 +15,7 @@ class CanvasKernel(
 
     val canvas = mutableMapOf<Int, CanvasEngine>()
 
-    fun getTileLayers(id: Int): TileLayers = canvas.getValue(id).tileLayers.value
+    fun getActiveTiles(id: Int): ActiveTiles = canvas.getValue(id).activeTiles.value
 
     fun resolveVisibleTiles(viewPort: ViewPort, zoomLevel: Int, mapProperties: MapProperties) {
         val visibleTiles = TileFinder.getVisibleTilesForLevel(

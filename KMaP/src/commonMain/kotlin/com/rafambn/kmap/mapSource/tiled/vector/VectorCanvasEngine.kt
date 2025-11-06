@@ -14,9 +14,9 @@ class VectorCanvasEngine(
     getTile: suspend (zoom: Int, row: Int, column: Int) -> VectorTileResult,
     coroutineScope: CoroutineScope,
     style: Style
-): CanvasEngine(maxCacheTiles, coroutineScope){
+) : CanvasEngine(maxCacheTiles, coroutineScope) {
 
-    override val tileLayers = mutableStateOf(TileLayers())
+    override val activeTiles = mutableStateOf(ActiveTiles())
     var cachedTiles = listOf<OptimizedVectorTile>()
     val vectorTileRenderer = VectorTileRenderer(getTile, coroutineScope, style)
 
@@ -24,22 +24,19 @@ class VectorCanvasEngine(
         coroutineScope.launch {
             while (isActive) {
                 select {
-                    vectorTileRenderer.tilesProcessedChannel.onReceive {
+                    vectorTileRenderer.tilesProcessedChannel.onReceive { vectorTile ->
                         val newCache = cachedTiles.toMutableList()
-                        newCache.add(it)
+                        newCache.add(vectorTile)
                         cachedTiles = if (newCache.size > maxCacheTiles)
                             newCache.takeLast(maxCacheTiles)
                         else
                             newCache.toList()
 
-                        if (it.zoom == tileLayers.value.frontLayer.level)
-                            tileLayers.value = tileLayers.value.copy(
-                                frontLayer = Layer(it.zoom, tileLayers.value.frontLayer.tiles.toMutableList().apply { add(it) })
-                            )
-                        else if (it.zoom == tileLayers.value.backLayer.level)
-                            tileLayers.value = tileLayers.value.copy(
-                                backLayer = Layer(it.zoom, tileLayers.value.frontLayer.tiles.toMutableList().apply { add(it) })
-                            )
+                        activeTiles.value = activeTiles.value.copy(
+                            tiles = activeTiles.value.tiles.toMutableList()
+                                .apply { add(TileWithVisibility(tile = vectorTile, isVisible = false)) }
+                                .sortedBy { it.tile.zoom }
+                        )
                     }
                 }
             }
@@ -47,26 +44,21 @@ class VectorCanvasEngine(
     }
 
     override fun renderTiles(visibleTiles: List<TileSpecs>, zoomLevel: Int) {
-        val needsToChangeLevel = zoomLevel != tileLayers.value.frontLayer.level
-
-        val newFrontLayer = mutableListOf<Tile>()
+        val newFrontLayer = mutableListOf<TileWithVisibility>()
         val tilesToRender = mutableListOf<TileSpecs>()
         visibleTiles.forEach { tileSpecs ->
-            val foundInTiles = if (needsToChangeLevel)
-                tileLayers.value.backLayer.tiles.find { it == tileSpecs }
-            else
-                tileLayers.value.frontLayer.tiles.find { it == tileSpecs }
+            val foundInTiles = activeTiles.value.tiles.find { it.tile == tileSpecs }
             val foundInRenderedTiles = cachedTiles.find {
                 it == TileSpecs(tileSpecs.zoom, tileSpecs.row.loopInZoom(tileSpecs.zoom), tileSpecs.col.loopInZoom(tileSpecs.zoom))
             }
 
             when {
                 foundInTiles != null -> {
-                    newFrontLayer.add(foundInTiles)
+                    newFrontLayer.add(foundInTiles.copy(isVisible = true))
                 }
 
                 foundInRenderedTiles != null -> {
-                    newFrontLayer.add(foundInRenderedTiles)
+                    newFrontLayer.add(TileWithVisibility(foundInRenderedTiles, true))
                 }
 
                 else -> {
@@ -74,10 +66,17 @@ class VectorCanvasEngine(
                 }
             }
         }
-        if (needsToChangeLevel)
-            tileLayers.value = tileLayers.value.copy(frontLayer = Layer(zoomLevel, newFrontLayer), backLayer = tileLayers.value.frontLayer)
-        else
-            tileLayers.value = tileLayers.value.copy(frontLayer = Layer(zoomLevel, newFrontLayer))
+
+        val allTilesWithVisibility = mutableListOf<TileWithVisibility>()
+        allTilesWithVisibility.addAll(newFrontLayer)
+
+        activeTiles.value.tiles.forEach { oldTile ->
+            if (newFrontLayer.none { it.tile == oldTile.tile }) {
+                allTilesWithVisibility.add(oldTile.copy(isVisible = false))
+            }
+        }
+
+        activeTiles.value = ActiveTiles(tiles = allTilesWithVisibility.sortedBy { it.tile.zoom }, currentZoom = zoomLevel)
         coroutineScope.launch { vectorTileRenderer.tilesToProcessChannel.send(tilesToRender) }
     }
 }

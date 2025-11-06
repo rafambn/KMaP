@@ -8,7 +8,7 @@ abstract class CanvasEngine(
     val coroutineScope: CoroutineScope
 ) {
 
-    abstract val tileLayers: MutableState<TileLayers>
+    abstract val activeTiles: MutableState<ActiveTiles>
 
     abstract fun renderTiles(visibleTiles: List<TileSpecs>, zoomLevel: Int)
 }

@@ -23,7 +23,7 @@ import com.rafambn.kmap.gestures.sharedPointerInput
 import com.rafambn.kmap.mapSource.tiled.RasterTile
 import com.rafambn.kmap.mapSource.tiled.Tile
 import com.rafambn.kmap.mapSource.tiled.TileDimension
-import com.rafambn.kmap.mapSource.tiled.TileLayers
+import com.rafambn.kmap.mapSource.tiled.ActiveTiles
 import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.ScreenOffset
 import com.rafambn.kmap.utils.asScreenOffset
@@ -39,7 +39,7 @@ internal fun RasterTileCanvas(
     tileSize: () -> TileDimension,
     rotationDegrees: () -> Float,
     translation: () -> Offset,
-    tileLayers: () -> TileLayers,
+    activeTiles: () -> ActiveTiles,
 ) {
     Layout(
         modifier = Modifier
@@ -78,27 +78,23 @@ internal fun RasterTileCanvas(
                 val magnifierScale = magnifierScale()
                 val tileSize = tileSize()
                 val positionOffset = positionOffset()
-                val tileLayers = tileLayers()
+                val activeTiles = activeTiles()
                 withTransform({
                     translate(translation.x, translation.y)
                     rotate(rotation, Offset.Zero)
                     scale(2F.pow(magnifierScale), Offset.Zero)
                 }) {
                     drawIntoCanvas { canvas ->
-                        drawRasterTiles(
-                            tileLayers.backLayer.tiles,
-                            tileSize,
-                            positionOffset,
-                            2F.pow(tileLayers.frontLayer.level - tileLayers.backLayer.level),
-                            canvas,
-                        )
-                        drawRasterTiles(
-                            tileLayers.frontLayer.tiles,
-                            tileSize,
-                            positionOffset,
-                            1F,
-                            canvas,
-                        )
+                        activeTiles.tiles.forEach { tileWithVisibility ->
+                        val scaleAdjustment = 2F.pow(activeTiles.currentZoom - tileWithVisibility.tile.zoom)
+                            drawRasterTiles(
+                                listOf(tileWithVisibility.tile),
+                                tileSize,
+                                positionOffset,
+                                scaleAdjustment,
+                                canvas,
+                            )
+                        }
                     }
                 }
             }

@@ -48,7 +48,7 @@ class KMaPContent(
                 RasterTileCanvas(
                     canvasSize = mapState.cameraState.canvasSize,
                     gestureWrapper = gestureWrapper,
-                    tileLayers = { mapState.canvasKernel.getTileLayers(parameters.id)},
+                    activeTiles = { mapState.canvasKernel.getActiveTiles(parameters.id) },
                     magnifierScale = mapState.drawMagScale,
                     positionOffset = mapState.drawReference,
                     tileSize = mapState.drawTileSize,
@@ -68,7 +68,7 @@ class KMaPContent(
                 VectorTileCanvas(
                     canvasSize = mapState.cameraState.canvasSize,
                     gestureWrapper = gestureWrapper,
-                    tileLayers = { mapState.canvasKernel.getTileLayers(parameters.id)},
+                    activeTiles = { mapState.canvasKernel.getActiveTiles(parameters.id) },
                     magnifierScale = mapState.drawMagScale,
                     positionOffset = mapState.drawReference,
                     tileSize = mapState.drawTileSize,

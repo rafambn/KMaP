@@ -12,7 +12,7 @@ plugins {
 }
 
 group = "com.rafambn"
-version = "0.3.1"
+version = "0.4.0"
 
 kotlin {
     jvmToolchain(17)
@@ -72,7 +72,7 @@ kotlin {
 
 android {
     namespace = "com.rafambn"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 24
@@ -83,7 +83,7 @@ mavenPublishing {
     coordinates(
         groupId = "com.rafambn",
         artifactId = "KMaP",
-        version = "0.3.1"
+        version = "0.4.1"
     )
 
 // Configure POM metadata for the published artifact
