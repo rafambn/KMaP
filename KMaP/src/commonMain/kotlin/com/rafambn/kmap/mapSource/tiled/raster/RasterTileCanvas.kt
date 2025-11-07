@@ -85,10 +85,10 @@ internal fun RasterTileCanvas(
                     scale(2F.pow(magnifierScale), Offset.Zero)
                 }) {
                     drawIntoCanvas { canvas ->
-                        activeTiles.tiles.forEach { tileWithVisibility ->
-                        val scaleAdjustment = 2F.pow(activeTiles.currentZoom - tileWithVisibility.tile.zoom)
+                        activeTiles.tiles.forEach { tile ->
+                            val scaleAdjustment = 2F.pow(activeTiles.currentZoom - tile.zoom)
                             drawRasterTiles(
-                                listOf(tileWithVisibility.tile),
+                                listOf(tile),
                                 tileSize,
                                 positionOffset,
                                 scaleAdjustment,

@@ -31,9 +31,7 @@ class RasterCanvasEngine(
                             newCache.toList()
 
                         activeTiles.value = activeTiles.value.copy(
-                            tiles = activeTiles.value.tiles.toMutableList()
-                                .apply { add(TileWithVisibility(tile = rasterTile, isVisible = false)) }
-                                .sortedBy { it.tile.zoom }
+                            tiles = (activeTiles.value.tiles + rasterTile).sortedBy { it.zoom }
                         )
                     }
                 }
@@ -42,39 +40,53 @@ class RasterCanvasEngine(
     }
 
     override fun renderTiles(visibleTiles: List<TileSpecs>, zoomLevel: Int) {
-        val newFrontLayer = mutableListOf<TileWithVisibility>()
+        val activeTilesMap = activeTiles.value.tiles.associateBy { TileSpecs(it.zoom, it.row, it.col) }
+        val cachedTilesMap = cachedTiles.associateBy { TileSpecs(it.zoom, it.row, it.col) }
+        val newFrontLayer = mutableListOf<Tile>()
         val tilesToRender = mutableListOf<TileSpecs>()
+
         visibleTiles.forEach { tileSpecs ->
-            val foundInTiles = activeTiles.value.tiles.find { it.tile == tileSpecs }
-            val foundInRenderedTiles = cachedTiles.find {
-                it == TileSpecs(tileSpecs.zoom, tileSpecs.row.loopInZoom(tileSpecs.zoom), tileSpecs.col.loopInZoom(tileSpecs.zoom))
-            }
-
-            when {
-                foundInTiles != null -> {
-                    newFrontLayer.add(foundInTiles.copy(isVisible = true))
-                }
-
-                foundInRenderedTiles != null -> {
-                    newFrontLayer.add(TileWithVisibility(foundInRenderedTiles, true))
-                }
-
-                else -> {
+            activeTilesMap[tileSpecs]?.let {
+                newFrontLayer.add(it)
+            } ?: run {
+                val normalized = TileSpecs(tileSpecs.zoom, tileSpecs.row.loopInZoom(tileSpecs.zoom), tileSpecs.col.loopInZoom(tileSpecs.zoom))
+                cachedTilesMap[normalized]?.let {
+                    newFrontLayer.add(it)
+                } ?: run {
                     tilesToRender.add(tileSpecs)
                 }
             }
         }
 
-        val allTilesWithVisibility = mutableListOf<TileWithVisibility>()
-        allTilesWithVisibility.addAll(newFrontLayer)
+        val allTiles = mutableListOf<Tile>()
+        allTiles.addAll(newFrontLayer)
 
-        activeTiles.value.tiles.forEach { oldTile ->
-            if (newFrontLayer.none { it.tile == oldTile.tile }) {
-                allTilesWithVisibility.add(oldTile.copy(isVisible = false))
+        if (tilesToRender.isEmpty()) {
+            activeTiles.value = ActiveTiles(tiles = allTiles.sortedBy { it.zoom }, currentZoom = zoomLevel)
+            return
+        }
+
+        val allAvailableTiles = (activeTiles.value.tiles + cachedTiles).distinct()
+        val parentTiles = mutableSetOf<Tile>()
+        val childTiles = mutableSetOf<Tile>()
+
+        tilesToRender.forEach { tileToRender ->
+            allAvailableTiles.forEach { availableTile ->
+                when {
+                    availableTile.isParentOf(tileToRender) -> parentTiles.add(availableTile)
+                    availableTile.isChildOf(tileToRender) -> childTiles.add(availableTile)
+                }
             }
         }
 
-        activeTiles.value = ActiveTiles(tiles = allTilesWithVisibility.sortedBy { it.tile.zoom }, currentZoom = zoomLevel)
+        childTiles.removeAll { child ->
+            parentTiles.any { parent -> parent.isParentOf(child) }
+        }
+
+        allTiles.addAll(parentTiles)
+        allTiles.addAll(childTiles)
+
+        activeTiles.value = ActiveTiles(tiles = allTiles.sortedBy { it.zoom }, currentZoom = zoomLevel)
         coroutineScope.launch { rasterTileRenderer.tilesToProcessChannel.send(tilesToRender) }
     }
 }

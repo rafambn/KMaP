@@ -19,6 +19,7 @@ import com.rafambn.kmap.gestures.sharedPointerInput
 import com.rafambn.kmap.mapSource.tiled.OptimizedVectorTile
 import com.rafambn.kmap.mapSource.tiled.TileDimension
 import com.rafambn.kmap.mapSource.tiled.ActiveTiles
+import com.rafambn.kmap.mapSource.tiled.Tile
 import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.ScreenOffset
 import com.rafambn.kmap.utils.asScreenOffset
@@ -26,7 +27,6 @@ import com.rafambn.kmap.utils.style.Style
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
-import com.rafambn.kmap.mapSource.tiled.TileWithVisibility
 import kotlin.math.pow
 
 @Composable
@@ -115,7 +115,7 @@ internal fun VectorTileCanvas(
 }
 
 private fun DrawScope.drawStyleLayersWithTileClipping(
-    tiles: List<TileWithVisibility>,
+    tiles: List<Tile>,
     currentZoom: Int,
     style: Style,
     tileSize: TileDimension,
@@ -125,10 +125,10 @@ private fun DrawScope.drawStyleLayersWithTileClipping(
     style.layers.filter { it.type != "background" }.forEach { styleLayer ->
         val layerId = styleLayer.id
 
-        tiles.forEach { tileWithMetadata ->
-            val scaleAdjustment = 2F.pow(currentZoom - tileWithMetadata.tile.zoom)
+        tiles.forEach { tile ->
+            val scaleAdjustment = 2F.pow(currentZoom - tile.zoom)
             drawVectorTileLayerWithClipping(
-                tileWithMetadata.tile as OptimizedVectorTile,
+                tile as OptimizedVectorTile,
                 layerId,
                 tileSize,
                 positionOffset,

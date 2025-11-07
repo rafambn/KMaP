@@ -4,11 +4,6 @@ import androidx.compose.ui.graphics.ImageBitmap
 import com.rafambn.kmap.utils.vectorTile.MVTile
 import com.rafambn.kmap.utils.vectorTile.OptimizedMVTile
 
-/**
- * Represents tile coordinates in the Web Mercator tile system.
- * Note: Despite the parameter names, 'row' represents the Y-axis (vertical, latitude)
- * and 'col' represents the X-axis (horizontal, longitude) in standard tile coordinate systems.
- */
 open class TileSpecs(
     val zoom: Int,
     val row: Int,  // Y-axis (vertical)
@@ -35,7 +30,29 @@ open class TileSpecs(
     }
 }
 
-open class Tile(zoom: Int, row: Int, col: Int): TileSpecs(zoom, row, col)
+open class Tile(zoom: Int, row: Int, col: Int): TileSpecs(zoom, row, col){
+   fun isParentOf(childCandidate: TileSpecs): Boolean {
+        if (this.zoom >= childCandidate.zoom) return false
+
+        val zoomDiff = childCandidate.zoom - this.zoom
+        val scaleFactor = 1 shl zoomDiff // 2^zoomDiff
+        val parentRow = childCandidate.row / scaleFactor
+        val parentCol = childCandidate.col / scaleFactor
+
+        return this.row == parentRow && this.col == parentCol
+    }
+
+    fun isChildOf(parentCandidate: TileSpecs): Boolean {
+        if (this.zoom <= parentCandidate.zoom) return false
+
+        val zoomDiff = this.zoom - parentCandidate.zoom
+        val scaleFactor = 1 shl zoomDiff // 2^zoomDiff
+        val parentRow = this.row / scaleFactor
+        val parentCol = this.col / scaleFactor
+
+        return parentCandidate.row == parentRow && parentCandidate.col == parentCol
+    }
+}
 
 class RasterTile(
     zoom: Int,
