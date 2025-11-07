@@ -160,7 +160,7 @@ class VectorTileRenderer(
 
             RawMVTGeomType.POINT -> {
                 val coordinates = feature.geometry.flatMap { ring ->
-                    ring.map { (x, y) -> Pair(x.toFloat() / extent, y.toFloat() / extent) }
+                    ring.map { (x, y) -> Pair(x.toFloat(), y.toFloat()) }
                 }
                 OptimizedGeometry.Point(coordinates)
             }

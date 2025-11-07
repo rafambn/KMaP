@@ -27,6 +27,10 @@ import com.rafambn.kmap.utils.style.Style
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFontFamilyResolver
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.Density
 import kotlin.math.pow
 
 @Composable
@@ -41,6 +45,8 @@ internal fun VectorTileCanvas(
     activeTiles: () -> ActiveTiles,
     style: () -> Style,
 ) {
+    val fontResolver = LocalFontFamilyResolver.current
+    val density = LocalDensity.current
     Layout(
         modifier = Modifier
             .then(gestureWrapper?.let {
@@ -105,6 +111,8 @@ internal fun VectorTileCanvas(
                             tileSize,
                             positionOffset,
                             canvas,
+                            fontResolver,
+                            density
                         )
                     }
                 }
@@ -121,6 +129,8 @@ private fun DrawScope.drawStyleLayersWithTileClipping(
     tileSize: TileDimension,
     positionOffset: CanvasDrawReference,
     canvas: Canvas,
+    fontResolver: FontFamily.Resolver,
+    density: Density
 ) {
     style.layers.filter { it.type != "background" }.forEach { styleLayer ->
         val layerId = styleLayer.id
@@ -133,7 +143,9 @@ private fun DrawScope.drawStyleLayersWithTileClipping(
                 tileSize,
                 positionOffset,
                 scaleAdjustment,
-                canvas
+                canvas,
+                fontResolver,
+                density
             )
         }
     }
@@ -146,6 +158,8 @@ private fun DrawScope.drawVectorTileLayerWithClipping(
     positionOffset: CanvasDrawReference,
     scaleAdjustment: Float = 1F,
     canvas: Canvas,
+    fontResolver: FontFamily.Resolver,
+    density: Density
 ) {
     tile.optimizedTile?.let { optimizedData ->
         val tileOffsetX = tileSize.width * tile.col * scaleAdjustment + positionOffset.x
@@ -168,7 +182,7 @@ private fun DrawScope.drawVectorTileLayerWithClipping(
         canvas.scale(scaleX, scaleY)
 
         optimizedData.layerFeatures[layerId]?.forEach { renderFeature ->
-            drawRenderFeature(canvas, renderFeature, scaleAdjustment)
+            drawRenderFeature(canvas, renderFeature, scaleAdjustment, fontResolver, density)
         }
 
         canvas.restore()
@@ -197,7 +211,7 @@ private fun DrawScope.drawGlobalBackground(
     val totalHeight = tileSize.height * (2F.pow(zoomLevel))
 
     canvas.drawRect(
-        androidx.compose.ui.geometry.Rect(
+        Rect(
             positionOffset.x.toFloat(),
             positionOffset.y.toFloat(),
             positionOffset.x.toFloat() + totalWidth,
