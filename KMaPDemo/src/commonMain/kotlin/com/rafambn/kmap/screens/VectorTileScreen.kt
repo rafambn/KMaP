@@ -22,7 +22,9 @@ import com.rafambn.kmap.mapProperties.border.BoundMapBorder
 import com.rafambn.kmap.mapProperties.border.MapBorderType
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
 import com.rafambn.kmap.mapSource.tiled.TileDimension
+import com.rafambn.kmap.utils.style.OptimizedStyle
 import com.rafambn.kmap.utils.style.Style
+import com.rafambn.kmap.utils.style.StyleResolver
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import kotlinx.serialization.json.Json
@@ -48,11 +50,11 @@ fun VectorTileScreen(
         isLenient = true
         useArrayPolymorphism = false
     }
-    val styleState = remember { mutableStateOf<Style?>(null) }
+    val styleState = remember { mutableStateOf<OptimizedStyle?>(null) }
 
     LaunchedEffect(Unit) {
         val styleJson = readResourceBytes("style.json").decodeToString()
-        styleState.value = json.decodeFromString<Style>(styleJson)
+        styleState.value = StyleResolver().resolve(json.decodeFromString<Style>(styleJson))
     }
 
     styleState.value?.let { style ->

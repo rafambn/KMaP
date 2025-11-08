@@ -1,6 +1,6 @@
 package com.rafambn.kmap.utils.style.expressions
 
-import com.rafambn.kmap.utils.style.Color
+import androidx.compose.ui.graphics.Color
 import kotlin.math.pow
 
 internal fun toDouble(value: Any?): Double? {
@@ -14,7 +14,7 @@ internal fun toDouble(value: Any?): Double? {
 internal fun toColor(value: Any?): Color? {
     if (value is Color) return value
     if (value !is List<*>) return null
-    if (value.size < 3 || value.size > 4) return null
+    if (value.size !in 3..4) return null
     val r = toDouble(value[0])?.toInt()?.coerceIn(0, 255) ?: return null
     val g = toDouble(value[1])?.toInt()?.coerceIn(0, 255) ?: return null
     val b = toDouble(value[2])?.toInt()?.coerceIn(0, 255) ?: return null

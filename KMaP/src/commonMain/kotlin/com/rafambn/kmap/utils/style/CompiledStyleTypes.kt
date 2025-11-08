@@ -3,8 +3,6 @@ package com.rafambn.kmap.utils.style
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.font.FontFamily
 
-data class Color(val red: Int, val green: Int, val blue: Int, val alpha: Int)
-
 // Expression evaluation context
 data class EvaluationContext(
     val featureProperties: Map<String, Any> = emptyMap(),

@@ -31,6 +31,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.Density
+import com.rafambn.kmap.utils.style.OptimizedStyle
+import com.rafambn.kmap.utils.style.OptimizedStyleLayer
 import kotlin.math.pow
 
 @Composable
@@ -43,7 +45,7 @@ internal fun VectorTileCanvas(
     rotationDegrees: () -> Float,
     translation: () -> Offset,
     activeTiles: () -> ActiveTiles,
-    style: () -> Style,
+    style: () -> OptimizedStyle,
 ) {
     val fontResolver = LocalFontFamilyResolver.current
     val density = LocalDensity.current
@@ -125,7 +127,7 @@ internal fun VectorTileCanvas(
 private fun DrawScope.drawStyleLayersWithTileClipping(
     tiles: List<Tile>,
     currentZoom: Int,
-    style: Style,
+    style: OptimizedStyle,
     tileSize: TileDimension,
     positionOffset: CanvasDrawReference,
     canvas: Canvas,
@@ -190,22 +192,14 @@ private fun DrawScope.drawVectorTileLayerWithClipping(
 }
 
 private fun DrawScope.drawGlobalBackground(
-    backgroundLayer: com.rafambn.kmap.utils.style.StyleLayer,
+    backgroundLayer: OptimizedStyleLayer,
     canvas: Canvas,
     tileSize: TileDimension,
     positionOffset: CanvasDrawReference,
     zoomLevel: Int,
 ) {
-    val backgroundColor = extractColorProperty(
-        backgroundLayer.paint,
-        "background-color",
-        Color.White
-    )
-    val backgroundOpacity = extractOpacityProperty(
-        backgroundLayer.paint,
-        "background-opacity",
-        1.0
-    ).toFloat()
+    val backgroundColor = backgroundLayer.paint.properties["background-color"]?.evaluate(zoomLevel.toDouble(), emptyMap(), "") as? Color ?: Color.Magenta
+    val backgroundOpacity = backgroundLayer.paint.properties["background-opacity"]?.evaluate(zoomLevel.toDouble(), emptyMap(), "") as? Float ?: 1F
 
     val totalWidth = tileSize.width * (2F.pow(zoomLevel))
     val totalHeight = tileSize.height * (2F.pow(zoomLevel))

@@ -3,7 +3,7 @@ package com.rafambn.kmap.mapSource.tiled.vector
 import androidx.compose.runtime.mutableStateOf
 import com.rafambn.kmap.mapSource.tiled.*
 import com.rafambn.kmap.utils.loopInZoom
-import com.rafambn.kmap.utils.style.Style
+import com.rafambn.kmap.utils.style.OptimizedStyle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -13,7 +13,7 @@ class VectorCanvasEngine(
     maxCacheTiles: Int,
     getTile: suspend (zoom: Int, row: Int, column: Int) -> VectorTileResult,
     coroutineScope: CoroutineScope,
-    style: Style
+    style: OptimizedStyle
 ) : CanvasEngine(maxCacheTiles, coroutineScope) {
 
     override val activeTiles = mutableStateOf(ActiveTiles())

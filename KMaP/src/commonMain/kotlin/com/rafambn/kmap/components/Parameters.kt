@@ -13,7 +13,7 @@ import com.rafambn.kmap.mapSource.tiled.vector.VectorTileResult
 import com.rafambn.kmap.utils.Coordinates
 import com.rafambn.kmap.utils.Degrees
 import com.rafambn.kmap.utils.ProjectedCoordinates
-import com.rafambn.kmap.utils.style.Style
+import com.rafambn.kmap.utils.style.OptimizedStyle
 
 sealed interface Parameters
 
@@ -74,5 +74,5 @@ open class VectorCanvasParameters(
     zIndex: Float = 0F,
     maxCacheTiles: Int = 20,
     val tileSource: suspend (zoom: Int, row: Int, column: Int) -> VectorTileResult,
-    val style: Style,
+    val style: OptimizedStyle,
 ) : CanvasParameters(id, alpha, zIndex, maxCacheTiles)

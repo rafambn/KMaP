@@ -1,22 +1,22 @@
 package com.rafambn.kmap.mapSource.tiled.vector
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import com.rafambn.kmap.mapSource.tiled.OptimizedVectorTile
 import com.rafambn.kmap.mapSource.tiled.TileSpecs
 import com.rafambn.kmap.utils.loopInZoom
-import com.rafambn.kmap.utils.style.Style
-import com.rafambn.kmap.utils.style.StyleLayer
+import com.rafambn.kmap.utils.style.OptimizedStyle
+import com.rafambn.kmap.utils.style.OptimizedStyleLayer
 import com.rafambn.kmap.utils.vectorTile.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.selects.select
-import kotlin.collections.emptyList
 
 class VectorTileRenderer(
     private val getTile: suspend (zoom: Int, row: Int, column: Int) -> VectorTileResult,
     coroutineScope: CoroutineScope,
-    val style: Style
+    val optimizedStyle: OptimizedStyle
 ) {
     val tilesToProcessChannel = Channel<List<TileSpecs>>(capacity = Channel.UNLIMITED)
     val tilesProcessedChannel = Channel<OptimizedVectorTile>(capacity = Channel.UNLIMITED)
@@ -86,32 +86,39 @@ class VectorTileRenderer(
             if (mvTile is VectorTileResult.Failure)
                 tilesProcessResult.send(OptimizedVectorTileResult.Failure(tileToProcess))
             else if (mvTile is VectorTileResult.Success)
-                tilesProcessResult.send(OptimizedVectorTileResult.Success(optimizeMVTile(mvTile, style)))
+                tilesProcessResult.send(OptimizedVectorTileResult.Success(optimizeMVTile(mvTile, optimizedStyle)))
         } catch (ex: Exception) {
             println("Failed to process tile: $ex")
             tilesProcessResult.send(OptimizedVectorTileResult.Failure(tileToProcess))
         }
     }
 
-    private fun optimizeMVTile(mvtile: VectorTileResult.Success, style: Style): OptimizedVectorTile {
+    private fun optimizeMVTile(mvtile: VectorTileResult.Success, optimizedStyle: OptimizedStyle): OptimizedVectorTile {
         val tile = mvtile.tile
         val mvtData = tile.mvtile ?: return OptimizedVectorTile(tile.zoom, tile.row, tile.col, null)
 
         val layerFeatures = mutableMapOf<String, MutableList<OptimizedRenderFeature>>()
         val extent = mvtData.layers.firstOrNull()?.extent ?: 4096
 
-        style.layers.forEach { styleLayer ->
-            if (styleLayer.type == "background") return@forEach
+        optimizedStyle.layers.forEach { optimizedStyleLayer ->
+            if (optimizedStyleLayer.type == "background") return@forEach
 
-            if (!isLayerVisibleAtZoom(styleLayer, tile.zoom)) return@forEach
-
-            val sourceLayerName = styleLayer.sourceLayer ?: return@forEach
+            val sourceLayerName = optimizedStyleLayer.sourceLayer ?: return@forEach
             val mvtLayer = mvtData.layers.find { it.name == sourceLayerName } ?: return@forEach
 
             val optimizedFeatures = mvtLayer.features.mapNotNull { feature ->
-                if (!matchesFilter(feature, styleLayer.filter)) return@mapNotNull null
+                val featureProperties = feature.properties.filterValues { it != null } as Map<String, Any>
+                val geometryType = when (feature.type) {
+                    RawMVTGeomType.POINT -> "Point"
+                    RawMVTGeomType.LINESTRING -> "LineString"
+                    RawMVTGeomType.POLYGON -> "Polygon"
+                    else -> "Unknown"
+                }
+                val featureId = feature.id
 
-                val isValidGeometry = when (styleLayer.type) {
+                if (optimizedStyleLayer.filter?.evaluate(featureProperties, geometryType, featureId) == false) return@mapNotNull null
+
+                val isValidGeometry = when (optimizedStyleLayer.type) {
                     "fill" -> feature.type == RawMVTGeomType.POLYGON
                     "line" -> feature.type == RawMVTGeomType.LINESTRING
                     "symbol" -> feature.type == RawMVTGeomType.POINT
@@ -122,7 +129,7 @@ class VectorTileRenderer(
 
                 val geometry = buildOptimizedGeometry(feature, mvtLayer.extent) ?: return@mapNotNull null
 
-                val paintProperties = resolvePaintProperties(styleLayer, feature)
+                val paintProperties = resolvePaintProperties(optimizedStyleLayer, feature, tile.zoom)
 
                 OptimizedRenderFeature(
                     geometry = geometry,
@@ -131,7 +138,7 @@ class VectorTileRenderer(
                 )
             }
 
-            layerFeatures[styleLayer.id] = optimizedFeatures.toMutableList()
+            layerFeatures[optimizedStyleLayer.id] = optimizedFeatures.toMutableList()
         }
 
         val optimizedData = OptimizedMVTile(
@@ -170,56 +177,97 @@ class VectorTileRenderer(
     }
 
     private fun resolvePaintProperties(
-        styleLayer: StyleLayer,
-        feature: MVTFeature
+        optimizedStyleLayer: OptimizedStyleLayer,
+        feature: MVTFeature,
+        zoom: Int
     ): OptimizedPaintProperties {
-        return when (styleLayer.type) {
+        val featureProperties = feature.properties.filterValues { it != null } as Map<String, Any>
+        val zoomLevel = zoom.toDouble()
+        val featureId = feature.id
+
+        return when (optimizedStyleLayer.type) {
             "fill" -> {
                 OptimizedPaintProperties.Fill(
-                    color = extractColorProperty(styleLayer.paint, "fill-color", Color.Magenta),
-                    opacity = extractOpacityProperty(styleLayer.paint, "fill-opacity", 1.0).toFloat(),
-                    outlineColor = extractColorProperty(styleLayer.paint, "fill-outline-color", Color.Transparent)
+                    color = optimizedStyleLayer.paint.properties["fill-color"]?.evaluate(zoomLevel, featureProperties, featureId) as? Color ?: Color.Magenta,
+                    opacity = optimizedStyleLayer.paint.properties["fill-opacity"]?.evaluate(zoomLevel, featureProperties, featureId) as? Float ?: 1.0f,
+                    outlineColor = optimizedStyleLayer.paint.properties["fill-outline-color"]?.evaluate(zoomLevel, featureProperties, featureId) as? Color ?: Color.Transparent
                 )
             }
 
             "line" -> {
                 OptimizedPaintProperties.Line(
-                    color = extractColorProperty(styleLayer.paint, "line-color", Color.Magenta),
-                    width = extractNumberProperty(styleLayer.paint, "line-width", 1.0).toFloat(),
-                    opacity = extractOpacityProperty(styleLayer.paint, "line-opacity", 1.0).toFloat(),
-                    cap = extractStringProperty(styleLayer.layout, "line-cap", "butt"),
-                    join = extractStringProperty(styleLayer.layout, "line-join", "miter")
+                    color = optimizedStyleLayer.paint.properties["line-color"]?.evaluate(zoomLevel, featureProperties, featureId) as? Color ?: Color.Magenta,
+                    width = optimizedStyleLayer.paint.properties["line-width"]?.evaluate(zoomLevel, featureProperties, featureId) as? Float ?: 1.0f,
+                    opacity = optimizedStyleLayer.paint.properties["line-opacity"]?.evaluate(zoomLevel, featureProperties, featureId) as? Float ?: 1.0f,
+                    cap = optimizedStyleLayer.layout.properties["line-cap"]?.evaluate(zoomLevel, featureProperties, featureId) as? String ?: "butt",
+                    join = optimizedStyleLayer.layout.properties["line-join"]?.evaluate(zoomLevel, featureProperties, featureId) as? String ?: "miter"
                 )
             }
 
             "background" -> {
                 OptimizedPaintProperties.Background(
-                    color = extractColorProperty(styleLayer.paint, "background-color", Color.Magenta),
-                    opacity = extractOpacityProperty(styleLayer.paint, "background-opacity", 1.0).toFloat()
+                    color = optimizedStyleLayer.paint.properties["background-color"]?.evaluate(zoomLevel, featureProperties, featureId) as? Color ?: Color.Magenta,
+                    opacity = optimizedStyleLayer.paint.properties["background-opacity"]?.evaluate(zoomLevel, featureProperties, featureId) as? Float ?: 1.0f
                 )
             }
 
             "symbol" -> {
                 OptimizedPaintProperties.Symbol(
-                    field = extractStringProperty(styleLayer.layout, "text-field", ""),
-                    size = extractNumberProperty(styleLayer.layout, "text-size", 12.0).toFloat(),
-                    color = extractColorProperty(styleLayer.paint, "text-color", Color.Magenta),
-                    opacity = extractOpacityProperty(styleLayer.paint, "text-opacity", 1.0).toFloat()
+                    field = optimizedStyleLayer.layout.properties["text-field"]?.evaluate(zoomLevel, featureProperties, featureId) as? String ?: "",
+                    size = optimizedStyleLayer.layout.properties["text-size"]?.evaluate(zoomLevel, featureProperties, featureId) as? Float ?: 12.0f,
+                    color = optimizedStyleLayer.paint.properties["text-color"]?.evaluate(zoomLevel, featureProperties, featureId) as? Color ?: Color.Magenta,
+                    opacity = optimizedStyleLayer.paint.properties["text-opacity"]?.evaluate(zoomLevel, featureProperties, featureId) as? Float ?: 1.0f
                 )
             }//TODO has a lot of other logic's here
 
             else -> OptimizedPaintProperties.Fill() // Default to empty fill properties
         }
     }
-
-    private fun generateTileColor(zoom: Int, row: Int, col: Int): Color {
-        val seed = (zoom.toLong() * 31 + row.toLong()) * 31 + col.toLong()
-        val random = kotlin.random.Random(seed)
-
-        val r = random.nextFloat()
-        val g = random.nextFloat()
-        val b = random.nextFloat()
-
-        return Color(r, g, b)
-    }
 }
+
+
+internal fun buildPathFromGeometry(
+    geometry: List<List<Pair<Int, Int>>>,
+    extent: Int,
+    scaleAdjustment: Float = 1.0f
+): Path {
+    val path = Path()
+
+    geometry.forEach { ring ->
+        if (ring.isEmpty()) return@forEach
+
+        val (startX, startY) = ring.first()
+        path.moveTo(startX.toFloat(), startY.toFloat())
+
+        ring.drop(1).forEach { (x, y) ->
+            path.lineTo(x.toFloat(), y.toFloat())
+        }
+    }
+
+    return path
+}
+
+internal fun buildPolygonPathFromGeometry(
+    geometry: List<List<Pair<Int, Int>>>,
+    extent: Int,
+    scaleAdjustment: Float = 1.0f
+): Path {
+    val path = Path()
+
+    geometry.forEach { ring ->
+        if (ring.isEmpty()) return@forEach
+
+        val (startX, startY) = ring.first()
+        path.moveTo(startX.toFloat(), startY.toFloat())
+
+        ring.drop(1).forEach { (x, y) ->
+            path.lineTo(x.toFloat(), y.toFloat())
+        }
+
+        path.close()
+    }
+
+    return path
+}
+
+

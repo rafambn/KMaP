@@ -1,9 +1,8 @@
 package com.rafambn.kmap.utils.style.expressions
 
-import com.rafambn.kmap.utils.style.Color
+import androidx.compose.ui.graphics.Color
 import com.rafambn.kmap.utils.style.EvaluationContext
 import com.rafambn.kmap.utils.style.ExpressionEvaluator
-import kotlin.math.floor
 
 // Logical
 internal fun evaluateAll(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): Boolean {
@@ -179,7 +178,7 @@ internal fun evaluateUpDownCase(expression: List<*>, context: EvaluationContext,
 
 // Color
 internal fun evaluateRgb(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): Color? {
-    if (expression.size < 4 || expression.size > 5) return null
+    if (expression.size !in 4..5) return null
     val r = toDouble(evaluator.evaluate(expression[1], context))?.toInt()?.coerceIn(0, 255) ?: return null
     val g = toDouble(evaluator.evaluate(expression[2], context))?.toInt()?.coerceIn(0, 255) ?: return null
     val b = toDouble(evaluator.evaluate(expression[3], context))?.toInt()?.coerceIn(0, 255) ?: return null
