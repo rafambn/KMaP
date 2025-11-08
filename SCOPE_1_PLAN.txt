@@ -1,0 +1,274 @@
+================================================================================
+                SCOPE 1: PHASE 1 MVP - IMPLEMENTATION PLAN
+                34 Core Operators, 4 Layer Types, ~98% Coverage
+================================================================================
+
+OBJECTIVE:
+Implement a Mapbox/MapLibre style resolver that compiles raw JSON styles into
+optimized, type-safe Kotlin data structures for fill, line, background, and
+symbol layers.
+
+ESTIMATED EFFORT: 4-6 weeks
+CODE SIZE: 2600-3300 LOC (including tests)
+REFERENCE: https://maplibre.org/maplibre-style-spec/
+
+================================================================================
+TIER 1 OPERATORS (34 Total)
+================================================================================
+
+FILTERS (14 operators):
+  all, any, !                          (logical: with short-circuit)
+  ==, !=, <, >, <=, >=, within         (comparison: with type coercion)
+  get, has, geometry-type, zoom, id    (feature access)
+  match, in                            (pattern matching)
+
+PAINT/LAYOUT (20 operators):
+  interpolate, step                    (interpolation)
+  case, coalesce, match                (conditionals)
+  concat, to-string, slice, length     (string ops)
+  upcase, downcase
+  literal, at, index-of, typeof        (array/type ops)
+  rgb, rgba                            (colors)
+  +, -, *, /                           (math)
+
+================================================================================
+CRITICAL TIER 1 FEATURES (Mandatory - All 7 Required)
+================================================================================
+
+1. NESTED EXPRESSIONS (5+ levels deep)
+   Example: ["case", ["all", ["==", [...]], [...]], [...]]
+   Must support: Recursive evaluation with proper context propagation
+
+2. "BASE" PROPERTY FOR EXPONENTIAL INTERPOLATION
+   Format: ["interpolate", ["exponential", base], ["zoom"], ...]
+   Math: value = val₁ + (val₂ - val₁) × (b^t - 1) / (b - 1)
+   Must support: Configurable base parameter for non-linear scaling
+
+3. ARRAY LITERALS + MEMBERSHIP TESTS
+   Format: ["literal", [...]] and ["in", value, ["literal", [...]]]
+   Must support: Both array and object literals
+
+4. FALLBACK CHAINS (coalesce, match defaults)
+   Format: ["coalesce", expr1, expr2, default]
+   Must support: Multiple fallback values with null handling
+
+5. TYPE VALIDATION (typeof)
+   Returns: "number"|"string"|"boolean"|"array"|"object"|"null"
+   Must support: Type checking before type-dependent operations
+
+6. ARRAY ELEMENT ACCESS (at)
+   Format: ["at", index, array] (supports negative indices)
+   Must support: Positive, negative indices, out-of-bounds handling
+
+7. ARRAY/STRING SEARCH (index-of)
+   Format: ["index-of", item, array] or ["index-of", substring, string]
+   Must support: Return 0-based index or -1 if not found
+
+================================================================================
+SUPPORTED LAYER TYPES & PROPERTIES
+================================================================================
+
+FILL LAYERS:
+  Paint: fill-opacity, fill-color, fill-outline-color, fill-translate,
+         fill-translate-anchor, fill-pattern, fill-antialias
+  Layout: visibility, fill-sort-key
+
+LINE LAYERS:
+  Paint: line-opacity, line-color, line-translate, line-translate-anchor,
+         line-width, line-gap-width, line-offset, line-blur, line-dasharray,
+         line-pattern, line-gradient
+  Layout: visibility, line-cap, line-join, line-miter-limit, line-round-limit,
+          line-sort-key
+
+BACKGROUND LAYERS:
+  Paint: background-color, background-pattern, background-opacity
+  Layout: visibility
+
+SYMBOL LAYERS:
+  Paint: icon-opacity, icon-color, icon-halo-color, icon-halo-width,
+         icon-halo-blur, icon-translate, icon-translate-anchor,
+         text-opacity, text-color, text-halo-color, text-halo-width,
+         text-halo-blur, text-translate, text-translate-anchor
+  Layout: visibility, symbol-placement, symbol-spacing, symbol-avoid-edges,
+          symbol-sort-key, symbol-z-order, icon-*, text-*
+          (text-field REQUIRES expressions, text-size/icon-size SUPPORT expressions)
+
+================================================================================
+IMPLEMENTATION CHECKLIST
+================================================================================
+
+CODE STRUCTURE:
+[x] Create ExpressionEvaluator.kt (~450-550 lines)
+[x] Create CompiledStyleTypes.kt (~120-150 lines)
+[x] Create StyleResolver.kt (~200-250 lines)
+[x] No changes to existing Style.kt
+
+EXPRESSION EVALUATOR:
+[x] EvaluationContext data class (featureProperties, geometryType, zoomLevel)
+[x] evaluate(expression, context): Any? - main recursive entry point
+[x] evaluateOperator(): dispatch to 34 operators
+[x] Logical operators: all (short-circuit), any (short-circuit), !
+[x] Comparison operators: ==, !=, <, >, <=, >= (with type coercion)
+[x] Feature access: get, has, geometry-type, zoom, id, within
+[x] Pattern matching: match (with multi-value arrays), in
+[x] Conditionals: case (if-then-else), coalesce (first non-null), match
+[x] Interpolation: interpolate with linear/exponential/cubic-bezier modes
+  [x] "base" property support for exponential curves
+[x] Step: piecewise-constant ramps
+[x] String operations: concat, to-string, slice, length, upcase, downcase
+[x] Array/Type: literal, at, index-of, typeof
+[x] Colors: rgb, rgba
+[x] Math: +, -, *, /
+[x] Helper functions:
+  [x] evaluateInterpolate(): handle all 3 interpolation modes
+  [x] evaluateStep(): piecewise-constant
+  [x] evaluateMatch(): pattern matching with type checking
+  [x] evaluateCase(): if-then-else chains
+  [x] evaluateCoalesce(): first non-null handling
+  [x] evaluateIn(): array/substring membership
+  [x] evaluateSlice(): substring extraction
+  [x] compareValues(): type coercion for equality (implemented as `compare` in ExpressionUtils)
+  [x] compareNumeric(): numeric comparison with coercion (handled by `compare` and `toDouble`)
+[x] getRequiredProperties(expression): Set<String> - property introspection
+
+COMPILED TYPES:
+[x] CompiledFilter(evaluate: lambda, requiredProperties: Set<String>)
+[x] CompiledValue(evaluate: lambda, requiredProperties: Set<String>)
+[x] CompiledPaint(properties: Map<String, CompiledValue>)
+[x] CompiledLayout(visibility, additionalProperties)
+[x] OptimizedStyleLayer(id, type, source, sourceLayer, minzoom, maxzoom,
+  filter, layout, paint)
+[x] OptimizedStyle(version, name, layers, sources, sprites, glyphs)
+
+STYLE RESOLVER:
+[x] StyleResolver class with ExpressionEvaluator dependency
+[x] resolve(rawStyle, sprites, glyphs): OptimizedStyle
+[x] compileLayer(layer): OptimizedStyleLayer
+[x] compileFilter(filterExpr): CompiledFilter
+[x] compilePaint(paintMap): CompiledPaint
+[x] compilePaintValue(value): CompiledValue (implemented as `compileValue`)
+[x] compileLayout(layoutMap): CompiledLayout
+
+TESTING:
+[x] All 34 operators: valid/invalid inputs, edge cases (basic tests added)
+[x] All 7 critical features: (basic tests added)
+  [x] Nested expressions 3-7 levels deep
+  [x] Exponential interpolation with base 0.5, 1.0, 1.5, 2.0, 10
+  [x] Array literals with membership tests
+  [x] Fallback chains with all null/undefined combinations
+  [x] Array operations (at with positive/negative indices, out-of-bounds)
+  [x] Type validation (typeof with all 6 types)
+  [x] index-of with arrays and substrings
+[x] Fill layer tests (paint/layout with expressions) (covered by simple style test)
+☐ Line layer tests (paint/layout with expressions)
+☐ Background layer tests (paint/layout with expressions)
+☐ Symbol layer tests (text-field, icon-size, text-size with expressions)
+☐ 100+ real-world examples from style.json
+[x] Edge cases: null/missing properties, empty arrays, boundary values (some covered by operator tests)
+[x] Type coercion: "5" == 5, string vs number comparisons (covered by comparison tests)
+☐ Filter restrictions: integer-only zoom in filters
+☐ Performance tests: compilation time, evaluation time per property
+☐ Integration tests with actual style.json files
+
+DOCUMENTATION:
+☐ KDoc for public APIs (ExpressionEvaluator, StyleResolver, etc.)
+☐ Code comments for complex logic (interpolation "base", type coercion, etc.)
+☐ Example usage in codebase or README
+
+================================================================================
+SUCCESS CRITERIA
+================================================================================
+
+CRITICAL FEATURES:
+✓ All 7 critical features fully implemented and tested
+✓ "base" property for exponential interpolation working correctly
+✓ Nested expressions 5+ levels deep evaluated with proper context
+✓ Array literals and membership tests functional
+✓ Fallback chains handle all null/undefined scenarios
+✓ Type validation returns correct types for all 6 data types
+✓ Array operations (at, index-of) work with edge cases
+
+OPERATORS:
+✓ All 34 Tier 1 operators implemented
+✓ 14 filter operators with type coercion
+✓ 20 paint/layout operators with interpolation support
+✓ ~98% real-world style coverage
+
+LAYERS:
+✓ Fill, line, background, symbol fully supported
+✓ All paint/layout properties support expressions
+✓ Filter expressions with short-circuit evaluation
+
+CODE QUALITY:
+✓ Type-safe compiled lambdas (no runtime JSON parsing)
+✓ Unified evaluator (single engine for filters and paint/layout)
+✓ Expression introspection (getRequiredProperties)
+✓ Graceful error handling for malformed expressions
+✓ No breaking changes to existing Style.kt
+
+PERFORMANCE:
+✓ One-time compilation cost at style load
+✓ Fast render-time evaluation (direct function calls)
+✓ Minimal memory overhead vs original Style
+
+================================================================================
+USAGE EXAMPLE
+================================================================================
+
+// Initialize once
+val resolver = StyleResolver()
+val optimizedStyle = resolver.resolve(rawStyle, sprites, glyphs)
+
+// Per-layer rendering
+val layer = optimizedStyle.layers[0]
+val featureProperties = feature.properties
+val zoomLevel = mapState.cameraState.zoom
+
+// Evaluate filter
+val matches = layer.filter?.evaluate(featureProperties, "Polygon") ?: true
+
+// Evaluate paint if matched
+if (matches) {
+    val fillColor = layer.paint.properties["fill-color"]
+        ?.evaluate(zoomLevel, featureProperties)
+    val opacity = layer.paint.properties["fill-opacity"]
+        ?.evaluate(zoomLevel, featureProperties)
+
+    drawFilledPolygon(geometry, fillColor, opacity)
+}
+
+// Symbol text rendering
+val textField = layer.layout.additionalProperties["text-field"]
+    ?.evaluate(zoomLevel, featureProperties)?.toString()
+
+val textSize = layer.layout.additionalProperties["text-size"]
+    ?.evaluate(zoomLevel, featureProperties) as? Double ?: 16.0
+
+drawText(textField, textSize)
+
+================================================================================
+PHASE 1 CODE BREAKDOWN (2600-3300 LOC)
+================================================================================
+
+ExpressionEvaluator.kt:     ~450-550 LOC (34 operators + helpers)
+CompiledStyleTypes.kt:      ~120-150 LOC (data classes)
+StyleResolver.kt:           ~200-250 LOC (compilation logic)
+Helper functions:           ~250-300 LOC (interpolate, match, etc.)
+Unit tests:                 ~1600-2000 LOC (comprehensive coverage)
+────────────────────────────────────────
+TOTAL:                      ~2600-3250 LOC
+
+================================================================================
+NEXT STEPS AFTER SCOPE 1
+================================================================================
+
+Once Phase 1 MVP is complete and tested, proceed to:
+
+SCOPE 2 (Phase 2+):
+  - Tier 2 Operators (16): Type conversion, math, string search
+  - Tier 3 Operators (35+): Advanced math, trig, color spaces, feature-state
+  - Extended layers: circle, heatmap, raster, fill-extrusion, model
+
+See SCOPE_2_PLAN.txt for Phase 2+ roadmap
+
+================================================================================
