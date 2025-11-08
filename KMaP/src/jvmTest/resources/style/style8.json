@@ -1,0 +1,2378 @@
+{
+  "version": 8,
+  "id": "ocean",
+  "name": "Ocean",
+  "sources": {
+    "contours": {
+      "url": "https://api.maptiler.com/tiles/contours/tiles.json?key=GCqxEKWuBP1S6iQ1aSBG",
+      "type": "vector"
+    },
+    "land": {
+      "url": "https://api.maptiler.com/tiles/land/tiles.json?key=GCqxEKWuBP1S6iQ1aSBG",
+      "type": "vector"
+    },
+    "maptiler_attribution": {
+      "attribution": "<a href=\"https://www.maptiler.com/copyright/\" target=\"_blank\">&copy; MapTiler</a> <a href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\">&copy; OpenStreetMap contributors</a>",
+      "type": "vector"
+    },
+    "maptiler_planet": {
+      "url": "https://api.maptiler.com/tiles/v3/tiles.json?key=GCqxEKWuBP1S6iQ1aSBG",
+      "type": "vector"
+    },
+    "ocean": {
+      "url": "https://api.maptiler.com/tiles/ocean/tiles.json?key=GCqxEKWuBP1S6iQ1aSBG",
+      "type": "vector"
+    },
+    "ocean_rgb": {
+      "url": "https://api.maptiler.com/tiles/ocean-rgb/tiles.json?key=GCqxEKWuBP1S6iQ1aSBG",
+      "type": "raster-dem"
+    },
+    "terrain_rgb": {
+      "url": "https://api.maptiler.com/tiles/terrain-rgb-v2/tiles.json?key=GCqxEKWuBP1S6iQ1aSBG",
+      "type": "raster-dem"
+    }
+  },
+  "layers": [
+    {
+      "id": "Background",
+      "type": "background",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "background-color": "hsl(60,20%,85%)"
+      }
+    },
+    {
+      "id": "Water",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "water",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "hsl(210,94%,88%)"
+      },
+      "filter": [
+        "all",
+        [
+          "!=",
+          "intermittent",
+          1
+        ],
+        [
+          "!=",
+          "brunnel",
+          "tunnel"
+        ]
+      ]
+    },
+    {
+      "id": "0m to -50m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(210,62%,78%)",
+          6,
+          "hsl(211, 93%, 88%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -50
+      ]
+    },
+    {
+      "id": "-50m to -100m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(210,62%,78%)",
+          6,
+          "hsl(210,79%,85%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -100
+      ]
+    },
+    {
+      "id": "-100m to -200m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(210,62%,78%)",
+          6,
+          "hsl(210,68%,82%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -200
+      ]
+    },
+    {
+      "id": "-200m to -250m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(210,62%,78%)",
+          6,
+          "hsl(210,68%,82%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -250
+      ]
+    },
+    {
+      "id": "-250m to -500m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(210,62%,78%)",
+          6,
+          "hsl(210,55%,77%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -500
+      ]
+    },
+    {
+      "id": "-500m to -750m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(210,54%,74%)",
+          6,
+          "hsl(210,51%,74%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -750
+      ]
+    },
+    {
+      "id": "-750m to -1000m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(210,54%,74%)",
+          6,
+          "hsl(210,47%,72%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -1000
+      ]
+    },
+    {
+      "id": "-1000m to -1250m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(209,50%,70%)",
+          6,
+          "hsl(210,44%,69%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -1250
+      ]
+    },
+    {
+      "id": "-1250m to -1500m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(209,50%,70%)",
+          6,
+          "hsl(210,41%,66%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -1500
+      ]
+    },
+    {
+      "id": "-1500m to -1750m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(209,50%,70%)",
+          6,
+          "hsl(210,39%,64%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -1750
+      ]
+    },
+    {
+      "id": "-1750m to -2000m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(209,50%,70%)",
+          6,
+          "hsl(210,37%,61%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -2000
+      ]
+    },
+    {
+      "id": "-2000m to -2500m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(209,46%,66%)",
+          6,
+          "hsl(210,35%,58%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -2500
+      ]
+    },
+    {
+      "id": "-2500m to -3000m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(209,46%,66%)",
+          6,
+          "hsl(210,34%,56%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -3000
+      ]
+    },
+    {
+      "id": "-3000m to -3500m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(209,46%,66%)",
+          6,
+          "hsl(210,33%,53%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -3500
+      ]
+    },
+    {
+      "id": "-3500m to -4000m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(209,44%,61%)",
+          6,
+          "hsl(210,31%,50%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -4000
+      ]
+    },
+    {
+      "id": "-4000m to -4500m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(209,44%,61%)",
+          6,
+          "hsl(210,33%,48%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -4500
+      ]
+    },
+    {
+      "id": "-4500m to -5000m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(208,41%,57%)",
+          6,
+          "hsl(210,35%,45%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -5000
+      ]
+    },
+    {
+      "id": "-5000m to -5500m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(208,41%,57%)",
+          6,
+          "hsl(210,38%,42%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -5500
+      ]
+    },
+    {
+      "id": "-5500m to -6000m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(209,40%,53%)",
+          6,
+          "hsl(210,41%,40%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -6000
+      ]
+    },
+    {
+      "id": "-6000m to -6500m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(209,40%,53%)",
+          6,
+          "hsl(210,45%,37%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -6500
+      ]
+    },
+    {
+      "id": "-6500m to -7000m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(208,40%,48%)",
+          6,
+          "hsl(210,49%,35%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -7000
+      ]
+    },
+    {
+      "id": "-7000m to -7500m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(208,40%,48%)",
+          6,
+          "hsl(209,54%,32%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -7500
+      ]
+    },
+    {
+      "id": "-7500m to -8000m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(208,45%,40%)",
+          6,
+          "hsl(209,60%,29%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -8000
+      ]
+    },
+    {
+      "id": "-8000m to -8500m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(208,45%,40%)",
+          6,
+          "hsl(209,67%,27%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -8500
+      ]
+    },
+    {
+      "id": "-8500m to -9000m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(208,45%,40%)",
+          6,
+          "hsl(209,75%,24%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -9000
+      ]
+    },
+    {
+      "id": "-9000m to -9500m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(208,45%,40%)",
+          6,
+          "hsl(209,87%,21%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -9500
+      ]
+    },
+    {
+      "id": "-9500m to -10000m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(208,45%,40%)",
+          6,
+          "hsl(209,100%,20%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -10000
+      ]
+    },
+    {
+      "id": "-10000m to -11000m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(208,45%,40%)",
+          6,
+          "hsl(209,100%,19%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -11000
+      ]
+    },
+    {
+      "id": "-11000m to -12000m",
+      "type": "fill",
+      "source": "ocean",
+      "source-layer": "contour",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          "hsl(208,45%,40%)",
+          6,
+          "hsl(209,100%,18%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "depth",
+        -12000
+      ]
+    },
+    {
+      "id": "Depth contour",
+      "type": "line",
+      "source": "ocean",
+      "source-layer": "contour_line",
+      "minzoom": 9,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-blur": 0.5,
+        "line-color": "hsl(210,100%,92%)",
+        "line-opacity": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          0.15,
+          14,
+          0.35
+        ],
+        "line-width": 1
+      }
+    },
+    {
+      "id": "Land shadow",
+      "type": "line",
+      "source": "land",
+      "source-layer": "land",
+      "maxzoom": 24,
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "line-miter-limit": 0,
+        "line-round-limit": 0,
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-blur": {
+          "stops": [
+            [
+              1,
+              29
+            ],
+            [
+              14,
+              18
+            ],
+            [
+              18,
+              9
+            ]
+          ]
+        },
+        "line-color": {
+          "stops": [
+            [
+              6,
+              "hsl(190,75%,84%)"
+            ],
+            [
+              9,
+              "hsl(187,88%,80%)"
+            ],
+            [
+              14,
+              "hsl(187,100%,77%)"
+            ]
+          ]
+        },
+        "line-opacity": {
+          "stops": [
+            [
+              1,
+              1
+            ],
+            [
+              6,
+              0.5
+            ],
+            [
+              9,
+              0.6
+            ],
+            [
+              12,
+              0.75
+            ],
+            [
+              16,
+              0.85
+            ],
+            [
+              17,
+              0.45
+            ],
+            [
+              18,
+              0.25
+            ]
+          ]
+        },
+        "line-translate": [
+          0,
+          1
+        ],
+        "line-width": {
+          "stops": [
+            [
+              1,
+              13
+            ],
+            [
+              2,
+              11
+            ],
+            [
+              6,
+              10
+            ],
+            [
+              9,
+              9
+            ],
+            [
+              12,
+              9
+            ],
+            [
+              18,
+              12
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "Land shadow 1",
+      "type": "fill",
+      "source": "land",
+      "source-layer": "land",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": "hsl(200,58%,29%)",
+        "fill-opacity": {
+          "stops": [
+            [
+              6,
+              0.5
+            ],
+            [
+              14,
+              0.7
+            ]
+          ]
+        },
+        "fill-translate": {
+          "stops": [
+            [
+              6,
+              [
+                2,
+                2
+              ]
+            ],
+            [
+              9,
+              [
+                1.6,
+                1.6
+              ]
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "Land shadow 2",
+      "type": "fill",
+      "source": "land",
+      "source-layer": "land",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": "hsl(200,58%,29%)",
+        "fill-opacity": 0.8,
+        "fill-translate": [
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "id": "Land",
+      "type": "fill",
+      "source": "land",
+      "source-layer": "land",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": "hsl(0,0%,96%)"
+      }
+    },
+    {
+      "id": "Ocean RGB",
+      "type": "hillshade",
+      "source": "ocean_rgb",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "hillshade-accent-color": "hsla(192,100%,50%,0.3)",
+        "hillshade-exaggeration": {
+          "stops": [
+            [
+              6,
+              0.65
+            ],
+            [
+              16,
+              0.45
+            ]
+          ]
+        },
+        "hillshade-highlight-color": {
+          "stops": [
+            [
+              1,
+              "hsla(0,0%,100%,0.6)"
+            ],
+            [
+              10,
+              "hsla(0,0%,100%,0.4)"
+            ]
+          ]
+        },
+        "hillshade-illumination-direction": 250,
+        "hillshade-shadow-color": {
+          "stops": [
+            [
+              1,
+              "hsla(220,54%,41%,0.3)"
+            ],
+            [
+              10,
+              "hsla(220,63%,22%,0.7)"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "Terrain RGB",
+      "type": "hillshade",
+      "source": "terrain_rgb",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "hillshade-accent-color": "hsl(49,85%,87%)",
+        "hillshade-highlight-color": "hsl(43,60%,94%)",
+        "hillshade-shadow-color": "hsl(36,23%,65%)"
+      }
+    },
+    {
+      "id": "River",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "waterway",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-blur": 0.25,
+        "line-color": {
+          "stops": [
+            [
+              2,
+              "hsl(211,45%,70%)"
+            ],
+            [
+              10,
+              "hsl(210,94%,87%)"
+            ]
+          ]
+        },
+        "line-opacity": 1,
+        "line-width": {
+          "stops": [
+            [
+              4,
+              0.75
+            ],
+            [
+              8,
+              1
+            ],
+            [
+              15,
+              2
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "Landform",
+      "type": "line",
+      "source": "ocean",
+      "source-layer": "landform",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-blur": 1,
+        "line-color": "hsl(221,88%,90%)",
+        "line-dasharray": [
+          4,
+          4
+        ],
+        "line-opacity": {
+          "stops": [
+            [
+              3,
+              1
+            ],
+            [
+              14,
+              0.5
+            ]
+          ]
+        }
+      },
+      "filter": [
+        "!has",
+        "class"
+      ]
+    },
+    {
+      "id": "Landform labels",
+      "type": "symbol",
+      "source": "ocean",
+      "source-layer": "landform",
+      "minzoom": 2,
+      "layout": {
+        "symbol-placement": "line",
+        "symbol-spacing": 250,
+        "text-field": [
+          "concat",
+          [
+            "get",
+            "name"
+          ],
+          " ",
+          [
+            "get",
+            "class"
+          ]
+        ],
+        "text-font": [
+          "Libre Baskerville Italic",
+          "Noto Serif Italic"
+        ],
+        "text-justify": "center",
+        "text-letter-spacing": {
+          "stops": [
+            [
+              2,
+              0.5
+            ],
+            [
+              10,
+              0.25
+            ]
+          ]
+        },
+        "text-offset": [
+          0,
+          1
+        ],
+        "text-size": 14,
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": {
+          "stops": [
+            [
+              3,
+              "hsl(210,56%,28%)"
+            ],
+            [
+              6,
+              "hsl(208,94%,7%)"
+            ]
+          ]
+        }
+      },
+      "filter": [
+        "in",
+        "class",
+        "Basin",
+        "Channel",
+        "Continental Slope",
+        "Fracture Zone",
+        "Fracture Zone Province",
+        "Fracture Zone System",
+        "Peak",
+        "Plain",
+        "Plateau",
+        "Province",
+        "Ridge",
+        "Rise",
+        "Sea Channel",
+        "Seachannel",
+        "Seamount Chain",
+        "Seamount Group"
+      ]
+    },
+    {
+      "id": "Depth labels",
+      "type": "symbol",
+      "source": "ocean",
+      "source-layer": "contour_line",
+      "minzoom": 8,
+      "layout": {
+        "symbol-avoid-edges": false,
+        "symbol-placement": "line",
+        "text-field": "{depth}",
+        "text-font": [
+          "Libre Baskerville Italic",
+          "Noto Serif Italic"
+        ],
+        "text-justify": "center",
+        "text-letter-spacing": 0.1,
+        "text-padding": {
+          "stops": [
+            [
+              9,
+              20
+            ],
+            [
+              12,
+              0
+            ]
+          ]
+        },
+        "text-size": {
+          "stops": [
+            [
+              9,
+              9
+            ],
+            [
+              12,
+              12
+            ],
+            [
+              14,
+              14
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": [
+          "interpolate",
+          [
+            "linear",
+            2
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          [
+            "case",
+            [
+              ">",
+              [
+                "get",
+                "depth"
+              ],
+              -4000
+            ],
+            "hsl(212,56%,25%)",
+            "hsl(208,48%,71%)"
+          ],
+          12,
+          [
+            "case",
+            [
+              ">",
+              [
+                "get",
+                "depth"
+              ],
+              -4000
+            ],
+            "hsl(209,93%,12%)",
+            "hsl(210, 14%, 97%)"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "Undersea line labels",
+      "type": "symbol",
+      "source": "ocean",
+      "source-layer": "landform",
+      "minzoom": 7,
+      "layout": {
+        "symbol-placement": "line",
+        "symbol-spacing": 350,
+        "text-field": [
+          "concat",
+          [
+            "get",
+            "name"
+          ],
+          " ",
+          [
+            "get",
+            "class"
+          ]
+        ],
+        "text-font": [
+          "Libre Baskerville Italic",
+          "Noto Serif Italic"
+        ],
+        "text-size": {
+          "stops": [
+            [
+              8,
+              15
+            ],
+            [
+              12,
+              20
+            ],
+            [
+              14,
+              24
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(208,85%,11%)"
+      }
+    },
+    {
+      "id": "Undersea labels",
+      "type": "symbol",
+      "source": "ocean",
+      "source-layer": "landform",
+      "minzoom": 7,
+      "layout": {
+        "text-field": [
+          "concat",
+          [
+            "get",
+            "name"
+          ],
+          " ",
+          [
+            "get",
+            "class"
+          ]
+        ],
+        "text-font": [
+          "Libre Baskerville Italic",
+          "Noto Serif Italic"
+        ],
+        "text-size": {
+          "stops": [
+            [
+              8,
+              12
+            ],
+            [
+              12,
+              16
+            ],
+            [
+              16,
+              24
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": [
+          "match",
+          [
+            "get",
+            "name"
+          ],
+          "Challenger",
+          "hsl(180, 100%, 79%)",
+          "hsl(210,100%,8%)"
+        ]
+      }
+    },
+    {
+      "id": "Water labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "water_name",
+      "minzoom": 0,
+      "layout": {
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Libre Baskerville Italic",
+          "Noto Serif Italic"
+        ],
+        "text-letter-spacing": 0.2,
+        "text-max-width": {
+          "stops": [
+            [
+              1,
+              4
+            ],
+            [
+              4,
+              6
+            ]
+          ]
+        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear",
+            2
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "ocean",
+            9,
+            7
+          ],
+          2,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "ocean",
+            11,
+            9
+          ],
+          3,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "ocean",
+            12,
+            10
+          ],
+          4,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "ocean",
+            16,
+            12
+          ],
+          12,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "ocean",
+            24,
+            18
+          ]
+        ],
+        "text-transform": "uppercase",
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(209,93%,12%)",
+        "text-opacity": [
+          "interpolate",
+          [
+            "linear",
+            2
+          ],
+          [
+            "zoom"
+          ],
+          3.9,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "ocean",
+            1,
+            0
+          ],
+          4,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "ocean",
+            1,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "id": "River labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "waterway",
+      "minzoom": 12,
+      "layout": {
+        "symbol-placement": "line",
+        "symbol-spacing": 650,
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Libre Baskerville Italic",
+          "Noto Serif Italic"
+        ],
+        "text-size": {
+          "stops": [
+            [
+              12,
+              12
+            ],
+            [
+              16,
+              16
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(210,31%,50%)"
+      },
+      "filter": [
+        "==",
+        "class",
+        "river"
+      ]
+    },
+    {
+      "id": "Lake labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "water_name",
+      "layout": {
+        "symbol-placement": "line",
+        "symbol-spacing": 450,
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Libre Baskerville Italic",
+          "Noto Serif Italic"
+        ],
+        "text-size": {
+          "stops": [
+            [
+              9,
+              14
+            ],
+            [
+              16,
+              18
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(224,39%,48%)"
+      },
+      "filter": [
+        "==",
+        "class",
+        "lake"
+      ]
+    },
+    {
+      "id": "Island labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "place",
+      "layout": {
+        "symbol-z-order": "viewport-y",
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Libre Baskerville Italic",
+          "Noto Serif Italic"
+        ],
+        "text-max-width": 4,
+        "text-padding": 20,
+        "text-size": {
+          "stops": [
+            [
+              8,
+              12
+            ],
+            [
+              14,
+              18
+            ],
+            [
+              18,
+              24
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(213,26%,40%)",
+        "text-halo-blur": {
+          "stops": [
+            [
+              8,
+              4
+            ],
+            [
+              12,
+              2
+            ]
+          ]
+        },
+        "text-halo-color": "hsl(0,0%,100%)",
+        "text-halo-width": {
+          "stops": [
+            [
+              8,
+              2
+            ],
+            [
+              12,
+              1
+            ]
+          ]
+        }
+      },
+      "filter": [
+        "==",
+        "class",
+        "island"
+      ]
+    },
+    {
+      "id": "Glacier",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "landcover",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": false,
+        "fill-color": "hsl(0, 0%, 100%)",
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          0.75,
+          9,
+          0.45
+        ]
+      },
+      "metadata": {},
+      "filter": [
+        "==",
+        "class",
+        "ice"
+      ]
+    },
+    {
+      "id": "Contour index",
+      "type": "line",
+      "source": "contours",
+      "source-layer": "contour",
+      "minzoom": 10,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(36, 39%, 49%)",
+        "line-opacity": {
+          "stops": [
+            [
+              10,
+              0.15
+            ],
+            [
+              14,
+              0.3
+            ],
+            [
+              16,
+              0.4
+            ]
+          ]
+        },
+        "line-width": {
+          "stops": [
+            [
+              10,
+              0.8
+            ],
+            [
+              14,
+              1.3
+            ]
+          ]
+        }
+      },
+      "filter": [
+        "all",
+        [
+          "in",
+          "nth_line",
+          5,
+          10
+        ],
+        [
+          "!has",
+          "glacier"
+        ]
+      ]
+    },
+    {
+      "id": "Glacier contour index",
+      "type": "line",
+      "source": "contours",
+      "source-layer": "contour",
+      "minzoom": 10,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(200, 100%, 73%)",
+        "line-opacity": {
+          "stops": [
+            [
+              10,
+              0.15
+            ],
+            [
+              14,
+              0.3
+            ],
+            [
+              16,
+              0.4
+            ]
+          ]
+        },
+        "line-width": {
+          "stops": [
+            [
+              10,
+              0.8
+            ],
+            [
+              14,
+              1.3
+            ]
+          ]
+        }
+      },
+      "filter": [
+        "all",
+        [
+          "in",
+          "nth_line",
+          5,
+          10
+        ],
+        [
+          "==",
+          "glacier",
+          1
+        ]
+      ]
+    },
+    {
+      "id": "Contour",
+      "type": "line",
+      "source": "contours",
+      "source-layer": "contour",
+      "minzoom": 11,
+      "layout": {
+        "line-cap": "square",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(36, 39%, 49%)",
+        "line-opacity": {
+          "stops": [
+            [
+              10,
+              0.1
+            ],
+            [
+              14,
+              0.25
+            ]
+          ]
+        },
+        "line-width": 0.8
+      },
+      "filter": [
+        "all",
+        [
+          "!in",
+          "nth_line",
+          5,
+          10
+        ],
+        [
+          ">",
+          "height",
+          0
+        ],
+        [
+          "!has",
+          "glacier"
+        ]
+      ]
+    },
+    {
+      "id": "Glacier contour",
+      "type": "line",
+      "source": "contours",
+      "source-layer": "contour",
+      "minzoom": 11,
+      "layout": {
+        "line-cap": "square",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(200, 100%, 73%)",
+        "line-opacity": {
+          "stops": [
+            [
+              10,
+              0.1
+            ],
+            [
+              14,
+              0.25
+            ]
+          ]
+        },
+        "line-width": 0.8
+      },
+      "filter": [
+        "all",
+        [
+          "!in",
+          "nth_line",
+          10,
+          5
+        ],
+        [
+          ">",
+          "height",
+          0
+        ],
+        [
+          "==",
+          "glacier",
+          1
+        ]
+      ]
+    },
+    {
+      "id": "Contour labels",
+      "type": "symbol",
+      "source": "contours",
+      "source-layer": "contour",
+      "minzoom": 12,
+      "layout": {
+        "symbol-avoid-edges": true,
+        "symbol-placement": "line",
+        "text-allow-overlap": false,
+        "text-field": "{height}",
+        "text-font": [
+          "Roboto Medium Italic",
+          "Noto Sans Italic"
+        ],
+        "text-ignore-placement": false,
+        "text-padding": 1,
+        "text-rotation-alignment": "map",
+        "text-size": {
+          "base": 1,
+          "stops": [
+            [
+              12,
+              8
+            ],
+            [
+              20,
+              12
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(38, 15%, 61%)",
+        "text-halo-blur": 1,
+        "text-halo-color": "hsl(0,0%,100%)",
+        "text-halo-width": 0.5
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "LineString"
+        ],
+        [
+          ">",
+          "height",
+          0
+        ],
+        [
+          "in",
+          "nth_line",
+          5,
+          10
+        ],
+        [
+          "!has",
+          "glacier"
+        ]
+      ]
+    },
+    {
+      "id": "Glacier contour labels",
+      "type": "symbol",
+      "source": "contours",
+      "source-layer": "contour",
+      "minzoom": 12,
+      "layout": {
+        "symbol-avoid-edges": true,
+        "symbol-placement": "line",
+        "text-allow-overlap": false,
+        "text-field": "{height}",
+        "text-font": [
+          "Roboto Medium Italic",
+          "Noto Sans Italic"
+        ],
+        "text-ignore-placement": false,
+        "text-padding": 1,
+        "text-rotation-alignment": "map",
+        "text-size": {
+          "base": 1,
+          "stops": [
+            [
+              12,
+              8
+            ],
+            [
+              20,
+              12
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(200, 38%, 66%)",
+        "text-halo-blur": 1,
+        "text-halo-color": "hsl(0,0%,100%)",
+        "text-halo-width": 0.5
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "LineString"
+        ],
+        [
+          ">",
+          "height",
+          0
+        ],
+        [
+          "in",
+          "nth_line",
+          5,
+          10
+        ],
+        [
+          "has",
+          "glacier"
+        ]
+      ]
+    }
+  ],
+  "metadata": {
+    "maptiler": {
+      "copyright": "You are licensed to use the style or its derivate for serving map tiles exclusively with MapTiler Server or MapTiler Cloud and in accordance with their licenses and terms. If you plan to use the style in a different way, contact us at sales@maptiler.com.",
+      "groups": [
+        {
+          "icon": "water",
+          "id": "water",
+          "layers": [
+            "Depth contour",
+            "Landform",
+            "Ocean RGB",
+            "Water",
+            "River",
+            "Lake labels",
+            "River labels",
+            "Water labels",
+            "Depth labels",
+            "Landform labels",
+            "Undersea labels",
+            "Undersea line labels",
+            "0m to -50m",
+            "-50m to -100m",
+            "-100m to -200m",
+            "-4500m to -5000m",
+            "-200m to -250m",
+            "-250m to -500m",
+            "-500m to -750m",
+            "-750m to -1000m",
+            "-1000m to -1250m",
+            "-1250m to -1500m",
+            "-5000m to -5500m",
+            "-1500m to -1750m",
+            "-1750m to -2000m",
+            "-2000m to -2500m",
+            "-2500m to -3000m",
+            "-3000m to -3500m",
+            "-4000m to -4500m",
+            "-3500m to -4000m",
+            "-5500m to -6000m",
+            "-6000m to -6500m",
+            "-6500m to -7000m",
+            "-7000m to -7500m",
+            "-7500m to -8000m",
+            "-8000m to -8500m",
+            "-8500m to -9000m",
+            "-9000m to -9500m",
+            "-9500m to -10000m",
+            "-10000m to -11000m",
+            "-11000m to -12000m"
+          ],
+          "name": "Water"
+        },
+        {
+          "icon": "terrain",
+          "id": "land",
+          "layers": [
+            "Land",
+            "Land shadow",
+            "Land shadow 1",
+            "Land shadow 2",
+            "Terrain RGB",
+            "Island labels",
+            "Contour index",
+            "Contour",
+            "Glacier contour index",
+            "Glacier contour",
+            "Glacier",
+            "Contour labels",
+            "Glacier contour labels"
+          ],
+          "name": "Land"
+        },
+        {
+          "icon": "background",
+          "id": "background",
+          "layers": [
+            "Background"
+          ],
+          "name": "Background"
+        }
+      ]
+    }
+  },
+  "glyphs": "https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=GCqxEKWuBP1S6iQ1aSBG",
+  "sprite": "https://api.maptiler.com/maps/ocean/sprite",
+  "bearing": 0,
+  "pitch": 0,
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 1
+}

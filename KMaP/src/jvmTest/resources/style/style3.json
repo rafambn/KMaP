@@ -1,0 +1,2590 @@
+{
+  "version": 8,
+  "id": "base-v4",
+  "name": "Base",
+  "sources": {
+    "maptiler_attribution": {
+      "attribution": "<a href=\"https://www.maptiler.com/copyright/\" target=\"_blank\">&copy; MapTiler</a> <a href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\">&copy; OpenStreetMap contributors</a>",
+      "type": "vector"
+    },
+    "maptiler_planet_v4": {
+      "url": "https://api.maptiler.com/tiles/v4/tiles.json?key=GCqxEKWuBP1S6iQ1aSBG",
+      "type": "vector"
+    }
+  },
+  "layers": [
+    {
+      "id": "Background",
+      "type": "background",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "background-color": "hsl(60, 19%, 93%)"
+      }
+    },
+    {
+      "id": "Vegetation",
+      "type": "fill",
+      "source": "maptiler_planet_v4",
+      "source-layer": "vegetation",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "hsl(94, 58%, 75%)",
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          0.25,
+          9,
+          0.15
+        ]
+      },
+      "filter": [
+        "==",
+        [
+          "geometry-type"
+        ],
+        "Polygon"
+      ]
+    },
+    {
+      "id": "Residential",
+      "type": "fill",
+      "source": "maptiler_planet_v4",
+      "source-layer": "residential",
+      "minzoom": 4,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          2,
+          "hsl(60, 19%, 81%)",
+          12,
+          "hsl(48, 21%, 83%)"
+        ],
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          11,
+          1,
+          12,
+          0.8,
+          13,
+          0.5,
+          14,
+          0.25
+        ]
+      },
+      "filter": [
+        "==",
+        [
+          "geometry-type"
+        ],
+        "Polygon"
+      ]
+    },
+    {
+      "id": "Glacier",
+      "type": "fill",
+      "source": "maptiler_planet_v4",
+      "source-layer": "ice",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          5,
+          "hsl(180, 0%, 100%)",
+          10,
+          "hsl(180, 100%, 98%)"
+        ],
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        [
+          "geometry-type"
+        ],
+        "Polygon"
+      ]
+    },
+    {
+      "id": "Scrub",
+      "type": "fill",
+      "source": "maptiler_planet_v4",
+      "source-layer": "scrub",
+      "maxzoom": 10,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "hsl(91, 35%, 70%)",
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          0.25,
+          9,
+          0.15,
+          10,
+          0.05
+        ]
+      },
+      "filter": [
+        "==",
+        [
+          "geometry-type"
+        ],
+        "Polygon"
+      ]
+    },
+    {
+      "id": "Forest",
+      "type": "fill",
+      "source": "maptiler_planet_v4",
+      "source-layer": "forest",
+      "maxzoom": 10,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "hsl(91, 35%, 70%)",
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          1,
+          0.25,
+          7,
+          0.6,
+          8,
+          0.4,
+          9,
+          0.2,
+          10,
+          0.1
+        ]
+      },
+      "filter": [
+        "==",
+        [
+          "geometry-type"
+        ],
+        "Polygon"
+      ]
+    },
+    {
+      "id": "Sand",
+      "type": "fill",
+      "source": "maptiler_planet_v4",
+      "source-layer": "sand",
+      "minzoom": 7,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": false,
+        "fill-color": "hsla(54, 68%, 53%, 0.2)",
+        "fill-opacity": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          7,
+          0.1,
+          8,
+          0.5,
+          9,
+          1
+        ]
+      },
+      "filter": [
+        "==",
+        [
+          "geometry-type"
+        ],
+        "Polygon"
+      ]
+    },
+    {
+      "id": "Grass",
+      "type": "fill",
+      "source": "maptiler_planet_v4",
+      "source-layer": "grass",
+      "minzoom": 8,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": false,
+        "fill-color": "hsla(109, 34%, 80%, 0.8)",
+        "fill-opacity": {
+          "stops": [
+            [
+              7,
+              0.7
+            ],
+            [
+              12,
+              1
+            ]
+          ]
+        }
+      },
+      "filter": [
+        "==",
+        [
+          "geometry-type"
+        ],
+        "Polygon"
+      ]
+    },
+    {
+      "id": "Wood",
+      "type": "fill",
+      "source": "maptiler_planet_v4",
+      "source-layer": "wood",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": false,
+        "fill-color": "hsla(109, 34%, 70%, 0.8)",
+        "fill-opacity": {
+          "stops": [
+            [
+              7,
+              0.7
+            ],
+            [
+              12,
+              1
+            ]
+          ]
+        }
+      },
+      "filter": [
+        "==",
+        [
+          "geometry-type"
+        ],
+        "Polygon"
+      ]
+    },
+    {
+      "id": "Water",
+      "type": "fill",
+      "source": "maptiler_planet_v4",
+      "source-layer": "water",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "hsl(205, 64%, 83%)",
+        "fill-opacity": [
+          "case",
+          [
+            "==",
+            [
+              "get",
+              "intermittent"
+            ],
+            true
+          ],
+          0.5,
+          1
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "geometry-type"
+          ],
+          "Polygon"
+        ],
+        [
+          "any",
+          [
+            "==",
+            [
+              "get",
+              "intermittent"
+            ],
+            false
+          ],
+          [
+            "!",
+            [
+              "has",
+              "intermittent"
+            ]
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "River",
+      "type": "line",
+      "source": "maptiler_planet_v4",
+      "source-layer": "waterway",
+      "minzoom": 3,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(205, 64%, 83%)",
+        "line-opacity": 1,
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "river",
+            1,
+            0.5
+          ],
+          15,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "river",
+            2,
+            1.5
+          ],
+          18,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "river",
+            4,
+            3
+          ]
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "geometry-type"
+          ],
+          "LineString"
+        ],
+        [
+          "any",
+          [
+            "==",
+            [
+              "get",
+              "intermittent"
+            ],
+            false
+          ],
+          [
+            "!",
+            [
+              "has",
+              "intermittent"
+            ]
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "Transit tunnel",
+      "type": "line",
+      "source": "maptiler_planet_v4",
+      "source-layer": "railway",
+      "minzoom": 10,
+      "layout": {
+        "line-cap": "butt",
+        "line-join": "miter",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(34, 10%, 66%)",
+        "line-dasharray": [
+          3,
+          3
+        ],
+        "line-opacity": 0.5,
+        "line-width": {
+          "stops": [
+            [
+              14,
+              0.5
+            ],
+            [
+              16,
+              1.2
+            ],
+            [
+              18,
+              2
+            ]
+          ]
+        }
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "geometry-type"
+          ],
+          "LineString"
+        ],
+        [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "light_rail",
+              "narrow_gauge",
+              "tram"
+            ],
+            true,
+            false
+          ],
+          [
+            "match",
+            [
+              "get",
+              "brunnel"
+            ],
+            [
+              "tunnel"
+            ],
+            true,
+            false
+          ],
+          [
+            "any",
+            [
+              "==",
+              [
+                "get",
+                "construction"
+              ],
+              false
+            ],
+            [
+              "!",
+              [
+                "has",
+                "construction"
+              ]
+            ]
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "Bridge",
+      "type": "fill",
+      "source": "maptiler_planet_v4",
+      "source-layer": "bridge",
+      "minzoom": 7,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "hsl(47, 22%, 88%)",
+        "fill-opacity": 0.7
+      },
+      "filter": [
+        "==",
+        [
+          "geometry-type"
+        ],
+        "Polygon"
+      ]
+    },
+    {
+      "id": "Pier",
+      "type": "fill",
+      "source": "maptiler_planet_v4",
+      "source-layer": "pier",
+      "minzoom": 9,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": "hsl(60, 20%, 88%)",
+        "fill-opacity": 1
+      }
+    },
+    {
+      "id": "Road network",
+      "type": "line",
+      "source": "maptiler_planet_v4",
+      "source-layer": "road",
+      "minzoom": 4,
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(199, 2%, 78%)",
+        "line-opacity": [
+          "match",
+          [
+            "get",
+            "brunnel"
+          ],
+          "tunnel",
+          0.5,
+          1
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "linear",
+            2
+          ],
+          [
+            "zoom"
+          ],
+          4,
+          0.5,
+          5,
+          0.75,
+          6,
+          1,
+          10,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "motorway"
+            ],
+            [
+              "match",
+              [
+                "get",
+                "brunnel"
+              ],
+              [
+                "bridge"
+              ],
+              0,
+              2.5
+            ],
+            [
+              "trunk"
+            ],
+            1.5,
+            1
+          ],
+          12,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "motorway"
+            ],
+            [
+              "match",
+              [
+                "get",
+                "ramp"
+              ],
+              1,
+              1,
+              4
+            ],
+            [
+              "trunk"
+            ],
+            2,
+            [
+              "primary"
+            ],
+            2.5,
+            [
+              "secondary",
+              "tertiary"
+            ],
+            2,
+            [
+              "minor"
+            ],
+            1,
+            [
+              "pier",
+              "service",
+              "track"
+            ],
+            0.5,
+            0.5
+          ],
+          14,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "motorway"
+            ],
+            [
+              "match",
+              [
+                "get",
+                "ramp"
+              ],
+              1,
+              5,
+              6
+            ],
+            [
+              "trunk"
+            ],
+            3,
+            [
+              "primary"
+            ],
+            5,
+            [
+              "secondary"
+            ],
+            4,
+            [
+              "tertiary"
+            ],
+            3,
+            [
+              "minor"
+            ],
+            2,
+            [
+              "pier",
+              "service",
+              "track"
+            ],
+            1,
+            2
+          ],
+          16,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "motorway",
+              "trunk",
+              "primary"
+            ],
+            8,
+            [
+              "secondary"
+            ],
+            7,
+            [
+              "tertiary"
+            ],
+            6,
+            [
+              "minor"
+            ],
+            4,
+            [
+              "pier",
+              "service",
+              "track"
+            ],
+            2,
+            4
+          ],
+          20,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "motorway",
+              "trunk",
+              "primary"
+            ],
+            28,
+            [
+              "secondary"
+            ],
+            24,
+            [
+              "tertiary"
+            ],
+            20,
+            [
+              "minor",
+              "service",
+              "track",
+              "pier"
+            ],
+            16,
+            16
+          ]
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "geometry-type"
+          ],
+          "LineString"
+        ],
+        [
+          "any",
+          [
+            "==",
+            [
+              "get",
+              "construction"
+            ],
+            false
+          ],
+          [
+            "!",
+            [
+              "has",
+              "construction"
+            ]
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "Pathway",
+      "type": "line",
+      "source": "maptiler_planet_v4",
+      "source-layer": "pathway",
+      "minzoom": 15,
+      "layout": {
+        "line-cap": "square",
+        "line-join": "bevel",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(0, 0%, 100%)",
+        "line-dasharray": [
+          1,
+          1
+        ],
+        "line-width": {
+          "base": 1.55,
+          "stops": [
+            [
+              15,
+              0.5
+            ],
+            [
+              16,
+              1
+            ],
+            [
+              18,
+              2
+            ],
+            [
+              20,
+              3
+            ],
+            [
+              22,
+              4
+            ]
+          ]
+        }
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "geometry-type"
+          ],
+          "LineString"
+        ],
+        [
+          "match",
+          [
+            "get",
+            "brunnel"
+          ],
+          [
+            "bridge",
+            "ford"
+          ],
+          true,
+          [
+            "!",
+            [
+              "has",
+              "brunnel"
+            ]
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "Railway",
+      "type": "line",
+      "source": "maptiler_planet_v4",
+      "source-layer": "railway",
+      "minzoom": 7,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          "hsl(33, 10%, 62%)",
+          10,
+          "hsl(33, 10%, 67%)"
+        ],
+        "line-opacity": [
+          "match",
+          [
+            "get",
+            "brunnel"
+          ],
+          "tunnel",
+          0.25,
+          1
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "linear",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          [
+            "match",
+            [
+              "get",
+              "usage"
+            ],
+            [
+              "main"
+            ],
+            0.5,
+            0
+          ],
+          9,
+          [
+            "match",
+            [
+              "get",
+              "service"
+            ],
+            [
+              "yard",
+              "spur"
+            ],
+            0,
+            0.7
+          ],
+          12,
+          [
+            "match",
+            [
+              "get",
+              "service"
+            ],
+            [
+              "yard",
+              "spur"
+            ],
+            0,
+            0.8
+          ],
+          16,
+          [
+            "match",
+            [
+              "get",
+              "service"
+            ],
+            [
+              "yard",
+              "spur"
+            ],
+            1,
+            2
+          ],
+          22,
+          [
+            "match",
+            [
+              "get",
+              "service"
+            ],
+            [
+              "yard",
+              "spur"
+            ],
+            1.5,
+            3
+          ]
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "geometry-type"
+          ],
+          "LineString"
+        ],
+        [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "narrow_gauge",
+              "rail"
+            ],
+            true,
+            false
+          ],
+          [
+            "any",
+            [
+              "==",
+              [
+                "get",
+                "construction"
+              ],
+              false
+            ],
+            [
+              "!",
+              [
+                "has",
+                "construction"
+              ]
+            ]
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "Railway dash",
+      "type": "line",
+      "source": "maptiler_planet_v4",
+      "source-layer": "railway",
+      "minzoom": 16,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsla(33, 0%, 100%, 0.5)",
+        "line-dasharray": [
+          2,
+          4
+        ],
+        "line-opacity": [
+          "match",
+          [
+            "get",
+            "brunnel"
+          ],
+          "tunnel",
+          0.25,
+          1
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "linear",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          16,
+          [
+            "match",
+            [
+              "get",
+              "service"
+            ],
+            [
+              "yard",
+              "spur"
+            ],
+            1,
+            2
+          ],
+          22,
+          [
+            "match",
+            [
+              "get",
+              "service"
+            ],
+            [
+              "yard",
+              "spur"
+            ],
+            1.5,
+            3
+          ]
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "geometry-type"
+          ],
+          "LineString"
+        ],
+        [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "narrow_gauge",
+              "rail"
+            ],
+            true,
+            false
+          ],
+          [
+            "any",
+            [
+              "==",
+              [
+                "get",
+                "construction"
+              ],
+              false
+            ],
+            [
+              "!",
+              [
+                "has",
+                "construction"
+              ]
+            ]
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "Transit",
+      "type": "line",
+      "source": "maptiler_planet_v4",
+      "source-layer": "railway",
+      "minzoom": 11,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsla(33, 10%, 67%, 0.8)",
+        "line-opacity": [
+          "match",
+          [
+            "get",
+            "brunnel"
+          ],
+          "tunnel",
+          0.25,
+          1
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "linear",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          0.5,
+          16,
+          1,
+          22,
+          2
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "geometry-type"
+          ],
+          "LineString"
+        ],
+        [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "light_rail",
+              "tram"
+            ],
+            true,
+            false
+          ],
+          [
+            "match",
+            [
+              "get",
+              "brunnel"
+            ],
+            [
+              "bridge"
+            ],
+            true,
+            [
+              "!",
+              [
+                "has",
+                "brunnel"
+              ]
+            ]
+          ],
+          [
+            "any",
+            [
+              "==",
+              [
+                "get",
+                "construction"
+              ],
+              false
+            ],
+            [
+              "!",
+              [
+                "has",
+                "construction"
+              ]
+            ]
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "Aviation line",
+      "type": "line",
+      "source": "maptiler_planet_v4",
+      "source-layer": "aviation_line",
+      "minzoom": 10,
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(0, 0%, 100%)",
+        "line-opacity": 1,
+        "line-width": [
+          "interpolate",
+          [
+            "linear",
+            2
+          ],
+          [
+            "zoom"
+          ],
+          10,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "runway"
+            ],
+            2,
+            [
+              "taxiway"
+            ],
+            1,
+            0
+          ],
+          14,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "runway"
+            ],
+            3,
+            [
+              "taxiway"
+            ],
+            2,
+            0
+          ],
+          16,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "runway"
+            ],
+            10,
+            [
+              "taxiway"
+            ],
+            6,
+            0
+          ]
+        ]
+      },
+      "filter": [
+        "==",
+        [
+          "geometry-type"
+        ],
+        "LineString"
+      ]
+    },
+    {
+      "id": "Building",
+      "type": "fill",
+      "source": "maptiler_planet_v4",
+      "source-layer": "building",
+      "minzoom": 12,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": "hsl(47, 27%, 77%)",
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          0.2,
+          13,
+          1
+        ]
+      },
+      "filter": [
+        "==",
+        [
+          "geometry-type"
+        ],
+        "Polygon"
+      ]
+    },
+    {
+      "id": "Other border",
+      "type": "line",
+      "source": "maptiler_planet_v4",
+      "source-layer": "sub_border",
+      "minzoom": 3,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsla(0, 0%, 100%, 0.65)",
+        "line-dasharray": [
+          2,
+          1
+        ],
+        "line-opacity": [
+          "step",
+          [
+            "zoom"
+          ],
+          0,
+          3,
+          [
+            "case",
+            [
+              "<=",
+              [
+                "get",
+                "admin_level"
+              ],
+              40
+            ],
+            1,
+            0
+          ],
+          8,
+          [
+            "case",
+            [
+              "<=",
+              [
+                "get",
+                "admin_level"
+              ],
+              50
+            ],
+            1,
+            0
+          ],
+          10,
+          [
+            "case",
+            [
+              "<=",
+              [
+                "get",
+                "admin_level"
+              ],
+              60
+            ],
+            1,
+            0
+          ],
+          11,
+          [
+            "case",
+            [
+              "<=",
+              [
+                "get",
+                "admin_level"
+              ],
+              70
+            ],
+            1,
+            0
+          ],
+          12,
+          1
+        ],
+        "line-width": {
+          "stops": [
+            [
+              4,
+              0.8
+            ],
+            [
+              11,
+              1.75
+            ],
+            [
+              18,
+              2.5
+            ]
+          ]
+        }
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "geometry-type"
+          ],
+          "LineString"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "maritime"
+          ],
+          false
+        ]
+      ]
+    },
+    {
+      "id": "Disputed border",
+      "type": "line",
+      "source": "maptiler_planet_v4",
+      "source-layer": "country_border_disputed",
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(0, 0%, 100%)",
+        "line-dasharray": [
+          2,
+          2
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          1,
+          1,
+          5,
+          2,
+          10,
+          3,
+          14,
+          5
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "geometry-type"
+          ],
+          "LineString"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "maritime"
+          ],
+          false
+        ]
+      ]
+    },
+    {
+      "id": "Country border",
+      "type": "line",
+      "source": "maptiler_planet_v4",
+      "source-layer": "country_border",
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-blur": {
+          "stops": [
+            [
+              4,
+              0.5
+            ],
+            [
+              10,
+              0
+            ]
+          ]
+        },
+        "line-color": "hsl(0, 0%, 100%)",
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          1,
+          1,
+          5,
+          2,
+          10,
+          3,
+          14,
+          5
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "geometry-type"
+          ],
+          "LineString"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "maritime"
+          ],
+          false
+        ]
+      ]
+    },
+    {
+      "id": "Airport labels",
+      "type": "symbol",
+      "source": "maptiler_planet_v4",
+      "source-layer": "poi_station",
+      "minzoom": 8,
+      "layout": {
+        "text-anchor": "center",
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Inter Regular",
+          "Noto Sans Regular"
+        ],
+        "text-max-width": 8,
+        "text-offset": [
+          0,
+          0.5
+        ],
+        "text-size": {
+          "stops": [
+            [
+              10,
+              10
+            ],
+            [
+              14,
+              12
+            ],
+            [
+              16,
+              14
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(0, 0%, 12%)",
+        "text-halo-blur": 1,
+        "text-halo-color": "hsl(0, 0%, 100%)",
+        "text-halo-width": 1.4
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "geometry-type"
+          ],
+          "Point"
+        ],
+        [
+          "all",
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "aerodrome"
+            ],
+            true,
+            false
+          ],
+          [
+            "match",
+            [
+              "get",
+              "subclass"
+            ],
+            [
+              "international"
+            ],
+            true,
+            false
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "Pathway labels",
+      "type": "symbol",
+      "source": "maptiler_planet_v4",
+      "source-layer": "pathway_label",
+      "minzoom": 14,
+      "layout": {
+        "symbol-placement": "line",
+        "symbol-spacing": {
+          "stops": [
+            [
+              13,
+              250
+            ],
+            [
+              20,
+              350
+            ],
+            [
+              21,
+              1000
+            ]
+          ]
+        },
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Inter Regular",
+          "Noto Sans Regular"
+        ],
+        "text-letter-spacing": 0.1,
+        "text-rotation-alignment": "map",
+        "text-size": {
+          "base": 1.4,
+          "stops": [
+            [
+              14,
+              8
+            ],
+            [
+              17,
+              10
+            ],
+            [
+              20,
+              12
+            ]
+          ]
+        },
+        "text-transform": "uppercase",
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(0, 0%, 5%)",
+        "text-halo-color": "hsl(0, 84%, 100%)",
+        "text-halo-width": 1.5
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "geometry-type"
+          ],
+          "LineString"
+        ],
+        [
+          "match",
+          [
+            "get",
+            "brunnel"
+          ],
+          [
+            "bridge",
+            "ford"
+          ],
+          true,
+          [
+            "!",
+            [
+              "has",
+              "brunnel"
+            ]
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "Road labels",
+      "type": "symbol",
+      "source": "maptiler_planet_v4",
+      "source-layer": "road_label",
+      "minzoom": 14,
+      "layout": {
+        "symbol-placement": "line",
+        "symbol-spacing": {
+          "stops": [
+            [
+              13,
+              250
+            ],
+            [
+              20,
+              350
+            ],
+            [
+              21,
+              1000
+            ]
+          ]
+        },
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Inter Regular",
+          "Noto Sans Regular"
+        ],
+        "text-letter-spacing": 0.1,
+        "text-rotation-alignment": "map",
+        "text-size": {
+          "base": 1.4,
+          "stops": [
+            [
+              14,
+              8
+            ],
+            [
+              17,
+              10
+            ],
+            [
+              20,
+              12
+            ]
+          ]
+        },
+        "text-transform": "uppercase",
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(0, 0%, 5%)",
+        "text-halo-color": "hsl(0, 84%, 100%)",
+        "text-halo-width": 1.5
+      },
+      "filter": [
+        "==",
+        [
+          "geometry-type"
+        ],
+        "LineString"
+      ]
+    },
+    {
+      "id": "Place labels",
+      "type": "symbol",
+      "source": "maptiler_planet_v4",
+      "source-layer": "place_label",
+      "minzoom": 11,
+      "maxzoom": 16,
+      "layout": {
+        "symbol-sort-key": [
+          "to-number",
+          [
+            "get",
+            "rank"
+          ]
+        ],
+        "text-field": "{name}",
+        "text-font": [
+          "Inter Light",
+          "Noto Sans Light"
+        ],
+        "text-justify": "right",
+        "text-max-width": 10,
+        "text-size": [
+          "interpolate",
+          [
+            "linear",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          3,
+          11,
+          8,
+          13,
+          11,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "suburb",
+              "neighbourhood",
+              "quarter",
+              "hamlet",
+              "isolated_dwelling"
+            ],
+            10,
+            13
+          ],
+          16,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "suburb",
+              "neighbourhood",
+              "quarter",
+              "hamlet",
+              "isolated_dwelling"
+            ],
+            14,
+            16
+          ]
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(0, 0%, 0%)",
+        "text-halo-blur": 0,
+        "text-halo-color": "hsla(0, 0%, 100%, 0.75)",
+        "text-halo-width": 2
+      },
+      "filter": [
+        "==",
+        [
+          "geometry-type"
+        ],
+        "Point"
+      ]
+    },
+    {
+      "id": "Town labels",
+      "type": "symbol",
+      "source": "maptiler_planet_v4",
+      "source-layer": "town_label",
+      "minzoom": 8,
+      "maxzoom": 16,
+      "layout": {
+        "symbol-sort-key": [
+          "+",
+          [
+            "case",
+            [
+              "==",
+              [
+                "get",
+                "capital"
+              ],
+              20
+            ],
+            -1000,
+            0
+          ],
+          [
+            "to-number",
+            [
+              "get",
+              "rank"
+            ]
+          ]
+        ],
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Inter Regular",
+          "Noto Sans Regular"
+        ],
+        "text-max-width": 10,
+        "text-size": [
+          "interpolate",
+          [
+            "linear",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          3,
+          11,
+          8,
+          13,
+          11,
+          13,
+          16,
+          16
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(0, 0%, 0%)",
+        "text-halo-blur": 0,
+        "text-halo-color": "hsla(0, 0%, 100%, 0.75)",
+        "text-halo-width": 2,
+        "text-opacity": [
+          "step",
+          [
+            "zoom"
+          ],
+          0,
+          8,
+          [
+            "case",
+            [
+              "<=",
+              [
+                "get",
+                "rank"
+              ],
+              3
+            ],
+            1,
+            0
+          ],
+          9,
+          1
+        ]
+      },
+      "filter": [
+        "==",
+        [
+          "geometry-type"
+        ],
+        "Point"
+      ]
+    },
+    {
+      "id": "City labels",
+      "type": "symbol",
+      "source": "maptiler_planet_v4",
+      "source-layer": "city_label",
+      "minzoom": 4,
+      "maxzoom": 16,
+      "layout": {
+        "symbol-sort-key": [
+          "to-number",
+          [
+            "get",
+            "rank"
+          ]
+        ],
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Inter Regular",
+          "Noto Sans Regular"
+        ],
+        "text-max-width": 10,
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          3,
+          10,
+          8,
+          15,
+          11,
+          16,
+          16,
+          21
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(0, 0%, 0%)",
+        "text-halo-blur": 0,
+        "text-halo-color": "hsla(0, 0%, 100%, 0.75)",
+        "text-halo-width": 2
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "geometry-type"
+          ],
+          "Point"
+        ],
+        [
+          "match",
+          [
+            "get",
+            "capital"
+          ],
+          [
+            20
+          ],
+          false,
+          true
+        ]
+      ]
+    },
+    {
+      "id": "Capital city labels",
+      "type": "symbol",
+      "source": "maptiler_planet_v4",
+      "source-layer": "city_label",
+      "minzoom": 3,
+      "maxzoom": 16,
+      "layout": {
+        "symbol-sort-key": [
+          "to-number",
+          [
+            "get",
+            "rank"
+          ]
+        ],
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Inter Medium",
+          "Noto Sans Medium"
+        ],
+        "text-max-width": 10,
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          3,
+          11,
+          8,
+          16,
+          11,
+          17,
+          16,
+          21
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(0, 0%, 0%)",
+        "text-halo-blur": 0,
+        "text-halo-color": "hsla(0, 0%, 100%, 0.75)",
+        "text-halo-width": 2
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "geometry-type"
+          ],
+          "Point"
+        ],
+        [
+          "match",
+          [
+            "get",
+            "capital"
+          ],
+          [
+            20
+          ],
+          true,
+          false
+        ]
+      ]
+    },
+    {
+      "id": "Country labels disputed",
+      "type": "symbol",
+      "source": "maptiler_planet_v4",
+      "source-layer": "country_disputed_label",
+      "minzoom": 3,
+      "maxzoom": 12,
+      "layout": {
+        "symbol-sort-key": [
+          "to-number",
+          [
+            "get",
+            "rank"
+          ]
+        ],
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Inter Medium",
+          "Noto Sans Medium"
+        ],
+        "text-max-width": 8,
+        "text-padding": {
+          "stops": [
+            [
+              1,
+              0
+            ],
+            [
+              4,
+              2
+            ]
+          ]
+        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          8,
+          1,
+          10,
+          4,
+          13,
+          8,
+          18
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(0, 0%, 13%)",
+        "text-halo-blur": 0,
+        "text-halo-color": "hsl(0, 0%, 100%)",
+        "text-halo-width": 1.5
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "geometry-type"
+          ],
+          "Point"
+        ],
+        [
+          "match",
+          [
+            "get",
+            "worldview:ch"
+          ],
+          [
+            "recognized"
+          ],
+          true,
+          [
+            "!",
+            [
+              "has",
+              "worldview:ch"
+            ]
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "Country labels",
+      "type": "symbol",
+      "source": "maptiler_planet_v4",
+      "source-layer": "country_label",
+      "minzoom": 1,
+      "maxzoom": 12,
+      "layout": {
+        "symbol-sort-key": [
+          "to-number",
+          [
+            "get",
+            "rank"
+          ]
+        ],
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Inter Medium",
+          "Noto Sans Medium"
+        ],
+        "text-max-width": 8,
+        "text-padding": {
+          "stops": [
+            [
+              1,
+              0
+            ],
+            [
+              4,
+              2
+            ]
+          ]
+        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          8,
+          1,
+          10,
+          4,
+          [
+            "case",
+            [
+              ">",
+              [
+                "get",
+                "rank"
+              ],
+              2
+            ],
+            13,
+            15
+          ],
+          8,
+          [
+            "case",
+            [
+              ">",
+              [
+                "get",
+                "rank"
+              ],
+              2
+            ],
+            18,
+            22
+          ]
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(0, 0%, 13%)",
+        "text-halo-blur": 0,
+        "text-halo-color": "hsl(0, 0%, 100%)",
+        "text-halo-width": 1.5
+      },
+      "filter": [
+        "==",
+        [
+          "geometry-type"
+        ],
+        "Point"
+      ]
+    },
+    {
+      "id": "Continent labels",
+      "type": "symbol",
+      "source": "maptiler_planet_v4",
+      "source-layer": "continent_label",
+      "minzoom": 0,
+      "maxzoom": 1,
+      "layout": {
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Inter Semi Bold",
+          "Noto Sans Semi Bold"
+        ],
+        "text-justify": "center",
+        "text-size": {
+          "stops": [
+            [
+              0,
+              12
+            ],
+            [
+              2,
+              13
+            ]
+          ]
+        },
+        "text-transform": "uppercase",
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(0, 0%, 13%)",
+        "text-halo-blur": 0,
+        "text-halo-color": "hsl(0, 0%, 100%)",
+        "text-halo-width": 1.5
+      },
+      "filter": [
+        "==",
+        [
+          "geometry-type"
+        ],
+        "Point"
+      ]
+    }
+  ],
+  "metadata": {
+    "maptiler": {
+      "copyright": "You are licensed to use the style or its derivate for serving map tiles exclusively with MapTiler Server or MapTiler Cloud and in accordance with their licenses and terms. If you plan to use the style in a different way, contact us at sales@maptiler.com.",
+      "groups": [
+        {
+          "icon": "administrative",
+          "id": "x6V3HHsEYNWUJ2kqC1arT",
+          "layers": [
+            "Continent labels",
+            "Country labels",
+            "Capital city labels",
+            "City labels",
+            "Town labels",
+            "Place labels",
+            "Country border",
+            "Disputed border",
+            "Other border",
+            "Country labels disputed"
+          ],
+          "name": "Administrative"
+        },
+        {
+          "icon": "builtUp",
+          "id": "mlEJy3XDee0NwlxARq3_v",
+          "layers": [
+            "Building",
+            "Residential"
+          ],
+          "name": "Built-up"
+        },
+        {
+          "icon": "roads",
+          "id": "00rGgvIUftGM8hb-CxjDM",
+          "layers": [
+            "Road network",
+            "Bridge",
+            "Road labels",
+            "Pathway labels",
+            "Pathway",
+            "Pier"
+          ],
+          "name": "Roads"
+        },
+        {
+          "icon": "transit",
+          "id": "CDn68snMbjNA5JmnfTsFp",
+          "layers": [
+            "Transit",
+            "Railway",
+            "Transit tunnel",
+            "Railway dash",
+            "Airport labels",
+            "Aviation line"
+          ],
+          "name": "Transit"
+        },
+        {
+          "icon": "water",
+          "id": "43EPWf4CopPkC1sjfwPu0",
+          "layers": [
+            "River",
+            "Water"
+          ],
+          "name": "Water"
+        },
+        {
+          "icon": "nature",
+          "id": "-bWGYydhy884vfxSQSJck",
+          "layers": [
+            "Wood",
+            "Grass",
+            "Sand",
+            "Forest",
+            "Glacier",
+            "Vegetation",
+            "Scrub"
+          ],
+          "name": "Nature"
+        },
+        {
+          "icon": "background",
+          "id": "NWy5wcGz1k5YuBdpCLuME",
+          "layers": [
+            "Background"
+          ],
+          "name": "Background"
+        }
+      ],
+      "space": {
+        "color": "#E2EFF8"
+      },
+      "spaceColor": "##E2EFF8"
+    }
+  },
+  "glyphs": "https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=GCqxEKWuBP1S6iQ1aSBG",
+  "sprite": "https://api.maptiler.com/maps/base-v4/sprite",
+  "bearing": 0,
+  "pitch": 0,
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 1
+}

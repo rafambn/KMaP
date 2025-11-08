@@ -1,0 +1,9002 @@
+{
+  "version": 8,
+  "id": "winter-v2",
+  "name": "Winter",
+  "sources": {
+    "contours": {
+      "url": "https://api.maptiler.com/tiles/contours-v2/tiles.json?key=GCqxEKWuBP1S6iQ1aSBG",
+      "type": "vector"
+    },
+    "maptiler_planet": {
+      "url": "https://api.maptiler.com/tiles/v3/tiles.json?key=GCqxEKWuBP1S6iQ1aSBG",
+      "type": "vector"
+    },
+    "outdoor": {
+      "url": "https://api.maptiler.com/tiles/outdoor/tiles.json?key=GCqxEKWuBP1S6iQ1aSBG",
+      "type": "vector"
+    },
+    "terrain-rgb": {
+      "url": "https://api.maptiler.com/tiles/terrain-rgb-v2/tiles.json?key=GCqxEKWuBP1S6iQ1aSBG",
+      "type": "raster-dem"
+    }
+  },
+  "layers": [
+    {
+      "id": "Background",
+      "type": "background",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "background-color": {
+          "stops": [
+            [
+              5,
+              "hsl(192, 29%, 97%)"
+            ],
+            [
+              14,
+              "hsl(180, 48%, 95%)"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "Scrub",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "globallandcover",
+      "maxzoom": 9,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "hsl(180, 60%, 94%)",
+        "fill-opacity": 1
+      },
+      "filter": [
+        "==",
+        "class",
+        "scrub"
+      ]
+    },
+    {
+      "id": "Forest",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "globallandcover",
+      "minzoom": 0,
+      "maxzoom": 9,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "hsl(180, 20%, 66%)",
+        "fill-opacity": {
+          "stops": [
+            [
+              0,
+              0.1
+            ],
+            [
+              6,
+              0.15
+            ],
+            [
+              10,
+              0.2
+            ]
+          ]
+        }
+      },
+      "filter": [
+        "==",
+        "class",
+        "forest"
+      ]
+    },
+    {
+      "id": "Glacier",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "landcover",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": false,
+        "fill-color": "hsl(180, 100%, 94%)",
+        "fill-opacity": {
+          "stops": [
+            [
+              9,
+              0.55
+            ],
+            [
+              16,
+              0.25
+            ]
+          ]
+        }
+      },
+      "metadata": {},
+      "filter": [
+        "==",
+        "class",
+        "ice"
+      ]
+    },
+    {
+      "id": "Sand",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "landcover",
+      "minzoom": 9,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "hsla(156, 89%, 79%, 0.57)",
+        "fill-opacity": 0.3
+      },
+      "metadata": {},
+      "filter": [
+        "==",
+        "class",
+        "sand"
+      ]
+    },
+    {
+      "id": "Wood",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "landcover",
+      "minzoom": 9,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "hsl(180, 23%, 71%)",
+        "fill-opacity": 0.3
+      },
+      "metadata": {},
+      "filter": [
+        "==",
+        "class",
+        "wood"
+      ]
+    },
+    {
+      "id": "Grass",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "landcover",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "hsl(185, 49%, 90%)",
+        "fill-opacity": {
+          "stops": [
+            [
+              0,
+              1
+            ],
+            [
+              9,
+              0.3
+            ]
+          ]
+        }
+      },
+      "metadata": {},
+      "filter": [
+        "==",
+        "class",
+        "grass"
+      ]
+    },
+    {
+      "id": "Hillshade",
+      "type": "hillshade",
+      "source": "terrain-rgb",
+      "minzoom": 3,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "hillshade-accent-color": "hsl(205, 73%, 94%)",
+        "hillshade-exaggeration": {
+          "stops": [
+            [
+              3,
+              0.3
+            ],
+            [
+              6,
+              0.25
+            ],
+            [
+              9,
+              0.25
+            ],
+            [
+              12,
+              0.55
+            ],
+            [
+              16,
+              0.45
+            ]
+          ]
+        },
+        "hillshade-highlight-color": "hsl(183, 52%, 78%)",
+        "hillshade-shadow-color": "hsl(227, 31%, 41%)"
+      }
+    },
+    {
+      "id": "Residential",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "landuse",
+      "maxzoom": 18,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": {
+          "stops": [
+            [
+              1,
+              "hsl(0, 100%, 100%)"
+            ],
+            [
+              12,
+              "hsla(0, 100%, 100%, 0.75)"
+            ],
+            [
+              16,
+              "hsla(0, 100%, 100%, 0.5)"
+            ],
+            [
+              18,
+              "hsla(0, 100%, 100%, 0.15)"
+            ]
+          ]
+        },
+        "fill-opacity": 1
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Polygon"
+        ],
+        [
+          "in",
+          "class",
+          "residential",
+          "suburb",
+          "neighbourhood"
+        ]
+      ]
+    },
+    {
+      "id": "Other",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "landuse",
+      "minzoom": 10,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "hsl(0, 0%, 88%)",
+        "fill-opacity": 0.5
+      },
+      "metadata": {},
+      "filter": [
+        "in",
+        "class",
+        "commercial",
+        "industrial",
+        "retail",
+        "stadium"
+      ]
+    },
+    {
+      "id": "Cemetery",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "landuse",
+      "minzoom": 10,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "hsl(180, 22%, 77%)",
+        "fill-opacity": 0.5
+      },
+      "metadata": {},
+      "filter": [
+        "==",
+        "class",
+        "cemetery"
+      ]
+    },
+    {
+      "id": "Hospital",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "landuse",
+      "minzoom": 10,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "hsl(259, 50%, 91%)",
+        "fill-opacity": 0.5
+      },
+      "metadata": {},
+      "filter": [
+        "==",
+        "class",
+        "hospital"
+      ]
+    },
+    {
+      "id": "Stadium",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "landuse",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "hsl(174, 46%, 89%)",
+        "fill-opacity": 1
+      },
+      "filter": [
+        "in",
+        "class",
+        "pitch",
+        "playground",
+        "stadium"
+      ]
+    },
+    {
+      "id": "Park outline",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "park",
+      "minzoom": 8,
+      "maxzoom": 14,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(182, 31%, 48%)",
+        "line-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          0,
+          11,
+          0.2,
+          12,
+          0.3,
+          14,
+          0
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          1,
+          10,
+          1.5,
+          12,
+          3
+        ]
+      },
+      "filter": [
+        "==",
+        "$type",
+        "Polygon"
+      ]
+    },
+    {
+      "id": "Contour index",
+      "type": "line",
+      "source": "contours",
+      "source-layer": "contour",
+      "minzoom": 10,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(213, 39%, 44%)",
+        "line-opacity": {
+          "stops": [
+            [
+              10,
+              0.3
+            ],
+            [
+              14,
+              0.25
+            ]
+          ]
+        },
+        "line-width": {
+          "stops": [
+            [
+              10,
+              0.8
+            ],
+            [
+              14,
+              1.3
+            ]
+          ]
+        }
+      },
+      "filter": [
+        "all",
+        [
+          "in",
+          "nth_line",
+          5,
+          10
+        ],
+        [
+          "!has",
+          "glacier"
+        ]
+      ]
+    },
+    {
+      "id": "Glacier contour index",
+      "type": "line",
+      "source": "contours",
+      "source-layer": "contour",
+      "minzoom": 10,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(183, 100%, 40%)",
+        "line-opacity": {
+          "stops": [
+            [
+              10,
+              0.3
+            ],
+            [
+              14,
+              0.25
+            ]
+          ]
+        },
+        "line-width": {
+          "stops": [
+            [
+              10,
+              0.8
+            ],
+            [
+              14,
+              1.3
+            ]
+          ]
+        }
+      },
+      "filter": [
+        "all",
+        [
+          "in",
+          "nth_line",
+          5,
+          10
+        ],
+        [
+          "==",
+          "glacier",
+          1
+        ]
+      ]
+    },
+    {
+      "id": "Contour",
+      "type": "line",
+      "source": "contours",
+      "source-layer": "contour",
+      "minzoom": 11,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(212, 39%, 49%)",
+        "line-opacity": [
+          "step",
+          [
+            "zoom"
+          ],
+          [
+            "match",
+            [
+              "get",
+              "nth_line"
+            ],
+            0,
+            0,
+            0.2
+          ],
+          15,
+          0.2
+        ],
+        "line-width": 0.8
+      },
+      "filter": [
+        "all",
+        [
+          "!in",
+          "nth_line",
+          5,
+          10
+        ],
+        [
+          "!has",
+          "glacier"
+        ]
+      ]
+    },
+    {
+      "id": "Glacier contour",
+      "type": "line",
+      "source": "contours",
+      "source-layer": "contour",
+      "minzoom": 11,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(183, 100%, 40%)",
+        "line-opacity": [
+          "step",
+          [
+            "zoom"
+          ],
+          [
+            "match",
+            [
+              "get",
+              "nth_line"
+            ],
+            0,
+            0,
+            0.2
+          ],
+          15,
+          0.2
+        ],
+        "line-width": 0.8
+      },
+      "filter": [
+        "all",
+        [
+          "!in",
+          "nth_line",
+          5,
+          10
+        ],
+        [
+          "==",
+          "glacier",
+          1
+        ]
+      ]
+    },
+    {
+      "id": "Cliff line",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "mountain_peak",
+      "minzoom": 13,
+      "paint": {
+        "line-color": "hsl(213, 10%, 62%)",
+        "line-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          13,
+          0.5,
+          17,
+          0.8
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          15,
+          0.5,
+          22,
+          4
+        ]
+      },
+      "filter": [
+        "==",
+        "$type",
+        "LineString"
+      ]
+    },
+    {
+      "id": "Cliff",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "mountain_peak",
+      "minzoom": 13,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(213, 10%, 62%)",
+        "line-dasharray": [
+          0.2,
+          1
+        ],
+        "line-offset": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          16,
+          1.2,
+          22,
+          5
+        ],
+        "line-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          13,
+          0.3,
+          17,
+          0.6
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          16,
+          2,
+          22,
+          10
+        ]
+      },
+      "filter": [
+        "==",
+        "$type",
+        "LineString"
+      ]
+    },
+    {
+      "id": "Contour labels",
+      "type": "symbol",
+      "source": "contours",
+      "source-layer": "contour",
+      "layout": {
+        "symbol-avoid-edges": true,
+        "symbol-placement": "line",
+        "text-allow-overlap": false,
+        "text-field": "{height}",
+        "text-font": [
+          "Roboto Italic",
+          "Noto Sans Italic"
+        ],
+        "text-ignore-placement": false,
+        "text-padding": 10,
+        "text-rotation-alignment": "map",
+        "text-size": {
+          "base": 1,
+          "stops": [
+            [
+              15,
+              9.5
+            ],
+            [
+              20,
+              12
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(213, 41%, 49%)",
+        "text-halo-blur": 1,
+        "text-halo-color": "hsl(57, 100%, 96%)",
+        "text-halo-width": 0.5
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "LineString"
+        ],
+        [
+          "in",
+          "nth_line",
+          10,
+          5
+        ],
+        [
+          ">",
+          "height",
+          0
+        ],
+        [
+          "!has",
+          "glacier"
+        ]
+      ]
+    },
+    {
+      "id": "Glacier contour labels",
+      "type": "symbol",
+      "source": "contours",
+      "source-layer": "contour",
+      "layout": {
+        "symbol-avoid-edges": true,
+        "symbol-placement": "line",
+        "text-allow-overlap": false,
+        "text-field": "{height}",
+        "text-font": [
+          "Roboto Italic",
+          "Noto Sans Italic"
+        ],
+        "text-ignore-placement": false,
+        "text-padding": 10,
+        "text-rotation-alignment": "map",
+        "text-size": {
+          "base": 1,
+          "stops": [
+            [
+              15,
+              9.5
+            ],
+            [
+              20,
+              12
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(189,88%,41%)",
+        "text-halo-blur": 1,
+        "text-halo-color": "hsl(57, 100%, 96%)",
+        "text-halo-width": 0.5
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "LineString"
+        ],
+        [
+          "in",
+          "nth_line",
+          10,
+          5
+        ],
+        [
+          ">",
+          "height",
+          0
+        ],
+        [
+          "has",
+          "glacier"
+        ]
+      ]
+    },
+    {
+      "id": "River tunnel",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "waterway",
+      "minzoom": 3,
+      "layout": {
+        "line-cap": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": {
+          "stops": [
+            [
+              6,
+              "hsla(207, 45%, 63%, 0.62)"
+            ],
+            [
+              14,
+              "hsl(193, 52%, 73%)"
+            ]
+          ]
+        },
+        "line-dasharray": [
+          2,
+          4
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          0.5,
+          4,
+          1,
+          13,
+          1.25,
+          24,
+          4
+        ]
+      },
+      "filter": [
+        "==",
+        "brunnel",
+        "tunnel"
+      ]
+    },
+    {
+      "id": "River",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "waterway",
+      "minzoom": 3,
+      "layout": {
+        "line-cap": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": {
+          "stops": [
+            [
+              6,
+              "hsl(206, 78%, 80%)"
+            ],
+            [
+              14,
+              "hsl(193, 52%, 73%)"
+            ]
+          ]
+        },
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          0.5,
+          4,
+          1,
+          13,
+          1.25,
+          24,
+          4
+        ]
+      },
+      "metadata": {},
+      "filter": [
+        "!=",
+        "brunnel",
+        "tunnel"
+      ]
+    },
+    {
+      "id": "Water",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "water",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": {
+          "stops": [
+            [
+              6,
+              "hsl(195, 65%, 81%)"
+            ],
+            [
+              14,
+              "hsl(193, 52%, 73%)"
+            ]
+          ]
+        },
+        "fill-opacity": [
+          "match",
+          [
+            "get",
+            "intermittent"
+          ],
+          1,
+          0.85,
+          1
+        ]
+      },
+      "metadata": {}
+    },
+    {
+      "id": "Aeroway",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "aeroway",
+      "minzoom": 11,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "hsl(175, 29%, 92%)",
+        "fill-opacity": 1
+      },
+      "metadata": {},
+      "filter": [
+        "==",
+        "$type",
+        "Polygon"
+      ]
+    },
+    {
+      "id": "Runway",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "aeroway",
+      "minzoom": 11,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(180, 13%, 78%)",
+        "line-width": {
+          "base": 1.2,
+          "stops": [
+            [
+              11,
+              3
+            ],
+            [
+              20,
+              16
+            ]
+          ]
+        }
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "LineString"
+        ],
+        [
+          "==",
+          "class",
+          "runway"
+        ]
+      ]
+    },
+    {
+      "id": "Taxiway",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "aeroway",
+      "minzoom": 11,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(0, 0%, 83%)",
+        "line-width": {
+          "base": 1.2,
+          "stops": [
+            [
+              11,
+              0.5
+            ],
+            [
+              20,
+              6
+            ]
+          ]
+        }
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "LineString"
+        ],
+        [
+          "==",
+          "class",
+          "taxiway"
+        ]
+      ]
+    },
+    {
+      "id": "Ferry",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "minzoom": 6,
+      "layout": {
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(217, 49%, 69%)",
+        "line-dasharray": [
+          2,
+          2
+        ],
+        "line-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          5,
+          0,
+          9,
+          1
+        ],
+        "line-width": {
+          "stops": [
+            [
+              10,
+              0.5
+            ],
+            [
+              14,
+              1.1
+            ]
+          ]
+        }
+      },
+      "filter": [
+        "==",
+        "class",
+        "ferry"
+      ]
+    },
+    {
+      "id": "Tunnel path",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "minzoom": 13,
+      "layout": {
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsla(0, 0%, 76%,0.4)",
+        "line-dasharray": [
+          2,
+          2
+        ],
+        "line-width": {
+          "base": 1.2,
+          "stops": [
+            [
+              14,
+              0.5
+            ],
+            [
+              16,
+              1.3
+            ],
+            [
+              20,
+              2
+            ]
+          ]
+        }
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "LineString"
+        ],
+        [
+          "in",
+          "class",
+          "path",
+          "pedestrian",
+          "track"
+        ],
+        [
+          "in",
+          "brunnel",
+          "tunnel"
+        ]
+      ]
+    },
+    {
+      "id": "Tunnel",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "minzoom": 5,
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsla(0, 0%, 76%,0.4)",
+        "line-width": [
+          "interpolate",
+          [
+            "linear",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          5,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "motorway",
+            0.5,
+            0
+          ],
+          7,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "motorway",
+            1,
+            0
+          ],
+          9,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "motorway",
+            2,
+            0
+          ],
+          14,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "motorway",
+            5,
+            [
+              "primary",
+              "trunk",
+              "secondary",
+              "tertiary"
+            ],
+            3,
+            0.5
+          ],
+          16,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "motorway",
+            10,
+            [
+              "primary",
+              "trunk",
+              "secondary",
+              "tertiary"
+            ],
+            4,
+            3
+          ],
+          18,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "motorway",
+            16,
+            [
+              "primary",
+              "trunk",
+              "secondary",
+              "tertiary"
+            ],
+            10,
+            5
+          ],
+          20,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "motorway",
+            17,
+            [
+              "primary",
+              "trunk",
+              "secondary",
+              "tertiary"
+            ],
+            11,
+            8
+          ],
+          22,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "motorway",
+            18,
+            [
+              "primary",
+              "trunk",
+              "secondary",
+              "tertiary"
+            ],
+            12,
+            [
+              "minor",
+              "service",
+              "track",
+              "pier",
+              "raceway"
+            ],
+            11,
+            9
+          ]
+        ]
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "in",
+          "brunnel",
+          "tunnel"
+        ],
+        [
+          "in",
+          "class",
+          "motorway",
+          "primary",
+          "trunk",
+          "secondary",
+          "tertiary",
+          "minor",
+          "service",
+          "pier",
+          "raceway"
+        ]
+      ]
+    },
+    {
+      "id": "Railway tunnel",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(0, 0%, 60%)",
+        "line-opacity": 0.5,
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          0.5,
+          10,
+          2,
+          14,
+          1.5,
+          16,
+          4
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "brunnel",
+          "tunnel"
+        ],
+        [
+          "in",
+          "class",
+          "rail"
+        ],
+        [
+          "!=",
+          "subclass",
+          "funicular"
+        ],
+        [
+          "!=",
+          "service",
+          "yard"
+        ]
+      ]
+    },
+    {
+      "id": "Railway tunnel dash",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(0, 0%, 96%)",
+        "line-dasharray": [
+          2.5,
+          4
+        ],
+        "line-opacity": 0.5,
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          0,
+          9,
+          0.5,
+          14,
+          1,
+          16,
+          4
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "brunnel",
+          "tunnel"
+        ],
+        [
+          "==",
+          "class",
+          "rail"
+        ],
+        [
+          "!=",
+          "subclass",
+          "funicular"
+        ],
+        [
+          "!=",
+          "service",
+          "yard"
+        ]
+      ]
+    },
+    {
+      "id": "Bridge",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": "hsl(0, 0%, 95%)",
+        "fill-opacity": 0.5,
+        "fill-outline-color": "hsl(0, 0%, 95%)"
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Polygon"
+        ],
+        [
+          "==",
+          "brunnel",
+          "bridge"
+        ]
+      ]
+    },
+    {
+      "id": "Pier",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": "hsl(120, 4%, 95%)"
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Polygon"
+        ],
+        [
+          "==",
+          "class",
+          "pier"
+        ]
+      ]
+    },
+    {
+      "id": "Minor road",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "minzoom": 5,
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(0, 0%, 76%)",
+        "line-width": [
+          "interpolate",
+          [
+            "linear",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          0.5,
+          16,
+          3,
+          18,
+          5,
+          20,
+          8,
+          22,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "minor",
+              "service",
+              "pier",
+              "raceway"
+            ],
+            11,
+            9
+          ]
+        ]
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "!in",
+          "brunnel",
+          "tunnel"
+        ],
+        [
+          "in",
+          "class",
+          "minor",
+          "service",
+          "pier"
+        ]
+      ]
+    },
+    {
+      "id": "Major road",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "minzoom": 6,
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(0, 0%, 73%)",
+        "line-width": [
+          "interpolate",
+          [
+            "linear",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          0,
+          7,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "trunk",
+            1,
+            0
+          ],
+          9,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "trunk",
+            2,
+            0
+          ],
+          14,
+          3,
+          16,
+          4,
+          18,
+          5,
+          20,
+          11,
+          22,
+          12
+        ]
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "!in",
+          "brunnel",
+          "tunnel"
+        ],
+        [
+          "in",
+          "class",
+          "primary",
+          "trunk",
+          "secondary",
+          "tertiary"
+        ]
+      ]
+    },
+    {
+      "id": "Highway",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "minzoom": 5,
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(0, 0%, 83%)",
+        "line-width": [
+          "interpolate",
+          [
+            "linear",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          5,
+          0.5,
+          7,
+          1,
+          9,
+          2,
+          14,
+          5,
+          16,
+          10,
+          18,
+          16,
+          20,
+          17,
+          22,
+          18
+        ]
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "!in",
+          "brunnel",
+          "tunnel"
+        ],
+        [
+          "==",
+          "class",
+          "motorway"
+        ]
+      ]
+    },
+    {
+      "id": "Steps",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "minzoom": 15,
+      "layout": {
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(24, 4%, 60%)",
+        "line-dasharray": [
+          0.5,
+          1
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.2
+          ],
+          [
+            "zoom"
+          ],
+          14.5,
+          0,
+          15,
+          3,
+          20,
+          8
+        ]
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "LineString"
+        ],
+        [
+          "==",
+          "class",
+          "path"
+        ],
+        [
+          "!=",
+          "brunnel",
+          "tunnel"
+        ],
+        [
+          "==",
+          "subclass",
+          "steps"
+        ]
+      ]
+    },
+    {
+      "id": "Track",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "minzoom": 12,
+      "layout": {
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(24, 3%, 72%)",
+        "line-dasharray": [
+          5,
+          2
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.2
+          ],
+          [
+            "zoom"
+          ],
+          13,
+          0.5,
+          16,
+          1,
+          20,
+          2
+        ]
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "LineString"
+        ],
+        [
+          "==",
+          "class",
+          "track"
+        ],
+        [
+          "!=",
+          "brunnel",
+          "tunnel"
+        ]
+      ]
+    },
+    {
+      "id": "Path minor",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "minzoom": 12,
+      "layout": {
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(24, 3%, 72%)",
+        "line-dasharray": [
+          5,
+          2
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.2
+          ],
+          [
+            "zoom"
+          ],
+          13,
+          0.5,
+          16,
+          1,
+          20,
+          2
+        ]
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "LineString"
+        ],
+        [
+          "==",
+          "class",
+          "path_pedestrian"
+        ],
+        [
+          "!=",
+          "subclass",
+          "steps"
+        ],
+        [
+          "!=",
+          "surface",
+          "paved"
+        ],
+        [
+          "!=",
+          "brunnel",
+          "tunnel"
+        ]
+      ]
+    },
+    {
+      "id": "Path",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "minzoom": 12,
+      "layout": {
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(24, 3%, 72%)",
+        "line-dasharray": [
+          5,
+          2
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.2
+          ],
+          [
+            "zoom"
+          ],
+          13,
+          0.5,
+          16,
+          1,
+          20,
+          2
+        ]
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "LineString"
+        ],
+        [
+          "==",
+          "class",
+          "path"
+        ],
+        [
+          "!=",
+          "subclass",
+          "steps"
+        ],
+        [
+          "!=",
+          "surface",
+          "paved"
+        ],
+        [
+          "!=",
+          "brunnel",
+          "tunnel"
+        ]
+      ]
+    },
+    {
+      "id": "Pedestrian outline",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "minzoom": 13,
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-blur": 2,
+        "line-color": "hsl(0, 0%, 76%)",
+        "line-width": [
+          "interpolate",
+          [
+            "linear",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          13,
+          0.5,
+          16,
+          3,
+          18,
+          5
+        ]
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "LineString"
+        ],
+        [
+          "in",
+          "class",
+          "path",
+          "pedestrian"
+        ],
+        [
+          "!in",
+          "brunnel",
+          "tunnel"
+        ],
+        [
+          "==",
+          "surface",
+          "paved"
+        ]
+      ]
+    },
+    {
+      "id": "Pedestrian",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "minzoom": 13,
+      "layout": {
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(24, 0%, 100%)",
+        "line-dasharray": [
+          1,
+          1
+        ],
+        "line-width": {
+          "base": 1.2,
+          "stops": [
+            [
+              13,
+              0.5
+            ],
+            [
+              16,
+              1.3
+            ],
+            [
+              20,
+              2
+            ]
+          ]
+        }
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "LineString"
+        ],
+        [
+          "in",
+          "class",
+          "path",
+          "pedestrian"
+        ],
+        [
+          "!in",
+          "brunnel",
+          "tunnel"
+        ],
+        [
+          "==",
+          "surface",
+          "paved"
+        ]
+      ]
+    },
+    {
+      "id": "Minor railway",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(0,0%,73%)",
+        "line-width": {
+          "base": 1.4,
+          "stops": [
+            [
+              14,
+              0.4
+            ],
+            [
+              15,
+              0.75
+            ],
+            [
+              20,
+              2
+            ]
+          ]
+        }
+      },
+      "metadata": {},
+      "filter": [
+        "in",
+        "subclass",
+        "tram",
+        "light_rail"
+      ]
+    },
+    {
+      "id": "Minor railway hatching",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(0,0%,73%)",
+        "line-dasharray": [
+          0.2,
+          4
+        ],
+        "line-width": {
+          "base": 1.4,
+          "stops": [
+            [
+              14.5,
+              0
+            ],
+            [
+              15,
+              2
+            ],
+            [
+              20,
+              6
+            ]
+          ]
+        }
+      },
+      "metadata": {},
+      "filter": [
+        "in",
+        "subclass",
+        "tram",
+        "light_rail"
+      ]
+    },
+    {
+      "id": "Major railway",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(0, 0%, 60%)",
+        "line-opacity": 1,
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          0.5,
+          10,
+          2,
+          14,
+          1.5,
+          16,
+          4
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "!in",
+          "brunnel",
+          "tunnel"
+        ],
+        [
+          "==",
+          "class",
+          "rail"
+        ],
+        [
+          "!=",
+          "subclass",
+          "funicular"
+        ],
+        [
+          "!=",
+          "service",
+          "yard"
+        ]
+      ]
+    },
+    {
+      "id": "Major railway dash",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          11,
+          "hsl(0, 0%, 100%)",
+          12,
+          "hsl(0, 0%, 96%)"
+        ],
+        "line-dasharray": [
+          2.5,
+          4
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          0,
+          9,
+          0.5,
+          14,
+          1,
+          16,
+          4
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "!in",
+          "brunnel",
+          "tunnel"
+        ],
+        [
+          "==",
+          "class",
+          "rail"
+        ],
+        [
+          "!=",
+          "subclass",
+          "funicular"
+        ],
+        [
+          "!=",
+          "service",
+          "yard"
+        ]
+      ]
+    },
+    {
+      "id": "Building",
+      "type": "fill",
+      "source": "maptiler_planet",
+      "source-layer": "building",
+      "minzoom": 13,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": {
+          "stops": [
+            [
+              13,
+              "hsl(180, 36%, 82%)"
+            ],
+            [
+              18,
+              "hsl(180, 9%, 49%)"
+            ]
+          ]
+        },
+        "fill-outline-color": {
+          "stops": [
+            [
+              13,
+              "hsl(184, 64%, 79%)"
+            ],
+            [
+              18,
+              "hsl(182, 100%, 50%)"
+            ]
+          ]
+        }
+      }
+    },
+    {
+      "id": "Snowpark area",
+      "type": "fill",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "minzoom": 13,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "hsla(277, 59%, 56%, 0.25)"
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Polygon"
+        ],
+        [
+          "in",
+          "class",
+          "snow_park",
+          "snowpark"
+        ]
+      ]
+    },
+    {
+      "id": "Advanced slope area",
+      "type": "fill",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "minzoom": 13,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "hsla(0, 0%, 4%, 0.25)"
+      },
+      "filter": [
+        "all",
+        [
+          "in",
+          "difficulty",
+          "advanced",
+          "expert"
+        ],
+        [
+          "==",
+          "$type",
+          "Polygon"
+        ]
+      ]
+    },
+    {
+      "id": "Intermediate slope area",
+      "type": "fill",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "minzoom": 13,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "hsla(0, 63%, 54%, 0.25)"
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "difficulty",
+          "intermediate"
+        ],
+        [
+          "==",
+          "$type",
+          "Polygon"
+        ]
+      ]
+    },
+    {
+      "id": "Easy slope area",
+      "type": "fill",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "minzoom": 13,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "hsla(209, 64%, 49%, 0.25)"
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "difficulty",
+          "easy"
+        ],
+        [
+          "==",
+          "$type",
+          "Polygon"
+        ]
+      ]
+    },
+    {
+      "id": "Novice slope area",
+      "type": "fill",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "minzoom": 13,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-color": "hsla(111, 81%, 39%, 0.25)"
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "difficulty",
+          "novice"
+        ],
+        [
+          "==",
+          "$type",
+          "Polygon"
+        ]
+      ]
+    },
+    {
+      "id": "Slope outline",
+      "type": "line",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "minzoom": 10,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-blur": {
+          "stops": [
+            [
+              11,
+              2
+            ],
+            [
+              14,
+              0
+            ]
+          ]
+        },
+        "line-color": "hsl(0, 100%, 100%)",
+        "line-opacity": 0.5,
+        "line-width": {
+          "stops": [
+            [
+              10,
+              2
+            ],
+            [
+              14,
+              4
+            ],
+            [
+              22,
+              8
+            ]
+          ]
+        }
+      },
+      "filter": [
+        "in",
+        "class",
+        "downhill",
+        "hike",
+        "nordic",
+        "sled"
+      ]
+    },
+    {
+      "id": "Advanced slope",
+      "type": "line",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "minzoom": 10,
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "line-miter-limit": 3,
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-blur": {
+          "stops": [
+            [
+              11,
+              1
+            ],
+            [
+              14,
+              0
+            ]
+          ]
+        },
+        "line-color": "hsl(0, 0%, 3%)",
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          10,
+          0.75,
+          14,
+          2,
+          22,
+          6
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "in",
+          "difficulty",
+          "advanced",
+          "expert"
+        ],
+        [
+          "==",
+          "class",
+          "downhill"
+        ]
+      ]
+    },
+    {
+      "id": "Intermediate slope",
+      "type": "line",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "minzoom": 10,
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "line-miter-limit": 3,
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-blur": {
+          "stops": [
+            [
+              11,
+              1
+            ],
+            [
+              14,
+              0
+            ]
+          ]
+        },
+        "line-color": "hsl(0, 63%, 54%)",
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          10,
+          0.75,
+          14,
+          2,
+          22,
+          6
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "difficulty",
+          "intermediate"
+        ],
+        [
+          "==",
+          "class",
+          "downhill"
+        ]
+      ]
+    },
+    {
+      "id": "Easy slope",
+      "type": "line",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "minzoom": 10,
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "line-miter-limit": 3,
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-blur": {
+          "stops": [
+            [
+              11,
+              1
+            ],
+            [
+              14,
+              0
+            ]
+          ]
+        },
+        "line-color": "hsl(209, 64%, 49%)",
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          10,
+          0.75,
+          14,
+          2,
+          22,
+          6
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "difficulty",
+          "easy"
+        ],
+        [
+          "==",
+          "class",
+          "downhill"
+        ]
+      ]
+    },
+    {
+      "id": "Novice slope",
+      "type": "line",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "minzoom": 10,
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "line-miter-limit": 3,
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-blur": {
+          "stops": [
+            [
+              11,
+              1
+            ],
+            [
+              14,
+              0
+            ]
+          ]
+        },
+        "line-color": "hsl(111, 81%, 39%)",
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          10,
+          0.75,
+          14,
+          2,
+          22,
+          6
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "difficulty",
+          "novice"
+        ],
+        [
+          "==",
+          "class",
+          "downhill"
+        ]
+      ]
+    },
+    {
+      "id": "Freeride",
+      "type": "line",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "minzoom": 10,
+      "layout": {
+        "line-cap": "round",
+        "line-join": "miter",
+        "line-miter-limit": 3,
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-blur": {
+          "stops": [
+            [
+              11,
+              1
+            ],
+            [
+              14,
+              0
+            ]
+          ]
+        },
+        "line-color": "hsl(240, 12%, 58%)",
+        "line-dasharray": [
+          1,
+          1.5
+        ],
+        "line-opacity": 1,
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          10,
+          0.2,
+          14,
+          1,
+          22,
+          5
+        ]
+      },
+      "filter": [
+        "==",
+        "difficulty",
+        "freeride"
+      ]
+    },
+    {
+      "id": "Ski tour outline",
+      "type": "line",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "minzoom": 16,
+      "layout": {
+        "line-cap": "round",
+        "line-join": "miter",
+        "line-miter-limit": 3,
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-blur": {
+          "stops": [
+            [
+              11,
+              1
+            ],
+            [
+              14,
+              0
+            ]
+          ]
+        },
+        "line-color": "hsl(242, 0%, 100%)",
+        "line-opacity": 0.5,
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          10,
+          2,
+          14,
+          4,
+          22,
+          8
+        ]
+      },
+      "filter": [
+        "==",
+        "class",
+        "skitour"
+      ]
+    },
+    {
+      "id": "Ski tour",
+      "type": "line",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "minzoom": 6,
+      "layout": {
+        "line-cap": "round",
+        "line-join": "miter",
+        "line-miter-limit": 3,
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-blur": {
+          "stops": [
+            [
+              11,
+              1
+            ],
+            [
+              14,
+              0
+            ]
+          ]
+        },
+        "line-color": "hsl(243, 53%, 80%)",
+        "line-dasharray": [
+          1,
+          0
+        ],
+        "line-width": {
+          "stops": [
+            [
+              10,
+              0.2
+            ],
+            [
+              14,
+              2
+            ],
+            [
+              22,
+              6
+            ]
+          ]
+        }
+      },
+      "filter": [
+        "in",
+        "class",
+        "hike",
+        "skitour"
+      ]
+    },
+    {
+      "id": "Sled",
+      "type": "line",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "minzoom": 10,
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "line-miter-limit": 3,
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-blur": {
+          "stops": [
+            [
+              11,
+              1
+            ],
+            [
+              14,
+              0
+            ]
+          ]
+        },
+        "line-color": "hsl(291, 75%, 67%)",
+        "line-dasharray": [
+          1,
+          1.5
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          10,
+          0.2,
+          14,
+          1,
+          22,
+          5
+        ]
+      },
+      "filter": [
+        "==",
+        "class",
+        "sled"
+      ]
+    },
+    {
+      "id": "Snowpark",
+      "type": "line",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "minzoom": 10,
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "line-miter-limit": 3,
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-blur": {
+          "stops": [
+            [
+              11,
+              1
+            ],
+            [
+              14,
+              0
+            ]
+          ]
+        },
+        "line-color": "hsl(277, 59%, 56%)",
+        "line-width": {
+          "stops": [
+            [
+              10,
+              0.2
+            ],
+            [
+              14,
+              2
+            ],
+            [
+              22,
+              6
+            ]
+          ]
+        }
+      },
+      "filter": [
+        "all",
+        [
+          "in",
+          "$type",
+          "LineString",
+          "Point",
+          "Polygon"
+        ],
+        [
+          "in",
+          "class",
+          "snow_park",
+          "snowpark"
+        ]
+      ]
+    },
+    {
+      "id": "Nordic trail",
+      "type": "line",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "line-miter-limit": 3,
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-blur": {
+          "stops": [
+            [
+              11,
+              1
+            ],
+            [
+              14,
+              0
+            ]
+          ]
+        },
+        "line-color": "hsl(183, 78%, 60%)",
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          10,
+          0.75,
+          14,
+          2,
+          22,
+          6
+        ]
+      },
+      "filter": [
+        "==",
+        "class",
+        "nordic"
+      ]
+    },
+    {
+      "id": "Ski lift",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(0, 0%, 60%)",
+        "line-width": {
+          "base": 1,
+          "stops": [
+            [
+              11,
+              1
+            ],
+            [
+              19,
+              2.5
+            ]
+          ]
+        }
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "LineString"
+        ],
+        [
+          "==",
+          "class",
+          "aerialway"
+        ],
+        [
+          "in",
+          "subclass",
+          "drag_lift",
+          "j-bar",
+          "platter",
+          "t-bar"
+        ]
+      ]
+    },
+    {
+      "id": "Ski lift dash",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "layout": {
+        "line-cap": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(0, 0%, 60%)",
+        "line-dasharray": [
+          0.05,
+          3
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          11,
+          3,
+          19,
+          6
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "LineString"
+        ],
+        [
+          "==",
+          "class",
+          "aerialway"
+        ],
+        [
+          "in",
+          "subclass",
+          "drag_lift",
+          "j-bar",
+          "platter",
+          "t-bar"
+        ]
+      ]
+    },
+    {
+      "id": "Avalanche fence",
+      "type": "line",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "minzoom": 6,
+      "layout": {
+        "line-cap": "round",
+        "line-join": "miter",
+        "line-miter-limit": 3,
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(180, 1%, 61%)",
+        "line-dasharray": [
+          1,
+          0
+        ],
+        "line-width": {
+          "stops": [
+            [
+              10,
+              0.5
+            ],
+            [
+              14,
+              1.5
+            ],
+            [
+              18,
+              4
+            ]
+          ]
+        }
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "class",
+          "avalanche"
+        ],
+        [
+          "==",
+          "subclass",
+          "fence"
+        ]
+      ]
+    },
+    {
+      "id": "Chair lift",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "minzoom": 12,
+      "layout": {
+        "line-cap": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(0, 0%, 55%)",
+        "line-width": {
+          "base": 1,
+          "stops": [
+            [
+              11,
+              1
+            ],
+            [
+              19,
+              2.5
+            ]
+          ]
+        }
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "LineString"
+        ],
+        [
+          "==",
+          "class",
+          "aerialway"
+        ],
+        [
+          "in",
+          "subclass",
+          "chair_lift",
+          "mixed_lift"
+        ]
+      ]
+    },
+    {
+      "id": "Chair lift dash",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "minzoom": 12,
+      "layout": {
+        "line-cap": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(0, 0%, 55%)",
+        "line-dasharray": [
+          1,
+          3
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          11,
+          3,
+          19,
+          5
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "LineString"
+        ],
+        [
+          "==",
+          "class",
+          "aerialway"
+        ],
+        [
+          "in",
+          "subclass",
+          "chair_lift",
+          "mixed_lift"
+        ]
+      ]
+    },
+    {
+      "id": "Cable car",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "minzoom": 12,
+      "layout": {
+        "line-cap": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(0, 0%, 45%)",
+        "line-width": {
+          "base": 1,
+          "stops": [
+            [
+              11,
+              1
+            ],
+            [
+              19,
+              2.5
+            ]
+          ]
+        }
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "LineString"
+        ],
+        [
+          "in",
+          "subclass",
+          "cable_car",
+          "funicular",
+          "gondola"
+        ]
+      ]
+    },
+    {
+      "id": "Cable car dash",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "transportation",
+      "minzoom": 12,
+      "layout": {
+        "line-cap": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(0, 0%, 45%)",
+        "line-dasharray": [
+          2,
+          3
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          11,
+          3,
+          19,
+          5
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "LineString"
+        ],
+        [
+          "in",
+          "subclass",
+          "cable_car",
+          "funicular",
+          "gondola"
+        ]
+      ]
+    },
+    {
+      "id": "Road labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "transportation_name",
+      "layout": {
+        "symbol-placement": "line",
+        "symbol-spacing": [
+          "step",
+          [
+            "zoom"
+          ],
+          500,
+          21,
+          1000
+        ],
+        "text-anchor": "center",
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Roboto Regular",
+          "Noto Sans Regular"
+        ],
+        "text-offset": [
+          0,
+          0.15
+        ],
+        "text-size": {
+          "base": 1,
+          "stops": [
+            [
+              13,
+              10
+            ],
+            [
+              14,
+              11
+            ],
+            [
+              16,
+              13
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(204, 31%, 18%)",
+        "text-halo-blur": 0.5,
+        "text-halo-color": "hsl(180, 100%, 97%)",
+        "text-halo-width": 1.5
+      },
+      "filter": [
+        "!in",
+        "class",
+        "aerialway",
+        "ferry",
+        "service",
+        "bus_guideway"
+      ]
+    },
+    {
+      "id": "Airport labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "aerodrome_label",
+      "minzoom": 8,
+      "layout": {
+        "icon-anchor": "bottom",
+        "icon-image": [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          "other",
+          "airfield",
+          "airport"
+        ],
+        "icon-offset": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "other",
+            [
+              "literal",
+              [
+                0,
+                0
+              ]
+            ],
+            [
+              "literal",
+              [
+                0,
+                0
+              ]
+            ]
+          ],
+          12,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "other",
+            [
+              "literal",
+              [
+                0,
+                0
+              ]
+            ],
+            [
+              "literal",
+              [
+                0,
+                0
+              ]
+            ]
+          ]
+        ],
+        "icon-padding": 2,
+        "icon-size": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          [
+            "case",
+            [
+              "==",
+              [
+                "get",
+                "class"
+              ],
+              "other"
+            ],
+            0.5,
+            0.6
+          ],
+          16,
+          [
+            "case",
+            [
+              "==",
+              [
+                "get",
+                "class"
+              ],
+              "other"
+            ],
+            1.3,
+            1.5
+          ]
+        ],
+        "text-anchor": "top",
+        "text-field": [
+          "step",
+          [
+            "zoom"
+          ],
+          " ",
+          8.99,
+          " ",
+          9,
+          [
+            "coalesce",
+            [
+              "get",
+              "iata"
+            ],
+            [
+              "get",
+              "icao"
+            ],
+            [
+              "get",
+              "name"
+            ]
+          ],
+          12,
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Roboto Condensed Regular",
+          "Noto Sans Regular"
+        ],
+        "text-line-height": 1,
+        "text-size": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          10,
+          9,
+          12,
+          11,
+          14,
+          13
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(203, 29%, 37%)",
+        "icon-halo-color": "hsl(0, 0%, 100%)",
+        "icon-halo-width": 1,
+        "icon-opacity": [
+          "step",
+          [
+            "zoom"
+          ],
+          1,
+          8,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "international",
+              "regional"
+            ],
+            1,
+            0
+          ],
+          11,
+          1
+        ],
+        "text-color": "hsl(203, 29%, 37%)",
+        "text-halo-blur": 0.5,
+        "text-halo-color": "hsl(0, 100%, 100%)",
+        "text-halo-width": 1,
+        "text-opacity": [
+          "step",
+          [
+            "zoom"
+          ],
+          1,
+          8,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "international",
+              "regional"
+            ],
+            1,
+            0
+          ],
+          11,
+          1
+        ]
+      },
+      "metadata": {},
+      "filter": [
+        "in",
+        "class",
+        "international",
+        "other",
+        "regional"
+      ]
+    },
+    {
+      "id": "Other border",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "boundary",
+      "minzoom": 3,
+      "maxzoom": 13,
+      "layout": {
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": {
+          "stops": [
+            [
+              6,
+              "hsl(223, 19%, 51%)"
+            ],
+            [
+              16,
+              "hsl(215, 38%, 76%)"
+            ]
+          ]
+        },
+        "line-dasharray": [
+          5,
+          1
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          4,
+          0.3,
+          5,
+          0.6,
+          12,
+          1
+        ]
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "in",
+          "admin_level",
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        [
+          "==",
+          "maritime",
+          0
+        ]
+      ]
+    },
+    {
+      "id": "Disputed border",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "boundary",
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(223, 19%, 54%)",
+        "line-dasharray": [
+          2,
+          2
+        ],
+        "line-opacity": {
+          "base": 1,
+          "stops": [
+            [
+              0,
+              0.3
+            ],
+            [
+              4,
+              0.6
+            ],
+            [
+              12,
+              1
+            ]
+          ]
+        },
+        "line-width": {
+          "base": 1,
+          "stops": [
+            [
+              0,
+              0.4
+            ],
+            [
+              3,
+              0.9
+            ],
+            [
+              5,
+              1.3
+            ],
+            [
+              12,
+              3
+            ]
+          ]
+        }
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "==",
+          "admin_level",
+          2
+        ],
+        [
+          "==",
+          "disputed",
+          1
+        ],
+        [
+          "==",
+          "maritime",
+          0
+        ]
+      ]
+    },
+    {
+      "id": "Country border",
+      "type": "line",
+      "source": "maptiler_planet",
+      "source-layer": "boundary",
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round",
+        "visibility": "visible"
+      },
+      "paint": {
+        "line-color": "hsl(223, 19%, 54%)",
+        "line-opacity": {
+          "base": 1,
+          "stops": [
+            [
+              0,
+              0.3
+            ],
+            [
+              4,
+              0.6
+            ],
+            [
+              16,
+              1
+            ]
+          ]
+        },
+        "line-width": {
+          "base": 1,
+          "stops": [
+            [
+              0,
+              0.4
+            ],
+            [
+              3,
+              0.9
+            ],
+            [
+              5,
+              1.3
+            ],
+            [
+              12,
+              3
+            ]
+          ]
+        }
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "==",
+          "admin_level",
+          2
+        ],
+        [
+          "==",
+          "disputed",
+          0
+        ],
+        [
+          "==",
+          "maritime",
+          0
+        ]
+      ]
+    },
+    {
+      "id": "River labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "waterway",
+      "minzoom": 13,
+      "layout": {
+        "symbol-placement": "line",
+        "symbol-spacing": 350,
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Roboto Condensed Italic",
+          "Noto Sans Italic"
+        ],
+        "text-letter-spacing": 0.1,
+        "text-max-width": 6,
+        "text-offset": [
+          0,
+          0
+        ],
+        "text-rotation-alignment": "map",
+        "text-size": {
+          "stops": [
+            [
+              6,
+              11
+            ],
+            [
+              16,
+              14
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(193, 65%, 32%)",
+        "text-halo-blur": 1,
+        "text-halo-color": "hsl(180, 37%, 91%)",
+        "text-halo-width": 1
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "LineString"
+        ],
+        [
+          "has",
+          "name"
+        ]
+      ]
+    },
+    {
+      "id": "Lakeline labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "water_name",
+      "minzoom": 0,
+      "layout": {
+        "icon-anchor": "center",
+        "symbol-placement": "line",
+        "text-anchor": "center",
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Roboto Italic",
+          "Noto Sans Italic"
+        ],
+        "text-justify": "center",
+        "text-letter-spacing": 0.1,
+        "text-max-width": 5,
+        "text-size": {
+          "stops": [
+            [
+              10,
+              12
+            ],
+            [
+              14,
+              16
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(193, 65%, 32%)",
+        "text-halo-color": "hsla(0, 100%, 100%, 0.63)",
+        "text-halo-width": 1.5
+      },
+      "metadata": {},
+      "filter": [
+        "==",
+        "$type",
+        "LineString"
+      ]
+    },
+    {
+      "id": "Ocean labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "water_name",
+      "minzoom": 0,
+      "maxzoom": 4,
+      "layout": {
+        "icon-anchor": "center",
+        "text-field": "{name:en}",
+        "text-font": [
+          "Roboto Italic",
+          "Noto Sans Italic"
+        ],
+        "text-letter-spacing": 0.1,
+        "text-max-width": 6,
+        "text-optional": true,
+        "text-size": [
+          "interpolate",
+          [
+            "linear",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          1,
+          13,
+          3,
+          16
+        ],
+        "text-transform": "none",
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": {
+          "stops": [
+            [
+              2,
+              "hsl(205, 58%, 67%)"
+            ],
+            [
+              10,
+              "hsl(193, 65%, 32%)"
+            ]
+          ]
+        },
+        "text-opacity": [
+          "step",
+          [
+            "zoom"
+          ],
+          0,
+          1,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "ocean"
+            ],
+            1,
+            0
+          ],
+          2.5,
+          1
+        ]
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "==",
+          "class",
+          "ocean"
+        ],
+        [
+          "has",
+          "name"
+        ]
+      ]
+    },
+    {
+      "id": "Sea labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "water_name",
+      "minzoom": 3,
+      "layout": {
+        "icon-anchor": "center",
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Roboto Italic",
+          "Noto Sans Italic"
+        ],
+        "text-letter-spacing": 0.1,
+        "text-max-width": 6,
+        "text-optional": true,
+        "text-size": [
+          "interpolate",
+          [
+            "linear",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          1,
+          11,
+          3,
+          14,
+          9,
+          18,
+          14,
+          20
+        ],
+        "text-transform": "none",
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": {
+          "stops": [
+            [
+              2,
+              "hsl(205, 58%, 67%)"
+            ],
+            [
+              10,
+              "hsl(193, 65%, 32%)"
+            ]
+          ]
+        },
+        "text-opacity": 1
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "==",
+          "class",
+          "sea"
+        ],
+        [
+          "has",
+          "name"
+        ]
+      ]
+    },
+    {
+      "id": "Lake labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "water_name",
+      "minzoom": 10,
+      "layout": {
+        "icon-anchor": "center",
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Roboto Italic",
+          "Noto Sans Italic"
+        ],
+        "text-letter-spacing": 0.1,
+        "text-max-width": 6,
+        "text-optional": true,
+        "text-size": [
+          "interpolate",
+          [
+            "linear",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          14,
+          14,
+          14
+        ],
+        "text-transform": "none",
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": {
+          "stops": [
+            [
+              2,
+              "hsl(205, 58%, 67%)"
+            ],
+            [
+              10,
+              "hsl(193, 65%, 32%)"
+            ]
+          ]
+        },
+        "text-opacity": 1
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "==",
+          "class",
+          "lake"
+        ],
+        [
+          "has",
+          "name"
+        ]
+      ]
+    },
+    {
+      "id": "Outdoor shop",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "poi",
+      "minzoom": 17,
+      "layout": {
+        "icon-anchor": "bottom",
+        "icon-image": "outdoor",
+        "icon-optional": false,
+        "symbol-sort-key": [
+          "to-number",
+          [
+            "get",
+            "rank"
+          ]
+        ],
+        "text-anchor": "top",
+        "text-field": "{name}",
+        "text-font": [
+          "Roboto Condensed Regular",
+          "Noto Sans Regular"
+        ],
+        "text-optional": true,
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          16,
+          11,
+          22,
+          14
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(204, 36%, 27%)",
+        "icon-halo-blur": 0.2,
+        "icon-halo-color": "hsl(180, 100%, 97%)",
+        "icon-halo-width": 1.2,
+        "text-color": "hsl(204, 36%, 27%)",
+        "text-halo-blur": 0.2,
+        "text-halo-color": "hsl(180, 100%, 97%)",
+        "text-halo-width": 1.2
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Point"
+        ],
+        [
+          "==",
+          "class",
+          "shop"
+        ],
+        [
+          "==",
+          "subclass",
+          "outdoor"
+        ]
+      ]
+    },
+    {
+      "id": "Sport",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "poi",
+      "minzoom": 14,
+      "layout": {
+        "icon-anchor": "bottom",
+        "icon-image": [
+          "coalesce",
+          [
+            "image",
+            [
+              "to-string",
+              [
+                "get",
+                "subclass"
+              ]
+            ]
+          ],
+          [
+            "image",
+            [
+              "get",
+              "class"
+            ]
+          ],
+          [
+            "image",
+            ""
+          ]
+        ],
+        "icon-optional": false,
+        "symbol-sort-key": [
+          "case",
+          [
+            "==",
+            [
+              "get",
+              "class"
+            ],
+            "stadium"
+          ],
+          0,
+          [
+            "to-number",
+            [
+              "get",
+              "rank"
+            ]
+          ]
+        ],
+        "text-anchor": "top",
+        "text-field": "{name}",
+        "text-font": [
+          "Roboto Condensed Regular",
+          "Noto Sans Regular"
+        ],
+        "text-offset": [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          "sports_centre",
+          [
+            "literal",
+            [
+              0,
+              -1
+            ]
+          ],
+          "fitness_centre",
+          [
+            "literal",
+            [
+              0,
+              -1
+            ]
+          ],
+          [
+            "literal",
+            [
+              0,
+              0
+            ]
+          ]
+        ],
+        "text-optional": true,
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          16,
+          11,
+          22,
+          14
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(204, 36%, 27%)",
+        "icon-halo-blur": 0.2,
+        "icon-halo-color": "hsl(180, 100%, 97%)",
+        "icon-halo-width": 1.2,
+        "icon-opacity": [
+          "step",
+          [
+            "zoom"
+          ],
+          1,
+          14,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "stadium",
+              "swimming",
+              "swimming_pool",
+              "water_park"
+            ],
+            1,
+            0
+          ],
+          15,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "fitness_centre",
+              "golf",
+              "sports_centre",
+              "stadium",
+              "swimming",
+              "swimming_pool",
+              "water_park"
+            ],
+            1,
+            0
+          ],
+          17,
+          1
+        ],
+        "text-color": "hsl(204, 36%, 27%)",
+        "text-halo-blur": 0.2,
+        "text-halo-color": "hsl(180, 100%, 97%)",
+        "text-halo-width": 1.2,
+        "text-opacity": [
+          "step",
+          [
+            "zoom"
+          ],
+          1,
+          14,
+          0,
+          15,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "stadium",
+              "swimming",
+              "swimming_pool",
+              "water_park"
+            ],
+            1,
+            0
+          ],
+          16,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "fitness_centre",
+              "golf",
+              "sports_centre",
+              "stadium",
+              "swimming",
+              "swimming_pool",
+              "water_park"
+            ],
+            1,
+            0
+          ],
+          17,
+          1
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Point"
+        ],
+        [
+          "in",
+          "class",
+          "fitness_centre",
+          "sports_centre",
+          "stadium",
+          "swimming",
+          "swimming_pool",
+          "water_park"
+        ],
+        [
+          "has",
+          "name"
+        ]
+      ]
+    },
+    {
+      "id": "Pharmacy",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "poi",
+      "minzoom": 16,
+      "layout": {
+        "icon-anchor": "bottom",
+        "icon-image": "pharmacy",
+        "icon-offset": [
+          0,
+          0
+        ],
+        "icon-optional": false,
+        "icon-size": {
+          "stops": [
+            [
+              13,
+              0.7
+            ],
+            [
+              18,
+              1
+            ]
+          ]
+        },
+        "symbol-sort-key": [
+          "to-number",
+          [
+            "get",
+            "rank"
+          ]
+        ],
+        "text-anchor": "top",
+        "text-field": "{name}",
+        "text-font": [
+          "Roboto Condensed Regular",
+          "Noto Sans Regular"
+        ],
+        "text-letter-spacing": 0.07,
+        "text-offset": [
+          0,
+          0
+        ],
+        "text-optional": true,
+        "text-size": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          16,
+          10,
+          22,
+          12
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(208, 57%, 9%)",
+        "icon-halo-blur": 0.2,
+        "icon-halo-color": "hsl(113, 53%, 81%)",
+        "icon-halo-width": 1,
+        "icon-opacity": 1,
+        "text-color": "hsl(208, 57%, 9%)",
+        "text-halo-blur": 0.2,
+        "text-halo-color": "hsl(113, 53%, 81%)",
+        "text-halo-width": 1,
+        "text-opacity": 1
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "class",
+          "pharmacy"
+        ]
+      ]
+    },
+    {
+      "id": "Outdoor water",
+      "type": "symbol",
+      "source": "outdoor",
+      "source-layer": "outdoor_poi",
+      "minzoom": 12,
+      "layout": {
+        "icon-anchor": "center",
+        "icon-image": [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "drinking_water",
+            "fountain",
+            "hot_spring",
+            "spring"
+          ],
+          [
+            "get",
+            "class"
+          ],
+          "waterfall",
+          "triangle",
+          ""
+        ],
+        "icon-offset": [
+          0,
+          0
+        ],
+        "icon-optional": false,
+        "icon-rotate": [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          "waterfall",
+          180,
+          0
+        ],
+        "icon-size": 0.75,
+        "icon-text-fit": "none",
+        "symbol-sort-key": [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          "waterfall",
+          0,
+          1
+        ],
+        "text-anchor": "top",
+        "text-field": "{name}",
+        "text-font": [
+          "Roboto Condensed Regular",
+          "Noto Sans Regular"
+        ],
+        "text-max-width": 10,
+        "text-optional": true,
+        "text-padding": 30,
+        "text-rotate": 0,
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          16,
+          11,
+          22,
+          14
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(204, 36%, 50%)",
+        "icon-halo-blur": 0.2,
+        "icon-halo-color": "hsl(0, 0%, 100%)",
+        "icon-halo-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          1,
+          14,
+          1.5
+        ],
+        "icon-opacity": [
+          "step",
+          [
+            "zoom"
+          ],
+          1,
+          12,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "waterfall",
+            1,
+            0
+          ],
+          16,
+          1
+        ],
+        "text-color": "hsl(204, 36%, 50%)",
+        "text-halo-blur": 0.2,
+        "text-halo-color": "hsl(0, 0%, 100%)",
+        "text-halo-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          1,
+          14,
+          1.5
+        ],
+        "text-opacity": [
+          "step",
+          [
+            "zoom"
+          ],
+          1,
+          12,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "waterfall",
+            1,
+            0
+          ],
+          16,
+          1
+        ],
+        "text-translate": [
+          0,
+          7
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Point"
+        ],
+        [
+          "in",
+          "class",
+          "drinking_water",
+          "fountain",
+          "hot_spring",
+          "spring",
+          "waterfall"
+        ]
+      ]
+    },
+    {
+      "id": "Transport",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "poi",
+      "minzoom": 14,
+      "layout": {
+        "icon-anchor": "bottom",
+        "icon-image": [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "aerialway",
+            "car",
+            "car_rental",
+            "car_repair",
+            "ferry_terminal",
+            "harbor",
+            "motorcycle_parking",
+            "parking",
+            "parking_garage",
+            "parking_paid"
+          ],
+          [
+            "get",
+            "class"
+          ],
+          ""
+        ],
+        "icon-offset": [
+          0,
+          0
+        ],
+        "icon-optional": false,
+        "icon-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          0.8,
+          22,
+          1
+        ],
+        "symbol-sort-key": [
+          "to-number",
+          [
+            "get",
+            "rank"
+          ]
+        ],
+        "text-anchor": "top",
+        "text-field": "{name}",
+        "text-font": [
+          "Roboto Condensed Regular",
+          "Noto Sans Regular"
+        ],
+        "text-line-height": 0.9,
+        "text-max-width": 10,
+        "text-offset": [
+          0,
+          0
+        ],
+        "text-optional": true,
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          16,
+          11,
+          22,
+          14
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(204, 36%, 27%)",
+        "icon-halo-blur": 0.2,
+        "icon-halo-color": "hsl(180, 100%, 97%)",
+        "icon-halo-width": 1.2,
+        "icon-opacity": [
+          "step",
+          [
+            "zoom"
+          ],
+          1,
+          14,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "aerialway",
+              "ferry_terminal",
+              "harbor"
+            ],
+            1,
+            0
+          ],
+          15,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "aerialway",
+              "ferry_terminal",
+              "harbor"
+            ],
+            1,
+            0
+          ],
+          16,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "aerialway",
+              "ferry_terminal",
+              "harbor",
+              "parking"
+            ],
+            1,
+            0
+          ],
+          17,
+          1
+        ],
+        "text-color": "hsl(204, 36%, 27%)",
+        "text-halo-blur": 0.2,
+        "text-halo-color": "hsl(180, 100%, 97%)",
+        "text-halo-width": 1.2,
+        "text-opacity": [
+          "step",
+          [
+            "zoom"
+          ],
+          1,
+          14,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "aerialway",
+              "ferry_terminal",
+              "harbor"
+            ],
+            1,
+            0
+          ],
+          15,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "aerialway",
+              "ferry_terminal",
+              "harbor"
+            ],
+            1,
+            0
+          ],
+          16,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "aerialway",
+              "ferry_terminal",
+              "harbor",
+              "parking"
+            ],
+            1,
+            0
+          ],
+          17,
+          1
+        ]
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Point"
+        ],
+        [
+          "in",
+          "class",
+          "aerialway",
+          "car",
+          "car_rental",
+          "car_repair",
+          "ferry_terminal",
+          "harbor",
+          "motorcycle_parking",
+          "parking",
+          "parking_garage",
+          "parking_paid"
+        ]
+      ]
+    },
+    {
+      "id": "Food",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "poi",
+      "minzoom": 15,
+      "layout": {
+        "icon-anchor": "bottom",
+        "icon-image": [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "bar",
+            "cafe",
+            "fast_food",
+            "restaurant"
+          ],
+          [
+            "get",
+            "class"
+          ],
+          ""
+        ],
+        "icon-optional": false,
+        "symbol-sort-key": [
+          "to-number",
+          [
+            "get",
+            "rank"
+          ]
+        ],
+        "text-anchor": "top",
+        "text-field": "{name}",
+        "text-font": [
+          "Roboto Condensed Regular",
+          "Noto Sans Regular"
+        ],
+        "text-optional": true,
+        "text-size": {
+          "stops": [
+            [
+              16,
+              11
+            ],
+            [
+              22,
+              14
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(208, 57%, 9%)",
+        "icon-halo-blur": 0.2,
+        "icon-halo-color": "hsl(60, 61%, 89%)",
+        "icon-halo-width": 1,
+        "icon-opacity": [
+          "step",
+          [
+            "zoom"
+          ],
+          1,
+          15,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "restaurant"
+            ],
+            1,
+            0
+          ],
+          16,
+          1
+        ],
+        "text-color": "hsl(208, 57%, 9%)",
+        "text-halo-blur": 0.2,
+        "text-halo-color": "hsl(60, 61%, 89%)",
+        "text-halo-width": 1,
+        "text-opacity": [
+          "step",
+          [
+            "zoom"
+          ],
+          1,
+          15,
+          0,
+          16,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "restaurant"
+            ],
+            1,
+            0
+          ],
+          17,
+          1
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Point"
+        ],
+        [
+          "all",
+          [
+            "in",
+            "class",
+            "bar",
+            "cafe",
+            "fast_food",
+            "restaurant"
+          ],
+          [
+            "has",
+            "name"
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "Park labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "poi",
+      "minzoom": 12,
+      "layout": {
+        "icon-anchor": "bottom",
+        "icon-image": "park",
+        "symbol-sort-key": [
+          "to-number",
+          [
+            "get",
+            "rank"
+          ]
+        ],
+        "symbol-spacing": 750,
+        "text-anchor": "top",
+        "text-field": "{name}",
+        "text-font": [
+          "Roboto Condensed Regular",
+          "Noto Sans Regular"
+        ],
+        "text-max-width": 6,
+        "text-optional": true,
+        "text-padding": 30,
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          16,
+          11,
+          22,
+          14
+        ],
+        "text-transform": "none",
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(195, 63%, 28%)",
+        "icon-halo-blur": 0.2,
+        "icon-halo-color": "hsl(180, 100%, 97%)",
+        "icon-halo-width": 1.2,
+        "text-color": "hsl(195, 63%, 28%)",
+        "text-halo-blur": 0.2,
+        "text-halo-color": "hsl(180, 100%, 97%)",
+        "text-halo-width": 1.2
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "class",
+          "park"
+        ],
+        [
+          "has",
+          "name"
+        ]
+      ]
+    },
+    {
+      "id": "Healthcare",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "poi",
+      "minzoom": 14,
+      "layout": {
+        "icon-image": "hospital",
+        "icon-optional": false,
+        "icon-size": 1,
+        "symbol-sort-key": [
+          "case",
+          [
+            "==",
+            [
+              "get",
+              "subclass"
+            ],
+            "hospital"
+          ],
+          0,
+          [
+            "to-number",
+            [
+              "get",
+              "rank"
+            ]
+          ]
+        ],
+        "text-anchor": "top",
+        "text-field": "{name}",
+        "text-font": [
+          "Roboto Condensed Regular",
+          "Noto Sans Regular"
+        ],
+        "text-max-width": 8,
+        "text-offset": [
+          0,
+          0.8
+        ],
+        "text-optional": true,
+        "text-padding": 2,
+        "text-size": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          16,
+          11,
+          22,
+          14
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(6, 93%, 28%)",
+        "icon-halo-blur": 0.2,
+        "icon-halo-color": "hsl(0, 0%, 100%)",
+        "icon-halo-width": 1.2,
+        "icon-opacity": [
+          "step",
+          [
+            "zoom"
+          ],
+          0,
+          14,
+          [
+            "match",
+            [
+              "get",
+              "subclass"
+            ],
+            [
+              "hospital"
+            ],
+            1,
+            0
+          ],
+          16,
+          1
+        ],
+        "text-color": "hsl(6, 93%, 28%)",
+        "text-halo-blur": 0.2,
+        "text-halo-color": "hsl(0,0%,100%)",
+        "text-halo-width": 1.2,
+        "text-opacity": [
+          "step",
+          [
+            "zoom"
+          ],
+          0,
+          14,
+          [
+            "match",
+            [
+              "get",
+              "subclass"
+            ],
+            [
+              "hospital"
+            ],
+            1,
+            0
+          ],
+          16,
+          1
+        ]
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Point"
+        ],
+        [
+          "==",
+          "class",
+          "hospital"
+        ],
+        [
+          "has",
+          "name"
+        ]
+      ]
+    },
+    {
+      "id": "Culture",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "poi",
+      "minzoom": 14,
+      "layout": {
+        "icon-anchor": "bottom",
+        "icon-image": [
+          "coalesce",
+          [
+            "image",
+            [
+              "to-string",
+              [
+                "get",
+                "subclass"
+              ]
+            ]
+          ],
+          [
+            "image",
+            [
+              "get",
+              "class"
+            ]
+          ],
+          [
+            "image",
+            "square"
+          ]
+        ],
+        "icon-optional": false,
+        "symbol-sort-key": [
+          "to-number",
+          [
+            "get",
+            "rank"
+          ]
+        ],
+        "text-anchor": "top",
+        "text-field": "{name}",
+        "text-font": [
+          "Roboto Condensed Regular",
+          "Noto Sans Regular"
+        ],
+        "text-optional": true,
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          16,
+          11,
+          22,
+          14
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(204, 36%, 27%)",
+        "icon-halo-blur": 0.2,
+        "icon-halo-color": "hsl(180, 100%, 97%)",
+        "icon-halo-width": 1.2,
+        "text-color": "hsl(204, 36%, 27%)",
+        "text-halo-blur": 0.2,
+        "text-halo-color": "hsl(180, 100%, 97%)",
+        "text-halo-width": 1.2
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Point"
+        ],
+        [
+          "all",
+          [
+            "in",
+            "class",
+            "art_gallery",
+            "cemetery",
+            "monument",
+            "museum",
+            "place_of_worship"
+          ],
+          [
+            "has",
+            "name"
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "Tourism",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "poi",
+      "minzoom": 14,
+      "layout": {
+        "icon-anchor": "bottom",
+        "icon-image": [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "attraction",
+            "campsite",
+            "castle",
+            "lodging",
+            "shelter",
+            "zoo"
+          ],
+          [
+            "get",
+            "class"
+          ],
+          ""
+        ],
+        "icon-offset": [
+          0,
+          0
+        ],
+        "icon-optional": false,
+        "icon-size": 1,
+        "symbol-sort-key": [
+          "to-number",
+          [
+            "get",
+            "rank"
+          ]
+        ],
+        "text-anchor": "top",
+        "text-field": "{name}",
+        "text-font": [
+          "Roboto Condensed Regular",
+          "Noto Sans Regular"
+        ],
+        "text-optional": true,
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          16,
+          11,
+          22,
+          14
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(204, 36%, 27%)",
+        "icon-halo-blur": 0.2,
+        "icon-halo-color": "hsl(180, 100%, 97%)",
+        "icon-halo-width": 1.2,
+        "icon-opacity": [
+          "step",
+          [
+            "zoom"
+          ],
+          0,
+          14,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "attraction",
+              "campsite",
+              "zoo"
+            ],
+            1,
+            0
+          ],
+          16,
+          1
+        ],
+        "text-color": "hsl(204, 36%, 27%)",
+        "text-halo-blur": 0.2,
+        "text-halo-color": "hsl(180, 100%, 97%)",
+        "text-halo-width": 1.2,
+        "text-opacity": [
+          "step",
+          [
+            "zoom"
+          ],
+          0,
+          14,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "attraction",
+              "campsite",
+              "zoo"
+            ],
+            1,
+            0
+          ],
+          16,
+          1
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Point"
+        ],
+        [
+          "all",
+          [
+            "in",
+            "class",
+            "attraction",
+            "campsite",
+            "lodging",
+            "shelter",
+            "zoo"
+          ],
+          [
+            "!in",
+            "subclass",
+            "dormitory"
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "Outdoor",
+      "type": "symbol",
+      "source": "outdoor",
+      "source-layer": "outdoor_poi",
+      "minzoom": 13,
+      "layout": {
+        "icon-anchor": "bottom",
+        "icon-image": [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "bench",
+            "board",
+            "guidepost",
+            "hut",
+            "monument",
+            "observation_tower",
+            "picnic_site",
+            "shelter",
+            "viewpoint"
+          ],
+          [
+            "get",
+            "class"
+          ],
+          "camp_site",
+          "campsite",
+          "cave_entrance",
+          "square",
+          "fireplace",
+          "campfire",
+          [
+            "first_aid",
+            "mountain_rescue"
+          ],
+          "hospital",
+          [
+            "fortress",
+            "ruins"
+          ],
+          "castle",
+          "info_office",
+          "information",
+          "map",
+          "board",
+          "memorial",
+          "statue",
+          "rental",
+          "dot",
+          ""
+        ],
+        "icon-optional": false,
+        "icon-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          0.8,
+          22,
+          1
+        ],
+        "symbol-sort-key": [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          "camp_site",
+          0,
+          "cave_entrance",
+          0,
+          "guidepost",
+          0,
+          "info_office",
+          0,
+          "hut",
+          0,
+          "viewpoint",
+          0,
+          1
+        ],
+        "text-anchor": "top",
+        "text-field": "{name}",
+        "text-font": [
+          "Roboto Condensed Regular",
+          "Noto Sans Regular"
+        ],
+        "text-max-width": 6,
+        "text-optional": true,
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          16,
+          11,
+          22,
+          14
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(204, 36%, 27%)",
+        "icon-halo-blur": 0.2,
+        "icon-halo-color": "hsl(0, 0%, 100%)",
+        "icon-halo-width": 1.2,
+        "icon-opacity": [
+          "step",
+          [
+            "zoom"
+          ],
+          1,
+          0,
+          0,
+          13,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "guidepost"
+            ],
+            1,
+            0
+          ],
+          14,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "info_office",
+              "cave_entrance",
+              "guidepost",
+              "fortress",
+              "hut",
+              "ruins",
+              "viewpoint"
+            ],
+            1,
+            0
+          ],
+          15,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "info_office",
+              "camp_site",
+              "cave_entrance",
+              "fortress",
+              "guidepost",
+              "hut",
+              "ruins",
+              "memorial",
+              "monument",
+              "viewpoint"
+            ],
+            1,
+            0
+          ],
+          16,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "camp_site",
+              "cave_entrance",
+              "first_aid",
+              "fortress",
+              "guidepost",
+              "hut",
+              "info_office",
+              "memorial",
+              "monument",
+              "mountain_rescue",
+              "rental",
+              "ruins",
+              "shelter",
+              "viewpoint"
+            ],
+            1,
+            0
+          ],
+          17,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "bench"
+            ],
+            0,
+            1
+          ],
+          18,
+          1
+        ],
+        "text-color": "hsl(204, 36%, 27%)",
+        "text-halo-blur": 0.2,
+        "text-halo-color": "hsl(0, 0%, 100%)",
+        "text-halo-width": 1.2,
+        "text-opacity": [
+          "step",
+          [
+            "zoom"
+          ],
+          1,
+          0,
+          0,
+          13,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "guidepost"
+            ],
+            1,
+            0
+          ],
+          14,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "info_office",
+              "cave_entrance",
+              "fortress",
+              "guidepost",
+              "ruins"
+            ],
+            1,
+            0
+          ],
+          15,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "info_office",
+              "camp_site",
+              "cave_entrance",
+              "fortress",
+              "guidepost",
+              "hut",
+              "ruins",
+              "memorial",
+              "monument",
+              "viewpoint"
+            ],
+            1,
+            0
+          ],
+          16,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "camp_site",
+              "cave_entrance",
+              "first_aid",
+              "fortress",
+              "guidepost",
+              "hut",
+              "info_office",
+              "memorial",
+              "monument",
+              "mountain_rescue",
+              "rental",
+              "ruins",
+              "shelter",
+              "viewpoint"
+            ],
+            1,
+            0
+          ],
+          17,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "board"
+            ],
+            0,
+            1
+          ],
+          18,
+          1
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Point"
+        ],
+        [
+          "in",
+          "class",
+          "bench",
+          "board",
+          "camp_site",
+          "cave_entrance",
+          "fireplace",
+          "first_aid",
+          "fortress",
+          "guidepost",
+          "hut",
+          "info_office",
+          "map",
+          "memorial",
+          "monument",
+          "mountain_rescue",
+          "observation_tower",
+          "picnic_site",
+          "rental",
+          "ruins",
+          "shelter",
+          "viewpoint"
+        ]
+      ]
+    },
+    {
+      "id": "Station",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "poi",
+      "minzoom": 12,
+      "layout": {
+        "icon-anchor": "bottom",
+        "icon-image": [
+          "match",
+          [
+            "get",
+            "subclass"
+          ],
+          [
+            "bus_stop",
+            "subway"
+          ],
+          [
+            "get",
+            "subclass"
+          ],
+          "bus_station",
+          "bus_stop",
+          "station",
+          "railway",
+          [
+            "case",
+            [
+              "has",
+              "subclass"
+            ],
+            "tramway",
+            ""
+          ]
+        ],
+        "icon-offset": [
+          0,
+          0
+        ],
+        "icon-optional": false,
+        "icon-size": 1,
+        "symbol-sort-key": [
+          "to-number",
+          [
+            "get",
+            "rank"
+          ]
+        ],
+        "text-anchor": "top",
+        "text-field": "{name}",
+        "text-font": [
+          "Roboto Condensed Regular",
+          "Noto Sans Regular"
+        ],
+        "text-line-height": 0.9,
+        "text-max-width": 10,
+        "text-offset": [
+          0,
+          0.2
+        ],
+        "text-optional": true,
+        "text-size": [
+          "interpolate",
+          [
+            "linear",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "railway",
+            11,
+            10
+          ],
+          16,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "railway",
+            13,
+            11
+          ],
+          22,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            "railway",
+            16,
+            14
+          ]
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(204, 36%, 27%)",
+        "icon-halo-blur": 0.2,
+        "icon-halo-color": "hsl(210, 100%, 93%)",
+        "icon-halo-width": 1.2,
+        "icon-opacity": [
+          "step",
+          [
+            "zoom"
+          ],
+          1,
+          12,
+          [
+            "match",
+            [
+              "get",
+              "subclass"
+            ],
+            "station",
+            1,
+            0
+          ],
+          13,
+          [
+            "match",
+            [
+              "get",
+              "subclass"
+            ],
+            [
+              "station",
+              "bus_station",
+              "subway"
+            ],
+            1,
+            0
+          ],
+          14,
+          [
+            "match",
+            [
+              "get",
+              "subclass"
+            ],
+            [
+              "station",
+              "bus_station",
+              "bus_stop",
+              "subway",
+              "tram_stop"
+            ],
+            1,
+            0
+          ],
+          15,
+          1
+        ],
+        "text-color": "hsl(204, 36%, 27%)",
+        "text-halo-blur": 0.2,
+        "text-halo-color": "hsl(210, 100%, 93%)",
+        "text-halo-width": 1.2,
+        "text-opacity": [
+          "step",
+          [
+            "zoom"
+          ],
+          1,
+          12,
+          [
+            "match",
+            [
+              "get",
+              "subclass"
+            ],
+            "station",
+            1,
+            0
+          ],
+          16,
+          1
+        ]
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "in",
+          "class",
+          "bus",
+          "railway"
+        ],
+        [
+          "has",
+          "name"
+        ]
+      ]
+    },
+    {
+      "id": "Castle",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "poi",
+      "minzoom": 14,
+      "layout": {
+        "icon-anchor": "bottom",
+        "icon-image": "castle",
+        "icon-offset": [
+          0,
+          0
+        ],
+        "icon-optional": false,
+        "icon-size": 1,
+        "symbol-sort-key": [
+          "to-number",
+          [
+            "get",
+            "rank"
+          ]
+        ],
+        "text-anchor": "top",
+        "text-field": "{name}",
+        "text-font": [
+          "Roboto Condensed Regular",
+          "Noto Sans Regular"
+        ],
+        "text-optional": true,
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          16,
+          11,
+          22,
+          14
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(204, 36%, 27%)",
+        "icon-halo-blur": 0.2,
+        "icon-halo-color": "hsl(180, 100%, 97%)",
+        "icon-halo-width": 1.2,
+        "text-color": "hsl(204, 36%, 27%)",
+        "text-halo-blur": 0.2,
+        "text-halo-color": "hsl(180, 100%, 97%)",
+        "text-halo-width": 1.2
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "class",
+          "castle"
+        ]
+      ]
+    },
+    {
+      "id": "Winter sports",
+      "type": "symbol",
+      "source": "outdoor",
+      "source-layer": "outdoor_poi",
+      "minzoom": 13,
+      "layout": {
+        "icon-anchor": "bottom",
+        "icon-image": "snow",
+        "icon-optional": false,
+        "icon-size": 0.7,
+        "text-anchor": "top",
+        "text-field": "{name}",
+        "text-font": [
+          "Roboto Condensed Regular",
+          "Noto Sans Regular"
+        ],
+        "text-optional": true,
+        "text-size": {
+          "stops": [
+            [
+              16,
+              11
+            ],
+            [
+              22,
+              14
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(208, 57%, 9%)",
+        "icon-halo-blur": 0.2,
+        "icon-halo-color": "hsl(183, 85%, 85%)",
+        "icon-halo-width": 1,
+        "text-color": "hsl(208, 57%, 9%)",
+        "text-halo-blur": 0.2,
+        "text-halo-color": "hsl(183, 85%, 85%)",
+        "text-halo-width": 1
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Point"
+        ],
+        [
+          "in",
+          "class",
+          "biathlon",
+          "bobsleigh",
+          "ice_hockey",
+          "ice_rink",
+          "ice_skating",
+          "ski_playground",
+          "ski_school"
+        ]
+      ]
+    },
+    {
+      "id": "Volcano labels (US)",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "mountain_peak",
+      "minzoom": 9,
+      "layout": {
+        "icon-image": "triangle",
+        "icon-size": [
+          "interpolate",
+          [
+            "linear",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          [
+            "case",
+            [
+              "==",
+              [
+                "get",
+                "rank"
+              ],
+              1
+            ],
+            0.9,
+            0.7
+          ],
+          14,
+          [
+            "case",
+            [
+              "==",
+              [
+                "get",
+                "rank"
+              ],
+              1
+            ],
+            1,
+            0.8
+          ]
+        ],
+        "symbol-sort-key": [
+          "to-number",
+          [
+            "get",
+            "rank"
+          ]
+        ],
+        "symbol-avoid-edges": true,
+        "text-anchor": "top",
+        "text-field": [
+          "concat",
+          [
+            "coalesce",
+            [
+              "get",
+              "name:en"
+            ],
+            [
+              "get",
+              "name"
+            ]
+          ],
+          "\n",
+          [
+            "get",
+            "ele_ft"
+          ],
+          " ft"
+        ],
+        "text-font": [
+          "Roboto Condensed Regular",
+          "Noto Sans Regular"
+        ],
+        "text-max-width": {
+          "stops": [
+            [
+              12,
+              4
+            ],
+            [
+              15,
+              4
+            ]
+          ]
+        },
+        "text-offset": [
+          0,
+          0.7
+        ],
+        "text-size": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          7,
+          9,
+          11,
+          10,
+          13,
+          13
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(32, 100%, 40%)",
+        "icon-halo-blur": 0.2,
+        "icon-halo-color": "hsl(0, 0%, 100%)",
+        "icon-halo-width": 1,
+        "text-color": "hsl(32, 100%, 40%)",
+        "text-halo-blur": {
+          "stops": [
+            [
+              11,
+              2
+            ],
+            [
+              15,
+              0
+            ]
+          ]
+        },
+        "text-halo-color": "hsl(0, 0%, 100%)",
+        "text-halo-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          1,
+          14,
+          1.5
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Point"
+        ],
+        [
+          "in",
+          "class",
+          "volcano"
+        ],
+        [
+          "has",
+          "name"
+        ],
+        [
+          "has",
+          "customary_ft"
+        ]
+      ]
+    },
+    {
+      "id": "Volcano labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "mountain_peak",
+      "minzoom": 9,
+      "layout": {
+        "icon-image": "triangle",
+        "icon-size": [
+          "interpolate",
+          [
+            "linear",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          [
+            "case",
+            [
+              "==",
+              [
+                "get",
+                "rank"
+              ],
+              1
+            ],
+            0.9,
+            0.7
+          ],
+          14,
+          [
+            "case",
+            [
+              "==",
+              [
+                "get",
+                "rank"
+              ],
+              1
+            ],
+            1,
+            0.8
+          ]
+        ],
+        "symbol-sort-key": [
+          "to-number",
+          [
+            "get",
+            "rank"
+          ]
+        ],
+        "symbol-avoid-edges": true,
+        "text-anchor": "top",
+        "text-field": [
+          "concat",
+          [
+            "coalesce",
+            [
+              "get",
+              "name:en"
+            ],
+            [
+              "get",
+              "name"
+            ]
+          ],
+          "\n",
+          [
+            "get",
+            "ele"
+          ],
+          " m"
+        ],
+        "text-font": [
+          "Roboto Condensed Regular",
+          "Noto Sans Regular"
+        ],
+        "text-max-width": {
+          "stops": [
+            [
+              12,
+              4
+            ],
+            [
+              15,
+              4
+            ]
+          ]
+        },
+        "text-offset": [
+          0,
+          0.7
+        ],
+        "text-size": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          7,
+          9,
+          11,
+          10,
+          13,
+          13
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(32, 100%, 40%)",
+        "icon-halo-blur": 0.2,
+        "icon-halo-color": "hsl(0, 0%, 100%)",
+        "icon-halo-width": 1,
+        "text-color": "hsl(32, 100%, 40%)",
+        "text-halo-blur": {
+          "stops": [
+            [
+              11,
+              2
+            ],
+            [
+              15,
+              0
+            ]
+          ]
+        },
+        "text-halo-color": "hsl(0, 0%, 100%)",
+        "text-halo-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          1,
+          14,
+          1.5
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Point"
+        ],
+        [
+          "in",
+          "class",
+          "volcano"
+        ],
+        [
+          "has",
+          "name"
+        ],
+        [
+          "!has",
+          "customary_ft"
+        ]
+      ]
+    },
+    {
+      "id": "Peak labels (US)",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "mountain_peak",
+      "minzoom": 9,
+      "layout": {
+        "icon-image": "triangle",
+        "icon-size": [
+          "interpolate",
+          [
+            "linear",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          [
+            "case",
+            [
+              "==",
+              [
+                "get",
+                "rank"
+              ],
+              1
+            ],
+            0.9,
+            0.7
+          ],
+          14,
+          [
+            "case",
+            [
+              "==",
+              [
+                "get",
+                "rank"
+              ],
+              1
+            ],
+            1,
+            0.8
+          ]
+        ],
+        "symbol-avoid-edges": true,
+        "symbol-sort-key": [
+          "to-number",
+          [
+            "get",
+            "rank"
+          ]
+        ],
+        "text-anchor": "top",
+        "text-field": [
+          "concat",
+          [
+            "coalesce",
+            [
+              "get",
+              "name:en"
+            ],
+            [
+              "get",
+              "name"
+            ]
+          ],
+          "\n",
+          [
+            "get",
+            "ele_ft"
+          ],
+          " ft"
+        ],
+        "text-font": [
+          "Roboto Condensed Regular",
+          "Noto Sans Regular"
+        ],
+        "text-max-width": {
+          "stops": [
+            [
+              12,
+              4
+            ],
+            [
+              15,
+              4
+            ]
+          ]
+        },
+        "text-offset": [
+          0,
+          0.7
+        ],
+        "text-size": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          7,
+          9,
+          11,
+          10,
+          13,
+          13
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(232, 30%, 39%)",
+        "icon-halo-blur": 0.2,
+        "icon-halo-color": "hsl(0, 0%, 100%)",
+        "icon-halo-width": 1,
+        "text-color": "hsl(232, 30%, 39%)",
+        "text-halo-blur": {
+          "stops": [
+            [
+              11,
+              2
+            ],
+            [
+              15,
+              0
+            ]
+          ]
+        },
+        "text-halo-color": "hsl(0, 0%, 100%)",
+        "text-halo-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          1,
+          14,
+          1.5
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Point"
+        ],
+        [
+          "in",
+          "class",
+          "peak"
+        ],
+        [
+          "has",
+          "name"
+        ],
+        [
+          "has",
+          "customary_ft"
+        ]
+      ]
+    },
+    {
+      "id": "Peak labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "mountain_peak",
+      "minzoom": 9,
+      "layout": {
+        "icon-image": "triangle",
+        "icon-size": [
+          "interpolate",
+          [
+            "linear",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          [
+            "case",
+            [
+              "==",
+              [
+                "get",
+                "rank"
+              ],
+              1
+            ],
+            0.9,
+            0.7
+          ],
+          14,
+          [
+            "case",
+            [
+              "==",
+              [
+                "get",
+                "rank"
+              ],
+              1
+            ],
+            1,
+            0.8
+          ]
+        ],
+        "symbol-avoid-edges": true,
+        "symbol-sort-key": [
+          "to-number",
+          [
+            "get",
+            "rank"
+          ]
+        ],
+        "text-anchor": "top",
+        "text-field": [
+          "concat",
+          [
+            "coalesce",
+            [
+              "get",
+              "name:en"
+            ],
+            [
+              "get",
+              "name"
+            ]
+          ],
+          "\n",
+          [
+            "get",
+            "ele"
+          ],
+          " m"
+        ],
+        "text-font": [
+          "Roboto Condensed Regular",
+          "Noto Sans Regular"
+        ],
+        "text-max-width": {
+          "stops": [
+            [
+              12,
+              4
+            ],
+            [
+              15,
+              4
+            ]
+          ]
+        },
+        "text-offset": [
+          0,
+          0.7
+        ],
+        "text-size": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          7,
+          9,
+          11,
+          10,
+          13,
+          13
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(232, 30%, 39%)",
+        "icon-halo-blur": 0.2,
+        "icon-halo-color": "hsl(0, 0%, 100%)",
+        "icon-halo-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          1,
+          14,
+          1.5
+        ],
+        "text-color": "hsl(232, 30%, 39%)",
+        "text-halo-blur": {
+          "stops": [
+            [
+              11,
+              2
+            ],
+            [
+              15,
+              0
+            ]
+          ]
+        },
+        "text-halo-color": "hsl(0, 0%, 100%)",
+        "text-halo-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          1,
+          14,
+          1.5
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "$type",
+          "Point"
+        ],
+        [
+          "in",
+          "class",
+          "peak"
+        ],
+        [
+          "has",
+          "name"
+        ],
+        [
+          "!has",
+          "customary_ft"
+        ]
+      ]
+    },
+    {
+      "id": "Place labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "place",
+      "minzoom": 0,
+      "layout": {
+        "symbol-sort-key": [
+          "to-number",
+          [
+            "get",
+            "rank"
+          ]
+        ],
+        "text-anchor": "center",
+        "text-field": "{name}",
+        "text-font": [
+          "Roboto Regular",
+          "Noto Sans Regular"
+        ],
+        "text-letter-spacing": [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "suburb",
+            "neighborhood",
+            "neighbourhood",
+            "quarter",
+            "island"
+          ],
+          0.2,
+          0
+        ],
+        "text-max-width": [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "island"
+          ],
+          6,
+          8
+        ],
+        "text-offset": [
+          0,
+          -0.3
+        ],
+        "text-size": [
+          "interpolate",
+          [
+            "linear",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          11,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "suburb",
+              "neighbourhood",
+              "quarter",
+              "hamlet",
+              "isolated_dwelling"
+            ],
+            9,
+            "island",
+            8,
+            12
+          ],
+          16,
+          [
+            "match",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "suburb",
+              "neighbourhood",
+              "quarter",
+              "hamlet",
+              "isolated_dwelling"
+            ],
+            15,
+            "island",
+            11,
+            16
+          ]
+        ],
+        "text-transform": [
+          "match",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "suburb",
+            "neighborhood",
+            "neighbourhood",
+            "quarter",
+            "island"
+          ],
+          "uppercase",
+          "none"
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(207, 20%, 22%)",
+        "text-halo-blur": 1,
+        "text-halo-color": "hsl(180, 100%, 97%)",
+        "text-halo-width": 2
+      },
+      "metadata": {},
+      "filter": [
+        "in",
+        "class",
+        "hamlet",
+        "island",
+        "isolated_dwelling",
+        "neighbourhood",
+        "quarter",
+        "suburb",
+        "place"
+      ]
+    },
+    {
+      "id": "Village labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "place",
+      "minzoom": 8,
+      "maxzoom": 17,
+      "layout": {
+        "icon-allow-overlap": true,
+        "icon-anchor": "center",
+        "icon-image": "dot",
+        "icon-size": 0.5,
+        "symbol-sort-key": [
+          "to-number",
+          [
+            "get",
+            "rank"
+          ]
+        ],
+        "text-anchor": "bottom",
+        "text-field": "{name}",
+        "text-font": [
+          "Roboto Regular",
+          "Noto Sans Regular"
+        ],
+        "text-letter-spacing": 0,
+        "text-max-width": 8,
+        "text-offset": [
+          0,
+          -0.2
+        ],
+        "text-size": [
+          "interpolate",
+          [
+            "linear",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          11,
+          12,
+          16,
+          18
+        ],
+        "text-transform": "none",
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(180, 0%, 100%)",
+        "icon-halo-blur": 0,
+        "icon-halo-color": "hsl(207, 20%, 45%)",
+        "icon-halo-width": 1,
+        "text-color": "hsl(207, 20%, 22%)",
+        "text-halo-blur": 1,
+        "text-halo-color": "hsl(180, 100%, 97%)",
+        "text-halo-width": 2
+      },
+      "filter": [
+        "==",
+        "class",
+        "village"
+      ]
+    },
+    {
+      "id": "Protected area labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "park",
+      "minzoom": 11,
+      "maxzoom": 17,
+      "layout": {
+        "symbol-avoid-edges": true,
+        "symbol-spacing": 750,
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Roboto Condensed Bold",
+          "Noto Sans Bold"
+        ],
+        "text-ignore-placement": false,
+        "text-padding": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          30,
+          16,
+          200
+        ],
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          10,
+          16,
+          12
+        ],
+        "text-transform": "uppercase",
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(195, 63%, 28%)",
+        "icon-halo-blur": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          2,
+          14,
+          0.5
+        ],
+        "icon-halo-color": "hsl(180, 100%, 97%)",
+        "icon-halo-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          1.6,
+          14,
+          1
+        ],
+        "text-color": "hsl(195, 63%, 28%)",
+        "text-halo-blur": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          2,
+          14,
+          0.5
+        ],
+        "text-halo-color": "hsl(180, 100%, 97%)",
+        "text-halo-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          1.6,
+          14,
+          1
+        ]
+      },
+      "filter": [
+        "!in",
+        "class",
+        "aire_d’adhésion_de_parc_national",
+        "coeur",
+        "narodni_park",
+        "national_nature_park",
+        "national_park",
+        "nationalpark",
+        "natural_parc",
+        "národní_park",
+        "národný_park",
+        "ochranné_pásmo_národného_parku",
+        "parc_national",
+        "parc_naturel_national",
+        "parc_naturel_régional",
+        "parc_național",
+        "parco_nazionale",
+        "parque_nacional",
+        "национальный_парк"
+      ]
+    },
+    {
+      "id": "Town labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "place",
+      "minzoom": 6,
+      "maxzoom": 16,
+      "layout": {
+        "icon-anchor": "top",
+        "icon-image": "dot",
+        "icon-size": 0.7,
+        "symbol-sort-key": [
+          "to-number",
+          [
+            "get",
+            "rank"
+          ]
+        ],
+        "text-anchor": "bottom",
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Roboto Medium",
+          "Noto Sans Regular"
+        ],
+        "text-max-width": 8,
+        "text-offset": [
+          0,
+          0.1
+        ],
+        "text-size": [
+          "interpolate",
+          [
+            "linear",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          [
+            "case",
+            [
+              "<=",
+              [
+                "get",
+                "rank"
+              ],
+              12
+            ],
+            11,
+            10
+          ],
+          9,
+          [
+            "case",
+            [
+              "<=",
+              [
+                "get",
+                "rank"
+              ],
+              15
+            ],
+            13,
+            12
+          ],
+          16,
+          [
+            "case",
+            [
+              "<=",
+              [
+                "get",
+                "rank"
+              ],
+              15
+            ],
+            22,
+            20
+          ]
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(0, 0%, 100%)",
+        "icon-halo-blur": 0,
+        "icon-halo-color": "hsl(207, 20%, 45%)",
+        "icon-halo-width": 1,
+        "text-color": "hsl(205, 21%, 22%)",
+        "text-halo-blur": 1,
+        "text-halo-color": "hsl(180, 100%, 97%)",
+        "text-halo-width": 2
+      },
+      "metadata": {},
+      "filter": [
+        "==",
+        "class",
+        "town"
+      ]
+    },
+    {
+      "id": "State labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "place",
+      "minzoom": 3,
+      "maxzoom": 9,
+      "layout": {
+        "symbol-sort-key": [
+          "to-number",
+          [
+            "get",
+            "rank"
+          ]
+        ],
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Roboto Medium",
+          "Noto Sans Regular"
+        ],
+        "text-letter-spacing": 0.1,
+        "text-max-width": 8,
+        "text-size": [
+          "interpolate",
+          [
+            "linear",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          3,
+          [
+            "case",
+            [
+              "<=",
+              [
+                "get",
+                "rank"
+              ],
+              2
+            ],
+            7,
+            6
+          ],
+          6,
+          [
+            "case",
+            [
+              "<=",
+              [
+                "get",
+                "rank"
+              ],
+              2
+            ],
+            11,
+            8
+          ],
+          7,
+          [
+            "case",
+            [
+              "<=",
+              [
+                "get",
+                "rank"
+              ],
+              2
+            ],
+            11,
+            9
+          ]
+        ],
+        "text-transform": "uppercase",
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(205, 17%, 33%)",
+        "text-halo-color": "hsl(180, 93%, 94%)",
+        "text-halo-width": 1,
+        "text-opacity": [
+          "step",
+          [
+            "zoom"
+          ],
+          0,
+          3,
+          [
+            "case",
+            [
+              "<=",
+              [
+                "get",
+                "rank"
+              ],
+              3
+            ],
+            1,
+            0
+          ],
+          8,
+          [
+            "case",
+            [
+              "==",
+              [
+                "get",
+                "rank"
+              ],
+              0
+            ],
+            0,
+            1
+          ]
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "in",
+          "class",
+          "state",
+          "province"
+        ],
+        [
+          "<=",
+          "rank",
+          6
+        ]
+      ]
+    },
+    {
+      "id": "City labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "place",
+      "minzoom": 5,
+      "maxzoom": 16,
+      "layout": {
+        "icon-allow-overlap": false,
+        "icon-image": "circle-dot",
+        "icon-offset": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          [
+            "literal",
+            [
+              0,
+              0
+            ]
+          ],
+          10,
+          [
+            "literal",
+            [
+              0,
+              -2
+            ]
+          ]
+        ],
+        "icon-optional": false,
+        "icon-size": [
+          "interpolate",
+          [
+            "linear",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          [
+            "match",
+            [
+              "get",
+              "capital"
+            ],
+            2,
+            0.7,
+            0.6
+          ],
+          14,
+          [
+            "match",
+            [
+              "get",
+              "capital"
+            ],
+            2,
+            0.9,
+            0.7
+          ]
+        ],
+        "symbol-sort-key": [
+          "to-number",
+          [
+            "get",
+            "rank"
+          ]
+        ],
+        "text-anchor": "bottom",
+        "text-field": "{name:en}",
+        "text-font": [
+          "Roboto Medium",
+          "Noto Sans Regular"
+        ],
+        "text-max-width": 8,
+        "text-padding": 2,
+        "text-size": [
+          "interpolate",
+          [
+            "linear",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          5,
+          [
+            "case",
+            [
+              "==",
+              [
+                "get",
+                "capital"
+              ],
+              2
+            ],
+            16,
+            12
+          ],
+          7,
+          [
+            "case",
+            [
+              "==",
+              [
+                "get",
+                "capital"
+              ],
+              2
+            ],
+            18,
+            14
+          ],
+          9,
+          [
+            "case",
+            [
+              "==",
+              [
+                "get",
+                "capital"
+              ],
+              2
+            ],
+            25,
+            22
+          ],
+          11,
+          [
+            "case",
+            [
+              "==",
+              [
+                "get",
+                "capital"
+              ],
+              2
+            ],
+            28,
+            24
+          ]
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(205, 21%, 22%)",
+        "icon-halo-color": "hsl(0, 0%, 100%)",
+        "icon-halo-width": 1,
+        "text-color": "hsl(205, 21%, 22%)",
+        "text-halo-blur": 1,
+        "text-halo-color": "hsl(180, 100%, 97%)",
+        "text-halo-width": 2,
+        "text-translate": [
+          0,
+          -2
+        ]
+      },
+      "metadata": {},
+      "filter": [
+        "==",
+        "class",
+        "city"
+      ]
+    },
+    {
+      "id": "Country labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "place",
+      "minzoom": 2,
+      "maxzoom": 10,
+      "layout": {
+        "symbol-sort-key": [
+          "to-number",
+          [
+            "get",
+            "rank"
+          ]
+        ],
+        "text-field": "{name:en}",
+        "text-font": [
+          "Roboto Bold",
+          "Noto Sans Bold"
+        ],
+        "text-max-width": [
+          "case",
+          [
+            "<=",
+            [
+              "get",
+              "rank"
+            ],
+            2
+          ],
+          8.25,
+          6.25
+        ],
+        "text-padding": 0,
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          2,
+          [
+            "case",
+            [
+              "<=",
+              [
+                "get",
+                "rank"
+              ],
+              2
+            ],
+            10,
+            8
+          ],
+          3,
+          [
+            "case",
+            [
+              "<=",
+              [
+                "get",
+                "rank"
+              ],
+              2
+            ],
+            12,
+            [
+              ">=",
+              [
+                "get",
+                "rank"
+              ],
+              3
+            ],
+            10,
+            9
+          ],
+          4,
+          [
+            "case",
+            [
+              "<=",
+              [
+                "get",
+                "rank"
+              ],
+              2
+            ],
+            16,
+            [
+              ">=",
+              [
+                "get",
+                "rank"
+              ],
+              3
+            ],
+            14,
+            12
+          ],
+          7,
+          [
+            "case",
+            [
+              "<=",
+              [
+                "get",
+                "rank"
+              ],
+              2
+            ],
+            22,
+            [
+              ">=",
+              [
+                "get",
+                "rank"
+              ],
+              3
+            ],
+            18,
+            16
+          ]
+        ],
+        "text-transform": "none",
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(207, 16%, 27%)",
+        "text-halo-blur": [
+          "case",
+          [
+            "<=",
+            [
+              "get",
+              "rank"
+            ],
+            2
+          ],
+          2,
+          1.6
+        ],
+        "text-halo-color": "hsl(180, 93%, 94%)",
+        "text-halo-width": [
+          "case",
+          [
+            "<=",
+            [
+              "get",
+              "rank"
+            ],
+            2
+          ],
+          1.4,
+          1
+        ]
+      },
+      "metadata": {},
+      "filter": [
+        "all",
+        [
+          "has",
+          "iso_a2"
+        ],
+        [
+          "!=",
+          "iso_a2",
+          "VA"
+        ]
+      ]
+    },
+    {
+      "id": "Continent labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "place",
+      "maxzoom": 2,
+      "layout": {
+        "text-field": "{name:en}",
+        "text-font": [
+          "Roboto Bold",
+          "Noto Sans Bold"
+        ],
+        "text-justify": "center",
+        "text-padding": 0,
+        "text-size": {
+          "stops": [
+            [
+              1,
+              12
+            ],
+            [
+              4,
+              24
+            ]
+          ]
+        },
+        "text-transform": "uppercase",
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(207, 16%, 27%)",
+        "text-halo-color": "hsl(180, 42%, 86%)",
+        "text-halo-width": 1.3
+      },
+      "metadata": {},
+      "filter": [
+        "==",
+        "class",
+        "continent"
+      ]
+    },
+    {
+      "id": "Ski lift pylon labels",
+      "type": "symbol",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "minzoom": 16,
+      "layout": {
+        "icon-image": "circle",
+        "icon-offset": [
+          0,
+          0
+        ],
+        "icon-size": 0.4,
+        "text-anchor": "top",
+        "text-field": "{ref}",
+        "text-font": [
+          "Roboto Medium Italic",
+          "Noto Sans Italic"
+        ],
+        "text-max-width": 14,
+        "text-offset": [
+          0,
+          -1.5
+        ],
+        "text-size": {
+          "stops": [
+            [
+              16,
+              9
+            ],
+            [
+              18,
+              12
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(0, 0%, 100%)",
+        "icon-halo-color": "hsl(0, 0%, 50%)",
+        "icon-halo-width": 2,
+        "text-color": "hsl(0, 0%, 50%)",
+        "text-halo-blur": 0.25,
+        "text-halo-color": "hsl(0, 0%, 98%)",
+        "text-halo-width": 1
+      },
+      "filter": [
+        "==",
+        "class",
+        "pylon"
+      ]
+    },
+    {
+      "id": "Ski lift labels",
+      "type": "symbol",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "minzoom": 14,
+      "layout": {
+        "symbol-placement": "line",
+        "symbol-spacing": 300,
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Roboto Condensed Italic",
+          "Noto Sans Italic"
+        ],
+        "text-size": {
+          "stops": [
+            [
+              12,
+              11
+            ],
+            [
+              22,
+              16
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-halo-blur": 1,
+        "icon-halo-width": 2,
+        "text-color": "hsl(0, 0%, 30%)",
+        "text-halo-blur": 1,
+        "text-halo-color": "hsl(0, 0%, 98%)",
+        "text-halo-width": 2
+      },
+      "filter": [
+        "in",
+        "subclass",
+        "chair_lift",
+        "drag_lift",
+        "j-bar",
+        "mixed_lift",
+        "platter",
+        "t-bar"
+      ]
+    },
+    {
+      "id": "Cable car labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "transportation_name",
+      "minzoom": 15,
+      "layout": {
+        "symbol-placement": "line",
+        "symbol-spacing": 400,
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Roboto Condensed Italic",
+          "Noto Sans Italic"
+        ],
+        "text-size": {
+          "stops": [
+            [
+              12,
+              11
+            ],
+            [
+              22,
+              16
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-halo-width": 2,
+        "text-color": "hsl(0, 0%, 20%)",
+        "text-halo-blur": 1,
+        "text-halo-color": "hsl(0, 0%, 98%)",
+        "text-halo-width": 2
+      },
+      "filter": [
+        "in",
+        "subclass",
+        "gondola",
+        "funicular",
+        "cable_car"
+      ]
+    },
+    {
+      "id": "Freeride labels",
+      "type": "symbol",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "minzoom": 14,
+      "layout": {
+        "symbol-placement": "line",
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Roboto Condensed Italic",
+          "Noto Sans Italic"
+        ],
+        "text-letter-spacing": 0.1,
+        "text-size": {
+          "stops": [
+            [
+              12,
+              11
+            ],
+            [
+              22,
+              16
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(240, 15%, 43%)",
+        "icon-halo-color": "hsl(0, 0%, 98%)",
+        "text-color": "hsl(240, 15%, 43%)",
+        "text-halo-blur": 0,
+        "text-halo-color": "hsl(0, 0%, 98%)",
+        "text-halo-width": 1.5
+      },
+      "filter": [
+        "all",
+        [
+          "in",
+          "$type",
+          "LineString",
+          "Point",
+          "Polygon"
+        ],
+        [
+          "==",
+          "difficulty",
+          "freeride"
+        ],
+        [
+          "==",
+          "class",
+          "downhill"
+        ]
+      ]
+    },
+    {
+      "id": "Advanced slope labels",
+      "type": "symbol",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "minzoom": 14,
+      "layout": {
+        "symbol-placement": "line",
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Roboto Condensed Italic",
+          "Noto Sans Italic"
+        ],
+        "text-letter-spacing": 0.1,
+        "text-size": {
+          "stops": [
+            [
+              12,
+              11
+            ],
+            [
+              22,
+              16
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(0, 0%, 3%)",
+        "text-halo-blur": 0,
+        "text-halo-color": "hsl(0, 0%, 98%)",
+        "text-halo-width": 1.5
+      },
+      "filter": [
+        "all",
+        [
+          "in",
+          "difficulty",
+          "advanced",
+          "expert"
+        ],
+        [
+          "==",
+          "class",
+          "downhill"
+        ]
+      ]
+    },
+    {
+      "id": "Intermediate slope labels",
+      "type": "symbol",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "minzoom": 14,
+      "layout": {
+        "symbol-placement": "line",
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Roboto Condensed Italic",
+          "Noto Sans Italic"
+        ],
+        "text-letter-spacing": 0.1,
+        "text-size": {
+          "stops": [
+            [
+              12,
+              11
+            ],
+            [
+              22,
+              16
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(0, 63%, 54%)",
+        "text-color": "hsl(0, 63%, 54%)",
+        "text-halo-blur": 0,
+        "text-halo-color": "hsl(0, 0%, 98%)",
+        "text-halo-width": 1.5
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "difficulty",
+          "intermediate"
+        ],
+        [
+          "==",
+          "class",
+          "downhill"
+        ]
+      ]
+    },
+    {
+      "id": "Easy slope labels",
+      "type": "symbol",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "minzoom": 14,
+      "layout": {
+        "symbol-placement": "line",
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Roboto Condensed Italic",
+          "Noto Sans Italic"
+        ],
+        "text-letter-spacing": 0.1,
+        "text-size": {
+          "stops": [
+            [
+              12,
+              11
+            ],
+            [
+              22,
+              16
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(209, 64%, 49%)",
+        "text-color": "hsl(209, 64%, 49%)",
+        "text-halo-blur": 0,
+        "text-halo-color": "hsl(0, 0%, 98%)",
+        "text-halo-width": 1.5
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "difficulty",
+          "easy"
+        ],
+        [
+          "==",
+          "class",
+          "downhill"
+        ]
+      ]
+    },
+    {
+      "id": "Novice slope labels",
+      "type": "symbol",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "minzoom": 14,
+      "layout": {
+        "symbol-placement": "line",
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Roboto Condensed Italic",
+          "Noto Sans Italic"
+        ],
+        "text-letter-spacing": 0.1,
+        "text-size": {
+          "stops": [
+            [
+              12,
+              11
+            ],
+            [
+              22,
+              16
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(111, 81%, 39%)",
+        "text-color": "hsl(111, 81%, 39%)",
+        "text-halo-blur": 0,
+        "text-halo-color": "hsl(0, 0%, 98%)",
+        "text-halo-width": 1.5
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          "difficulty",
+          "novice"
+        ],
+        [
+          "==",
+          "class",
+          "downhill"
+        ]
+      ]
+    },
+    {
+      "id": "Ski tour labels",
+      "type": "symbol",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "minzoom": 14,
+      "layout": {
+        "symbol-placement": "line",
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Roboto Condensed Italic",
+          "Noto Sans Italic"
+        ],
+        "text-size": {
+          "stops": [
+            [
+              12,
+              11
+            ],
+            [
+              22,
+              16
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(243, 53%, 70%)",
+        "icon-halo-width": 1.5,
+        "text-color": "hsl(243, 53%, 70%)",
+        "text-halo-blur": 0,
+        "text-halo-color": "hsl(0, 0%, 98%)",
+        "text-halo-width": 1.5
+      },
+      "filter": [
+        "==",
+        "class",
+        "skitour"
+      ]
+    },
+    {
+      "id": "Snowpark labels",
+      "type": "symbol",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "minzoom": 14,
+      "layout": {
+        "symbol-placement": "line",
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Roboto Condensed Italic",
+          "Noto Sans Italic"
+        ],
+        "text-size": {
+          "stops": [
+            [
+              12,
+              11
+            ],
+            [
+              22,
+              16
+            ]
+          ]
+        },
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(277, 59%, 46%)",
+        "text-color": "hsl(277, 59%, 46%)",
+        "text-halo-blur": 0,
+        "text-halo-color": "hsl(0, 100%, 100%)",
+        "text-halo-width": 1.5
+      },
+      "filter": [
+        "==",
+        "class",
+        "snow_park"
+      ]
+    },
+    {
+      "id": "Nordic trail labels",
+      "type": "symbol",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "minzoom": 8,
+      "layout": {
+        "icon-offset": [
+          0,
+          0
+        ],
+        "symbol-placement": "line",
+        "text-anchor": "top",
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Roboto Condensed Italic",
+          "Noto Sans Italic"
+        ],
+        "text-letter-spacing": 0.1,
+        "text-max-width": 14,
+        "text-offset": [
+          0,
+          0
+        ],
+        "text-size": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          11,
+          22,
+          16
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "hsl(183, 78%, 45%)",
+        "text-halo-blur": 1,
+        "text-halo-color": "hsl(0, 0%, 98%)",
+        "text-halo-width": 1.5
+      },
+      "filter": [
+        "==",
+        "class",
+        "nordic"
+      ]
+    },
+    {
+      "id": "Ski resort labels",
+      "type": "symbol",
+      "source": "outdoor",
+      "source-layer": "ski",
+      "minzoom": 8,
+      "maxzoom": 15,
+      "layout": {
+        "icon-image": "snow",
+        "icon-offset": {
+          "stops": [
+            [
+              6,
+              [
+                0,
+                -16
+              ]
+            ],
+            [
+              16,
+              [
+                0,
+                -24
+              ]
+            ]
+          ]
+        },
+        "icon-size": 1,
+        "text-anchor": "top",
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Roboto Condensed Regular",
+          "Noto Sans Regular"
+        ],
+        "text-max-width": 7,
+        "text-offset": [
+          0,
+          -0.85
+        ],
+        "text-optional": true,
+        "text-size": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          12,
+          12,
+          14,
+          15,
+          20
+        ],
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(201, 84%, 45%)",
+        "icon-halo-blur": 0.25,
+        "icon-halo-color": "hsl(0, 0%, 98%)",
+        "icon-halo-width": 2,
+        "text-color": "hsl(201, 84%, 45%)",
+        "text-halo-blur": 0.25,
+        "text-halo-color": "hsl(0, 0%, 98%)",
+        "text-halo-width": 2
+      },
+      "filter": [
+        "all",
+        [
+          "in",
+          "$type",
+          "LineString",
+          "Point",
+          "Polygon"
+        ],
+        [
+          "==",
+          "class",
+          "ski_resort"
+        ]
+      ]
+    },
+    {
+      "id": "National park labels",
+      "type": "symbol",
+      "source": "maptiler_planet",
+      "source-layer": "park",
+      "minzoom": 6,
+      "maxzoom": 12,
+      "layout": {
+        "symbol-avoid-edges": true,
+        "symbol-spacing": 550,
+        "text-field": [
+          "coalesce",
+          [
+            "get",
+            "name:en"
+          ],
+          [
+            "get",
+            "name"
+          ]
+        ],
+        "text-font": [
+          "Roboto Condensed Bold",
+          "Noto Sans Bold"
+        ],
+        "text-padding": {
+          "stops": [
+            [
+              6,
+              39
+            ],
+            [
+              14,
+              99
+            ]
+          ]
+        },
+        "text-size": [
+          "interpolate",
+          [
+            "exponential",
+            1
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          9,
+          9,
+          11,
+          12,
+          13
+        ],
+        "text-transform": "uppercase",
+        "visibility": "visible"
+      },
+      "paint": {
+        "icon-color": "hsl(195, 63%, 28%)",
+        "icon-halo-blur": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          2,
+          14,
+          0.5
+        ],
+        "icon-halo-color": "hsl(180, 100%, 97%)",
+        "icon-halo-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          1.6,
+          14,
+          1
+        ],
+        "text-color": "hsl(195, 63%, 28%)",
+        "text-halo-blur": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          2,
+          14,
+          0.5
+        ],
+        "text-halo-color": "hsl(180, 100%, 97%)",
+        "text-halo-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          1.6,
+          14,
+          1
+        ]
+      },
+      "filter": [
+        "in",
+        "class",
+        "aire_d’adhésion_de_parc_national",
+        "coeur",
+        "narodni_park",
+        "national_nature_park",
+        "national_park",
+        "nationalpark",
+        "natural_parc",
+        "národní_park",
+        "národný_park",
+        "ochranné_pásmo_národného_parku",
+        "parc_national",
+        "parc_naturel_national",
+        "parc_naturel_régional",
+        "parc_național",
+        "parco_nazionale",
+        "parque_nacional",
+        "национальный_парк"
+      ]
+    }
+  ],
+  "metadata": {
+    "maptiler": {
+      "copyright": "You are licensed to use the style or its derivate for serving map tiles exclusively with MapTiler Server or MapTiler Cloud and in accordance with their licenses and terms. If you plan to use the style in a different way, contact us at sales@maptiler.com.",
+      "groups": [
+        {
+          "icon": "poi",
+          "id": "Z3g1H_egQi_zx-XXv2do5",
+          "layers": [
+            "Outdoor",
+            "Food",
+            "Healthcare",
+            "Pharmacy",
+            "Station",
+            "Transport",
+            "Tourism",
+            "Culture",
+            "Winter sports",
+            "Outdoor water",
+            "Outdoor shop",
+            "Castle",
+            "Sport"
+          ],
+          "name": "POI"
+        },
+        {
+          "icon": "outdoor",
+          "id": "8FlbTbYrlPFcXCGz4QkfI",
+          "layers": [
+            "Nordic trail labels",
+            "Snowpark labels",
+            "Ski tour labels",
+            "Novice slope labels",
+            "Easy slope labels",
+            "Intermediate slope labels",
+            "Advanced slope labels",
+            "Cable car labels",
+            "Ski lift labels",
+            "Ski lift pylon labels",
+            "Avalanche fence",
+            "Nordic trail",
+            "Sled",
+            "Ski tour",
+            "Ski tour outline",
+            "Freeride",
+            "Advanced slope",
+            "Slope outline",
+            "Ski resort labels",
+            "Snowpark",
+            "Novice slope",
+            "Easy slope",
+            "Intermediate slope",
+            "Novice slope area",
+            "Easy slope area",
+            "Intermediate slope area",
+            "Advanced slope area",
+            "Freeride labels",
+            "Snowpark area"
+          ],
+          "name": "Outdoor"
+        },
+        {
+          "icon": "administrative",
+          "id": "1dn25OpKpb8hjRZNvQpFe",
+          "layers": [
+            "Continent labels",
+            "Country labels",
+            "City labels",
+            "State labels",
+            "Town labels",
+            "Place labels",
+            "Country border",
+            "Disputed border",
+            "Other border",
+            "Village labels"
+          ],
+          "name": "Administrative"
+        },
+        {
+          "icon": "builtUp",
+          "id": "v-m98c6UjUntCg4oNJP8S",
+          "layers": [
+            "Building",
+            "Other",
+            "Residential",
+            "Hospital",
+            "Cemetery",
+            "Stadium"
+          ],
+          "name": "Built-up"
+        },
+        {
+          "icon": "transport",
+          "id": "ZLtCKgYogzvn2VsmGj7eu",
+          "layers": [
+            "Ferry",
+            "Road labels",
+            "Pier",
+            "Bridge",
+            "Major railway dash",
+            "Major railway",
+            "Minor railway hatching",
+            "Minor railway",
+            "Path",
+            "Minor road",
+            "Railway tunnel dash",
+            "Railway tunnel",
+            "Tunnel",
+            "Tunnel path",
+            "Cable car dash",
+            "Cable car",
+            "Chair lift dash",
+            "Chair lift",
+            "Ski lift",
+            "Ski lift dash",
+            "Highway",
+            "Major road",
+            "Pedestrian",
+            "Pedestrian outline",
+            "Steps",
+            "Track",
+            "Airport labels",
+            "Taxiway",
+            "Runway",
+            "Aeroway",
+            "Path minor"
+          ],
+          "name": "Transport"
+        },
+        {
+          "icon": "water",
+          "id": "Hp_FBRwFL14gc6c5dPB6D",
+          "layers": [
+            "River",
+            "River tunnel",
+            "Water",
+            "River labels",
+            "Ocean labels",
+            "Lakeline labels",
+            "Lake labels",
+            "Sea labels"
+          ],
+          "name": "Water"
+        },
+        {
+          "icon": "nature",
+          "id": "-ML0tn3t7LIRUMiHlEeTd",
+          "layers": [
+            "Park outline",
+            "Sand",
+            "Protected area labels",
+            "Glacier",
+            "Scrub",
+            "Forest",
+            "Grass",
+            "Wood",
+            "National park labels",
+            "Park labels"
+          ],
+          "name": "Nature"
+        },
+        {
+          "icon": "terrain",
+          "id": "5z6OACRZS50vxkb3OUgX0",
+          "layers": [
+            "Hillshade",
+            "Contour",
+            "Contour index",
+            "Glacier contour labels",
+            "Contour labels",
+            "Volcano labels (US)",
+            "Peak labels (US)",
+            "Volcano labels",
+            "Peak labels",
+            "Glacier contour index",
+            "Glacier contour",
+            "Cliff line",
+            "Cliff"
+          ],
+          "name": "Terrain"
+        },
+        {
+          "icon": "background",
+          "id": "gOP5Vzcwhv7DQhkDnQDb_",
+          "layers": [
+            "Background"
+          ],
+          "name": "Background"
+        }
+      ]
+    }
+  },
+  "glyphs": "https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=GCqxEKWuBP1S6iQ1aSBG",
+  "sprite": "https://api.maptiler.com/maps/winter-v2/sprite",
+  "bearing": 0,
+  "pitch": 0,
+  "center": [
+    0,
+    0
+  ],
+  "zoom": 1
+}
