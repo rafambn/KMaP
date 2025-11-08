@@ -81,13 +81,6 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
 
     @Suppress("UNCHECKED_CAST")
     private fun <T> compileValue(expression: Any?): CompiledValue<T> {
-        if (expression !is List<*>) {
-            return CompiledValue(
-                evaluate = { _, _, _ -> expression as? T },
-                requiredProperties = emptySet()
-            )
-        }
-
         val requiredProperties = evaluator.getRequiredProperties(expression)
         return CompiledValue(
             evaluate = { zoomLevel, featureProperties, featureId ->

@@ -24,9 +24,15 @@ import com.rafambn.kmap.utils.style.expressions.evaluateString
 import com.rafambn.kmap.utils.style.expressions.evaluateTypeOf
 import com.rafambn.kmap.utils.style.expressions.evaluateUpDownCase
 
+import com.rafambn.kmap.utils.style.expressions.parseColor
+
 class ExpressionEvaluator {
 
     fun evaluate(expression: Any?, context: EvaluationContext): Any? {
+        if (expression is String) {
+            val color = parseColor(expression)
+            if (color != null) return color
+        }
         if (expression !is List<*> || expression.isEmpty()) {
             return expression
         }

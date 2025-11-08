@@ -43,3 +43,16 @@ internal fun exponentialInterpolate(t: Double, base: Double, from: Double, to: D
         from + (to - from) * (base.pow(t) - 1) / (base - 1)
     }
 }
+
+internal fun parseColor(colorString: String): Color? {
+    if (colorString.startsWith("#")) {
+        val hexColor = colorString.substring(1)
+        val red = hexColor.substring(0, 2).toIntOrNull(16) ?: return null
+        val green = hexColor.substring(2, 4).toIntOrNull(16) ?: return null
+        val blue = hexColor.substring(4, 6).toIntOrNull(16) ?: return null
+        val alpha = if (hexColor.length == 8) hexColor.substring(6, 8).toIntOrNull(16) ?: 255 else 255
+        return Color(red, green, blue, alpha)
+    }
+    // TODO: Handle rgba(r,g,b,a) and hsla(h,s,l,a) strings
+    return null
+}

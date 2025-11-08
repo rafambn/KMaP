@@ -247,12 +247,15 @@ internal fun evaluateInterpolate(expression: List<*>, context: EvaluationContext
 
     val progress = (input - lowerBound) / (upperBound - lowerBound)
 
+    val lowerOutNum = toDouble(lowerOutput)
+    val upperOutNum = toDouble(upperOutput)
+
     return when {
-        lowerOutput is Double && upperOutput is Double -> {
+        lowerOutNum != null && upperOutNum != null -> {
             when (type) {
-                "linear", "exponential" -> exponentialInterpolate(progress, base, lowerOutput, upperOutput)
+                "exponential" -> exponentialInterpolate(progress, base, lowerOutNum, upperOutNum)
                 // "cubic-bezier" is more complex, linear for now
-                else -> linearInterpolate(progress, lowerOutput, upperOutput)
+                else -> linearInterpolate(progress, lowerOutNum, upperOutNum)
             }
         }
         lowerOutput is Color && upperOutput is Color -> {
