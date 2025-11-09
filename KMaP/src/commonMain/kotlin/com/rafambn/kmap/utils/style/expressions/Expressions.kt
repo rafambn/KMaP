@@ -186,6 +186,21 @@ internal fun evaluateRgb(expression: List<*>, context: EvaluationContext, evalua
     return Color(r, g, b, (a * 255).toInt())
 }
 
+internal fun evaluateHsl(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): Color? {
+    if (expression.size !in 4..5) return null
+    val h = toDouble(evaluator.evaluate(expression[1], context)) ?: return null
+    val s = toDouble(evaluator.evaluate(expression[2], context))?.coerceIn(0.0, 100.0) ?: return null
+    val l = toDouble(evaluator.evaluate(expression[3], context))?.coerceIn(0.0, 100.0) ?: return null
+    val a = if (expression.size == 5) toDouble(evaluator.evaluate(expression[4], context))?.coerceIn(0.0, 1.0) ?: 1.0 else 1.0
+
+    val hNorm = (h % 360 + 360) % 360 / 360.0
+    val sNorm = s / 100.0
+    val lNorm = l / 100.0
+    val alpha = (a * 255).toInt().coerceIn(0, 255)
+
+    return Color.hsl(hNorm.toFloat(), sNorm.toFloat(), lNorm.toFloat(), alpha.toFloat())
+}
+
 // Math
 internal fun evaluateNumber(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): Double? {
     if (expression.size < 3) return null

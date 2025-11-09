@@ -54,7 +54,7 @@ fun VectorTileScreen(
 
     LaunchedEffect(Unit) {
         val styleJson = readResourceBytes("stylev4.json").decodeToString()
-        styleState.value = StyleResolver().resolve(json.decodeFromString<Style>(styleJson))
+        styleState.value = StyleResolver().resolve(json.decodeFromString<Style>(styleJson), locale = "pt")
     }
 
     styleState.value?.let { style ->

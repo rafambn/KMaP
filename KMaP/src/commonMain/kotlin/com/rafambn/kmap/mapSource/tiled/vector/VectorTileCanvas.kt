@@ -339,6 +339,7 @@ private fun DrawScope.drawSymbolFeature(
     optimizedStyleLayer: OptimizedStyleLayer,
     zoomLevel: Double
 ) {
+    optimizedStyleLayer.layout.properties["text-field"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? String ?: "zika"
     // Text symbol rendering
 //    if (properties.field != null) {
 //        drawTextSymbol(canvas, geometry, properties, fontResolver, density)

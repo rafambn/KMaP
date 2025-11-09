@@ -9,6 +9,7 @@ import com.rafambn.kmap.utils.style.expressions.evaluateComparison
 import com.rafambn.kmap.utils.style.expressions.evaluateConcat
 import com.rafambn.kmap.utils.style.expressions.evaluateGet
 import com.rafambn.kmap.utils.style.expressions.evaluateHas
+import com.rafambn.kmap.utils.style.expressions.evaluateHsl
 import com.rafambn.kmap.utils.style.expressions.evaluateIn
 import com.rafambn.kmap.utils.style.expressions.evaluateIndexOf
 import com.rafambn.kmap.utils.style.expressions.evaluateInterpolate
@@ -23,20 +24,37 @@ import com.rafambn.kmap.utils.style.expressions.evaluateStep
 import com.rafambn.kmap.utils.style.expressions.evaluateString
 import com.rafambn.kmap.utils.style.expressions.evaluateTypeOf
 import com.rafambn.kmap.utils.style.expressions.evaluateUpDownCase
-
 import com.rafambn.kmap.utils.style.expressions.parseColor
 
 class ExpressionEvaluator {
 
-    fun evaluate(expression: Any?, context: EvaluationContext): Any? {
-        if (expression is String) {
-            val color = parseColor(expression)
-            if (color != null) return color
+    private fun resolveTokens(text: String, context: EvaluationContext): String {
+        val regex = "\\{name(?::(.*?))?\\}".toRegex()
+        return regex.replace(text) { matchResult ->
+            val lang = matchResult.groupValues.getOrNull(1)
+            val propertyName = when {
+                lang != null && lang.isNotEmpty() -> "name:$lang"
+                else -> "name:${context.locale}"
+            }
+            context.featureProperties[propertyName]?.toString() ?: context.featureProperties["name"]?.toString() ?: ""
         }
-        if (expression !is List<*> || expression.isEmpty()) {
+    }
+
+    private fun evaluateStringExpression(expression: String, context: EvaluationContext): Any {
+        val color = parseColor(expression)
+        if (color != null) {
+            return color
+        }
+        if (expression.contains("{") && expression.contains("}")) {
+            return resolveTokens(expression, context)
+        }
+        return expression
+    }
+
+    private fun evaluateListExpression(expression: List<*>, context: EvaluationContext): Any? {
+        if (expression.isEmpty()) {
             return expression
         }
-
         val operator = expression[0] as? String
         return when (operator) {
             // Logical
@@ -79,6 +97,8 @@ class ExpressionEvaluator {
             // Color
             "rgb" -> evaluateRgb(expression, context, this)
             "rgba" -> evaluateRgb(expression, context, this)
+            "hsl" -> evaluateHsl(expression, context, this)
+            "hsla" -> evaluateHsl(expression, context, this)
 
             // Math
             "+", "-", "*", "/" -> evaluateNumber(expression, context, this)
@@ -91,7 +111,35 @@ class ExpressionEvaluator {
         }
     }
 
+    fun evaluate(expression: Any?, context: EvaluationContext): Any? {
+        return when (expression) {
+            is String -> evaluateStringExpression(expression, context)
+            is List<*> -> {
+                val result = evaluateListExpression(expression, context)
+                if (result is String) {
+                    return evaluateStringExpression(result, context)
+                }
+                result
+            }
+            else -> expression
+        }
+    }
+
     fun getRequiredProperties(expression: Any?): Set<String> {
+        if (expression is String && expression.contains("{") && expression.contains("}")) {
+            val properties = mutableSetOf<String>()
+            val regex = "\\{name(?::(.*?))?\\}".toRegex()
+            regex.findAll(expression).forEach { matchResult ->
+                val lang = matchResult.groupValues.getOrNull(1)
+                if (lang != null && lang.isNotEmpty()) {
+                    properties.add("name:$lang") //TODO the regex must not be only name but the variable name: {number}, {ref}, road_{ref_lenght}
+                } else {
+                    properties.add("name")
+                }
+            }
+            return properties
+        }
+
         if (expression !is List<*> || expression.isEmpty()) {
             return emptySet()
         }

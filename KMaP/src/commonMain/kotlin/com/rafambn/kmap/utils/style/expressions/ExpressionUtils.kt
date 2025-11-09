@@ -11,18 +11,6 @@ internal fun toDouble(value: Any?): Double? {
     }
 }
 
-internal fun toColor(value: Any?): Color? {
-    if (value is Color) return value
-    if (value !is List<*>) return null
-    if (value.size !in 3..4) return null
-    val r = toDouble(value[0])?.toInt()?.coerceIn(0, 255) ?: return null
-    val g = toDouble(value[1])?.toInt()?.coerceIn(0, 255) ?: return null
-    val b = toDouble(value[2])?.toInt()?.coerceIn(0, 255) ?: return null
-    val a = if (value.size == 4) toDouble(value[3])?.coerceIn(0.0, 1.0) ?: 1.0 else 1.0
-    return Color(r, g, b, (a * 255).toInt())
-}
-
-
 internal fun compare(a: Any?, b: Any?): Int? {
     if (a == null || b == null) return null
     if (a is String && b is String) return a.compareTo(b)
@@ -64,7 +52,7 @@ private fun parseHexColor(hexString: String): Color? {
 
 private fun parseRgbColor(rgbString: String): Color? {
     // Parse rgb(r,g,b) or rgba(r,g,b,a)
-    val content = rgbString.substringAfter("(").substringBefore(")") ?: return null
+    val content = rgbString.substringAfter("(").substringBefore(")")
     val parts = content.split(",").map { it.trim() }
 
     if (parts.size < 3) return null
@@ -73,7 +61,7 @@ private fun parseRgbColor(rgbString: String): Color? {
     val g = parts[1].toIntOrNull()?.coerceIn(0, 255) ?: return null
     val b = parts[2].toIntOrNull()?.coerceIn(0, 255) ?: return null
     val a = if (parts.size == 4) {
-        (parts[3].toDoubleOrNull()?.coerceIn(0.0, 1.0) ?: 1.0 * 255).toInt()
+        ((parts[3].toDoubleOrNull()?.coerceIn(0.0, 1.0) ?: (1.0 * 255))).toInt()
     } else 255
 
     return Color(r, g, b, a)
