@@ -23,7 +23,6 @@ import com.rafambn.kmap.mapSource.tiled.Tile
 import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.ScreenOffset
 import com.rafambn.kmap.utils.asScreenOffset
-import com.rafambn.kmap.utils.style.Style
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
@@ -42,7 +41,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.sp
 import com.rafambn.kmap.utils.style.OptimizedStyle
 import com.rafambn.kmap.utils.style.OptimizedStyleLayer
-import com.rafambn.kmap.utils.style.StyleLayer
 import com.rafambn.kmap.utils.vectorTile.OptimizedGeometry
 import com.rafambn.kmap.utils.vectorTile.OptimizedRenderFeature
 import kotlin.math.pow
@@ -58,6 +56,7 @@ internal fun VectorTileCanvas(
     translation: () -> Offset,
     activeTiles: () -> ActiveTiles,
     style: () -> OptimizedStyle,
+    zoom: () -> Double,
 ) {
     val fontResolver = LocalFontFamilyResolver.current
     val density = LocalDensity.current
@@ -100,6 +99,7 @@ internal fun VectorTileCanvas(
                 val positionOffset = positionOffset()
                 val activeTiles = activeTiles()
                 val style = style()
+                val zoom = zoom()
 
                 withTransform({
                     translate(translation.x, translation.y)
@@ -126,7 +126,8 @@ internal fun VectorTileCanvas(
                             positionOffset,
                             canvas,
                             fontResolver,
-                            density
+                            density,
+                            zoom
                         )
                     }
                 }
@@ -138,13 +139,14 @@ internal fun VectorTileCanvas(
 
 private fun DrawScope.drawStyleLayersWithTileClipping(
     tiles: List<Tile>,
-    currentZoom: Int,
+    zoomLevel: Int,
     style: OptimizedStyle,
     tileSize: TileDimension,
     positionOffset: CanvasDrawReference,
     canvas: Canvas,
     fontResolver: FontFamily.Resolver,
-    density: Density
+    density: Density,
+    zoom: Double,
 ) {
     style.layers.filter { it.type != "background" }.forEach { styleLayer ->
         tiles.forEach { tile ->
@@ -153,10 +155,11 @@ private fun DrawScope.drawStyleLayersWithTileClipping(
                 styleLayer,
                 tileSize,
                 positionOffset,
-                2F.pow(currentZoom - tile.zoom),
+                2F.pow(zoomLevel - tile.zoom),
                 canvas,
                 fontResolver,
-                density
+                density,
+                zoom
             )
         }
     }
@@ -170,7 +173,8 @@ private fun DrawScope.drawVectorTileLayerWithClipping(
     scaleAdjustment: Float = 1F,
     canvas: Canvas,
     fontResolver: FontFamily.Resolver,
-    density: Density
+    density: Density,
+    zoom: Double
 ) {
     tile.optimizedTile?.let { optimizedData ->
         val tileOffsetX = tileSize.width * tile.col * scaleAdjustment + positionOffset.x
@@ -193,7 +197,7 @@ private fun DrawScope.drawVectorTileLayerWithClipping(
         canvas.scale(scaleX, scaleY)
 
         optimizedData.layerFeatures[optimizedLayer.id]?.forEach { renderFeature ->
-            drawRenderFeature(canvas, renderFeature, scaleAdjustment, fontResolver, density, optimizedLayer, tile.zoom.toDouble())
+            drawRenderFeature(canvas, renderFeature, scaleAdjustment, fontResolver, density, optimizedLayer, zoom)
         }
 
         canvas.restore()
@@ -236,19 +240,19 @@ internal fun DrawScope.drawRenderFeature(
     fontResolver: FontFamily.Resolver,
     density: Density,
     optimizedStyleLayer: OptimizedStyleLayer,
-    zoomLevel: Double
+    zoom: Double
 ) {
     when (renderFeature.geometry) {
         is OptimizedGeometry.Polygon -> {
-            drawFillFeature(canvas, renderFeature.geometry, renderFeature.properties, optimizedStyleLayer, zoomLevel)
+            drawFillFeature(canvas, renderFeature.geometry, renderFeature.properties, optimizedStyleLayer, zoom)
         }
 
         is OptimizedGeometry.LineString -> {
-            drawLineFeature(canvas, renderFeature.geometry, renderFeature.properties, scaleAdjustment, optimizedStyleLayer, zoomLevel)
+            drawLineFeature(canvas, renderFeature.geometry, renderFeature.properties, scaleAdjustment, optimizedStyleLayer, zoom)
         }
 
         is OptimizedGeometry.Point -> {
-            drawSymbolFeature(canvas, renderFeature.geometry, renderFeature.properties, fontResolver, density, optimizedStyleLayer, zoomLevel)
+            drawSymbolFeature(canvas, renderFeature.geometry, renderFeature.properties, fontResolver, density, optimizedStyleLayer, zoom)
         }
     }
 }
@@ -258,25 +262,19 @@ private fun DrawScope.drawFillFeature(
     geometry: OptimizedGeometry.Polygon,
     properties: Map<String, Any>,
     optimizedStyleLayer: OptimizedStyleLayer,
-    zoomLevel: Double
+    zoom: Double
 ) {
     geometry.paths.forEach { path ->
         val fillColor =
-            optimizedStyleLayer.paint.properties["fill-color"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Color
-                ?: Color.Magenta
+            optimizedStyleLayer.paint.properties["fill-color"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? Color ?: Color.Magenta
         val opacity =
-            optimizedStyleLayer.paint.properties["fill-opacity"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Float
-                ?: 1.0f
+            optimizedStyleLayer.paint.properties["fill-opacity"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? Double ?: 1.0
         val outlineColor =
-            optimizedStyleLayer.paint.properties["fill-outline-color"]?.evaluate(
-                zoomLevel,
-                properties,
-                optimizedStyleLayer.id
-            ) as? Color
+            optimizedStyleLayer.paint.properties["fill-outline-color"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? Color
         canvas.drawPath(
             path,
             Paint().apply {
-                color = fillColor.copy(alpha = opacity)
+                color = fillColor.copy(alpha = opacity.toFloat())
                 isAntiAlias = true
                 style = PaintingStyle.Fill
             }
@@ -301,21 +299,22 @@ private fun DrawScope.drawLineFeature(
     properties: Map<String, Any>,
     scaleAdjustment: Float,
     optimizedStyleLayer: OptimizedStyleLayer,
-    zoomLevel: Double
+    zoom: Double
 ) {
-    val fillColor = optimizedStyleLayer.paint.properties["line-color"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Color ?: Color.Magenta
-    val width = optimizedStyleLayer.paint.properties["line-width"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Float ?: 1.0f
-    val opacity = optimizedStyleLayer.paint.properties["line-opacity"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Float ?: 1.0f
-    val cap = optimizedStyleLayer.layout.properties["line-cap"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? String ?: "butt"
-    val join = optimizedStyleLayer.layout.properties["line-join"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? String ?: "miter"
+    val fillColor =
+        optimizedStyleLayer.paint.properties["line-color"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? Color ?: Color.Magenta
+    val width = optimizedStyleLayer.paint.properties["line-width"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? Double ?: 1.0f
+    val opacity = optimizedStyleLayer.paint.properties["line-opacity"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? Double ?: 1.0f
+    val cap = optimizedStyleLayer.layout.properties["line-cap"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? String ?: "butt"
+    val join = optimizedStyleLayer.layout.properties["line-join"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? String ?: "miter"
 
     canvas.drawPath(
         geometry.path,
         Paint().apply {
-            color = fillColor.copy(alpha = opacity)
+            color = fillColor.copy(alpha = opacity.toFloat())
             isAntiAlias = true
             style = PaintingStyle.Stroke
-            strokeWidth = width * scaleAdjustment
+            strokeWidth = width.toFloat() * scaleAdjustment
             strokeCap = when (cap) {
                 "round" -> StrokeCap.Round
                 "square" -> StrokeCap.Square
@@ -337,13 +336,12 @@ private fun DrawScope.drawSymbolFeature(
     fontResolver: FontFamily.Resolver,
     density: Density,
     optimizedStyleLayer: OptimizedStyleLayer,
-    zoomLevel: Double
+    zoom: Double
 ) {
-    optimizedStyleLayer.layout.properties["text-field"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? String ?: "zika"
-    // Text symbol rendering
-//    if (properties.field != null) {
-//        drawTextSymbol(canvas, geometry, properties, fontResolver, density)
-//    }
+    val text = optimizedStyleLayer.layout.properties["text-field"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? String
+    text?.let {
+        drawTextSymbol(canvas, geometry, properties, fontResolver, density, optimizedStyleLayer, zoom, it)
+    }
 
     // TODO: Image symbol rendering would go here
     // This includes:
@@ -359,32 +357,39 @@ private fun DrawScope.drawTextSymbol(
     geometry: OptimizedGeometry.Point,
     properties: Map<String, Any>,
     fontResolver: FontFamily.Resolver,
-    density: Density
+    density: Density,
+    optimizedStyleLayer: OptimizedStyleLayer,
+    zoomLevel: Double,
+    text: String
 ) {
-//    val textColor = (properties.color ?: Color.Magenta).copy(alpha = properties.opacity)
-//    geometry.coordinates.forEach { (x, y) ->
-//        val textLayoutResult =
-//            TextMeasurer(
-//                defaultFontFamilyResolver = fontResolver,
-//                defaultDensity = density,
-//                defaultLayoutDirection = LayoutDirection.Ltr,
-//            ).measure(
-//                text = AnnotatedString(properties.field!!),
-//                style = TextStyle(
-//                    color = textColor,
-//                    fontSize = 150.sp,
-//                ),
-//                overflow = TextOverflow.Visible,
-//                softWrap = true,
-//                maxLines = 1,
-//                constraints = Constraints(0, this.size.width.toInt(), 0, this.size.height.toInt()),
-//                layoutDirection = layoutDirection,
-//                density = this,
-//            )
-//        withTransform({
-//            translate(x - textLayoutResult.size.width / 2, y - textLayoutResult.size.height / 2)
-//        }) {
-//            textLayoutResult.multiParagraph.paint(canvas = drawContext.canvas, blendMode = DrawScope.DefaultBlendMode)
-//        }
-//    }
+    val textColor =
+        optimizedStyleLayer.paint.properties["text-color"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Color ?: Color.Magenta
+    val opacity = optimizedStyleLayer.paint.properties["text-opacity"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Double ?: 1.0
+    val size = optimizedStyleLayer.layout.properties["text-size"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Double ?: 1.0
+    println(size)
+    geometry.coordinates.forEach { (x, y) ->
+        val textLayoutResult =
+            TextMeasurer(
+                defaultFontFamilyResolver = fontResolver,
+                defaultDensity = density,
+                defaultLayoutDirection = LayoutDirection.Ltr,
+            ).measure(
+                text = AnnotatedString(text),
+                style = TextStyle(
+                    color = textColor.copy(alpha = opacity.toFloat()),
+                    fontSize = (size * 8).sp,
+                ),
+                overflow = TextOverflow.Visible,
+                softWrap = true,
+                maxLines = 1,
+                constraints = Constraints(0, this.size.width.toInt(), 0, this.size.height.toInt()),
+                layoutDirection = layoutDirection,
+                density = this,
+            )
+        withTransform({
+            translate(x - textLayoutResult.size.width / 2, y - textLayoutResult.size.height / 2)
+        }) {
+            textLayoutResult.multiParagraph.paint(canvas = drawContext.canvas, blendMode = DrawScope.DefaultBlendMode)
+        }
+    }
 }

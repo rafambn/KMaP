@@ -23,7 +23,7 @@ class VectorCanvasEngine(
     init {
         coroutineScope.launch {
             while (isActive) {
-                select {
+                select { //TODO add filter here too
                     vectorTileRenderer.tilesProcessedChannel.onReceive { vectorTile ->
                         val newCache = cachedTiles.toMutableList()
                         newCache.add(vectorTile)

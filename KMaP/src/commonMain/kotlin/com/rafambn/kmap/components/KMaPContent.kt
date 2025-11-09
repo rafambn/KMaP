@@ -75,6 +75,7 @@ class KMaPContent(
                     rotationDegrees = mapState.drawRotationDegrees,
                     translation = mapState.drawTranslation,
                     style = { parameters.style },
+                    zoom = { mapState.cameraState.zoom.toDouble() }
                 )
             }
         )
