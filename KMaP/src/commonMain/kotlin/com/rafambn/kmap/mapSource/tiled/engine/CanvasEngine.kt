@@ -1,39 +1,37 @@
-package com.rafambn.kmap.mapSource.tiled.vector
+package com.rafambn.kmap.mapSource.tiled.engine
 
 import androidx.compose.runtime.mutableStateOf
-import com.rafambn.kmap.mapSource.tiled.*
+import com.rafambn.kmap.mapSource.tiled.ActiveTiles
+import com.rafambn.kmap.mapSource.tiled.tiles.Tile
+import com.rafambn.kmap.mapSource.tiled.tiles.TileSpecs
 import com.rafambn.kmap.utils.loopInZoom
-import com.rafambn.kmap.utils.style.OptimizedStyle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 
-class VectorCanvasEngine(
-    maxCacheTiles: Int,
-    getTile: suspend (zoom: Int, row: Int, column: Int) -> VectorTileResult,
-    coroutineScope: CoroutineScope,
-    style: OptimizedStyle
-) : CanvasEngine(maxCacheTiles, coroutineScope) {
-
-    override val activeTiles = mutableStateOf(ActiveTiles())
-    var cachedTiles = listOf<OptimizedVectorTile>()
-    val vectorTileRenderer = VectorTileRenderer(getTile, coroutineScope, style)
+abstract class CanvasEngine<T : Tile>(
+    val maxCacheTiles: Int = 20,
+    val coroutineScope: CoroutineScope,
+    private val tileRenderer: TileRenderer<*, T>
+) {
+    val activeTiles = mutableStateOf(ActiveTiles())
+    var cachedTiles = listOf<T>()
 
     init {
         coroutineScope.launch {
             while (isActive) {
-                select { //TODO add filter here too
-                    vectorTileRenderer.tilesProcessedChannel.onReceive { vectorTile ->
+                select { //TODO add filtering here to
+                    tileRenderer.tilesProcessedChannel.onReceive { tile ->
                         val newCache = cachedTiles.toMutableList()
-                        newCache.add(vectorTile)
+                        newCache.add(tile)
                         cachedTiles = if (newCache.size > maxCacheTiles)
                             newCache.takeLast(maxCacheTiles)
                         else
                             newCache.toList()
 
                         activeTiles.value = activeTiles.value.copy(
-                            tiles = (activeTiles.value.tiles + vectorTile).sortedBy { it.zoom }
+                            tiles = (activeTiles.value.tiles + tile).sortedBy { it.zoom }
                         )
                     }
                 }
@@ -41,7 +39,7 @@ class VectorCanvasEngine(
         }
     }
 
-    override fun renderTiles(visibleTiles: List<TileSpecs>, zoomLevel: Int) {
+    fun renderTiles(visibleTiles: List<TileSpecs>, zoomLevel: Int) {
         val activeTilesMap = activeTiles.value.tiles.associateBy { TileSpecs(it.zoom, it.row, it.col) }
         val cachedTilesMap = cachedTiles.associateBy { TileSpecs(it.zoom, it.row, it.col) }
         val newFrontLayer = mutableListOf<Tile>()
@@ -89,6 +87,6 @@ class VectorCanvasEngine(
         allTiles.addAll(childTiles)
 
         activeTiles.value = ActiveTiles(tiles = allTiles.sortedBy { it.zoom }, currentZoom = zoomLevel)
-        coroutineScope.launch { vectorTileRenderer.tilesToProcessChannel.send(tilesToRender) }
+        coroutineScope.launch { tileRenderer.tilesToProcessChannel.send(tilesToRender) }
     }
 }

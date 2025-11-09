@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.Density
 import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.ZoomLevelRange
 import com.rafambn.kmap.mapProperties.border.MapBorderType
-import com.rafambn.kmap.mapSource.tiled.CanvasKernel
+import com.rafambn.kmap.mapSource.tiled.engine.CanvasKernel
 import com.rafambn.kmap.utils.*
 import kotlinx.coroutines.CoroutineScope
 import kotlin.math.pow

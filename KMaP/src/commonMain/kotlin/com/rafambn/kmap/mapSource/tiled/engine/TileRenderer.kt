@@ -1,20 +1,22 @@
-package com.rafambn.kmap.mapSource.tiled.raster
+package com.rafambn.kmap.mapSource.tiled.engine
 
-import com.rafambn.kmap.mapSource.tiled.RasterTile
-import com.rafambn.kmap.mapSource.tiled.TileSpecs
+import com.rafambn.kmap.mapSource.tiled.tiles.Tile
+import com.rafambn.kmap.mapSource.tiled.TileResult
+import com.rafambn.kmap.mapSource.tiled.tiles.TileSpecs
 import com.rafambn.kmap.utils.loopInZoom
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.selects.select
 
-class RasterTileRenderer(
-    private val getTile: suspend (zoom: Int, row: Int, column: Int) -> RasterTileResult,
-    coroutineScope: CoroutineScope
+class TileRenderer<T : Tile, R : Tile>(
+    coroutineScope: CoroutineScope,
+    private val getTile: suspend (zoom: Int, row: Int, column: Int) -> TileResult<T>,
+    private val processTile: suspend (T) -> R
 ) {
     val tilesToProcessChannel = Channel<List<TileSpecs>>(capacity = Channel.UNLIMITED)
-    val tilesProcessedChannel = Channel<RasterTile>(capacity = Channel.UNLIMITED)
-    private val workerResultChannel = Channel<RasterTileResult>(capacity = Channel.UNLIMITED)
+    val tilesProcessedChannel = Channel<R>(capacity = Channel.UNLIMITED)
+    private val workerResultChannel = Channel<TileResult<R>>(capacity = Channel.UNLIMITED)
 
     init {
         coroutineScope.launch(Dispatchers.Default + SupervisorJob()) {
@@ -41,7 +43,7 @@ class RasterTileRenderer(
                     }
                     workerResultChannel.onReceive { tileResult ->
                         when (tileResult) {
-                            is RasterTileResult.Success -> {
+                            is TileResult.Success -> {
                                 tilesProcessedChannel.send(tileResult.tile)
                                 tilesBeingProcessed.remove(tileResult.tile as TileSpecs)
                                 specsBeingProcessed.removeAll {
@@ -53,7 +55,7 @@ class RasterTileRenderer(
                                 }
                             }
 
-                            is RasterTileResult.Failure -> {
+                            is TileResult.Failure -> {
                                 tilesBeingProcessed.remove(tileResult.specs)
                                 specsBeingProcessed.removeAll {
                                     TileSpecs(
@@ -67,19 +69,26 @@ class RasterTileRenderer(
                     }
                 }
             }
-
         }
     }
 
     private fun CoroutineScope.worker(
         tileToProcess: TileSpecs,
-        tilesProcessResult: SendChannel<RasterTileResult>
+        tilesProcessResult: SendChannel<TileResult<R>>
     ) = launch(Dispatchers.Default) {
         try {
-            tilesProcessResult.send(getTile(tileToProcess.zoom, tileToProcess.row, tileToProcess.col))
+            when (val tileResult = getTile(tileToProcess.zoom, tileToProcess.row, tileToProcess.col)) {
+                is TileResult.Success -> {
+                    val processed = processTile(tileResult.tile)
+                    tilesProcessResult.send(TileResult.Success(processed))
+                }
+                is TileResult.Failure -> {
+                    tilesProcessResult.send(tileResult)
+                }
+            }
         } catch (ex: Exception) {
             println("Failed to process tile: $ex")
-            tilesProcessResult.send(RasterTileResult.Failure(tileToProcess))
+            tilesProcessResult.send(TileResult.Failure(tileToProcess))
         }
     }
 }

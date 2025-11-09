@@ -1,4 +1,4 @@
-package com.rafambn.kmap.mapSource.tiled.vector
+package com.rafambn.kmap.mapSource.tiled.canvas
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -10,19 +10,14 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import com.rafambn.kmap.gestures.MapGestureWrapper
-import com.rafambn.kmap.gestures.detectMapGestures
-import com.rafambn.kmap.gestures.sharedPointerInput
-import com.rafambn.kmap.mapSource.tiled.OptimizedVectorTile
-import com.rafambn.kmap.mapSource.tiled.TileDimension
+import com.rafambn.kmap.mapSource.tiled.tiles.OptimizedVectorTile
+import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.mapSource.tiled.ActiveTiles
-import com.rafambn.kmap.mapSource.tiled.Tile
+import com.rafambn.kmap.mapSource.tiled.tiles.Tile
 import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.ScreenOffset
-import com.rafambn.kmap.utils.asScreenOffset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
@@ -46,7 +41,7 @@ import com.rafambn.kmap.utils.vectorTile.OptimizedRenderFeature
 import kotlin.math.pow
 
 @Composable
-internal fun VectorTileCanvas(
+fun VectorTileCanvas(
     canvasSize: ScreenOffset,
     gestureWrapper: MapGestureWrapper?,
     magnifierScale: () -> Float,
@@ -62,35 +57,7 @@ internal fun VectorTileCanvas(
     val density = LocalDensity.current
     Layout(
         modifier = Modifier
-            .then(gestureWrapper?.let {
-                Modifier.sharedPointerInput {
-                    detectMapGestures(
-                        onTap = gestureWrapper.onTap,
-                        onDoubleTap = gestureWrapper.onDoubleTap,
-                        onLongPress = gestureWrapper.onLongPress,
-                        onTapLongPress = gestureWrapper.onTapLongPress,
-                        onTapSwipe = gestureWrapper.onTapSwipe,
-                        onGesture = gestureWrapper.onGesture,
-                        onTwoFingersTap = gestureWrapper.onTwoFingersTap,
-                        onHover = gestureWrapper.onHover,
-                    )
-                }
-            } ?: Modifier)
-            .then(gestureWrapper?.onScroll?.let {
-                Modifier.pointerInput(Unit) {
-                    awaitPointerEventScope {
-                        while (true) {
-                            val pointerEvent = awaitPointerEvent()
-                            if (pointerEvent.type == PointerEventType.Scroll) {
-                                pointerEvent.changes.forEach {
-                                    if (it.scrollDelta.y != 0F)
-                                        gestureWrapper.onScroll.invoke(it.position.asScreenOffset(), it.scrollDelta.y)
-                                }
-                            }
-                        }
-                    }
-                }
-            } ?: Modifier)
+            .mapGestures(gestureWrapper)
             .drawBehind {
                 val translation = translation()
                 val rotation = rotationDegrees()
@@ -366,7 +333,6 @@ private fun DrawScope.drawTextSymbol(
         optimizedStyleLayer.paint.properties["text-color"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Color ?: Color.Magenta
     val opacity = optimizedStyleLayer.paint.properties["text-opacity"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Double ?: 1.0
     val size = optimizedStyleLayer.layout.properties["text-size"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Double ?: 1.0
-    println(size)
     geometry.coordinates.forEach { (x, y) ->
         val textLayoutResult =
             TextMeasurer(

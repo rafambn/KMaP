@@ -1,5 +1,6 @@
 package com.rafambn.kmap.utils.style
 
+import androidx.compose.ui.graphics.Color
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals

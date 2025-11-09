@@ -16,9 +16,9 @@ import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
 import com.rafambn.kmap.getGestureDetector
-import com.rafambn.kmap.mapSource.tiled.RasterTile
-import com.rafambn.kmap.mapSource.tiled.raster.RasterTileResult
-import com.rafambn.kmap.mapSource.tiled.raster.RasterTileSource
+import com.rafambn.kmap.mapSource.tiled.tiles.RasterTile
+import com.rafambn.kmap.mapSource.tiled.TileResult
+import com.rafambn.kmap.mapSource.tiled.TileSource
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import org.jetbrains.compose.resources.decodeToImageBitmap
@@ -59,11 +59,11 @@ fun LayersScreen(
     }
 }
 
-class LayerMapTileSource : RasterTileSource {
-    override suspend fun getTile(zoom: Int, row: Int, column: Int): RasterTileResult {
+class LayerMapTileSource : TileSource<RasterTile> {
+    override suspend fun getTile(zoom: Int, row: Int, column: Int): TileResult<RasterTile> {
         val resourcePath = "drawable/map_overlay_${(row + column) % 2}.png"
         val bytes = Res.readBytes(resourcePath)
         val imageBitmap = bytes.decodeToImageBitmap()
-        return RasterTileResult.Success(RasterTile(zoom, row, column, imageBitmap))
+        return TileResult.Success(RasterTile(zoom, row, column, imageBitmap))
     }
 }

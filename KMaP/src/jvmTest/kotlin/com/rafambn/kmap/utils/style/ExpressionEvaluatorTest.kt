@@ -1,5 +1,6 @@
 package com.rafambn.kmap.utils.style
 
+import androidx.compose.ui.graphics.Color
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -170,20 +171,20 @@ class ExpressionEvaluatorTest {
     fun testRgb() {
         val context = EvaluationContext()
         val color = evaluator.evaluate(listOf("rgb", 255, 0, 0), context) as Color
-        assertEquals(255, color.red)
-        assertEquals(0, color.green)
-        assertEquals(0, color.blue)
-        assertEquals(255, color.alpha)
+        assertEquals(255F, color.red)
+        assertEquals(0F, color.green)
+        assertEquals(0F, color.blue)
+        assertEquals(255F, color.alpha)
     }
 
     @Test
     fun testRgba() {
         val context = EvaluationContext()
         val color = evaluator.evaluate(listOf("rgba", 0, 255, 0, 0.5), context) as Color
-        assertEquals(0, color.red)
-        assertEquals(255, color.green)
-        assertEquals(0, color.blue)
-        assertEquals(127, color.alpha)
+        assertEquals(0F, color.red)
+        assertEquals(255F, color.green)
+        assertEquals(0F, color.blue)
+        assertEquals(127F, color.alpha)
     }
 
     @Test

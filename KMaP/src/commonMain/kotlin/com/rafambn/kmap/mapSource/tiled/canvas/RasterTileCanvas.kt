@@ -1,4 +1,4 @@
-package com.rafambn.kmap.mapSource.tiled.raster
+package com.rafambn.kmap.mapSource.tiled.canvas
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -11,27 +11,22 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.gestures.MapGestureWrapper
-import com.rafambn.kmap.gestures.detectMapGestures
-import com.rafambn.kmap.gestures.sharedPointerInput
-import com.rafambn.kmap.mapSource.tiled.RasterTile
-import com.rafambn.kmap.mapSource.tiled.Tile
-import com.rafambn.kmap.mapSource.tiled.TileDimension
+import com.rafambn.kmap.mapSource.tiled.tiles.RasterTile
+import com.rafambn.kmap.mapSource.tiled.tiles.Tile
+import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.mapSource.tiled.ActiveTiles
 import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.ScreenOffset
-import com.rafambn.kmap.utils.asScreenOffset
 import com.rafambn.kmap.utils.toIntFloor
 import kotlin.math.pow
 
 @Composable
-internal fun RasterTileCanvas(
+fun RasterTileCanvas(
     canvasSize: ScreenOffset,
     gestureWrapper: MapGestureWrapper?,
     magnifierScale: () -> Float,
@@ -43,35 +38,7 @@ internal fun RasterTileCanvas(
 ) {
     Layout(
         modifier = Modifier
-            .then(gestureWrapper?.let {
-                Modifier.sharedPointerInput {
-                    detectMapGestures(
-                        onTap = gestureWrapper.onTap,
-                        onDoubleTap = gestureWrapper.onDoubleTap,
-                        onLongPress = gestureWrapper.onLongPress,
-                        onTapLongPress = gestureWrapper.onTapLongPress,
-                        onTapSwipe = gestureWrapper.onTapSwipe,
-                        onGesture = gestureWrapper.onGesture,
-                        onTwoFingersTap = gestureWrapper.onTwoFingersTap,
-                        onHover = gestureWrapper.onHover,
-                    )
-                }
-            } ?: Modifier)
-            .then(gestureWrapper?.onScroll?.let {
-                Modifier.pointerInput(Unit) {
-                    awaitPointerEventScope {
-                        while (true) {
-                            val pointerEvent = awaitPointerEvent()
-                            if (pointerEvent.type == PointerEventType.Scroll) {
-                                pointerEvent.changes.forEach {
-                                    if (it.scrollDelta.y != 0F)
-                                        gestureWrapper.onScroll.invoke(it.position.asScreenOffset(), it.scrollDelta.y)
-                                }
-                            }
-                        }
-                    }
-                }
-            } ?: Modifier)
+            .mapGestures(gestureWrapper)
             .drawBehind {
                 val translation = translation()
                 val rotation = rotationDegrees()

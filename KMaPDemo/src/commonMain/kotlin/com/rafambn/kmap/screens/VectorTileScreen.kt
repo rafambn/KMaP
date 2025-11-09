@@ -21,7 +21,7 @@ import com.rafambn.kmap.getGestureDetector
 import com.rafambn.kmap.mapProperties.border.BoundMapBorder
 import com.rafambn.kmap.mapProperties.border.MapBorderType
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
-import com.rafambn.kmap.mapSource.tiled.TileDimension
+import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.utils.style.OptimizedStyle
 import com.rafambn.kmap.utils.style.Style
 import com.rafambn.kmap.utils.style.StyleResolver

@@ -1,13 +1,64 @@
-package com.rafambn.kmap.mapSource.tiled
+package com.rafambn.kmap.mapSource.tiled.engine
 
 import androidx.compose.ui.geometry.Offset
+import com.rafambn.kmap.components.CanvasParameters
+import com.rafambn.kmap.components.RasterCanvasParameters
+import com.rafambn.kmap.components.VectorCanvasParameters
 import com.rafambn.kmap.core.ViewPort
+import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
+import com.rafambn.kmap.mapSource.tiled.ActiveTiles
+import com.rafambn.kmap.mapProperties.TileDimension
+import com.rafambn.kmap.mapSource.tiled.tiles.TileSpecs
 import com.rafambn.kmap.utils.toIntFloor
+import kotlinx.coroutines.CoroutineScope
 import kotlin.math.pow
 
-object TileFinder {
-    fun getVisibleTilesForLevel(
+class CanvasKernel(
+    val coroutineScope: CoroutineScope
+) {
+
+    val canvas = mutableMapOf<Int, CanvasEngine<*>>()
+
+    fun getActiveTiles(id: Int): ActiveTiles = canvas.getValue(id).activeTiles.value
+
+    fun resolveVisibleTiles(viewPort: ViewPort, zoomLevel: Int, mapProperties: MapProperties) {
+        val visibleTiles = getVisibleTilesForLevel(
+            viewPort,
+            zoomLevel,
+            mapProperties.outsideTiles,
+            mapProperties.tileSize
+        )
+        canvas.forEach { (_, canvasEngine) -> canvasEngine.renderTiles(visibleTiles, zoomLevel) }
+    }
+
+    fun refreshCanvas(currentParameters: List<CanvasParameters>) {
+        val currentIds = currentParameters.map { it.id }.toSet()
+
+        val keysToRemove = canvas.keys.filter { it !in currentIds }
+        keysToRemove.forEach { canvas.remove(it) }
+
+        currentParameters.forEach { parameter ->
+            if (parameter.id !in canvas) {
+                if (parameter is RasterCanvasParameters) {
+                    canvas[parameter.id] = RasterCanvasEngine(
+                        parameter.maxCacheTiles,
+                        parameter.tileSource,
+                        coroutineScope
+                    )
+                } else if (parameter is VectorCanvasParameters) {
+                    canvas[parameter.id] = VectorCanvasEngine(
+                        parameter.maxCacheTiles,
+                        parameter.tileSource,
+                        coroutineScope,
+                        parameter.style
+                    )
+                }
+            }
+        }
+    }
+
+    private fun getVisibleTilesForLevel(
         viewPort: ViewPort,
         zoomLevel: Int,
         outsideTilesType: OutsideTilesType,
