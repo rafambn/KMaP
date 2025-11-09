@@ -45,9 +45,9 @@ class VectorTileSource : VectorTileSource {
 //                contentType(ContentType.Application.ProtoBuf)
 //            }.readRawBytes()
 //            val rawMVTile = ProtoBuf.decodeFromByteArray(RawMVTile.serializer(), compressedBytes)
-            val rawMVTile = json.decodeFromString(RawMVTile.serializer(), readResourceBytes("tile.json").decodeToString())
+            val rawMVTile = json.decodeFromString(RawMVTile.serializer(), readResourceBytes("000.json").decodeToString())
             val mvTile = rawMVTile.parse()
-//            if (zoom == 2 && row == 0 && column == 3){
+//            if (zoom == 0 && row == 0 && column == 0){
 //                val jsonTile = Json.encodeToString(RawMVTile.serializer(),ProtoBuf.decodeFromByteArray(RawMVTile.serializer(), compressedBytes))
 //                println(jsonTile)
 //            }

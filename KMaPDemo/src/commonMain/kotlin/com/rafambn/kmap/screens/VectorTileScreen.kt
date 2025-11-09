@@ -53,7 +53,7 @@ fun VectorTileScreen(
     val styleState = remember { mutableStateOf<OptimizedStyle?>(null) }
 
     LaunchedEffect(Unit) {
-        val styleJson = readResourceBytes("style.json").decodeToString()
+        val styleJson = readResourceBytes("stylev4.json").decodeToString()
         styleState.value = StyleResolver().resolve(json.decodeFromString<Style>(styleJson))
     }
 

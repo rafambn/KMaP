@@ -127,14 +127,11 @@ class VectorTileRenderer(
 
                 if (!isValidGeometry) return@mapNotNull null
 
-                val geometry = buildOptimizedGeometry(feature, mvtLayer.extent) ?: return@mapNotNull null
-
-                val paintProperties = resolvePaintProperties(optimizedStyleLayer, feature, tile.zoom)
+                val geometry = buildOptimizedGeometry(feature) ?: return@mapNotNull null
 
                 OptimizedRenderFeature(
                     geometry = geometry,
-                    properties = feature.properties,
-                    paintProperties = paintProperties
+                    properties = featureProperties
                 )
             }
 
@@ -143,25 +140,21 @@ class VectorTileRenderer(
 
         val optimizedData = OptimizedMVTile(
             extent = extent,
-            layerFeatures = layerFeatures,
-            backgroundFeature = null
+            layerFeatures = layerFeatures
         )
 
         return OptimizedVectorTile(tile.zoom, tile.row, tile.col, optimizedData)
     }
 
-    private fun buildOptimizedGeometry(
-        feature: MVTFeature,
-        extent: Int
-    ): OptimizedGeometry? {
+    private fun buildOptimizedGeometry(feature: MVTFeature): OptimizedGeometry? {
         return when (feature.type) {
             RawMVTGeomType.POLYGON -> {
-                val paths = feature.geometry.map { ring -> buildPolygonPathFromGeometry(listOf(ring), extent) }
+                val paths = feature.geometry.map { ring -> buildPathFromGeometry(listOf(ring), true) }
                 OptimizedGeometry.Polygon(paths)
             }
 
             RawMVTGeomType.LINESTRING -> {
-                val path = buildPathFromGeometry(feature.geometry, extent)
+                val path = buildPathFromGeometry(feature.geometry, false)
                 OptimizedGeometry.LineString(path)
             }
 
@@ -175,83 +168,10 @@ class VectorTileRenderer(
             else -> null
         }
     }
-
-    private fun resolvePaintProperties(
-        optimizedStyleLayer: OptimizedStyleLayer,
-        feature: MVTFeature,
-        zoom: Int
-    ): OptimizedPaintProperties {
-        val featureProperties = feature.properties.filterValues { it != null } as Map<String, Any>
-        val zoomLevel = zoom.toDouble()
-        val featureId = feature.id
-
-        return when (optimizedStyleLayer.type) {
-            "fill" -> {
-                OptimizedPaintProperties.Fill(
-                    color = optimizedStyleLayer.paint.properties["fill-color"]?.evaluate(zoomLevel, featureProperties, featureId) as? Color ?: Color.Magenta,
-                    opacity = optimizedStyleLayer.paint.properties["fill-opacity"]?.evaluate(zoomLevel, featureProperties, featureId) as? Float ?: 1.0f,
-                    outlineColor = optimizedStyleLayer.paint.properties["fill-outline-color"]?.evaluate(zoomLevel, featureProperties, featureId) as? Color ?: Color.Transparent
-                )
-            }
-
-            "line" -> {
-                OptimizedPaintProperties.Line(
-                    color = optimizedStyleLayer.paint.properties["line-color"]?.evaluate(zoomLevel, featureProperties, featureId) as? Color ?: Color.Magenta,
-                    width = optimizedStyleLayer.paint.properties["line-width"]?.evaluate(zoomLevel, featureProperties, featureId) as? Float ?: 1.0f,
-                    opacity = optimizedStyleLayer.paint.properties["line-opacity"]?.evaluate(zoomLevel, featureProperties, featureId) as? Float ?: 1.0f,
-                    cap = optimizedStyleLayer.layout.properties["line-cap"]?.evaluate(zoomLevel, featureProperties, featureId) as? String ?: "butt",
-                    join = optimizedStyleLayer.layout.properties["line-join"]?.evaluate(zoomLevel, featureProperties, featureId) as? String ?: "miter"
-                )
-            }
-
-            "background" -> {
-                OptimizedPaintProperties.Background(
-                    color = optimizedStyleLayer.paint.properties["background-color"]?.evaluate(zoomLevel, featureProperties, featureId) as? Color ?: Color.Magenta,
-                    opacity = optimizedStyleLayer.paint.properties["background-opacity"]?.evaluate(zoomLevel, featureProperties, featureId) as? Float ?: 1.0f
-                )
-            }
-
-            "symbol" -> {
-                OptimizedPaintProperties.Symbol(
-                    field = optimizedStyleLayer.layout.properties["text-field"]?.evaluate(zoomLevel, featureProperties, featureId) as? String ?: "",
-                    size = optimizedStyleLayer.layout.properties["text-size"]?.evaluate(zoomLevel, featureProperties, featureId) as? Float ?: 12.0f,
-                    color = optimizedStyleLayer.paint.properties["text-color"]?.evaluate(zoomLevel, featureProperties, featureId) as? Color ?: Color.Magenta,
-                    opacity = optimizedStyleLayer.paint.properties["text-opacity"]?.evaluate(zoomLevel, featureProperties, featureId) as? Float ?: 1.0f
-                )
-            }//TODO has a lot of other logic's here
-
-            else -> OptimizedPaintProperties.Fill() // Default to empty fill properties
-        }
-    }
 }
 
 
-internal fun buildPathFromGeometry(
-    geometry: List<List<Pair<Int, Int>>>,
-    extent: Int,
-    scaleAdjustment: Float = 1.0f
-): Path {
-    val path = Path()
-
-    geometry.forEach { ring ->
-        if (ring.isEmpty()) return@forEach
-
-        val (startX, startY) = ring.first()
-        path.moveTo(startX.toFloat(), startY.toFloat())
-
-        ring.drop(1).forEach { (x, y) ->
-            path.lineTo(x.toFloat(), y.toFloat())
-        }
-    }
-
-    return path
-}
-
-internal fun buildPolygonPathFromGeometry(
-    geometry: List<List<Pair<Int, Int>>>,
-    extent: Int,
-    scaleAdjustment: Float = 1.0f
-): Path {
+private fun buildPathFromGeometry(geometry: List<List<Pair<Int, Int>>>, isClosed: Boolean): Path {
     val path = Path()
 
     geometry.forEach { ring ->
@@ -264,10 +184,10 @@ internal fun buildPolygonPathFromGeometry(
             path.lineTo(x.toFloat(), y.toFloat())
         }
 
-        path.close()
+        if (isClosed)
+            path.close()
     }
 
     return path
 }
-
 

@@ -27,12 +27,24 @@ import com.rafambn.kmap.utils.style.Style
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.sp
 import com.rafambn.kmap.utils.style.OptimizedStyle
 import com.rafambn.kmap.utils.style.OptimizedStyleLayer
+import com.rafambn.kmap.utils.style.StyleLayer
+import com.rafambn.kmap.utils.vectorTile.OptimizedGeometry
+import com.rafambn.kmap.utils.vectorTile.OptimizedRenderFeature
 import kotlin.math.pow
 
 @Composable
@@ -135,16 +147,13 @@ private fun DrawScope.drawStyleLayersWithTileClipping(
     density: Density
 ) {
     style.layers.filter { it.type != "background" }.forEach { styleLayer ->
-        val layerId = styleLayer.id
-
         tiles.forEach { tile ->
-            val scaleAdjustment = 2F.pow(currentZoom - tile.zoom)
             drawVectorTileLayerWithClipping(
                 tile as OptimizedVectorTile,
-                layerId,
+                styleLayer,
                 tileSize,
                 positionOffset,
-                scaleAdjustment,
+                2F.pow(currentZoom - tile.zoom),
                 canvas,
                 fontResolver,
                 density
@@ -155,7 +164,7 @@ private fun DrawScope.drawStyleLayersWithTileClipping(
 
 private fun DrawScope.drawVectorTileLayerWithClipping(
     tile: OptimizedVectorTile,
-    layerId: String,
+    optimizedLayer: OptimizedStyleLayer,
     tileSize: TileDimension,
     positionOffset: CanvasDrawReference,
     scaleAdjustment: Float = 1F,
@@ -183,8 +192,8 @@ private fun DrawScope.drawVectorTileLayerWithClipping(
         val scaleY = (tileSize.height * scaleAdjustment) / optimizedData.extent
         canvas.scale(scaleX, scaleY)
 
-        optimizedData.layerFeatures[layerId]?.forEach { renderFeature ->
-            drawRenderFeature(canvas, renderFeature, scaleAdjustment, fontResolver, density)
+        optimizedData.layerFeatures[optimizedLayer.id]?.forEach { renderFeature ->
+            drawRenderFeature(canvas, renderFeature, scaleAdjustment, fontResolver, density, optimizedLayer, tile.zoom.toDouble())
         }
 
         canvas.restore()
@@ -198,8 +207,10 @@ private fun DrawScope.drawGlobalBackground(
     positionOffset: CanvasDrawReference,
     zoomLevel: Int,
 ) {
-    val backgroundColor = backgroundLayer.paint.properties["background-color"]?.evaluate(zoomLevel.toDouble(), emptyMap(), "") as? Color ?: Color.Magenta
-    val backgroundOpacity = backgroundLayer.paint.properties["background-opacity"]?.evaluate(zoomLevel.toDouble(), emptyMap(), "") as? Float ?: 1F
+    val backgroundColor =
+        backgroundLayer.paint.properties["background-color"]?.evaluate(zoomLevel.toDouble(), emptyMap(), "") as? Color ?: Color.Magenta
+    val backgroundOpacity =
+        backgroundLayer.paint.properties["background-opacity"]?.evaluate(zoomLevel.toDouble(), emptyMap(), "") as? Float ?: 1F
 
     val totalWidth = tileSize.width * (2F.pow(zoomLevel))
     val totalHeight = tileSize.height * (2F.pow(zoomLevel))
@@ -216,4 +227,163 @@ private fun DrawScope.drawGlobalBackground(
             style = PaintingStyle.Fill
         }
     )
+}
+
+internal fun DrawScope.drawRenderFeature(
+    canvas: Canvas,
+    renderFeature: OptimizedRenderFeature,
+    scaleAdjustment: Float,
+    fontResolver: FontFamily.Resolver,
+    density: Density,
+    optimizedStyleLayer: OptimizedStyleLayer,
+    zoomLevel: Double
+) {
+    when (renderFeature.geometry) {
+        is OptimizedGeometry.Polygon -> {
+            drawFillFeature(canvas, renderFeature.geometry, renderFeature.properties, optimizedStyleLayer, zoomLevel)
+        }
+
+        is OptimizedGeometry.LineString -> {
+            drawLineFeature(canvas, renderFeature.geometry, renderFeature.properties, scaleAdjustment, optimizedStyleLayer, zoomLevel)
+        }
+
+        is OptimizedGeometry.Point -> {
+            drawSymbolFeature(canvas, renderFeature.geometry, renderFeature.properties, fontResolver, density, optimizedStyleLayer, zoomLevel)
+        }
+    }
+}
+
+private fun DrawScope.drawFillFeature(
+    canvas: Canvas,
+    geometry: OptimizedGeometry.Polygon,
+    properties: Map<String, Any>,
+    optimizedStyleLayer: OptimizedStyleLayer,
+    zoomLevel: Double
+) {
+    geometry.paths.forEach { path ->
+        val fillColor =
+            optimizedStyleLayer.paint.properties["fill-color"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Color
+                ?: Color.Magenta
+        val opacity =
+            optimizedStyleLayer.paint.properties["fill-opacity"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Float
+                ?: 1.0f
+        val outlineColor =
+            optimizedStyleLayer.paint.properties["fill-outline-color"]?.evaluate(
+                zoomLevel,
+                properties,
+                optimizedStyleLayer.id
+            ) as? Color
+        canvas.drawPath(
+            path,
+            Paint().apply {
+                color = fillColor.copy(alpha = opacity)
+                isAntiAlias = true
+                style = PaintingStyle.Fill
+            }
+        )
+        outlineColor?.let {
+            canvas.drawPath(
+                path,
+                Paint().apply {
+                    color = it
+                    isAntiAlias = true
+                    style = PaintingStyle.Stroke
+                    strokeWidth = 1f
+                }
+            )
+        }
+    }
+}
+
+private fun DrawScope.drawLineFeature(
+    canvas: Canvas,
+    geometry: OptimizedGeometry.LineString,
+    properties: Map<String, Any>,
+    scaleAdjustment: Float,
+    optimizedStyleLayer: OptimizedStyleLayer,
+    zoomLevel: Double
+) {
+    val fillColor = optimizedStyleLayer.paint.properties["line-color"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Color ?: Color.Magenta
+    val width = optimizedStyleLayer.paint.properties["line-width"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Float ?: 1.0f
+    val opacity = optimizedStyleLayer.paint.properties["line-opacity"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Float ?: 1.0f
+    val cap = optimizedStyleLayer.layout.properties["line-cap"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? String ?: "butt"
+    val join = optimizedStyleLayer.layout.properties["line-join"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? String ?: "miter"
+
+    canvas.drawPath(
+        geometry.path,
+        Paint().apply {
+            color = fillColor.copy(alpha = opacity)
+            isAntiAlias = true
+            style = PaintingStyle.Stroke
+            strokeWidth = width * scaleAdjustment
+            strokeCap = when (cap) {
+                "round" -> StrokeCap.Round
+                "square" -> StrokeCap.Square
+                else -> StrokeCap.Butt
+            }
+            strokeJoin = when (join) {
+                "round" -> StrokeJoin.Round
+                "bevel" -> StrokeJoin.Bevel
+                else -> StrokeJoin.Miter
+            }
+        }
+    )
+}
+
+private fun DrawScope.drawSymbolFeature(
+    canvas: Canvas,
+    geometry: OptimizedGeometry.Point,
+    properties: Map<String, Any>,
+    fontResolver: FontFamily.Resolver,
+    density: Density,
+    optimizedStyleLayer: OptimizedStyleLayer,
+    zoomLevel: Double
+) {
+    // Text symbol rendering
+//    if (properties.field != null) {
+//        drawTextSymbol(canvas, geometry, properties, fontResolver, density)
+//    }
+
+    // TODO: Image symbol rendering would go here
+    // This includes:
+    // - icon-image: which image to display
+    // - icon-size, icon-opacity, icon-rotation
+    // - icon-offset, icon-anchor
+    // - image resource loading and caching
+    // Pending implementation of image symbol system
+}
+
+private fun DrawScope.drawTextSymbol(
+    canvas: Canvas,
+    geometry: OptimizedGeometry.Point,
+    properties: Map<String, Any>,
+    fontResolver: FontFamily.Resolver,
+    density: Density
+) {
+//    val textColor = (properties.color ?: Color.Magenta).copy(alpha = properties.opacity)
+//    geometry.coordinates.forEach { (x, y) ->
+//        val textLayoutResult =
+//            TextMeasurer(
+//                defaultFontFamilyResolver = fontResolver,
+//                defaultDensity = density,
+//                defaultLayoutDirection = LayoutDirection.Ltr,
+//            ).measure(
+//                text = AnnotatedString(properties.field!!),
+//                style = TextStyle(
+//                    color = textColor,
+//                    fontSize = 150.sp,
+//                ),
+//                overflow = TextOverflow.Visible,
+//                softWrap = true,
+//                maxLines = 1,
+//                constraints = Constraints(0, this.size.width.toInt(), 0, this.size.height.toInt()),
+//                layoutDirection = layoutDirection,
+//                density = this,
+//            )
+//        withTransform({
+//            translate(x - textLayoutResult.size.width / 2, y - textLayoutResult.size.height / 2)
+//        }) {
+//            textLayoutResult.multiParagraph.paint(canvas = drawContext.canvas, blendMode = DrawScope.DefaultBlendMode)
+//        }
+//    }
 }
