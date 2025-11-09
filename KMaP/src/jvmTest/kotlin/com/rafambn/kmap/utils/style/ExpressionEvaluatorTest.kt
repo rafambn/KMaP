@@ -171,144 +171,32 @@ class ExpressionEvaluatorTest {
     fun testRgb() {
         val context = EvaluationContext()
         val color = evaluator.evaluate(listOf("rgb", 255, 0, 0), context) as Color
-        assertEquals(255F, color.red)
-        assertEquals(0F, color.green)
-        assertEquals(0F, color.blue)
-        assertEquals(255F, color.alpha)
+        assertEquals(Color(255, 0, 0, 255), color)
     }
 
     @Test
     fun testRgba() {
         val context = EvaluationContext()
         val color = evaluator.evaluate(listOf("rgba", 0, 255, 0, 0.5), context) as Color
-        assertEquals(0F, color.red)
-        assertEquals(255F, color.green)
-        assertEquals(0F, color.blue)
-        assertEquals(127F, color.alpha)
+        assertEquals(Color(0, 255, 0, 127), color)
     }
 
     @Test
-    fun testHslColorParsing() {
-        // Test HSL color parsing through the style compilation system
-        // Since color parsing happens in parseColor utility during style resolution
-        // We validate it through StyleResolver which calls parseColor
-
-        // Pure red: hsl(0, 100%, 50%)
-        val redHsl = "hsl(0, 100%, 50%)"
-
-        // Green: hsl(120, 100%, 50%)
-        val greenHsl = "hsl(120, 100%, 50%)"
-
-        // Blue: hsl(240, 100%, 50%)
-        val blueHsl = "hsl(240, 100%, 50%)"
-
-        // White: hsl(0, 0%, 100%)
-        val whiteHsl = "hsl(0, 0%, 100%)"
-
-        // Black: hsl(0, 0%, 0%)
-        val blackHsl = "hsl(0, 0%, 0%)"
-
-        // Gray (50%): hsl(0, 0%, 50%)
-        val grayHsl = "hsl(0, 0%, 50%)"
-
-        // These will be parsed during style resolution, so we verify the format strings are valid
-        assertTrue(redHsl.startsWith("hsl"), "Red HSL should be valid format")
-        assertTrue(greenHsl.startsWith("hsl"), "Green HSL should be valid format")
-        assertTrue(blueHsl.startsWith("hsl"), "Blue HSL should be valid format")
-    }
-
-    @Test
-    fun testHslColorConversions() {
-        // Test HSL to RGB conversions at known color points
-        // These values are mathematically verified HSL→RGB conversions
-
-        val testCases = listOf(
-            // (hue, saturation, lightness) -> (red, green, blue)
-            Triple(0.0, 100.0, 50.0) to Triple(255, 0, 0),        // Pure red
-            Triple(120.0, 100.0, 50.0) to Triple(0, 255, 0),      // Pure green
-            Triple(240.0, 100.0, 50.0) to Triple(0, 0, 255),      // Pure blue
-            Triple(0.0, 0.0, 100.0) to Triple(255, 255, 255),     // White
-            Triple(0.0, 0.0, 0.0) to Triple(0, 0, 0),             // Black
-            Triple(0.0, 0.0, 50.0) to Triple(128, 128, 128),      // Gray 50%
-            Triple(60.0, 100.0, 50.0) to Triple(255, 255, 0),     // Yellow
-            Triple(180.0, 100.0, 50.0) to Triple(0, 255, 255),    // Cyan
-            Triple(300.0, 100.0, 50.0) to Triple(255, 0, 255),    // Magenta
-            Triple(30.0, 100.0, 50.0) to Triple(255, 128, 0),     // Orange
-        )
-
-        // Verify conversions manually (since we can't directly call parseColor from test)
-        // but we validate the algorithm is correct
-        for ((hsl, expectedRgb) in testCases) {
-            val h = hsl.first
-            val s = hsl.second / 100.0
-            val l = hsl.third / 100.0
-
-            // Manual HSL->RGB conversion using same algorithm as implementation
-            val c = (1 - kotlin.math.abs(2 * l - 1)) * s
-            val hPrime = (h / 60.0) % 6
-            val x = c * (1 - kotlin.math.abs((hPrime % 2) - 1))
-
-            val (rPrime, gPrime, bPrime) = when {
-                hPrime < 1 -> Triple(c, x, 0.0)
-                hPrime < 2 -> Triple(x, c, 0.0)
-                hPrime < 3 -> Triple(0.0, c, x)
-                hPrime < 4 -> Triple(0.0, x, c)
-                hPrime < 5 -> Triple(x, 0.0, c)
-                else -> Triple(c, 0.0, x)
-            }
-
-            val m = l - c / 2
-            val r = ((rPrime + m) * 255).toInt().coerceIn(0, 255)
-            val g = ((gPrime + m) * 255).toInt().coerceIn(0, 255)
-            val b = ((bPrime + m) * 255).toInt().coerceIn(0, 255)
-
-            // Verify computed RGB matches expected (with small tolerance for rounding)
-            assertEquals(expectedRgb.first.toDouble(), r.toDouble(), 1.0, "Red channel mismatch for HSL($h, $s%, $l%)")
-            assertEquals(expectedRgb.second.toDouble(), g.toDouble(), 1.0, "Green channel mismatch for HSL($h, $s%, $l%)")
-            assertEquals(expectedRgb.third.toDouble(), b.toDouble(), 1.0, "Blue channel mismatch for HSL($h, $s%, $l%)")
-        }
-    }
-
-    @Test
-    fun testHslAlphaVariations() {
-        // Test HSL with various alpha values
+    fun testHsl() {
         val context = EvaluationContext()
+        val redColor = evaluator.evaluate(listOf("hsl", 0, 100, 50), context) as Color
+        assertEquals(redColor.red , 1f)
 
-        // HSLA values: hsl with alpha should work
-        // These are represented as HSLA in Mapbox styles
-        val hslWithAlpha = listOf(
-            "hsla(0, 100%, 50%, 1.0)",      // Full opacity red
-            "hsla(0, 100%, 50%, 0.5)",      // 50% opacity red
-            "hsla(0, 100%, 50%, 0.0)",      // 0% opacity red
-            "hsla(120, 100%, 50%, 0.75)",   // 75% opacity green
-        )
-
-        // Verify these formats parse without errors
-        for (hslaColor in hslWithAlpha) {
-            assertTrue(hslaColor.contains("hsla"), "Should be HSL with alpha format")
-            assertTrue(hslaColor.contains("%"), "Should contain percentage signs")
-        }
+        val grayColor = evaluator.evaluate(listOf("hsl", 0, 0, 50), context) as Color
+        assertEquals(grayColor.red, grayColor.green, 0.01f)
+        assertEquals(grayColor.green, grayColor.blue, 0.01f)
     }
 
     @Test
-    fun testHslEdgeCases() {
-        // Test HSL edge cases and boundary conditions
-
-        val edgeCases = listOf(
-            "hsl(0, 0%, 0%)",          // Black (no saturation, no lightness)
-            "hsl(0, 0%, 100%)",        // White (no saturation, full lightness)
-            "hsl(0, 100%, 50%)",       // Full saturation, mid lightness
-            "hsl(360, 100%, 50%)",     // Hue wrapping (360 = 0)
-            "hsl(-120, 100%, 50%)",    // Negative hue (should wrap to 240)
-            "hsl(480, 100%, 50%)",     // Hue > 360 (should wrap to 120)
-        )
-
-        // Verify all edge cases are valid HSL format strings
-        for (hslColor in edgeCases) {
-            assertTrue(hslColor.startsWith("hsl"), "Should be HSL format")
-            assertTrue(hslColor.contains("(") && hslColor.contains(")"), "Should have parentheses")
-            assertTrue(hslColor.contains(","), "Should have comma separators")
-        }
+    fun testHsla() {
+        val context = EvaluationContext()
+        val colorWithAlpha = evaluator.evaluate(listOf("hsla", 0, 100, 50, 0.5), context) as Color
+        assertFalse(colorWithAlpha.red !in 0f..1f, "Red should be in valid range")
     }
 
     @Test
