@@ -16,7 +16,7 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
         sprites: Map<String, ImageBitmap> = emptyMap(),
         glyphs: Map<String, FontFamily> = emptyMap()
     ): OptimizedStyle {
-        val compiledLayers = rawStyle.layers.mapNotNull { compileLayer(it) }
+        val compiledLayers = rawStyle.layers.map { compileLayer(it) }
         return OptimizedStyle(
             version = rawStyle.version,
             name = rawStyle.name,
@@ -28,7 +28,7 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
     }
 
     private fun compileLayer(layer: StyleLayer): OptimizedStyleLayer {
-        val filter = layer.filter?.let { compileFilter(it.map { it.toValue() }) }
+        val filter = layer.filter?.let { elements -> compileFilter(elements.map { it.toValue() }) }
         val paint = compilePaint(layer.paint)
         val layout = compileLayout(layer.layout)
 
@@ -75,8 +75,7 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
             compileValue<Any>(value.toValue())
         } ?: emptyMap()
 
-        @Suppress("UNCHECKED_CAST")
-        return CompiledLayout(visibility = visibility as CompiledValue<Boolean>, properties = otherProperties)
+        return CompiledLayout(visibility = visibility, properties = otherProperties)
     }
 
     @Suppress("UNCHECKED_CAST")
