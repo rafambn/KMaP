@@ -7,6 +7,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
@@ -17,10 +19,12 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import com.rafambn.kmap.gestures.MapGestureWrapper
 import com.rafambn.kmap.mapProperties.TileDimension
@@ -89,7 +93,8 @@ fun VectorTileCanvas(
                             canvas,
                             fontResolver,
                             density,
-                            zoom
+                            zoom,
+                            rotation
                         )
                     }
                 }
@@ -109,6 +114,7 @@ private fun DrawScope.drawStyleLayersWithTileClipping(
     fontResolver: FontFamily.Resolver,
     density: Density,
     zoom: Double,
+    rotationDegrees: Float,
 ) {
     style.layers.filter { it.type != "background" }.forEach { styleLayer ->
         tiles.forEach { tile ->
@@ -121,7 +127,8 @@ private fun DrawScope.drawStyleLayersWithTileClipping(
                 canvas,
                 fontResolver,
                 density,
-                zoom
+                zoom,
+                rotationDegrees
             )
         }
     }
@@ -136,7 +143,8 @@ private fun DrawScope.drawVectorTileLayerWithClipping(
     canvas: Canvas,
     fontResolver: FontFamily.Resolver,
     density: Density,
-    zoom: Double
+    zoom: Double,
+    rotationDegrees: Float,
 ) {
     tile.optimizedTile?.let { optimizedData ->
         val tileOffsetX = tileSize.width * tile.col * scaleAdjustment + positionOffset.x
@@ -167,7 +175,8 @@ private fun DrawScope.drawVectorTileLayerWithClipping(
                 density,
                 optimizedLayer,
                 zoom,
-                optimizedData.extent.toFloat() / tileSize.height
+                optimizedData.extent.toFloat() / tileSize.height,
+                rotationDegrees,
             )
         }
 
@@ -212,7 +221,8 @@ internal fun DrawScope.drawRenderFeature(
     density: Density,
     optimizedStyleLayer: OptimizedStyleLayer,
     zoom: Double,
-    textScale: Float
+    textScale: Float,
+    rotationDegrees: Float,
 ) {
     when (renderFeature.geometry) {
         is OptimizedGeometry.Polygon -> {
@@ -232,7 +242,8 @@ internal fun DrawScope.drawRenderFeature(
                 density,
                 optimizedStyleLayer,
                 zoom,
-                textScale
+                textScale,
+                rotationDegrees,
             )
         }
     }
@@ -319,10 +330,11 @@ private fun DrawScope.drawSymbolFeature(
     optimizedStyleLayer: OptimizedStyleLayer,
     zoom: Double,
     textScale: Float,
+    rotationDegrees: Float,
 ) {
     val text = optimizedStyleLayer.layout.properties["text-field"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? String
     text?.let {
-        drawTextSymbol(canvas, geometry, properties, fontResolver, density, optimizedStyleLayer, zoom, it, textScale)
+        drawTextSymbol(canvas, geometry, properties, fontResolver, density, optimizedStyleLayer, 1.0, it, textScale, rotationDegrees)
     }
 
     // TODO: Image symbol rendering would go here
@@ -344,34 +356,124 @@ private fun DrawScope.drawTextSymbol(
     zoomLevel: Double,
     text: String,
     textScale: Float,
+    rotationDegrees: Float,
 ) {
-    val textColor =
-        optimizedStyleLayer.paint.properties["text-color"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Color ?: Color.Magenta
-    val opacity = optimizedStyleLayer.paint.properties["text-opacity"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Double ?: 1.0
-    val size = optimizedStyleLayer.layout.properties["text-size"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Double ?: 1.0
+    val layout = optimizedStyleLayer.layout.properties
+    val paint = optimizedStyleLayer.paint.properties
+
+    val transform = layout["text-transform"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? String ?: "none"
+    val transformedText = when (transform) {
+        "uppercase" -> text.uppercase()
+        "lowercase" -> text.lowercase()
+        else -> text
+    }
+
+    val size = layout["text-size"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Double ?: 16.0
+    val textColor = paint["text-color"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Color ?: Color.Black
+    val opacity = paint["text-opacity"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Double ?: 1.0
+
+    val haloColor = paint["text-halo-color"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Color
+    val haloWidth = paint["text-halo-width"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Double ?: 0.0
+    val haloBlur = paint["text-halo-blur"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Double ?: 0.0
+
+    val maxWidth = layout["text-max-width"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Double
+    val lineHeight = layout["text-line-height"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Double
+    val justify = layout["text-justify"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? String ?: "center"
+
+    val anchor = layout["text-anchor"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? String ?: "center"
+    val offset = layout["text-offset"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? List<*> ?: listOf(0.0, 0.0)
+    val radialOffset = layout["text-radial-offset"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Double
+    val translate = paint["text-translate"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? List<*> ?: listOf(0.0, 0.0)
+    val rotate = layout["text-rotate"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Double
+
+    val finalSize = (size * textScale).sp
+    val emSize = size.toFloat() * textScale
+
+    val textStyle = TextStyle(
+        fontSize = finalSize,
+        lineHeight = lineHeight?.let { (it * emSize).sp } ?: TextUnit.Unspecified,
+        textAlign = when (justify) {
+            "left" -> TextAlign.Left
+            "right" -> TextAlign.Right
+            else -> TextAlign.Center
+        },
+    )
+
+    val textMeasurer = TextMeasurer(
+        defaultFontFamilyResolver = fontResolver,
+        defaultDensity = density,
+        defaultLayoutDirection = LayoutDirection.Ltr,
+    )
+    val constraints = Constraints(
+        maxWidth = maxWidth?.let { (it * emSize).toInt() } ?: Constraints.Infinity
+    )
+    val textLayoutResult = textMeasurer.measure(
+        text = AnnotatedString(transformedText),
+        style = textStyle,
+        overflow = TextOverflow.Visible,
+        softWrap = maxWidth != null,
+        maxLines = if (maxWidth != null) Int.MAX_VALUE else 1,
+        constraints = constraints,
+        layoutDirection = layoutDirection,
+        density = this,
+    )
+
+    val textWidth = textLayoutResult.size.width
+    val textHeight = textLayoutResult.size.height
+
+    var anchorOffsetX = when {
+        anchor.contains("left") -> 0f
+        anchor.contains("right") -> -textWidth.toFloat()
+        else -> -textWidth / 2f
+    }
+    var anchorOffsetY = when {
+        anchor.contains("top") -> 0f
+        anchor.contains("bottom") -> -textHeight.toFloat()
+        else -> -textHeight / 2f
+    }
+
+    val offsetX = (offset.getOrNull(0) as? Number ?: 0.0).toFloat() * emSize
+    val offsetY = (offset.getOrNull(1) as? Number ?: 0.0).toFloat() * emSize
+    anchorOffsetX += offsetX
+    anchorOffsetY += offsetY
+
+    if (radialOffset != null && radialOffset > 0) {
+        anchorOffsetY -= (radialOffset * emSize).toFloat()
+    }
+
+    val translateX = (translate.getOrNull(0) as? Number ?: 0.0).toFloat()
+    val translateY = (translate.getOrNull(1) as? Number ?: 0.0).toFloat()
+
     geometry.coordinates.forEach { (x, y) ->
-        val textLayoutResult =
-            TextMeasurer(
-                defaultFontFamilyResolver = fontResolver,
-                defaultDensity = density,
-                defaultLayoutDirection = LayoutDirection.Ltr,
-            ).measure(
-                text = AnnotatedString(text),
-                style = TextStyle(
-                    color = textColor.copy(alpha = opacity.toFloat()),
-                    fontSize = (size * textScale).sp,
-                ),
-                overflow = TextOverflow.Visible,
-                softWrap = true,
-                maxLines = 1,
-                constraints = Constraints(0, this.size.width.toInt(), 0, this.size.height.toInt()),
-                layoutDirection = layoutDirection,
-                density = this,
-            )
         withTransform({
-            translate(x - textLayoutResult.size.width / 2, y - textLayoutResult.size.height / 2)
+            translate(
+                left = x + anchorOffsetX + translateX,
+                top = y + anchorOffsetY + translateY
+            )
+            rotate(-rotationDegrees + (rotate?.toFloat() ?: 0F), Offset(-anchorOffsetX, -anchorOffsetY))
         }) {
-            textLayoutResult.multiParagraph.paint(canvas = drawContext.canvas, blendMode = DrawScope.DefaultBlendMode)
+            if (haloColor != null && haloWidth > 0) {
+                textLayoutResult.multiParagraph.paint(
+                    canvas = drawContext.canvas,
+                    color = haloColor,
+                    shadow = if (haloBlur > 0) Shadow(
+                        color = haloColor,
+                        blurRadius = haloBlur.toFloat()
+                    ) else null,
+                    drawStyle = Stroke(
+                        width = haloWidth.toFloat() * 2,
+                        join = StrokeJoin.Round,
+                        cap = StrokeCap.Round
+                    )
+                )
+            }
+
+            textLayoutResult.multiParagraph.paint(
+                canvas = drawContext.canvas,
+                color = textColor.copy(alpha = opacity.toFloat()),
+                drawStyle = Fill,
+                blendMode = DrawScope.DefaultBlendMode
+            )
         }
     }
 }

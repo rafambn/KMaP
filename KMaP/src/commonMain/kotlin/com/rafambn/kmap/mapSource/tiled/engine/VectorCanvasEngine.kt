@@ -32,6 +32,10 @@ private fun optimizeMVTile(tile: VectorTile, optimizedStyle: OptimizedStyle): Op
     optimizedStyle.layers.forEach { optimizedStyleLayer ->
         if (optimizedStyleLayer.type == "background") return@forEach
 
+        val currentZoom = tile.zoom.toDouble()
+        if (currentZoom < optimizedStyleLayer.minZoom) return@forEach
+        if (currentZoom > optimizedStyleLayer.maxZoom) return@forEach
+
         val sourceLayerName = optimizedStyleLayer.sourceLayer ?: return@forEach
         val mvtLayer = mvtData.layers.find { it.name == sourceLayerName } ?: return@forEach
 
