@@ -159,7 +159,16 @@ private fun DrawScope.drawVectorTileLayerWithClipping(
         canvas.scale(scaleX, scaleY)
 
         optimizedData.layerFeatures[optimizedLayer.id]?.forEach { renderFeature ->
-            drawRenderFeature(canvas, renderFeature, scaleAdjustment, fontResolver, density, optimizedLayer, zoom)
+            drawRenderFeature(
+                canvas,
+                renderFeature,
+                scaleAdjustment,
+                fontResolver,
+                density,
+                optimizedLayer,
+                zoom,
+                optimizedData.extent.toFloat() / tileSize.height
+            )
         }
 
         canvas.restore()
@@ -202,7 +211,8 @@ internal fun DrawScope.drawRenderFeature(
     fontResolver: FontFamily.Resolver,
     density: Density,
     optimizedStyleLayer: OptimizedStyleLayer,
-    zoom: Double
+    zoom: Double,
+    textScale: Float
 ) {
     when (renderFeature.geometry) {
         is OptimizedGeometry.Polygon -> {
@@ -214,7 +224,16 @@ internal fun DrawScope.drawRenderFeature(
         }
 
         is OptimizedGeometry.Point -> {
-            drawSymbolFeature(canvas, renderFeature.geometry, renderFeature.properties, fontResolver, density, optimizedStyleLayer, zoom)
+            drawSymbolFeature(
+                canvas,
+                renderFeature.geometry,
+                renderFeature.properties,
+                fontResolver,
+                density,
+                optimizedStyleLayer,
+                zoom,
+                textScale
+            )
         }
     }
 }
@@ -298,11 +317,12 @@ private fun DrawScope.drawSymbolFeature(
     fontResolver: FontFamily.Resolver,
     density: Density,
     optimizedStyleLayer: OptimizedStyleLayer,
-    zoom: Double
+    zoom: Double,
+    textScale: Float,
 ) {
     val text = optimizedStyleLayer.layout.properties["text-field"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? String
     text?.let {
-        drawTextSymbol(canvas, geometry, properties, fontResolver, density, optimizedStyleLayer, zoom, it)
+        drawTextSymbol(canvas, geometry, properties, fontResolver, density, optimizedStyleLayer, zoom, it, textScale)
     }
 
     // TODO: Image symbol rendering would go here
@@ -322,7 +342,8 @@ private fun DrawScope.drawTextSymbol(
     density: Density,
     optimizedStyleLayer: OptimizedStyleLayer,
     zoomLevel: Double,
-    text: String
+    text: String,
+    textScale: Float,
 ) {
     val textColor =
         optimizedStyleLayer.paint.properties["text-color"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Color ?: Color.Magenta
@@ -338,7 +359,7 @@ private fun DrawScope.drawTextSymbol(
                 text = AnnotatedString(text),
                 style = TextStyle(
                     color = textColor.copy(alpha = opacity.toFloat()),
-                    fontSize = (size * 8).sp,
+                    fontSize = (size * textScale).sp,
                 ),
                 overflow = TextOverflow.Visible,
                 softWrap = true,
