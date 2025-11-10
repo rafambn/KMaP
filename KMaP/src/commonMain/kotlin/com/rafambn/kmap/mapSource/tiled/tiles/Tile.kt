@@ -5,7 +5,7 @@ open class Tile(zoom: Int, row: Int, col: Int): TileSpecs(zoom, row, col){
         if (this.zoom >= childCandidate.zoom) return false
 
         val zoomDiff = childCandidate.zoom - this.zoom
-        val scaleFactor = 1 shl zoomDiff // 2^zoomDiff
+        val scaleFactor = 1 shl zoomDiff
         val parentRow = childCandidate.row / scaleFactor
         val parentCol = childCandidate.col / scaleFactor
 
@@ -16,7 +16,7 @@ open class Tile(zoom: Int, row: Int, col: Int): TileSpecs(zoom, row, col){
         if (this.zoom <= parentCandidate.zoom) return false
 
         val zoomDiff = this.zoom - parentCandidate.zoom
-        val scaleFactor = 1 shl zoomDiff // 2^zoomDiff
+        val scaleFactor = 1 shl zoomDiff
         val parentRow = this.row / scaleFactor
         val parentCol = this.col / scaleFactor
 

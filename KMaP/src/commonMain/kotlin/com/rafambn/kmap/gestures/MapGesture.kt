@@ -26,7 +26,6 @@ suspend fun PointerInputScope.detectMapGestures(
     onHover: ((screenOffset: ScreenOffset) -> Unit)? = null,
 ) = coroutineScope {
     awaitEachGesture {
-        //Parameters
         val longPressTimeout = viewConfiguration.longPressTimeoutMillis
         val doubleTapTimeout = viewConfiguration.doubleTapTimeoutMillis
         val touchSlop = viewConfiguration.touchSlop

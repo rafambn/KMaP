@@ -44,7 +44,6 @@ class MapState(
 ) {
     val motionController = MotionController(this)
 
-    //User define min/max zoom
     var zoomLevelPreference = zoomLevelPreference ?: mapProperties.zoomLevels
         set(value) {
             if (value.max > mapProperties.zoomLevels.max || value.min < mapProperties.zoomLevels.min)
@@ -52,7 +51,6 @@ class MapState(
             field = value
         }
 
-    //State variables
     var cameraState by mutableStateOf(
         initialCameraState ?: CameraState(
             tilePoint = TilePoint(mapProperties.tileSize.width / 2.0, mapProperties.tileSize.height / 2.0),
@@ -75,21 +73,17 @@ class MapState(
         canvasKernel.resolveVisibleTiles(viewPort, value.zoom.toIntFloor(), mapProperties)
     }
 
-    //Draw variables
     val drawMagScale = { cameraState.zoom - cameraState.zoom.toIntFloor() }
     val drawReference = { cameraState.tilePoint.toCanvasDrawReference() }
     val drawTileSize = { mapProperties.tileSize }
     val drawRotationDegrees = { cameraState.angleDegrees.toFloat() }
     val drawTranslation = { cameraState.canvasSize.asOffset() / 2F }
 
-    //Derivative variables
     private val zoomLevel
         get() = cameraState.zoom.toIntFloor()
 
-    //Canvas Kernel
     val canvasKernel = CanvasKernel(coroutineScope)
 
-    //Utility functions
     private fun TilePoint.coerceInMap(): TilePoint {
         val x = if (mapProperties.boundMap.horizontal == MapBorderType.BOUND)
             x.coerceIn(0.0, mapProperties.tileSize.width.toDouble())

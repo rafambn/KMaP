@@ -279,6 +279,6 @@ internal fun evaluateInterpolate(expression: List<*>, context: EvaluationContext
             val a = linearInterpolate(progress, lowerOutput.alpha.toDouble(), upperOutput.alpha.toDouble()).toInt()
             Color(r, g, b, a)
         }
-        else -> lowerOutput // Not interpolatable, return lower
+        else -> lowerOutput
     }
 }

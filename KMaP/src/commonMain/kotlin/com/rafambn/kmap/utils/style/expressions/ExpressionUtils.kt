@@ -51,7 +51,6 @@ private fun parseHexColor(hexString: String): Color? {
 }
 
 private fun parseRgbColor(rgbString: String): Color? {
-    // Parse rgb(r,g,b) or rgba(r,g,b,a)
     val content = rgbString.substringAfter("(").substringBefore(")")
     val parts = content.split(",").map { it.trim() }
 
@@ -68,7 +67,6 @@ private fun parseRgbColor(rgbString: String): Color? {
 }
 
 private fun parseHslColor(hslString: String): Color? {
-    // Parse hsl(h,s%,l%) or hsla(h,s%,l%,a)
     val content = hslString.substringAfter("(").substringBefore(")") ?: return null
     val parts = content.split(",").map { it.trim() }
 
