@@ -6,9 +6,9 @@ import com.rafambn.kmap.components.RasterCanvasParameters
 import com.rafambn.kmap.components.VectorCanvasParameters
 import com.rafambn.kmap.core.ViewPort
 import com.rafambn.kmap.mapProperties.MapProperties
+import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
 import com.rafambn.kmap.mapSource.tiled.ActiveTiles
-import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.mapSource.tiled.tiles.TileSpecs
 import com.rafambn.kmap.utils.toIntFloor
 import kotlinx.coroutines.CoroutineScope

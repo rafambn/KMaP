@@ -8,8 +8,8 @@ import androidx.compose.ui.graphics.drawscope.DrawScope.Companion.DefaultBlendMo
 import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Fill
 import com.rafambn.kmap.core.DrawPosition
-import com.rafambn.kmap.mapSource.tiled.tiles.RasterTile
 import com.rafambn.kmap.mapSource.tiled.TileResult
+import com.rafambn.kmap.mapSource.tiled.tiles.RasterTile
 import com.rafambn.kmap.mapSource.tiled.tiles.VectorTile
 import com.rafambn.kmap.utils.Coordinates
 import com.rafambn.kmap.utils.Degrees

@@ -1,7 +1,6 @@
 package com.rafambn.kmap.mapSource.tiled.tiles
 
 import androidx.compose.ui.graphics.ImageBitmap
-import com.rafambn.kmap.mapSource.tiled.tiles.Tile
 
 class RasterTile(
     zoom: Int,

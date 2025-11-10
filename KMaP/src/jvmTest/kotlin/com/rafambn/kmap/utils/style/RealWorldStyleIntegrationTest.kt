@@ -6,7 +6,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import kotlin.test.fail
 
 /**
  * Integration tests using 12 real-world Mapbox/MapLibre style files from test resources.
@@ -121,7 +120,8 @@ class RealWorldStyleIntegrationTest {
 
                         // At least one pair should be different (proving interpolation works)
                         val anyDifferent = z5 != z10 || z10 != z15 || z5 != z15
-                        assertTrue(anyDifferent || z5 == z10 && z10 == z15,
+                        assertTrue(
+                            anyDifferent || z5 == z10,
                             "Property $propName should interpolate across zooms or be constant")
                         println("Style $styleNum, $propName: z5=$z5, z10=$z10, z15=$z15")
                     }

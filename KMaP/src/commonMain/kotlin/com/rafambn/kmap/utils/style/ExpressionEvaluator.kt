@@ -1,30 +1,6 @@
 package com.rafambn.kmap.utils.style
 
-import com.rafambn.kmap.utils.style.expressions.evaluateAll
-import com.rafambn.kmap.utils.style.expressions.evaluateAny
-import com.rafambn.kmap.utils.style.expressions.evaluateAt
-import com.rafambn.kmap.utils.style.expressions.evaluateCase
-import com.rafambn.kmap.utils.style.expressions.evaluateCoalesce
-import com.rafambn.kmap.utils.style.expressions.evaluateComparison
-import com.rafambn.kmap.utils.style.expressions.evaluateConcat
-import com.rafambn.kmap.utils.style.expressions.evaluateGet
-import com.rafambn.kmap.utils.style.expressions.evaluateHas
-import com.rafambn.kmap.utils.style.expressions.evaluateHsl
-import com.rafambn.kmap.utils.style.expressions.evaluateIn
-import com.rafambn.kmap.utils.style.expressions.evaluateIndexOf
-import com.rafambn.kmap.utils.style.expressions.evaluateInterpolate
-import com.rafambn.kmap.utils.style.expressions.evaluateLength
-import com.rafambn.kmap.utils.style.expressions.evaluateLiteral
-import com.rafambn.kmap.utils.style.expressions.evaluateMatch
-import com.rafambn.kmap.utils.style.expressions.evaluateNot
-import com.rafambn.kmap.utils.style.expressions.evaluateNumber
-import com.rafambn.kmap.utils.style.expressions.evaluateRgb
-import com.rafambn.kmap.utils.style.expressions.evaluateSlice
-import com.rafambn.kmap.utils.style.expressions.evaluateStep
-import com.rafambn.kmap.utils.style.expressions.evaluateString
-import com.rafambn.kmap.utils.style.expressions.evaluateTypeOf
-import com.rafambn.kmap.utils.style.expressions.evaluateUpDownCase
-import com.rafambn.kmap.utils.style.expressions.parseColor
+import com.rafambn.kmap.utils.style.expressions.*
 
 class ExpressionEvaluator {
 

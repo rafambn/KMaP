@@ -2,13 +2,11 @@ package com.rafambn.kmap.utils.style
 
 import androidx.compose.ui.graphics.Color
 import kotlinx.serialization.json.Json
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
-import kotlin.test.assertFalse
+import kotlin.test.*
 
 class StyleResolverTest {
+
+    private val json = Json { ignoreUnknownKeys = true }
 
     @Test
     fun testResolveSimpleStyle() {
@@ -37,7 +35,7 @@ class StyleResolverTest {
             }
         """.trimIndent()
 
-        val rawStyle = Json{ ignoreUnknownKeys = true }.decodeFromString(Style.serializer(), rawStyleJson)
+        val rawStyle = json.decodeFromString(Style.serializer(), rawStyleJson)
         val resolver = StyleResolver()
         val optimizedStyle = resolver.resolve(rawStyle)
 
@@ -47,10 +45,10 @@ class StyleResolverTest {
 
         assertNotNull(layer.filter)
         val featureProperties = mapOf("class" to "park")
-        assertTrue(layer.filter!!.evaluate(featureProperties, "Polygon", null))
+        assertTrue(layer.filter.evaluate(featureProperties, "Polygon", null))
 
         val featureProperties2 = mapOf("class" to "street")
-        assertFalse(layer.filter!!.evaluate(featureProperties2, "Polygon", null))
+        assertFalse(layer.filter.evaluate(featureProperties2, "Polygon", null))
 
         assertNotNull(layer.paint.properties["fill-color"])
         val color = layer.paint.properties["fill-color"]!!.evaluate(0.0, emptyMap(), null) as Color
@@ -83,7 +81,7 @@ class StyleResolverTest {
             }
         """.trimIndent()
 
-        val rawStyle = Json{ ignoreUnknownKeys = true }.decodeFromString(Style.serializer(), rawStyleJson)
+        val rawStyle = json.decodeFromString(Style.serializer(), rawStyleJson)
         val resolver = StyleResolver()
         val optimizedStyle = resolver.resolve(rawStyle)
 
@@ -125,7 +123,7 @@ class StyleResolverTest {
             }
         """.trimIndent()
 
-        val rawStyle = Json{ ignoreUnknownKeys = true }.decodeFromString(Style.serializer(), rawStyleJson)
+        val rawStyle = json.decodeFromString(Style.serializer(), rawStyleJson)
         val resolver = StyleResolver()
         val optimizedStyle = resolver.resolve(rawStyle)
 
@@ -184,7 +182,7 @@ class StyleResolverTest {
             }
         """.trimIndent()
 
-        val rawStyle = Json{ ignoreUnknownKeys = true }.decodeFromString(Style.serializer(), rawStyleJson)
+        val rawStyle = json.decodeFromString(Style.serializer(), rawStyleJson)
         val resolver = StyleResolver()
         val optimizedStyle = resolver.resolve(rawStyle)
 
@@ -245,7 +243,7 @@ class StyleResolverTest {
             }
         """.trimIndent()
 
-        val rawStyle = Json{ ignoreUnknownKeys = true }.decodeFromString(Style.serializer(), rawStyleJson)
+        val rawStyle = json.decodeFromString(Style.serializer(), rawStyleJson)
         val resolver = StyleResolver()
         val optimizedStyle = resolver.resolve(rawStyle)
 
@@ -305,7 +303,7 @@ class StyleResolverTest {
             }
         """.trimIndent()
 
-        val rawStyle = Json{ ignoreUnknownKeys = true }.decodeFromString(Style.serializer(), rawStyleJson)
+        val rawStyle = json.decodeFromString(Style.serializer(), rawStyleJson)
         val resolver = StyleResolver()
         val optimizedStyle = resolver.resolve(rawStyle)
 
@@ -355,7 +353,7 @@ class StyleResolverTest {
             }
         """.trimIndent()
 
-        val rawStyle = Json{ ignoreUnknownKeys = true }.decodeFromString(Style.serializer(), rawStyleJson)
+        val rawStyle = json.decodeFromString(Style.serializer(), rawStyleJson)
         val resolver = StyleResolver()
         val optimizedStyle = resolver.resolve(rawStyle)
 
@@ -363,9 +361,9 @@ class StyleResolverTest {
         assertNotNull(layer.filter)
 
         // Test matching filter
-        assertTrue(layer.filter!!.evaluate(mapOf("class" to "park"), "Polygon", null))
+        assertTrue(layer.filter.evaluate(mapOf("class" to "park"), "Polygon", null))
 
         // Test non-matching filter - different class
-        assertFalse(layer.filter!!.evaluate(mapOf("class" to "street"), "Polygon", null))
+        assertFalse(layer.filter.evaluate(mapOf("class" to "street"), "Polygon", null))
     }
 }

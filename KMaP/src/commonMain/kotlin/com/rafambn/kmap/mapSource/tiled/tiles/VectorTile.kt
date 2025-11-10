@@ -1,6 +1,5 @@
 package com.rafambn.kmap.mapSource.tiled.tiles
 
-import com.rafambn.kmap.mapSource.tiled.tiles.Tile
 import com.rafambn.kmap.utils.vectorTile.MVTile
 
 class VectorTile(

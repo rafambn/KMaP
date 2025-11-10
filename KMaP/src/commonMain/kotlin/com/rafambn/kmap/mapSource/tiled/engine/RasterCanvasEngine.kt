@@ -1,7 +1,7 @@
 package com.rafambn.kmap.mapSource.tiled.engine
 
-import com.rafambn.kmap.mapSource.tiled.tiles.RasterTile
 import com.rafambn.kmap.mapSource.tiled.TileResult
+import com.rafambn.kmap.mapSource.tiled.tiles.RasterTile
 import kotlinx.coroutines.CoroutineScope
 
 class RasterCanvasEngine(

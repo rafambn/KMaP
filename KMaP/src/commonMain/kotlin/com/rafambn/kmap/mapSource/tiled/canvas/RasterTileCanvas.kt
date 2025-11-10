@@ -16,10 +16,10 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.gestures.MapGestureWrapper
-import com.rafambn.kmap.mapSource.tiled.tiles.RasterTile
-import com.rafambn.kmap.mapSource.tiled.tiles.Tile
 import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.mapSource.tiled.ActiveTiles
+import com.rafambn.kmap.mapSource.tiled.tiles.RasterTile
+import com.rafambn.kmap.mapSource.tiled.tiles.Tile
 import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.ScreenOffset
 import com.rafambn.kmap.utils.toIntFloor

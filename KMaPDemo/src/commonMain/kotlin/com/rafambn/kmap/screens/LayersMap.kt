@@ -16,9 +16,9 @@ import com.rafambn.kmap.core.rememberMapState
 import com.rafambn.kmap.customSources.SimpleMapProperties
 import com.rafambn.kmap.customSources.SimpleMapTileSource
 import com.rafambn.kmap.getGestureDetector
-import com.rafambn.kmap.mapSource.tiled.tiles.RasterTile
 import com.rafambn.kmap.mapSource.tiled.TileResult
 import com.rafambn.kmap.mapSource.tiled.TileSource
+import com.rafambn.kmap.mapSource.tiled.tiles.RasterTile
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import org.jetbrains.compose.resources.decodeToImageBitmap

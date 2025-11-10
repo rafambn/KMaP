@@ -2,7 +2,6 @@ package com.rafambn.kmap.mapProperties
 
 import com.rafambn.kmap.mapProperties.border.BoundMapBorder
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
-import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.utils.Coordinates
 import com.rafambn.kmap.utils.ProjectedCoordinates
 

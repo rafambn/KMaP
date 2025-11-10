@@ -1,11 +1,7 @@
 package com.rafambn.kmap.utils.style
 
 import androidx.compose.ui.graphics.Color
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class ExpressionEvaluatorTest {
 

@@ -18,10 +18,10 @@ import com.rafambn.kmap.customSources.OSMMapProperties
 import com.rafambn.kmap.customSources.SimpleZoomLevelRange
 import com.rafambn.kmap.customSources.VectorTileSource
 import com.rafambn.kmap.getGestureDetector
+import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.mapProperties.border.BoundMapBorder
 import com.rafambn.kmap.mapProperties.border.MapBorderType
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
-import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.utils.style.OptimizedStyle
 import com.rafambn.kmap.utils.style.Style
 import com.rafambn.kmap.utils.style.StyleResolver
