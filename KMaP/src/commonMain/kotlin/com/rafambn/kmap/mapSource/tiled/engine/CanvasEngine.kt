@@ -59,8 +59,9 @@ abstract class CanvasEngine<T : Tile>(
                     tileSpecs.row.loopInZoom(tileSpecs.zoom),
                     tileSpecs.col.loopInZoom(tileSpecs.zoom)
                 )
-                cachedTilesMap[normalized]?.let {
-                    newFrontLayer.add(it)  //TODO must be addeded with the original tile spec and no the looped one
+                cachedTilesMap[normalized]?.let { cachedTile ->
+                    val newTile = cachedTile.withSpecs(tileSpecs) as T
+                    newFrontLayer.add(newTile)
                 } ?: run {
                     tilesToRender.add(tileSpecs)
                 }

@@ -25,4 +25,8 @@ class RasterTile(
     override fun toString(): String {
         return "Tile(zoom=$zoom, row=$row, col=$col, imageBitmap=$imageBitmap)"
     }
+
+    override fun withSpecs(newSpecs: TileSpecs): RasterTile {
+        return RasterTile(newSpecs.zoom, newSpecs.row, newSpecs.col, this.imageBitmap)
+    }
 }

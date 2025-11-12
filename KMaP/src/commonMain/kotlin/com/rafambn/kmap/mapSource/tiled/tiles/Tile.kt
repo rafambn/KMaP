@@ -22,4 +22,6 @@ abstract class Tile(zoom: Int, row: Int, col: Int): TileSpecs(zoom, row, col){
 
         return parentCandidate.row == parentRow && parentCandidate.col == parentCol
     }
+
+    abstract fun withSpecs(newSpecs: TileSpecs): Tile
 }

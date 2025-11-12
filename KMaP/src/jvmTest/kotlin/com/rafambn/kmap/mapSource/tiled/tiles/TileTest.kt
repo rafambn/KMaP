@@ -6,7 +6,11 @@ import kotlin.test.assertTrue
 
 class TileTest {
 
-    private class TestTile(zoom: Int, row: Int, col: Int) : Tile(zoom, row, col)
+    private class TestTile(zoom: Int, row: Int, col: Int) : Tile(zoom, row, col) {
+        override fun withSpecs(newSpecs: TileSpecs): Tile {
+            return TestTile(newSpecs.zoom, newSpecs.row, newSpecs.col)
+        }
+    }
 
     @Test
     fun `isParentOf returns true for a direct child`() {

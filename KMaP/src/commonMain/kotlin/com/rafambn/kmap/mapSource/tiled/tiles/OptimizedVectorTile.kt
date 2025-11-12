@@ -26,4 +26,8 @@ class OptimizedVectorTile(
     override fun toString(): String {
         return "Tile(zoom=$zoom, row=$row, col=$col, optimizedTile=$optimizedTile)"
     }
+
+    override fun withSpecs(newSpecs: TileSpecs): OptimizedVectorTile {
+        return OptimizedVectorTile(newSpecs.zoom, newSpecs.row, newSpecs.col, this.optimizedTile)
+    }
 }

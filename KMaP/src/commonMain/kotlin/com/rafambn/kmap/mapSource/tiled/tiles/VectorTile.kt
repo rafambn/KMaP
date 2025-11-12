@@ -25,4 +25,8 @@ class VectorTile(
     override fun toString(): String {
         return "Tile(zoom=$zoom, row=$row, col=$col, mvtile=$mvtile)"
     }
+
+    override fun withSpecs(newSpecs: TileSpecs): VectorTile {
+        return VectorTile(newSpecs.zoom, newSpecs.row, newSpecs.col, this.mvtile)
+    }
 }
