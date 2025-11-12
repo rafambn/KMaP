@@ -17,11 +17,12 @@ abstract class CanvasEngine<T : Tile>(
 ) {
     val activeTiles = mutableStateOf(ActiveTiles())
     var cachedTiles = listOf<T>()
+    var currentVisibleTiles = listOf<TileSpecs>()
 
     init {
         coroutineScope.launch {
             while (isActive) {
-                select { //TODO add filtering here to
+                select {
                     tileRenderer.tilesProcessedChannel.onReceive { tile ->
                         val newCache = cachedTiles.toMutableList()
                         newCache.add(tile)
@@ -30,9 +31,7 @@ abstract class CanvasEngine<T : Tile>(
                         else
                             newCache.toList()
 
-                        activeTiles.value = activeTiles.value.copy(
-                            tiles = (activeTiles.value.tiles + tile).sortedBy { it.zoom }
-                        )
+                        filterActiveTiles(currentVisibleTiles, activeTiles.value.currentZoom)
                     }
                 }
             }
@@ -40,6 +39,12 @@ abstract class CanvasEngine<T : Tile>(
     }
 
     fun renderTiles(visibleTiles: List<TileSpecs>, zoomLevel: Int) {
+        currentVisibleTiles = visibleTiles
+        val tilesToRender = filterActiveTiles(currentVisibleTiles, zoomLevel)
+        coroutineScope.launch { tileRenderer.tilesToProcessChannel.send(tilesToRender) }
+    }
+
+    private fun filterActiveTiles(visibleTiles: List<TileSpecs>, zoomLevel: Int): List<TileSpecs> {
         val activeTilesMap = activeTiles.value.tiles.associateBy { TileSpecs(it.zoom, it.row, it.col) }
         val cachedTilesMap = cachedTiles.associateBy { TileSpecs(it.zoom, it.row, it.col) }
         val newFrontLayer = mutableListOf<Tile>()
@@ -49,9 +54,13 @@ abstract class CanvasEngine<T : Tile>(
             activeTilesMap[tileSpecs]?.let {
                 newFrontLayer.add(it)
             } ?: run {
-                val normalized = TileSpecs(tileSpecs.zoom, tileSpecs.row.loopInZoom(tileSpecs.zoom), tileSpecs.col.loopInZoom(tileSpecs.zoom))
+                val normalized = TileSpecs(
+                    tileSpecs.zoom,
+                    tileSpecs.row.loopInZoom(tileSpecs.zoom),
+                    tileSpecs.col.loopInZoom(tileSpecs.zoom)
+                )
                 cachedTilesMap[normalized]?.let {
-                    newFrontLayer.add(it)
+                    newFrontLayer.add(it)  //TODO must be addeded with the original tile spec and no the looped one
                 } ?: run {
                     tilesToRender.add(tileSpecs)
                 }
@@ -63,18 +72,20 @@ abstract class CanvasEngine<T : Tile>(
 
         if (tilesToRender.isEmpty()) {
             activeTiles.value = ActiveTiles(tiles = allTiles.sortedBy { it.zoom }, currentZoom = zoomLevel)
-            return
+            return emptyList()
         }
 
-        val allAvailableTiles = (activeTiles.value.tiles + cachedTiles).distinct()
+        val allAvailableTiles = (activeTiles.value.tiles + cachedTiles).distinct().sortedBy { it.zoom }.asReversed()
         val parentTiles = mutableSetOf<Tile>()
         val childTiles = mutableSetOf<Tile>()
 
-        tilesToRender.forEach { tileToRender ->
-            allAvailableTiles.forEach { availableTile ->
-                when {
-                    availableTile.isParentOf(tileToRender) -> parentTiles.add(availableTile)
-                    availableTile.isChildOf(tileToRender) -> childTiles.add(availableTile)
+        for (tileToRender in tilesToRender) {
+            for (availableTile in allAvailableTiles) {
+                if (availableTile.isParentOf(tileToRender)) {
+                    parentTiles.add(availableTile)
+                    break
+                } else if (availableTile.isChildOf(tileToRender)) {
+                    childTiles.add(availableTile)
                 }
             }
         }
@@ -87,6 +98,7 @@ abstract class CanvasEngine<T : Tile>(
         allTiles.addAll(childTiles)
 
         activeTiles.value = ActiveTiles(tiles = allTiles.sortedBy { it.zoom }, currentZoom = zoomLevel)
-        coroutineScope.launch { tileRenderer.tilesToProcessChannel.send(tilesToRender) }
+
+        return tilesToRender
     }
 }
