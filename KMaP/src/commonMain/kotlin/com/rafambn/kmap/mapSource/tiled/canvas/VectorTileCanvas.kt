@@ -75,16 +75,17 @@ fun VectorTileCanvas(
                     drawIntoCanvas { canvas ->
                         val backgroundLayer = style.layers.find { it.type == "background" }
                         backgroundLayer?.let {
-                            drawGlobalBackground(
+                            drawBackgroundForActiveTiles(
                                 it,
                                 canvas,
                                 tileSize,
                                 positionOffset,
-                                activeTiles.currentZoom,
+                                activeTiles,
+                                zoom
                             )
                         }
 
-                        drawStyleLayersWithTileClipping(
+                         drawStyleLayersWithTileClipping(
                             activeTiles.tiles,
                             activeTiles.currentZoom,
                             style,
@@ -184,33 +185,39 @@ private fun DrawScope.drawVectorTileLayerWithClipping(
     }
 }
 
-private fun DrawScope.drawGlobalBackground(
+private fun DrawScope.drawBackgroundForActiveTiles(
     backgroundLayer: OptimizedStyleLayer,
     canvas: Canvas,
     tileSize: TileDimension,
     positionOffset: CanvasDrawReference,
-    zoomLevel: Int,
+    activeTiles: ActiveTiles,
+    zoom: Double,
 ) {
     val backgroundColor =
-        backgroundLayer.paint.properties["background-color"]?.evaluate(zoomLevel.toDouble(), emptyMap(), "") as? Color ?: Color.Magenta
+        backgroundLayer.paint.properties["background-color"]?.evaluate(zoom, emptyMap(), "") as? Color ?: Color.Magenta
     val backgroundOpacity =
-        backgroundLayer.paint.properties["background-opacity"]?.evaluate(zoomLevel.toDouble(), emptyMap(), "") as? Float ?: 1F
+        backgroundLayer.paint.properties["background-opacity"]?.evaluate(zoom, emptyMap(), "") as? Float ?: 1F
 
-    val totalWidth = tileSize.width * (2F.pow(zoomLevel))
-    val totalHeight = tileSize.height * (2F.pow(zoomLevel))
+    val paint = Paint().apply {
+        color = backgroundColor.copy(alpha = backgroundOpacity)
+        style = PaintingStyle.Fill
+    }
 
-    canvas.drawRect(
-        Rect(
-            positionOffset.x.toFloat(),
-            positionOffset.y.toFloat(),
-            positionOffset.x.toFloat() + totalWidth,
-            positionOffset.y.toFloat() + totalHeight
-        ),
-        Paint().apply {
-            color = backgroundColor.copy(alpha = backgroundOpacity)
-            style = PaintingStyle.Fill
-        }
-    )
+    activeTiles.tiles.forEach { tile ->
+        val scaleAdjustment = 2F.pow(activeTiles.currentZoom - tile.zoom)
+        val tileOffsetX = tileSize.width * tile.col * scaleAdjustment + positionOffset.x
+        val tileOffsetY = tileSize.height * tile.row * scaleAdjustment + positionOffset.y
+
+        canvas.drawRect(
+            Rect(
+                tileOffsetX.toFloat(),
+                tileOffsetY.toFloat(),
+                tileOffsetX.toFloat() + tileSize.width * scaleAdjustment,
+                tileOffsetY.toFloat() + tileSize.height * scaleAdjustment
+            ),
+            paint
+        )
+    }
 }
 
 internal fun DrawScope.drawRenderFeature(
