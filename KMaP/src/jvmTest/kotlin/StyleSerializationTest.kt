@@ -16,7 +16,7 @@ class StyleSerializationTest {
 
     @Test
     fun testStyleRoundTrip() {
-        val styleFile = File("src/jvmTest/resources/style/style.json")
+        val styleFile = File("src/jvmTest/resources/style/style12.json")
         assertTrue(styleFile.exists(), "Style file should exist at src/jvmTest/resources/style/style.json")
 
         val originalJsonString = styleFile.readText()
@@ -27,7 +27,7 @@ class StyleSerializationTest {
         assertNotNull(styleObject)
 
         assertEquals(8, styleObject.version)
-        assertEquals("Streets", styleObject.name)
+        assertEquals("Streets v4", styleObject.name)
         assertTrue(styleObject.sources.isNotEmpty())
         assertTrue(styleObject.layers.isNotEmpty())
 

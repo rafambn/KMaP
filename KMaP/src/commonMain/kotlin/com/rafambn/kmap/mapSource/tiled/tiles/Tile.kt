@@ -1,7 +1,7 @@
 package com.rafambn.kmap.mapSource.tiled.tiles
 
-open class Tile(zoom: Int, row: Int, col: Int): TileSpecs(zoom, row, col){
-   fun isParentOf(childCandidate: TileSpecs): Boolean {
+abstract class Tile(zoom: Int, row: Int, col: Int): TileSpecs(zoom, row, col){
+    fun isParentOf(childCandidate: TileSpecs): Boolean {
         if (this.zoom >= childCandidate.zoom) return false
 
         val zoomDiff = childCandidate.zoom - this.zoom

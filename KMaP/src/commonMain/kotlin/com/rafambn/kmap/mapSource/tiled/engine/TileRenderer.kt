@@ -44,15 +44,19 @@ class TileRenderer<T : Tile, R : Tile>(
                     workerResultChannel.onReceive { tileResult ->
                         when (tileResult) {
                             is TileResult.Success -> {
+                                val finishedLoopedSpecs = TileSpecs(tileResult.tile.zoom, tileResult.tile.row, tileResult.tile.col)
                                 tilesProcessedChannel.send(tileResult.tile)
-                                tilesBeingProcessed.remove(tileResult.tile as TileSpecs)
-                                specsBeingProcessed.removeAll {
+
+                                val originalSpecsToRemove = specsBeingProcessed.filter {
                                     TileSpecs(
                                         it.zoom,
                                         it.row.loopInZoom(it.zoom),
                                         it.col.loopInZoom(it.zoom)
-                                    ) == tileResult.tile
+                                    ) == finishedLoopedSpecs
                                 }
+
+                                tilesBeingProcessed.remove(finishedLoopedSpecs)
+                                specsBeingProcessed.removeAll(originalSpecsToRemove)
                             }
 
                             is TileResult.Failure -> {
