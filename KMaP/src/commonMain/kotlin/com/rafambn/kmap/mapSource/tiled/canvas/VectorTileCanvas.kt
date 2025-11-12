@@ -73,6 +73,29 @@ fun VectorTileCanvas(
                     scale(2F.pow(magnifierScale), Offset.Zero)
                 }) {
                     drawIntoCanvas { canvas ->
+                        if (activeTiles.tiles.isNotEmpty()) {
+                            var minX = Double.MAX_VALUE
+                            var minY = Double.MAX_VALUE
+                            var maxX = Double.MIN_VALUE
+                            var maxY = Double.MIN_VALUE
+
+                            activeTiles.tiles.forEach { tile ->
+                                val scaleAdjustment = 2F.pow(activeTiles.currentZoom - tile.zoom)
+                                val tileLeft = tileSize.width * tile.col * scaleAdjustment + positionOffset.x
+                                val tileTop = tileSize.height * tile.row * scaleAdjustment + positionOffset.y
+                                val tileRight = tileLeft + tileSize.width * scaleAdjustment
+                                val tileBottom = tileTop + tileSize.height * scaleAdjustment
+
+                                if (tileLeft < minX) minX = tileLeft
+                                if (tileTop < minY) minY = tileTop
+                                if (tileRight > maxX) maxX = tileRight
+                                if (tileBottom > maxY) maxY = tileBottom
+                            }
+
+                            val clipRect = Rect(minX.toFloat(), minY.toFloat(), maxX.toFloat(), maxY.toFloat())
+                            canvas.clipRect(clipRect)
+                        }
+
                         val backgroundLayer = style.layers.find { it.type == "background" }
                         backgroundLayer?.let {
                             drawBackgroundForActiveTiles(
@@ -154,14 +177,6 @@ private fun DrawScope.drawVectorTileLayerWithClipping(
 
         canvas.save()
         canvas.translate(tileOffsetPx.x, tileOffsetPx.y)
-
-        val tileRect = Rect(
-            0f,
-            0f,
-            tileSize.width * scaleAdjustment,
-            tileSize.height * scaleAdjustment
-        )
-        canvas.clipRect(tileRect)
 
         val scaleX = (tileSize.width * scaleAdjustment) / optimizedData.extent
         val scaleY = (tileSize.height * scaleAdjustment) / optimizedData.extent

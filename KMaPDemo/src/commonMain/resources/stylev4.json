@@ -24,6 +24,51 @@
       }
     },
     {
+      "id": "Ocean",
+      "type": "fill",
+      "source": "maptiler_planet_v4",
+      "source-layer": "water",
+      "minzoom": 0,
+      "layout": {
+        "visibility": "visible"
+      },
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": "hsl(204, 92%, 75%)",
+        "fill-opacity": [
+          "case",
+          [
+            "==",
+            [
+              "get",
+              "intermittent"
+            ],
+            true
+          ],
+          0.5,
+          1
+        ]
+      },
+      "filter": [
+        "all",
+        [
+          "==",
+          [
+            "geometry-type"
+          ],
+          "Polygon"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "class"
+          ],
+          "ocean"
+        ]
+      ]
+    },
+    {
       "id": "Vegetation",
       "type": "fill",
       "source": "maptiler_planet_v4",
@@ -1047,11 +1092,22 @@
         ]
       },
       "filter": [
-        "==",
+        "all",
         [
-          "geometry-type"
+          "==",
+          [
+            "geometry-type"
+          ],
+          "Polygon"
         ],
-        "Polygon"
+        [
+          "!=",
+          [
+            "get",
+            "class"
+          ],
+          "ocean"
+        ]
       ]
     },
     {

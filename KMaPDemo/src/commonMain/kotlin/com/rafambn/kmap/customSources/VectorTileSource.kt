@@ -15,6 +15,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.InternalResourceApi
+import org.jetbrains.compose.resources.readResourceBytes
 
 class VectorTileSource : TileSource<VectorTile> {
     private val client = HttpClient()
@@ -44,7 +45,7 @@ class VectorTileSource : TileSource<VectorTile> {
                 contentType(ContentType.Application.ProtoBuf)
             }.readRawBytes()
             val rawMVTile = ProtoBuf.decodeFromByteArray(RawMVTile.serializer(), compressedBytes)
-//            rawMVTile = json.decodeFromString(RawMVTile.serializer(), readResourceBytes("000.json").decodeToString())
+//            val rawMVTile = json.decodeFromString(RawMVTile.serializer(), readResourceBytes("000.json").decodeToString())
             val mvTile = rawMVTile.parse()
 //            if (zoom == 0 && row == 0 && column == 0){
 //                val jsonTile = Json.encodeToString(RawMVTile.serializer(),ProtoBuf.decodeFromByteArray(RawMVTile.serializer(), compressedBytes))
