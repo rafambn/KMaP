@@ -116,7 +116,7 @@ inline operator fun <reified T : Reference> T.minus(other: T): T {
         ScreenOffset::class -> ScreenOffset(x - other.x, y - other.y) as T
         TilePoint::class -> TilePoint(x - other.x, y - other.y) as T
         Coordinates::class -> Coordinates(x - other.x, y - other.y) as T
-        ProjectedCoordinates::class -> ProjectedCoordinates(x + other.x, y + other.y) as T
+        ProjectedCoordinates::class -> ProjectedCoordinates(x - other.x, y - other.y) as T
         DifferentialScreenOffset::class -> DifferentialScreenOffset(x - other.x, y - other.y) as T
         CanvasDrawReference::class -> CanvasDrawReference(x - other.x, y - other.y) as T
         else -> throw IllegalArgumentException("Unsupported type: ${T::class}")
@@ -140,7 +140,7 @@ inline operator fun <reified T : Reference> T.div(value: Number): T {
         ScreenOffset::class -> ScreenOffset(x / value.toDouble(), y / value.toDouble()) as T
         TilePoint::class -> TilePoint(x / value.toDouble(), y / value.toDouble()) as T
         Coordinates::class -> Coordinates(x / value.toDouble(), y / value.toDouble()) as T
-        ProjectedCoordinates::class -> ProjectedCoordinates(x * value.toDouble(), y * value.toDouble()) as T
+        ProjectedCoordinates::class -> ProjectedCoordinates(x / value.toDouble(), y / value.toDouble()) as T
         DifferentialScreenOffset::class -> DifferentialScreenOffset(x / value.toDouble(), y / value.toDouble()) as T
         CanvasDrawReference::class -> CanvasDrawReference(x / value.toDouble(), y / value.toDouble()) as T
         else -> throw IllegalArgumentException("Unsupported type: ${T::class}")
