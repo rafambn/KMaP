@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
@@ -35,6 +36,7 @@ import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.ScreenOffset
 import com.rafambn.kmap.utils.style.OptimizedStyle
 import com.rafambn.kmap.utils.style.OptimizedStyleLayer
+import com.rafambn.kmap.utils.toIntFloor
 import com.rafambn.kmap.utils.vectorTile.OptimizedGeometry
 import com.rafambn.kmap.utils.vectorTile.OptimizedRenderFeature
 import kotlin.math.pow
@@ -216,6 +218,7 @@ private fun DrawScope.drawBackgroundForActiveTiles(
     val paint = Paint().apply {
         color = backgroundColor.copy(alpha = backgroundOpacity)
         style = PaintingStyle.Fill
+        isAntiAlias = false
     }
 
     activeTiles.tiles.forEach { tile ->
