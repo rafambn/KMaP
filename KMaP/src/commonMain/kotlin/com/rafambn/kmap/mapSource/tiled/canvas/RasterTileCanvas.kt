@@ -81,12 +81,12 @@ private fun DrawScope.drawRasterTiles(
         canvas.drawImageRect(
             image = (tile as RasterTile).imageBitmap!!,
             dstOffset = IntOffset(
-                (tileSize.width * tile.col * scaleAdjustment + positionOffset.x).dp.toPx().toIntFloor(),
-                (tileSize.height * tile.row * scaleAdjustment + positionOffset.y).dp.toPx().toIntFloor()
+                (tileSize.width.toPx() * tile.col * scaleAdjustment + positionOffset.x).toIntFloor(),
+                (tileSize.height.toPx() * tile.row * scaleAdjustment + positionOffset.y).toIntFloor()
             ),
             dstSize = IntSize(
-                (tileSize.width.dp.toPx() * scaleAdjustment).toIntFloor(),
-                (tileSize.height.dp.toPx() * scaleAdjustment).toIntFloor()
+                (tileSize.width.toPx() * scaleAdjustment).toIntFloor(),
+                (tileSize.height.toPx() * scaleAdjustment).toIntFloor()
             ),
             paint = Paint().apply {
                 isAntiAlias = false

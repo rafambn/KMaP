@@ -1,3 +1,5 @@
 package com.rafambn.kmap.mapProperties
 
-data class TileDimension(val height: Int, val width: Int)
+import androidx.compose.ui.unit.Dp
+
+data class TileDimension(val height: Dp, val width: Dp)

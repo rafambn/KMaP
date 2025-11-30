@@ -1,9 +1,11 @@
 package com.rafambn.kmap.mapSource.tiled.engine
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.Density
 import com.rafambn.kmap.components.CanvasParameters
 import com.rafambn.kmap.components.RasterCanvasParameters
 import com.rafambn.kmap.components.VectorCanvasParameters
+import com.rafambn.kmap.core.MapState
 import com.rafambn.kmap.core.ViewPort
 import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.TileDimension
@@ -15,7 +17,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlin.math.pow
 
 class CanvasKernel(
-    val coroutineScope: CoroutineScope
+    val coroutineScope: CoroutineScope,
+    val mapState: MapState
 ) {
 
     val canvas = mutableMapOf<Int, CanvasEngine<*>>()
@@ -23,13 +26,15 @@ class CanvasKernel(
     fun getActiveTiles(id: Int): ActiveTiles = canvas.getValue(id).activeTiles.value
 
     fun resolveVisibleTiles(viewPort: ViewPort, zoomLevel: Int, mapProperties: MapProperties) {
-        val visibleTiles = getVisibleTilesForLevel(
-            viewPort,
-            zoomLevel,
-            mapProperties.outsideTiles,
-            mapProperties.tileSize
-        )
-        canvas.forEach { (_, canvasEngine) -> canvasEngine.renderTiles(visibleTiles, zoomLevel) }
+        val visibleTiles = with(mapState) {
+            getVisibleTilesForLevel(
+                viewPort,
+                zoomLevel,
+                mapProperties.outsideTiles,
+                mapProperties.tileSize
+            )
+        }
+        canvas.forEach{ (_, canvasEngine) -> canvasEngine.renderTiles(visibleTiles, zoomLevel) }
     }
 
     fun refreshCanvas(currentParameters: List<CanvasParameters>) {
@@ -58,7 +63,7 @@ class CanvasKernel(
         }
     }
 
-    private fun getVisibleTilesForLevel(
+    private fun Density.getVisibleTilesForLevel(
         viewPort: ViewPort,
         zoomLevel: Int,
         outsideTilesType: OutsideTilesType,
@@ -119,8 +124,8 @@ class CanvasKernel(
         return visibleTileSpecs
     }
 
-    private fun getXYTile(position: Offset, zoomLevel: Int, tileDimension: TileDimension): Pair<Int, Int> = Pair(
-        (position.x / tileDimension.width * (1 shl zoomLevel)).toIntFloor(),
-        (position.y / tileDimension.height * (1 shl zoomLevel)).toIntFloor()
+    private fun Density.getXYTile(position: Offset, zoomLevel: Int, tileDimension: TileDimension): Pair<Int, Int> = Pair(
+        (position.x / tileDimension.width.toPx() * (1 shl zoomLevel)).toIntFloor(),
+        (position.y / tileDimension.height.toPx() * (1 shl zoomLevel)).toIntFloor()
     )
 }

@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rafambn.kmap.gestures.MapGestureWrapper
 import com.rafambn.kmap.mapProperties.TileDimension
@@ -83,10 +84,10 @@ fun VectorTileCanvas(
 
                             activeTiles.tiles.forEach { tile ->
                                 val scaleAdjustment = 2F.pow(activeTiles.currentZoom - tile.zoom)
-                                val tileLeft = tileSize.width * tile.col * scaleAdjustment + positionOffset.x
-                                val tileTop = tileSize.height * tile.row * scaleAdjustment + positionOffset.y
-                                val tileRight = tileLeft + tileSize.width * scaleAdjustment
-                                val tileBottom = tileTop + tileSize.height * scaleAdjustment
+                                val tileLeft = tileSize.width.toPx() * tile.col * scaleAdjustment + positionOffset.x
+                                val tileTop = tileSize.height.toPx() * tile.row * scaleAdjustment + positionOffset.y
+                                val tileRight = tileLeft + tileSize.width.toPx() * scaleAdjustment
+                                val tileBottom = tileTop + tileSize.height.toPx() * scaleAdjustment
 
                                 if (tileLeft < minX) minX = tileLeft
                                 if (tileTop < minY) minY = tileTop
@@ -173,15 +174,15 @@ private fun DrawScope.drawVectorTileLayerWithClipping(
     rotationDegrees: Float,
 ) {
     tile.optimizedTile?.let { optimizedData ->
-        val tileOffsetX = tileSize.width * tile.col * scaleAdjustment + positionOffset.x
-        val tileOffsetY = tileSize.height * tile.row * scaleAdjustment + positionOffset.y
+        val tileOffsetX = tileSize.width.toPx() * tile.col * scaleAdjustment + positionOffset.x
+        val tileOffsetY = tileSize.height.toPx() * tile.row * scaleAdjustment + positionOffset.y
         val tileOffsetPx = Offset(tileOffsetX.toFloat(), tileOffsetY.toFloat())
 
         canvas.save()
         canvas.translate(tileOffsetPx.x, tileOffsetPx.y)
 
-        val scaleX = (tileSize.width * scaleAdjustment) / optimizedData.extent
-        val scaleY = (tileSize.height * scaleAdjustment) / optimizedData.extent
+        val scaleX = (tileSize.width.toPx() * scaleAdjustment) / optimizedData.extent
+        val scaleY = (tileSize.height.toPx() * scaleAdjustment) / optimizedData.extent
         canvas.scale(scaleX, scaleY)
 
         optimizedData.layerFeatures[optimizedLayer.id]?.forEach { renderFeature ->
@@ -193,7 +194,7 @@ private fun DrawScope.drawVectorTileLayerWithClipping(
                 density,
                 optimizedLayer,
                 zoom,
-                optimizedData.extent.toFloat() / tileSize.height,
+                optimizedData.extent.toFloat() / tileSize.height.toPx(),
                 rotationDegrees,
             )
         }
@@ -223,15 +224,15 @@ private fun DrawScope.drawBackgroundForActiveTiles(
 
     activeTiles.tiles.forEach { tile ->
         val scaleAdjustment = 2F.pow(activeTiles.currentZoom - tile.zoom)
-        val tileOffsetX = tileSize.width * tile.col * scaleAdjustment + positionOffset.x
-        val tileOffsetY = tileSize.height * tile.row * scaleAdjustment + positionOffset.y
+        val tileOffsetX = tileSize.width.toPx() * tile.col * scaleAdjustment + positionOffset.x
+        val tileOffsetY = tileSize.height.toPx() * tile.row * scaleAdjustment + positionOffset.y
 
         canvas.drawRect(
             Rect(
                 tileOffsetX.toFloat(),
                 tileOffsetY.toFloat(),
-                tileOffsetX.toFloat() + tileSize.width * scaleAdjustment,
-                tileOffsetY.toFloat() + tileSize.height * scaleAdjustment
+                tileOffsetX.toFloat() + tileSize.width.toPx() * scaleAdjustment,
+                tileOffsetY.toFloat() + tileSize.height.toPx() * scaleAdjustment
             ),
             paint
         )

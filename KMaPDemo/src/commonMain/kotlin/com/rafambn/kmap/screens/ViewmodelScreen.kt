@@ -6,9 +6,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.*
 import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
@@ -30,11 +30,8 @@ import org.jetbrains.compose.resources.vectorResource
 fun ViewmodelScreen(
     navigateBack: () -> Unit
 ) {
-    val viewmodel = viewModel<MyViewmodel>(factory = MyViewmodel.Factory)
     val density = LocalDensity.current
-    LaunchedEffect(Unit) {
-        viewmodel.mapState.density = density
-    }
+    val viewmodel = viewModel<MyViewmodel>(factory = MyViewmodel.Factory(density = density))
     Box {
         KMaP(
             modifier = Modifier.fillMaxSize(),
@@ -54,7 +51,7 @@ fun ViewmodelScreen(
     }
 }
 
-class MyViewmodel(savedStateHandle: SavedStateHandle) : ViewModel() {
+class MyViewmodel(savedStateHandle: SavedStateHandle, density: Density) : ViewModel() {
     @OptIn(SavedStateHandleSaveableApi::class)
     val mapState = savedStateHandle.saveable(
         key = "mapState",
@@ -63,15 +60,16 @@ class MyViewmodel(savedStateHandle: SavedStateHandle) : ViewModel() {
             MapState(
                 mapProperties = SimpleMapProperties(),
                 zoomLevelPreference = null,
-                coroutineScope = viewModelScope
+                coroutineScope = viewModelScope,
+                density = density
             )
         }
     )
 
     companion object {
-        val Factory: ViewModelProvider.Factory = viewModelFactory {
+        fun Factory(density: Density): ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                MyViewmodel(savedStateHandle = createSavedStateHandle())
+                MyViewmodel(savedStateHandle = createSavedStateHandle(), density = density)
             }
         }
     }

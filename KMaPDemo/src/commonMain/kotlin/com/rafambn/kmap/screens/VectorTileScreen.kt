@@ -10,6 +10,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.components.VectorCanvasParameters
 import com.rafambn.kmap.core.KMaP
@@ -42,7 +43,7 @@ fun VectorTileScreen(
             boundMap = BoundMapBorder(horizontal = MapBorderType.BOUND, vertical = MapBorderType.BOUND),
             outsideTiles = OutsideTilesType.NONE,
             zoomLevels = SimpleZoomLevelRange(max = 14),
-            tileSize = TileDimension(512, 512)
+            tileSize = TileDimension(512.dp, 512.dp)
         )
     )
     val json = Json {

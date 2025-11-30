@@ -1,5 +1,6 @@
 package com.rafambn.kmap.customSources
 
+import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.mapProperties.*
 import com.rafambn.kmap.mapProperties.border.BoundMapBorder
 import com.rafambn.kmap.mapProperties.border.MapBorderType
@@ -12,7 +13,7 @@ data class SimpleMapProperties(
     override val outsideTiles: OutsideTilesType = OutsideTilesType.NONE,
     override val zoomLevels: ZoomLevelRange = SimpleZoomLevelRange(),
     override val coordinatesRange: CoordinatesRange = SimpleCoordinatesRange(),
-    override val tileSize: TileDimension = TileDimension(900, 900)
+    override val tileSize: TileDimension = TileDimension(512.dp, 512.dp)
 ) : MapProperties {
     override fun toProjectedCoordinates(coordinates: Coordinates): ProjectedCoordinates = ProjectedCoordinates(
         coordinates.x,

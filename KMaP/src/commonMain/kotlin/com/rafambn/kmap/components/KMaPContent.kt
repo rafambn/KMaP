@@ -3,6 +3,7 @@ package com.rafambn.kmap.components
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.copy
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -124,13 +125,16 @@ class KMaPContent(
         val orientationY = (mapState.mapProperties.coordinatesRange.latitude.orientation).toFloat()
         orientationMatrix.scale(orientationX, orientationY)
         val scaleMatrix = Matrix()
-        val scaleX = (mapState.mapProperties.tileSize.width / mapState.mapProperties.coordinatesRange.longitude.span).toFloat()
-        val scaleY = (mapState.mapProperties.tileSize.height / mapState.mapProperties.coordinatesRange.latitude.span).toFloat()
-        scaleMatrix.scale(scaleX, scaleY)
+        val scale = with(mapState) {
+            val scaleX = (mapState.mapProperties.tileSize.width.toPx() / mapState.mapProperties.coordinatesRange.longitude.span).toFloat()
+            val scaleY = (mapState.mapProperties.tileSize.height.toPx() / mapState.mapProperties.coordinatesRange.latitude.span).toFloat()
+            Offset(scaleX, scaleY)
+        }
+        scaleMatrix.scale(scale.x, scale.y)
         originalPath.transform(orientationMatrix)
         originalPath.transform(scaleMatrix)
         val densityScale = Matrix()
-        densityScale.scale(mapState.density.density, mapState.density.density)
+        densityScale.scale(mapState.density, mapState.density)
         originalPath.transform(densityScale)
         val bounds = originalPath.getBounds()
         paths.add(
@@ -149,8 +153,8 @@ class KMaPContent(
                                     convertScreenOffsetToProjectedCoordinates = {
                                         val untranslatedPoint = it.plus(ScreenOffset(bounds.left - padding, bounds.top - padding))
                                         return@detectPathGestures ProjectedCoordinates(
-                                            untranslatedPoint.x * orientationX / (scaleX * mapState.density.density),
-                                            untranslatedPoint.y * orientationY / (scaleY * mapState.density.density),
+                                            untranslatedPoint.x * orientationX / (scale.x * mapState.density),
+                                            untranslatedPoint.y * orientationY / (scale.y * mapState.density),
                                         )
                                     }
                                 )
