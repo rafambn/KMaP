@@ -23,10 +23,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rafambn.kmap.gestures.MapGestureWrapper
 import com.rafambn.kmap.mapProperties.TileDimension
@@ -76,29 +74,6 @@ fun VectorTileCanvas(
                     scale(2F.pow(magnifierScale), Offset.Zero)
                 }) {
                     drawIntoCanvas { canvas ->
-                        if (activeTiles.tiles.isNotEmpty()) {
-                            var minX = Double.MAX_VALUE
-                            var minY = Double.MAX_VALUE
-                            var maxX = Double.MIN_VALUE
-                            var maxY = Double.MIN_VALUE
-
-                            activeTiles.tiles.forEach { tile ->
-                                val scaleAdjustment = 2F.pow(activeTiles.currentZoom - tile.zoom)
-                                val tileLeft = tileSize.width.toPx() * tile.col * scaleAdjustment + positionOffset.x
-                                val tileTop = tileSize.height.toPx() * tile.row * scaleAdjustment + positionOffset.y
-                                val tileRight = tileLeft + tileSize.width.toPx() * scaleAdjustment
-                                val tileBottom = tileTop + tileSize.height.toPx() * scaleAdjustment
-
-                                if (tileLeft < minX) minX = tileLeft
-                                if (tileTop < minY) minY = tileTop
-                                if (tileRight > maxX) maxX = tileRight
-                                if (tileBottom > maxY) maxY = tileBottom
-                            }
-
-                            val clipRect = Rect(minX.toFloat(), minY.toFloat(), maxX.toFloat(), maxY.toFloat())
-                            canvas.clipRect(clipRect)
-                        }
-
                         val backgroundLayer = style.layers.find { it.type == "background" }
                         backgroundLayer?.let {
                             drawBackgroundForActiveTiles(
@@ -111,7 +86,7 @@ fun VectorTileCanvas(
                             )
                         }
 
-                         drawStyleLayersWithTileClipping(
+                        drawStyleLayersWithTileClipping(
                             activeTiles.tiles,
                             activeTiles.currentZoom,
                             style,
@@ -173,33 +148,39 @@ private fun DrawScope.drawVectorTileLayerWithClipping(
     zoom: Double,
     rotationDegrees: Float,
 ) {
-    tile.optimizedTile?.let { optimizedData ->
-        val tileOffsetX = tileSize.width.toPx() * tile.col * scaleAdjustment + positionOffset.x
-        val tileOffsetY = tileSize.height.toPx() * tile.row * scaleAdjustment + positionOffset.y
-        val tileOffsetPx = Offset(tileOffsetX.toFloat(), tileOffsetY.toFloat())
-
-        canvas.save()
-        canvas.translate(tileOffsetPx.x, tileOffsetPx.y)
-
-        val scaleX = (tileSize.width.toPx() * scaleAdjustment) / optimizedData.extent
-        val scaleY = (tileSize.height.toPx() * scaleAdjustment) / optimizedData.extent
-        canvas.scale(scaleX, scaleY)
-
-        optimizedData.layerFeatures[optimizedLayer.id]?.forEach { renderFeature ->
-            drawRenderFeature(
-                canvas,
-                renderFeature,
-                scaleAdjustment,
-                fontResolver,
-                density,
-                optimizedLayer,
-                zoom,
-                optimizedData.extent.toFloat() / tileSize.height.toPx(),
-                rotationDegrees,
+    val sizeX = (scaleAdjustment * tileSize.width.toPx())
+    val sizeY = (scaleAdjustment * tileSize.height.toPx())
+    val posOffsetX = positionOffset.x.toIntFloor()
+    val posOffsetY = positionOffset.y.toIntFloor()
+    canvas.withSave {
+        tile.optimizedTile?.let { optimizedData ->
+            val tileLeft = tile.col * sizeX + posOffsetX
+            val tileTop = tile.row * sizeY + posOffsetY
+            canvas.translate(tileLeft, tileTop)
+            val scaleX = sizeX / optimizedData.extent.toFloat()
+            val scaleY = sizeY / optimizedData.extent.toFloat()
+            canvas.scale(scaleX, scaleY)
+            val clipRect = Rect(
+                0F,
+                0F,
+                optimizedData.extent.toFloat(),
+                optimizedData.extent.toFloat()
             )
+            canvas.clipRect(clipRect)
+            optimizedData.layerFeatures[optimizedLayer.id]?.forEach { renderFeature ->
+                drawRenderFeature(
+                    canvas,
+                    renderFeature,
+                    scaleAdjustment,
+                    fontResolver,
+                    density,
+                    optimizedLayer,
+                    zoom,
+                    optimizedData.extent.toFloat() / tileSize.height.toPx(),
+                    rotationDegrees,
+                )
+            }
         }
-
-        canvas.restore()
     }
 }
 
@@ -223,19 +204,25 @@ private fun DrawScope.drawBackgroundForActiveTiles(
     }
 
     activeTiles.tiles.forEach { tile ->
-        val scaleAdjustment = 2F.pow(activeTiles.currentZoom - tile.zoom)
-        val tileOffsetX = tileSize.width.toPx() * tile.col * scaleAdjustment + positionOffset.x
-        val tileOffsetY = tileSize.height.toPx() * tile.row * scaleAdjustment + positionOffset.y
+        canvas.withSave {
+            val scaleAdjustment = 2F.pow(activeTiles.currentZoom - tile.zoom)
+            val tileLeft = tileSize.width.toPx() * tile.col * scaleAdjustment + positionOffset.x
+            val tileTop = tileSize.height.toPx() * tile.row * scaleAdjustment + positionOffset.y
+            val tileRight = tileLeft + tileSize.width.toPx() * scaleAdjustment
+            val tileBottom = tileTop + tileSize.height.toPx() * scaleAdjustment
 
-        canvas.drawRect(
-            Rect(
-                tileOffsetX.toFloat(),
-                tileOffsetY.toFloat(),
-                tileOffsetX.toFloat() + tileSize.width.toPx() * scaleAdjustment,
-                tileOffsetY.toFloat() + tileSize.height.toPx() * scaleAdjustment
-            ),
-            paint
-        )
+            canvas.drawRect(
+                Rect(
+                    tileLeft.toFloat(),
+                    tileTop.toFloat(),
+                    tileRight.toFloat(),
+                    tileBottom.toFloat()
+                ),
+                paint
+            )
+            val clipRect = Rect(tileLeft.toFloat(), tileTop.toFloat(), tileRight.toFloat(), tileBottom.toFloat())
+            canvas.clipRect(clipRect)
+        }
     }
 }
 
