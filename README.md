@@ -9,7 +9,12 @@
 ## Checkout the demo app on wasm target: [**KMaP Demo**](https://kmap.rafambn.com/kmapdemo/).
 ## Checkout the documentation also: [**KMaP Page**](https://kmap.rafambn.com/).
 
-Current version [0.3.1](https://github.com/rafambn/kmap/releases).
+Current version [0.4.0](https://github.com/rafambn/kmap/releases).
+
+🧭 **Project Status**
+
+🚧 **Vector tiles paused**: Work is on hold until Compose provides async measurement + async drawing, which are needed for smooth, non-blocking rendering.  
+✅ **Raster tiles done**: All raster features are complete and ready to use.
 
 ### Key Features
 

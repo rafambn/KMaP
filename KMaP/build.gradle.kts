@@ -83,7 +83,7 @@ mavenPublishing {
     coordinates(
         groupId = "com.rafambn",
         artifactId = "KMaP",
-        version = "0.4.1"
+        version = "0.4.0"
     )
 
 // Configure POM metadata for the published artifact

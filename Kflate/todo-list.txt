@@ -1,3 +1,0 @@
-try to make code use byteArray instead of uByteArray;
-create streams;
-examine jvm impl for improvements on this lib;

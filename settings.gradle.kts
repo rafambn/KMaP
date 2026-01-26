@@ -1,7 +1,6 @@
 rootProject.name = "KMaP"
 include(":KMaPDemo")
 include(":KMaP")
-include(":Kflate")
 
 pluginManagement {
     repositories {

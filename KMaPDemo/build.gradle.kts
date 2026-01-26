@@ -60,7 +60,6 @@ kotlin {
             implementation(libs.kotlinx.serialization.protobuf)
             implementation(libs.kotlinx.coroutines.core)
             implementation(project(":KMaP"))
-            implementation(project(":Kflate"))
 //            implementation(libs.kmap)
             implementation(libs.ktor.client.core)
         }
