@@ -2,9 +2,9 @@
 
 ## **Map everything with KMaP**: A flexible and powerful compose multiplatform mapping library
 
-<div style="text-align: center;">
+<p align="center">
   <img src="/mkdocs/docs/assets/KMaP-Logo.svg" alt="KMaP-Logo" width="200" height="200">
-</div>
+</p>
 
 ## Check out the demo app on wasm target: [**KMaP Demo**](https://kmap.rafambn.com/kmapdemo/).
 ## Check out the documentation also: [**KMaP Page**](https://kmap.rafambn.com/).
