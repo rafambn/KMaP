@@ -8,14 +8,14 @@
     }
     ```
 
-2. Add the desired dependencies to your module's `build.gradle` file
+2. Add the desired dependencies to your module's `build.gradle.kts` file
 
 === "Dependencies"
 
     ```kotlin
     sourceSets {
         commonMain.dependencies {
-            implementation("com.rafambn:kmap:0.3.0")
+            implementation("com.rafambn:KMaP:0.4.0")
         }
     }
     ```
@@ -26,7 +26,7 @@
 
     [versions]
 
-    kmap = "0.3.0"
+    kmap = "0.4.0"
 
     
     [libraries]
@@ -35,4 +35,4 @@
 
     ```
 
-!!! note "Current version [here](https://github.com/rafambn/kmap/releases)."
+!!! note "Current version: 0.4.0 ([releases](https://github.com/rafambn/kmap/releases))."

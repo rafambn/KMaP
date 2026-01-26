@@ -10,7 +10,12 @@ hide: toc
   <img src="assets/KMaP-Logo.svg" alt="KMaP-Logo" width="200" height="200">
 </div>
 
-## Checkout the demo app on wasm target: [**KMaP Demo**](https://kmap.rafambn.com/kmapdemo/).
+## Check out the demo app on wasm target: [**KMaP Demo**](https://kmap.rafambn.com/kmapdemo/).
+
+### Project Status
+
+- Raster tiles are stable and ready to use.
+- Vector tiles are paused until Compose provides async measurement + async drawing APIs.
 
 ### Key Features
 
@@ -29,16 +34,22 @@ hide: toc
 
 ### Usage Example
 
-With KMaP, you don't need a mapping source for each platform. Here's a simple example to get you started:
+With KMaP, you implement your map logic once. Provide a `MapProperties` and a `TileSource` and use it across targets:
 
 ```kotlin
-val mapState = rememberMapState(mapProperties = SimpleMapProperties())
+val mapProperties = /* your MapProperties implementation */
+val tileSource = /* your TileSource<RasterTile> implementation */
+val mapState = rememberMapState(mapProperties = mapProperties)
+
 KMaP(
     modifier = Modifier.fillMaxSize(),
     mapState = mapState,
 ) {
-    canvas(
-        parameters = CanvasParameters(id = 1, tileSource = SimpleMapTileSource()::getTile),
+    rasterCanvas(
+        parameters = RasterCanvasParameters(
+            id = 1,
+            tileSource = tileSource::getTile,
+        ),
         gestureWrapper = MapGestureWrapper(
             onGesture = { centroid, pan, zoom, rotation ->
                 mapState.motionController.move {
@@ -51,3 +62,5 @@ KMaP(
     )
 }
 ```
+
+> For full working examples (including OSM properties and tile sources), see the demo app in the repo.

@@ -1,17 +1,22 @@
 # Usage
 
-Here is a basic implementation of KMaP where it uses the OpenStreetMap tile generation to show the map on the screen.
+Here is a basic implementation of KMaP using a raster tile source.
 
-You can encounter a demoApp on the [KMaP Repo](https://github.com/rafambn/KMaP). 
+You can find a demo app (including OpenStreetMap sources) in the [KMaP repo](https://github.com/rafambn/KMaP).
 
 ```kotlin
-val mapState = rememberMapState(mapProperties = SimpleMapProperties())
+val mapProperties = /* your MapProperties implementation */
+val tileSource = /* your TileSource<RasterTile> implementation */
+val mapState = rememberMapState(mapProperties = mapProperties)
 KMaP(
     modifier = Modifier.fillMaxSize(),
     mapState = mapState,
 ) {
-    canvas(
-        parameters = CanvasParameters(id = 1, tileSource = SimpleMapTileSource()::getTile),
+    rasterCanvas(
+        parameters = RasterCanvasParameters(
+            id = 1,
+            tileSource = tileSource::getTile,
+        ),
         gestureWrapper = MapGestureWrapper(
             onGesture = { centroid, pan, zoom, rotation ->
                 mapState.motionController.move {
@@ -27,17 +32,16 @@ KMaP(
 
 ## How it Works
 
-There are four parts of the KMaP: MotionController, MapState, LazyCanvas, and the KMaPContent.
+There are a few core pieces in KMaP: MotionController, MapState, and KMaPContent.
 
-* **MotionController**: Handle the movement of the map like zooming, panning, and rotating for either user or app input.
-* **MapState**: Control all properties of the map and defines the visible tiles for canvas rendering.
-* **LazyCanvas**: Place each composable defined on KMaPContent on the layout.
-* **KMaPContent**: Based on the user provided components: canvas, marker, cluster, and path. Creates the necessary composable for a map to work.
+* **MotionController**: Handles movement like zooming, panning, and rotating for either user or app input.
+* **MapState**: Holds map properties and camera state, and resolves visible tiles for rendering.
+* **KMaPContent**: The DSL scope where you declare raster/vector canvases, markers, clusters, and paths.
 
 ## MapState
 
-This is where almost all the important stuff is. It expects an implementation MapProperties interface that will tell how the map will
-behave, for example, tile size, zoom level and projection transformation function.
+This is where most of the important state lives. It expects an implementation of the MapProperties interface that describes how the map
+behaves, for example, tile size, zoom range, and projection transforms.
 ```kotlin
 interface MapProperties {
     val boundMap: BoundMapBorder
@@ -51,9 +55,8 @@ interface MapProperties {
     fun toCoordinates(projectedCoordinates: ProjectedCoordinates): Coordinates
 }
 ```
-It will also hold the angle, zoom, position variables that can be used by the user to display map info.
-The MapState also calculates the visible tiles so that each canvas could render its
-own images.
+It also exposes the camera state (angle, zoom, and position) so you can display map info in your UI.
+MapState calculates the visible tiles so each canvas can render its images.
 ```kotlin
 data class CameraState(
     val canvasSize: ScreenOffset = ScreenOffset.Zero,
@@ -67,17 +70,16 @@ data class CameraState(
 
 It's responsible for handling the movement of the map like zooming, panning, and rotating for either user input or app input.
 
-It has three movement options:
+It has two movement options:
 
-* Move: This will set/add/remove the provided values on the map parameters
-* Animate: This will animate the map parameters to the provided value
+* Move: Sets or adjusts the provided values on the map parameters.
+* Animate: Animates the map parameters to the provided values.
 
-While Move is Synchronous the Animate is Async and thus must be launched from a coroutine.
+Move is synchronous; Animate is async and must be launched from a coroutine.
 
 ### Reference
 
-Before seeing how to move and animate, you have to be aware of how the reference system works. It's an open class that implements all necessary types
-of reference points on the screen.
+Before using move and animate, it helps to know the reference system. Reference is the base class for the coordinate types used by the API.
 
 ```kotlin
 open class Reference
@@ -93,7 +95,7 @@ class DifferentialScreenOffset : Reference
 * TilePoint represents a point on the map with projection and scaled to the tile
 * Coordinates represent a coordinate of the map
 * ProjectedCoordinates represent a coordinate of the map with its projection
-* DifferentialScreenOffset is the same as ScreenOffset but is differential
+* DifferentialScreenOffset is the same as ScreenOffset but represents a delta
 
 ### Move
 
@@ -114,9 +116,9 @@ interface MoveInterface {
 }
 ```
 
-Here are some examples of how to Set with MotionController. *See the comments to fully understand what each line does
+Here are some examples of how to use MotionController.move. See the comments to understand what each line does.
 
-``` yaml
+```kotlin
 mapState.motionController.move {
     positionTo(ScreenOffset.Zero)  # (1)!
     positionTo(TilePoint.Zero) # (2)!
@@ -155,9 +157,9 @@ interface AnimateInterface {
 
 Animate has similar scoped functions to move with a key difference; it adds an animationSpec where you can define how the animation will be performed.
 
-``` kotlin
+```kotlin
 scope.launch {
-        mapState.motionController.animate {
+    mapState.motionController.animate {
         positionTo(Coordinates(0.0, 0.0), TweenSpec(2000))
         positionTo(Coordinates(180.0, 90.0), TweenSpec(2000))
         positionTo(Coordinates(45.0, 0.0), TweenSpec(2000))
@@ -172,50 +174,56 @@ scope.launch {
 }
 ```
 
-## Canvas
+## Raster and Vector Canvas
 
-The Canvas function usable in the KMaP scope is just a wrapper on the native canvas so that we can handle the render 
-process needing you to provide the source tile implementing the following api.
+KMaP exposes two canvas types in the KMaP scope:
+
+* **rasterCanvas**: Renders raster tiles.
+* **vectorCanvas**: Renders vector tiles and requires a style.
+
+Both rely on a TileSource implementation:
 
 ```kotlin
-interface TileSource {
-    suspend fun getTile(zoom: Int, row: Int, column: Int): TileRenderResult
+interface TileSource<T : Tile> {
+    suspend fun getTile(zoom: Int, row: Int, column: Int): TileResult<T>
 }
 ```
 
-With this function you can render any tilled map you want. Maybe you want a free map of the world with OSM, or don't 
-like to use a Google library but want to use its tiles, or render it on the device, or read from a local file for your 
-Skyrim map (I'm old sorry xD) with this you can do it all.
+Use `RasterCanvasParameters` or `VectorCanvasParameters` when calling `rasterCanvas` or `vectorCanvas`. Vector canvases also take an `OptimizedStyle`.
 
-It's provided a MapGestureWrapper with a some gesture that later will be attributed on a pointerInputScope
+With a tile source you can render any tiled map you want: OSM, custom servers, offline tiles, or device-generated tiles.
+
+You can pass a MapGestureWrapper to handle input; KMaP wires it into the pointer input scope:
 
 ```kotlin
 MapGestureWrapper(
-    onDoubleTap = { offset -> motionController.move { zoomByCentered(-1 / 3F, offset) } },
+    onDoubleTap = { offset -> mapState.motionController.move { zoomByCentered(-1 / 3F, offset) } },
     onTapSwipe = { zoomChange, rotationChange ->
-        motionController.move {
-            zoomBy(zoomChange / 120)
+        mapState.motionController.move {
+            zoomBy(zoomChange / 120F)
             rotateBy(rotationChange)
         }
     },
-    onTwoFingersTap = { offset -> motionController.move { zoomByCentered(1 / 3F, offset) } },
+    onTwoFingersTap = { offset -> mapState.motionController.move { zoomByCentered(1 / 3F, offset) } },
     onGesture = { centroid, pan, zoom, rotation ->
-        motionController.move {
+        mapState.motionController.move {
             rotateByCentered(rotation.toDouble(), centroid)
-            zoomByCentered(zoom / gestureScale, centroid)
+            zoomByCentered(zoom, centroid)
             positionBy(pan)
         }
     },
-    onScroll = { mouseOffset, scrollAmount -> motionController.move { zoomByCentered(scrollAmount / scrollScale, mouseOffset) } },
+    onScroll = { mouseOffset, scrollAmount ->
+        mapState.motionController.move { zoomByCentered(scrollAmount, mouseOffset) }
+    },
 )
 ```
 
-See https://wiki.openstreetmap.org/wiki/Slippy_map to better understand how it works.
+See the [Slippy map](https://wiki.openstreetmap.org/wiki/Slippy_map) docs to better understand how it works.
 
 ## Markers
 
-Markers are a powerful way to draw anything on the map, instead of a bitmap or vector, like other libraries, it uses
-composable instead this way you draw whatever you want. Declare it on the KMaP Scope for it to work.
+Markers are a powerful way to draw anything on the map. Instead of a bitmap or vector like other libraries, KMaP uses
+a composable so you can draw whatever you want. Declare it in the KMaP scope.
 
 ```kotlin
 marker(
@@ -234,9 +242,8 @@ marker(
 }
 ```
 
-Use the markers() API to draw a list of markers with the provided composable, you can set up a bunch of them with this.
-There are a lot of options on how to handle your marker. Fell free to toy with them. Bellow is the data class that stores  
-the options and its default values.
+Use the markers() API to draw a list of markers with the provided composable. There are a lot of options for how to
+handle markers; feel free to experiment. Below is the data class that stores the options and its default values.
 
 ```kotlin
 open class MarkerParameters(
@@ -254,8 +261,8 @@ open class MarkerParameters(
 
 ## Clusters
 
-With cluster, you can merge markers if they are overlying, for example. Declare it on the KMaP scope with the clusterId
-of the markers you want to cluster for it to work.
+With clusters, you can merge overlapping markers. Declare it in the KMaP scope with the clusterId
+of the markers you want to group.
 
 ```kotlin
 cluster(
@@ -271,7 +278,7 @@ cluster(
 }
 ```
 
-Cluster composable do not behave the same as the markers, so you have to provide how it will behave with its parameters.
+Cluster composables do not behave the same as markers, so you have to define their behavior with parameters.
 Here is the data class with the options.
 
 ```kotlin
@@ -286,9 +293,9 @@ open class ClusterParameters(
 
 ## Path
 
-Paths are similar to markers in regards that they are also composable. The key difference is that for it to be "clickable" due to the nature of Compose, you need it to 
-have a pointerInputScope that also shares its inputs with its siblings, otherwise you will click outside the path and the map won't respond to your click. 
-Check the SharedSuspendingPointerInput file on the project if you want to dive onto how it works.
+Paths are similar to markers in that they are also composable. The key difference is that to be "clickable" you need a
+pointer input scope that shares input with its siblings, otherwise taps outside the path will stop the map from responding.
+Check `SharedSuspendingPointerInput.kt` in the project if you want to dive into how it works.
 
 ```kotlin
 val path1 = PathData {
