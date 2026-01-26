@@ -6,8 +6,8 @@
   <img src="/mkdocs/docs/assets/KMaP-Logo.svg" alt="KMaP-Logo" width="200" height="200">
 </div>
 
-## Checkout the demo app on wasm target: [**KMaP Demo**](https://kmap.rafambn.com/kmapdemo/).
-## Checkout the documentation also: [**KMaP Page**](https://kmap.rafambn.com/).
+## Check out the demo app on wasm target: [**KMaP Demo**](https://kmap.rafambn.com/kmapdemo/).
+## Check out the documentation also: [**KMaP Page**](https://kmap.rafambn.com/).
 
 Current version [0.4.0](https://github.com/rafambn/kmap/releases).
 
@@ -33,26 +33,31 @@ Current version [0.4.0](https://github.com/rafambn/kmap/releases).
 
 ### Usage Example
 
-With KMaP, you don't need a mapping source for each platform. Here's a simple example to get you started:
+With KMaP, you implement your map logic once. Provide a `MapProperties` and a `TileSource` and use it across targets:
 
 ```kotlin
-val mapState = rememberMapState(mapProperties = SimpleMapProperties())
+val mapProperties = /* your MapProperties implementation */
+val tileSource = /* your TileSource<RasterTile> implementation */
+val mapState = rememberMapState(mapProperties = mapProperties)
 
 KMaP(
     modifier = Modifier.fillMaxSize(),
     mapState = mapState,
 ) {
-    canvas(
-        tileSource = SimpleMapTileSource()::getTile,
-        gestureDetection = {
-            detectMapGestures(
-                onDrag = { dragAmount -> motionController.move { positionBy(dragAmount) } },
-                onScroll = { mouseOffset, scrollAmount ->
-                    motionController.move { zoomByCentered(scrollAmount, mouseOffset) }
-                },
-                onCtrlGesture = { rotation -> motionController.move { rotateBy(rotation.toDouble()) } },
-            )
-        }
+    rasterCanvas(
+        parameters = RasterCanvasParameters(
+            id = 1,
+            tileSource = tileSource::getTile,
+        ),
+        gestureWrapper = MapGestureWrapper(
+            onGesture = { centroid, pan, zoom, rotation ->
+                mapState.motionController.move {
+                    rotateByCentered(rotation.toDouble(), centroid)
+                    zoomByCentered(zoom, centroid)
+                    positionBy(pan)
+                }
+            },
+        )
     )
 }
 ```
