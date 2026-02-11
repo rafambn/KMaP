@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalWasmDsl::class)
+
 import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.KotlinMultiplatform
 import com.vanniktech.maven.publish.SourcesJar
@@ -17,28 +19,24 @@ version = "0.4.0"
 
 kotlin {
     jvmToolchain(17)
-
     androidTarget{ publishLibraryVariants("release") }
     jvm()
     js(IR) {
-        browser {
-            webpackTask {
-                mainOutputFileName = "KMaP.js"
-            }
-        }
+        browser()
         nodejs()
-        binaries.executable()
+        compilerOptions { useEsClasses = true }
     }
-    @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         browser()
         nodejs()
-        binaries.executable()
+        d8()
     }
     listOf(
         iosX64(),
         iosArm64(),
-        iosSimulatorArm64()
+        iosSimulatorArm64(),
+        macosX64(),
+        macosArm64()
     ).forEach {
         it.binaries.framework {
             baseName = "KMaP"
@@ -48,9 +46,9 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.material3)
-            implementation(compose.components.resources)
+            implementation(libs.runtime)
+            implementation(libs.material3)
+            implementation(libs.components.resources)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.core)
             implementation(libs.kotlinx.serialization.protobuf)
@@ -84,7 +82,7 @@ mavenPublishing {
     coordinates(
         groupId = "com.rafambn",
         artifactId = "KMaP",
-        version = "0.4.0"
+        version = "0.4.1"
     )
 
 // Configure POM metadata for the published artifact

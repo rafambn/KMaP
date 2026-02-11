@@ -14,11 +14,13 @@ logback = "1.5.29"
 androidx-lifecycle = "2.9.6"
 androidx-navigation = "2.9.2"
 kmap = "0.4.0"
+material3 = "1.9.0-beta03"
 
 [libraries]
 
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
 androidx-activityCompose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
+components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose" }
 compose-uitooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose-uitooling" }
 androidx-lifecycle-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
@@ -37,6 +39,8 @@ ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "kto
 ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktorVersion" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 kmap = { module = "com.rafambn:KMaP", version.ref = "kmap" }
+material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
+runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose" }
 
 [plugins]
 
