@@ -84,14 +84,11 @@ kotlin {
             implementation(compose.html.core)
             implementation(libs.ktor.client.js)
         }
-
     }
-
-
 }
 
 android {
-    namespace = "com.rafambn"
+    namespace = "com.rafambn.kmap.demo"
     compileSdk = 36
 
     defaultConfig {

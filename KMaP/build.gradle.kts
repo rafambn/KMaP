@@ -1,5 +1,6 @@
 import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.KotlinMultiplatform
+import com.vanniktech.maven.publish.SourcesJar
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
@@ -8,7 +9,7 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.serialization)
-    id("com.vanniktech.maven.publish") version "0.33.0"
+    id("com.vanniktech.maven.publish") version "0.36.0"
 }
 
 group = "com.rafambn"
@@ -71,7 +72,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.rafambn"
+    namespace = "com.rafambn.kmap"
     compileSdk = 36
 
     defaultConfig {
@@ -119,7 +120,7 @@ mavenPublishing {
     configure(
         KotlinMultiplatform(
             javadocJar = JavadocJar.Empty(),
-            sourcesJar = true,
+            sourcesJar = SourcesJar.Sources(),
             androidVariantsToPublish = listOf("release"),
         )
     )

@@ -1,19 +1,19 @@
 [versions]
 
-kotlin = "2.3.0"
-compose = "1.10.0"
-agp = "8.12.3"
+kotlin = "2.3.10"
+compose = "1.10.1"
+agp = "9.0.0"
 androidx-appcompat = "1.7.1"
-androidx-activityCompose = "1.12.2"
-compose-uitooling = "1.10.1"
+androidx-activityCompose = "1.12.3"
+compose-uitooling = "1.10.2"
 coroutines-core = "1.10.2"
 kotlinx-serialization = "1.10.0"
 kotlinx-datetime = "0.7.1"
 ktorVersion = "3.4.0"
-logback = "1.5.26"
+logback = "1.5.29"
 androidx-lifecycle = "2.9.6"
-androidx-navigation = "2.9.1"
-kmap = "0.3.1"
+androidx-navigation = "2.9.2"
+kmap = "0.4.0"
 
 [libraries]
 
