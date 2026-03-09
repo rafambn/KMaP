@@ -1,22 +1,37 @@
-# KMaP
+<h1 align="center">KMaP</h1>
 
-A flexible and powerful compose multiplatform mapping library
+<p align="center">A flexible and powerful compose multiplatform mapping library</p>
 
 <p align="center">
   <img src="/mkdocs/docs/assets/KMaP-Logo.svg" alt="KMaP-Logo" width="200" height="200">
 </p>
 
-![Version](https://img.shields.io/maven-central/v/com.rafambn/KMaP?label=Maven%20Central)
-![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
-![Platform Targets](https://img.shields.io/badge/targets-android%20%7C%20jvm%20%7C%20js%20%7C%20wasm%20%7C%20ios%20%7C%20macos-0A7EA4)
+<p align="center">
+  <img alt="Version" src="https://img.shields.io/maven-central/v/com.rafambn/KMaP?label=Maven%20Central">
+  <img alt="License" src="https://img.shields.io/badge/license-Apache%202.0-blue.svg">
+  <img alt="Platform Targets" src="https://img.shields.io/badge/targets-android%20%7C%20jvm%20%7C%20js%20%7C%20wasm%20%7C%20ios%20%7C%20macos-0A7EA4">
+</p>
 
-KMaP is a Kotlin Compose Multiplatform mapping library designed for shared map UIs across all KMP targets. It gives you a single composable API to build map experiences once in `commonMain`, while still supporting platform-specific runtime targets.
+<p align="center">
+  KMaP is a Kotlin Compose Multiplatform mapping library designed for shared map UIs across all KMP targets. It gives you a single composable API to build map experiences once in <code>commonMain</code>, while still supporting platform-specific runtime targets.
+</p>
 
 
-## Check out the demo app on wasm target: [**KMaP Demo**](https://kmap.rafambn.com/kmapdemo/).
-## Check out the documentation also: [**KMaP Page**](https://kmap.rafambn.com/).
+<table align="center">
+  <tr>
+    <td align="center">
+      <a href="https://kmap.rafambn.com/kmapdemo/"><strong>KMaP Demo App (WASM)</strong></a>
+    </td>
+  </tr>
+</table>
 
-Current version [0.4.1](https://github.com/rafambn/kmap/releases).
+<table align="center">
+  <tr>
+    <td align="center">
+      <a href="https://kmap.rafambn.com/"><strong>Documentation Page</strong></a>
+    </td>
+  </tr>
+</table>
 
 🧭 **Project Status**
 
@@ -36,9 +51,21 @@ Current version [0.4.1](https://github.com/rafambn/kmap/releases).
 - **Easy Integration**: Seamlessly integrate KMaP into your existing compose projects.
 - **Customizable**: Tailor the map's behavior to fit your needs.
 
-[//]: # (- **Customizable Map Styles**: Ability to customize the appearance of maps, including colors, labels, and themes.)
+### Setup
 
-### Usage Example
+Add KMaP to your `commonMain` dependencies:
+
+```kotlin
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation("com.rafambn:KMaP:0.4.1")
+        }
+    }
+}
+```
+
+### Usage
 
 With KMaP, you implement your map logic once. Provide a `MapProperties` and a `TileSource` and use it across targets:
 
