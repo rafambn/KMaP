@@ -7,8 +7,12 @@
 </p>
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/maven-central/v/com.rafambn/KMaP?label=Maven%20Central">
-  <img alt="License" src="https://img.shields.io/badge/license-Apache%202.0-blue.svg">
+  <a href="https://search.maven.org/search?q=g:com.rafambn%20AND%20a:KMaP">
+    <img alt="Maven Central" src="https://img.shields.io/maven-central/v/com.rafambn/KMaP?label=Maven%20Central">
+  </a>
+  <a href="./LICENSE">
+    <img alt="License" src="https://img.shields.io/badge/license-Apache%202.0-blue.svg">
+  </a>
   <img alt="Platform Targets" src="https://img.shields.io/badge/targets-android%20%7C%20jvm%20%7C%20js%20%7C%20wasm%20%7C%20ios%20%7C%20macos-0A7EA4">
 </p>
 
