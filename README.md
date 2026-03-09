@@ -1,10 +1,17 @@
-# Overview
+# KMaP
 
-## **Map everything with KMaP**: A flexible and powerful compose multiplatform mapping library
+A flexible and powerful compose multiplatform mapping library
 
 <p align="center">
   <img src="/mkdocs/docs/assets/KMaP-Logo.svg" alt="KMaP-Logo" width="200" height="200">
 </p>
+
+![Version](https://img.shields.io/maven-central/v/com.rafambn/KMaP?label=Maven%20Central)
+![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
+![Platform Targets](https://img.shields.io/badge/targets-android%20%7C%20jvm%20%7C%20js%20%7C%20wasm%20%7C%20ios%20%7C%20macos-0A7EA4)
+
+KMaP is a Kotlin Compose Multiplatform mapping library designed for shared map UIs across all KMP targets. It gives you a single composable API to build map experiences once in `commonMain`, while still supporting platform-specific runtime targets.
+
 
 ## Check out the demo app on wasm target: [**KMaP Demo**](https://kmap.rafambn.com/kmapdemo/).
 ## Check out the documentation also: [**KMaP Page**](https://kmap.rafambn.com/).

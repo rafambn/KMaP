@@ -1,5 +1,8 @@
 name: Publish KMaP Documentation
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
