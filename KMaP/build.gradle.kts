@@ -9,7 +9,7 @@ plugins {
     alias(libs.plugins.multiplatform)
     alias(libs.plugins.compose)
     alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.android.library)
+    alias(libs.plugins.android.kmp.library)
     alias(libs.plugins.kotlin.serialization)
     id("com.vanniktech.maven.publish") version "0.36.0"
 }
@@ -19,7 +19,11 @@ version = "0.4.2"
 
 kotlin {
     jvmToolchain(17)
-    androidTarget{ publishLibraryVariants("release") }
+    android {
+        namespace = "com.rafambn.KMaP"
+        compileSdk = 36
+        minSdk = 24
+    }
     jvm()
     js(IR) {
         browser()
@@ -35,7 +39,6 @@ kotlin {
         iosX64(),
         iosArm64(),
         iosSimulatorArm64(),
-        macosX64(),
         macosArm64()
     ).forEach {
         it.binaries.framework {
@@ -66,15 +69,6 @@ kotlin {
                 freeCompilerArgs.add("-Xexport-kdoc")
             }
         }
-    }
-}
-
-android {
-    namespace = "com.rafambn.kmap"
-    compileSdk = 36
-
-    defaultConfig {
-        minSdk = 24
     }
 }
 
@@ -119,7 +113,6 @@ mavenPublishing {
         KotlinMultiplatform(
             javadocJar = JavadocJar.Empty(),
             sourcesJar = SourcesJar.Sources(),
-            androidVariantsToPublish = listOf("release"),
         )
     )
 }
