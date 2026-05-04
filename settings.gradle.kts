@@ -1,6 +1,10 @@
 rootProject.name = "KMaP"
-include(":KMaPDemo")
+
 include(":KMaP")
+include(":DemoApp:shared")
+include(":DemoApp:androidApp")
+include(":DemoApp:desktopApp")
+include(":DemoApp:webApp")
 
 pluginManagement {
     repositories {
@@ -35,4 +39,3 @@ dependencyResolutionManagement {
         maven("https://maven.pkg.jetbrains.space/public/p/ktor/eap")
     }
 }
-

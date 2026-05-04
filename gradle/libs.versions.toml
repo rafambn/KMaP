@@ -1,20 +1,19 @@
 [versions]
 
-kotlin = "2.3.10"
-compose = "1.10.1"
-agp = "9.0.0"
+kotlin = "2.3.21"
+compose = "1.10.3"
+agp = "9.2.0"
 androidx-appcompat = "1.7.1"
-androidx-activityCompose = "1.12.3"
-compose-uitooling = "1.10.2"
+androidx-activityCompose = "1.13.0"
+compose-uitooling = "1.11.0"
 coroutines-core = "1.10.2"
-kotlinx-serialization = "1.10.0"
-kotlinx-datetime = "0.7.1"
-ktorVersion = "3.4.0"
-logback = "1.5.29"
-androidx-lifecycle = "2.9.6"
+kotlinx-serialization = "1.11.0"
+ktorVersion = "3.4.3"
+logback = "1.5.32"
+androidx-lifecycle = "2.10.0"
 androidx-navigation = "2.9.2"
-kmap = "0.4.0"
-material3 = "1.9.0-beta03"
+kmap = "0.4.1"
+material3 = "1.9.0"
 
 [libraries]
 
@@ -32,7 +31,6 @@ kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 kotlinx-serialization-protobuf = { module = "org.jetbrains.kotlinx:kotlinx-serialization-protobuf", version.ref = "kotlinx-serialization" }
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
-kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktorVersion" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktorVersion" }
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktorVersion" }
@@ -47,6 +45,6 @@ runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "com
 multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 compose = { id = "org.jetbrains.compose", version.ref = "compose" }
 android-application = { id = "com.android.application", version.ref = "agp" }
-android-library = { id = "com.android.library", version.ref = "agp" }
+android-kmp-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

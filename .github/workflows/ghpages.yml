@@ -36,7 +36,7 @@ jobs:
       - name: Build KMaP Wasm target
         run: | 
           chmod +x ./gradlew 
-          ./gradlew wasmJsBrowserDistribution
+          ./gradlew :DemoApp:webApp:wasmJsBrowserDistribution
 
       - name: Build MkDocs
         run: |
