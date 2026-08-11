@@ -7,9 +7,6 @@ agp = "9.3.1"
 coroutines-core = "1.11.0"
 kotlinx-serialization = "1.11.0"
 
-# KMaP
-material3 = "1.9.0"
-
 # DemoApp
 androidx-appcompat = "1.7.1"
 androidx-activityCompose = "1.13.0"
@@ -28,10 +25,12 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 kotlinx-serialization-protobuf = { module = "org.jetbrains.kotlinx:kotlinx-serialization-protobuf", version.ref = "kotlinx-serialization" }
 
 # KMaP
+animation = { module = "org.jetbrains.compose.animation:animation", version.ref = "compose" }
 components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose" }
+foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose" }
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
 runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose" }
+ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
 
 # DemoApp
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }

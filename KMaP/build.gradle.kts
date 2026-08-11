@@ -21,11 +21,11 @@ kotlin {
     jvmToolchain(17)
     android {
         namespace = "com.rafambn.KMaP"
-        compileSdk = 36
+        compileSdk = 37
         minSdk = 24
     }
     jvm()
-    js(IR) {
+    js {
         browser()
         nodejs()
         compilerOptions { useEsClasses = true }
@@ -36,7 +36,6 @@ kotlin {
         d8()
     }
     listOf(
-        iosX64(),
         iosArm64(),
         iosSimulatorArm64(),
         macosArm64()
@@ -50,7 +49,9 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(libs.runtime)
-            implementation(libs.material3)
+            implementation(libs.animation)
+            implementation(libs.foundation)
+            implementation(libs.ui)
             implementation(libs.components.resources)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.core)
