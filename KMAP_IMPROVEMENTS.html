@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Prioritized engineering assessment and improvement roadmap for the KMaP Compose Multiplatform map library.">
+    <title>KMaP Library Improvement Roadmap</title>
+    <style>
+        :root {
+            color-scheme: light dark;
+            --background: #f5f7f8;
+            --surface: #ffffff;
+            --text: #182126;
+            --muted: #5e6c73;
+            --border: #dce3e6;
+            --accent: #087f8c;
+            --accent-soft: #e6f5f6;
+            --warning: #9a5b00;
+            --warning-soft: #fff5df;
+            --success: #16724b;
+            --success-soft: #e9f7f0;
+            --shadow: 0 12px 30px rgb(20 45 55 / 8%);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background: #101619;
+                --surface: #172024;
+                --text: #e8eff1;
+                --muted: #a8b6bc;
+                --border: #324047;
+                --accent: #62ced8;
+                --accent-soft: #18363a;
+                --warning: #ffc86b;
+                --warning-soft: #3a2c16;
+                --success: #71d5aa;
+                --success-soft: #18352a;
+                --shadow: 0 12px 30px rgb(0 0 0 / 25%);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            background: var(--background);
+            color: var(--text);
+            font: 16px/1.65 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        a {
+            color: var(--accent);
+        }
+
+        code {
+            padding: 0.12rem 0.35rem;
+            border: 1px solid var(--border);
+            border-radius: 0.35rem;
+            background: var(--background);
+            font-size: 0.9em;
+        }
+
+        .container {
+            width: min(1080px, calc(100% - 2rem));
+            margin: 0 auto;
+        }
+
+        header {
+            padding: 5rem 0 3rem;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(135deg, var(--accent-soft), transparent 62%);
+        }
+
+        .eyebrow {
+            margin: 0 0 0.5rem;
+            color: var(--accent);
+            font-weight: 750;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            max-width: 780px;
+            margin: 0;
+            font-size: clamp(2.3rem, 7vw, 4.8rem);
+            line-height: 1.03;
+            letter-spacing: -0.045em;
+        }
+
+        .lede {
+            max-width: 760px;
+            margin: 1.4rem 0 0;
+            color: var(--muted);
+            font-size: 1.2rem;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 2.2rem;
+        }
+
+        .summary-card,
+        .item,
+        .quick-wins,
+        .verification {
+            border: 1px solid var(--border);
+            border-radius: 0.9rem;
+            background: var(--surface);
+            box-shadow: var(--shadow);
+        }
+
+        .summary-card {
+            padding: 1rem 1.2rem;
+        }
+
+        .summary-card strong {
+            display: block;
+            color: var(--accent);
+            font-size: 1.55rem;
+        }
+
+        .summary-card span {
+            color: var(--muted);
+        }
+
+        nav {
+            position: sticky;
+            z-index: 10;
+            top: 0;
+            overflow-x: auto;
+            border-bottom: 1px solid var(--border);
+            background: color-mix(in srgb, var(--surface) 92%, transparent);
+            backdrop-filter: blur(12px);
+        }
+
+        nav .container {
+            display: flex;
+            gap: 1.2rem;
+            padding-block: 0.85rem;
+            white-space: nowrap;
+        }
+
+        nav a {
+            color: var(--muted);
+            font-size: 0.92rem;
+            font-weight: 650;
+            text-decoration: none;
+        }
+
+        nav a:hover {
+            color: var(--accent);
+        }
+
+        main {
+            padding: 3rem 0 5rem;
+        }
+
+        section {
+            scroll-margin-top: 4rem;
+            margin-top: 3.5rem;
+        }
+
+        section:first-child {
+            margin-top: 0;
+        }
+
+        h2 {
+            margin: 0 0 1.25rem;
+            font-size: clamp(1.65rem, 4vw, 2.25rem);
+            letter-spacing: -0.025em;
+        }
+
+        h3 {
+            margin: 0;
+            font-size: 1.25rem;
+        }
+
+        .item {
+            display: grid;
+            grid-template-columns: 3.2rem 1fr;
+            gap: 0.85rem;
+            margin-top: 1rem;
+            padding: 1.35rem;
+        }
+
+        .number {
+            display: grid;
+            width: 2.55rem;
+            height: 2.55rem;
+            place-items: center;
+            border-radius: 50%;
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-weight: 800;
+        }
+
+        .item p {
+            margin: 0.65rem 0;
+        }
+
+        .item ul,
+        .quick-wins ul {
+            margin: 0.75rem 0 0;
+            padding-left: 1.25rem;
+        }
+
+        .evidence {
+            color: var(--muted);
+            font-size: 0.94rem;
+        }
+
+        .priority {
+            display: inline-block;
+            margin-left: 0.55rem;
+            padding: 0.12rem 0.55rem;
+            border-radius: 999px;
+            background: var(--warning-soft);
+            color: var(--warning);
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            vertical-align: 0.12rem;
+            text-transform: uppercase;
+        }
+
+        .quick-wins,
+        .verification {
+            padding: 1.5rem;
+        }
+
+        .quick-wins {
+            border-left: 5px solid var(--accent);
+        }
+
+        .verification {
+            border-left: 5px solid var(--success);
+            background: var(--success-soft);
+        }
+
+        .verification p:last-child,
+        .quick-wins p:last-child {
+            margin-bottom: 0;
+        }
+
+        footer {
+            padding: 2rem 0 3rem;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 720px) {
+            header {
+                padding-top: 3.5rem;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .item {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media print {
+            nav {
+                display: none;
+            }
+
+            body {
+                background: white;
+                color: black;
+            }
+
+            .summary-card,
+            .item,
+            .quick-wins,
+            .verification {
+                break-inside: avoid;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <p class="eyebrow">Engineering assessment</p>
+        <h1>KMaP library improvement roadmap</h1>
+        <p class="lede">
+            KMaP has a promising architecture and unusually broad target support. The highest-leverage next step is to
+            harden the production raster path—especially tile scheduling, lifecycle management, caching, and tests—before
+            expanding the feature set.
+        </p>
+        <div class="summary-grid" aria-label="Assessment summary">
+            <div class="summary-card"><strong>11</strong><span>prioritized improvements</span></div>
+            <div class="summary-card"><strong>98</strong><span>JVM tests currently passing</span></div>
+            <div class="summary-card"><strong>0</strong><span>critical security issues identified</span></div>
+        </div>
+    </div>
+</header>
+
+<nav aria-label="Report sections">
+    <div class="container">
+        <a href="#highest-priority">Highest priority</a>
+        <a href="#release-api">Release and API</a>
+        <a href="#product">Product improvements</a>
+        <a href="#quick-wins">Quick wins</a>
+        <a href="#verification">Verification</a>
+    </div>
+</nav>
+
+<main class="container">
+    <section id="highest-priority">
+        <h2>Highest priority</h2>
+
+        <article class="item">
+            <div class="number">1</div>
+            <div>
+                <h3>Fix tile-loader lifecycle and backpressure <span class="priority">High</span></h3>
+                <p class="evidence">
+                    Evidence: <code>TileRenderer.kt</code> uses three unlimited channels, starts one coroutine for every
+                    requested tile, and launches its processor with <code>Dispatchers.Default + SupervisorJob()</code>.
+                </p>
+                <p>This can cause fast camera movement to accumulate obsolete requests, unbounded network and decoding concurrency, growing memory use, and work that survives after the owning Compose scope is disposed.</p>
+                <p>Kotlin explicitly documents that passing a new <code>Job</code> to <code>launch</code> breaks structured concurrency. See the <a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/launch.html">Kotlin coroutine documentation</a>.</p>
+                <p>Recommended changes:</p>
+                <ul>
+                    <li>Use a bounded request queue.</li>
+                    <li>Limit concurrent workers, initially to a small fixed number such as 4–8.</li>
+                    <li>Prioritize tiles nearest the viewport center.</li>
+                    <li>Cancel requests that are no longer near the viewport.</li>
+                    <li>Key requests by normalized <code>TileSpecs</code> to deduplicate work.</li>
+                    <li>Inherit the provided coroutine scope lifecycle directly.</li>
+                    <li>Define an explicit retry and backoff policy.</li>
+                </ul>
+            </div>
+        </article>
+
+        <article class="item">
+            <div class="number">2</div>
+            <div>
+                <h3>Improve cache behavior <span class="priority">High</span></h3>
+                <p class="evidence">Evidence: <code>CanvasEngine.kt</code> keeps the last inserted tiles in a list, permits duplicate entries, rebuilds maps and lists frequently, and does not update recency when a tile is read.</p>
+                <p>Replace the list with a small LRU cache keyed by <code>TileSpecs</code>. This would provide:</p>
+                <ul>
+                    <li>O(1) lookup and deduplication.</li>
+                    <li>True least-recently-used eviction.</li>
+                    <li>Memory-based limits in addition to tile-count limits.</li>
+                    <li>An injection point for persistent or offline caches.</li>
+                    <li>Cache statistics for performance diagnostics.</li>
+                </ul>
+            </div>
+        </article>
+
+        <article class="item">
+            <div class="number">3</div>
+            <div>
+                <h3>Add tests around the production path <span class="priority">High</span></h3>
+                <p>KMaP has 98 JVM tests, which is a solid base, but they are concentrated in vector parsing and styling. The production raster path has little direct coverage.</p>
+                <p>Add behavioral tests for:</p>
+                <ul>
+                    <li><code>MapState</code> coordinate round trips.</li>
+                    <li>Zoom, rotation, density, and map-boundary behavior.</li>
+                    <li>Visible-tile selection.</li>
+                    <li>Horizontal wrapping versus vertical bounds.</li>
+                    <li>Request deduplication, prioritization, and cancellation.</li>
+                    <li>Parent and child fallback rendering.</li>
+                    <li>Cache eviction and reuse.</li>
+                    <li>Gestures and transformations centered on a screen point.</li>
+                    <li>Cancellation of work when the owning scope ends.</li>
+                </ul>
+                <p>Move platform-independent cases into <code>commonTest</code> so they run across supported targets. Kotlin recommends common tests for shared code and target-specific tests where behavior differs. See the <a href="https://kotlinlang.org/docs/multiplatform/multiplatform-run-tests.html">Kotlin Multiplatform testing guide</a>.</p>
+            </div>
+        </article>
+    </section>
+
+    <section id="release-api">
+        <h2>Release and API quality</h2>
+
+        <article class="item">
+            <div class="number">4</div>
+            <div>
+                <h3>Add pull-request CI</h3>
+                <p>The repository automates publishing and documentation deployment, but it does not have a workflow that runs library checks for pull requests. Publishing is triggered directly from a release.</p>
+                <p>Add required CI covering:</p>
+                <ul>
+                    <li>JVM unit tests on every pull request.</li>
+                    <li><code>:KMaP:build</code>.</li>
+                    <li>At least JS and WASM compilation.</li>
+                    <li>Native compilation on macOS.</li>
+                    <li>API compatibility validation.</li>
+                    <li>Documentation and artifact-version consistency.</li>
+                </ul>
+                <p>The Gradle wrapper is currently stored without its executable bit. The publish workflow invokes <code>./gradlew</code> directly and can therefore fail, while the documentation workflow explicitly runs <code>chmod +x ./gradlew</code>.</p>
+            </div>
+        </article>
+
+        <article class="item">
+            <div class="number">5</div>
+            <div>
+                <h3>Protect the published API</h3>
+                <p>KMaP is publicly published but does not currently keep an API dump or enable explicit API mode. Add Kotlin binary compatibility validation and review API changes as part of CI.</p>
+                <p>This is particularly important for public data classes such as <code>CameraState</code>, because adding constructor properties later can break binary compatibility. Kotlin's official guidance recommends API validation and explicit return types for library APIs. See the <a href="https://kotlinlang.org/docs/api-guidelines-backward-compatibility.html">Kotlin library compatibility guidelines</a>.</p>
+            </div>
+        </article>
+
+        <article class="item">
+            <div class="number">6</div>
+            <div>
+                <h3>Document the public API</h3>
+                <p>Only four KDoc blocks are present in <code>commonMain</code>. Public types such as <code>MapState</code>, <code>MotionController</code>, coordinate reference classes, canvas parameters, and <code>TileResult</code> should document:</p>
+                <ul>
+                    <li>Units, axes, coordinate orientation, and valid ranges.</li>
+                    <li>Valid zoom behavior and clamping.</li>
+                    <li>Threading and coroutine expectations.</li>
+                    <li>Tile row and column normalization.</li>
+                    <li>Failure, retry, and cancellation semantics.</li>
+                    <li>Whether exposed state may be mutated directly.</li>
+                </ul>
+                <p>Generate Dokka API documentation rather than publishing an empty Javadoc jar.</p>
+            </div>
+        </article>
+
+        <article class="item">
+            <div class="number">7</div>
+            <div>
+                <h3>Reduce the library dependency surface</h3>
+                <p><code>KMaP/build.gradle.kts</code> includes Material 3 and Compose resources, but the library source does not appear to use either dependency. Removing them would reduce consumer download size, build work, and dependency-conflict risk.</p>
+                <p>The dependency checker also reports that Compose runtime and resources version <code>1.11.1</code> cannot resolve for <code>iosX64</code>, although the JVM test task completes successfully. Removing unused resources or aligning target support with published artifacts would eliminate this warning.</p>
+            </div>
+        </article>
+    </section>
+
+    <section id="product">
+        <h2>Product-facing improvements</h2>
+
+        <article class="item">
+            <div class="number">8</div>
+            <div>
+                <h3>Expose observable loading and error state</h3>
+                <p><code>TileResult.Failure</code> contains only tile coordinates, while tile-processing exceptions are reduced to <code>println</code>. Consumers need structured state to build loading indicators, diagnostics, and recovery UX.</p>
+                <p>Expose:</p>
+                <ul>
+                    <li>Loading and idle state.</li>
+                    <li>Per-source error events.</li>
+                    <li>Failure reason and retryability.</li>
+                    <li>Loaded, queued, processing, and failed tile counts.</li>
+                    <li>An optional logger callback.</li>
+                    <li>Camera moving and idle events.</li>
+                </ul>
+            </div>
+        </article>
+
+        <article class="item">
+            <div class="number">9</div>
+            <div>
+                <h3>Add standard map operations</h3>
+                <p>High-value additions for consumers include:</p>
+                <ul>
+                    <li><code>fitBounds(...)</code>.</li>
+                    <li><code>animateTo(CameraPosition)</code>.</li>
+                    <li>Minimum and maximum camera bounds.</li>
+                    <li>An explicit initial camera position for <code>rememberMapState</code>.</li>
+                    <li>Projection and map-property presets, especially Web Mercator.</li>
+                    <li>Tile prefetch for a region or route.</li>
+                    <li>A snapshot or export API where platforms support it.</li>
+                </ul>
+            </div>
+        </article>
+
+        <article class="item">
+            <div class="number">10</div>
+            <div>
+                <h3>Support accessibility and attribution</h3>
+                <p>The map does not expose an obvious semantics layer. Compose semantics power accessibility and UI testing; see the <a href="https://developer.android.com/develop/ui/compose/testing/semantics?hl=en">Compose semantics documentation</a>.</p>
+                <p>Consider:</p>
+                <ul>
+                    <li>A map content description.</li>
+                    <li>Accessible marker labels and actions.</li>
+                    <li>Keyboard panning and zooming on Desktop and Web.</li>
+                    <li>Focus traversal for interactive overlays.</li>
+                    <li>A standard attribution overlay or API. Style sources already carry attribution data, but it is not surfaced by the map UI.</li>
+                </ul>
+            </div>
+        </article>
+
+        <article class="item">
+            <div class="number">11</div>
+            <div>
+                <h3>Clarify vector support</h3>
+                <p>The README says vector work is paused, but vector APIs are included in the public library and documentation. Mark them explicitly experimental with <code>@RequiresOptIn</code>, document known limitations, or move them into a separate experimental artifact. This prevents incomplete behavior from being mistaken for stable API.</p>
+            </div>
+        </article>
+    </section>
+
+    <section id="quick-wins">
+        <h2>Recommended quick wins</h2>
+        <div class="quick-wins">
+            <ul>
+                <li>Update README and MkDocs dependency examples from <code>0.4.1</code> to the published <code>0.4.2</code>.</li>
+                <li>Store <code>gradlew</code> as executable.</li>
+                <li>Remove unused Material 3 and Compose resources dependencies.</li>
+                <li>Add pull-request CI that runs <code>:KMaP:jvmTest</code>.</li>
+                <li>Remove the detached <code>SupervisorJob</code>.</li>
+                <li>Bound tile concurrency and request queues.</li>
+                <li>Add tests for <code>MapState</code>, <code>CanvasKernel</code>, and <code>TileRenderer</code>.</li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="verification">
+        <h2>Verification and verdict</h2>
+        <div class="verification">
+            <p><strong>Current result:</strong> <code>:KMaP:jvmTest</code> passes with 98 tests.</p>
+            <p>The build reports three Kotlin compiler warnings, Gradle deprecation warnings, and the noted <code>iosX64</code> dependency-resolution warning. No critical security vulnerability stood out during the review.</p>
+            <p><strong>Overall verdict:</strong> the primary risks are lifecycle management, unbounded resource use, correctness coverage, and public API stability. Addressing the tile pipeline and its tests first will provide the strongest foundation for subsequent features.</p>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <div class="container">KMaP engineering assessment · Generated from repository inspection and test verification.</div>
+</footer>
+</body>
+</html>
