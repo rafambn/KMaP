@@ -59,8 +59,26 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
         }
 
+        val graphiteMain = create("graphiteMain") {
+            dependsOn(commonMain.get())
+            dependencies {
+                implementation(libs.graphite.surface)
+            }
+        }
+
+        androidMain.get().dependsOn(graphiteMain)
+        jvmMain.get().dependsOn(graphiteMain)
+        jsMain.get().dependsOn(graphiteMain)
+        wasmJsMain.get().dependsOn(graphiteMain)
+        val iosMain = maybeCreate("iosMain").apply {
+            dependsOn(graphiteMain)
+        }
+        iosArm64Main.get().dependsOn(iosMain)
+        iosSimulatorArm64Main.get().dependsOn(iosMain)
+
         jvmTest.dependencies {
             implementation(kotlin("test"))
+            implementation(compose.desktop.currentOs)
         }
     }
 
@@ -71,6 +89,12 @@ kotlin {
             }
         }
     }
+}
+
+configurations.matching { it.name.startsWith("macosArm64") }.configureEach {
+    // The GraphiteSurface composite substitutes Skiko with an iOS-only fork.
+    // Native macOS is intentionally outside graphiteMain and keeps upstream Skiko.
+    resolutionStrategy.useGlobalDependencySubstitutionRules = false
 }
 
 mavenPublishing {

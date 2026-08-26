@@ -1,6 +1,7 @@
 package com.rafambn.kmap.components
 
 import androidx.compose.runtime.Composable
+import com.rafambn.kmap.gestures.MapGestureWrapper
 
 sealed interface Component
 
@@ -16,6 +17,7 @@ data class Cluster(
 
 data class Canvas(
     val parameters: CanvasParameters,
+    val gestureWrapper: MapGestureWrapper?,
     val content: @Composable () -> Unit
 ) : Component
 

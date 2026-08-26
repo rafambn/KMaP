@@ -19,7 +19,7 @@ kotlin {
 
     android {
         namespace = "com.rafambn.KMaP.demo.shared"
-        compileSdk = 36
+        compileSdk = 37
         minSdk = 24
     }
     jvm()

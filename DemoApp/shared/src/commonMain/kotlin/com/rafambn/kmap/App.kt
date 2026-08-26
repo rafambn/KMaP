@@ -49,6 +49,7 @@ fun App() = AppTheme {
                     navigateClustering = { navigationController.navigate(Routes.Clustering) },
                     navigateSavedStateHandle = { navigationController.navigate(Routes.SavedStateHandle) },
                     navigateVectorTile = { navigationController.navigate(Routes.VectorTiles) },
+                    navigateGraphiteDiagnostic = { navigationController.navigate(Routes.GraphiteDiagnostic) },
                 )
             }
             composable<Routes.Simple> {
@@ -93,6 +94,11 @@ fun App() = AppTheme {
             }
             composable<Routes.VectorTiles> {
                 VectorTileScreen(
+                    navigateBack = { navigationController.popBackStack() }
+                )
+            }
+            composable<Routes.GraphiteDiagnostic> {
+                GraphiteDiagnosticScreen(
                     navigateBack = { navigationController.popBackStack() }
                 )
             }

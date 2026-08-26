@@ -39,7 +39,9 @@
 
 🧭 **Project Status**
 
-🚧 **Vector tiles paused**: Work is on hold until Compose provides async measurement + async drawing, which are needed for smooth, non-blocking rendering.  
+🧪 **Vector tiles experimental**: Compatible `background`, `fill`, and `line`
+styles use the Graphite renderer on Android, iOS, JVM macOS/Linux, and WebGPU browsers.
+Symbols and maps with Compose overlays continue to use the Compose renderer.
 ✅ **Raster tiles done**: All raster features are complete and ready to use.
 
 ### Key Features

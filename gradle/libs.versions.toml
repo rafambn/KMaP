@@ -2,10 +2,11 @@
 
 # KMaP & DemoApp
 kotlin = "2.4.10"
-compose = "1.11.1"
+compose = "1.12.0-beta03"
 agp = "9.3.1"
 coroutines-core = "1.11.0"
 kotlinx-serialization = "1.11.0"
+graphite-surface = "0.1.0-SNAPSHOT"
 
 # DemoApp
 androidx-appcompat = "1.7.1"
@@ -31,6 +32,7 @@ foundation = { module = "org.jetbrains.compose.foundation:foundation", version.r
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
 runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose" }
 ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
+graphite-surface = { module = "com.rafambn:graphite-surface", version.ref = "graphite-surface" }
 
 # DemoApp
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }

@@ -6,19 +6,27 @@ import androidx.compose.runtime.*
 import com.rafambn.kmap.core.MapState
 
 @Composable
-fun rememberComponentProviderLambda(content: KMaPContent.() -> Unit, mapState: MapState): () -> ComponentProvider {
+internal fun rememberKMaPContent(
+    content: KMaPContent.() -> Unit,
+    mapState: MapState,
+): State<KMaPContent> {
     val latestContent = rememberUpdatedState(content)
 
     return remember(mapState) {
-        val kMaPContentState = derivedStateOf(referentialEqualityPolicy()) {
+        derivedStateOf(referentialEqualityPolicy()) {
             KMaPContent(latestContent.value, mapState)
         }
-        val kmapProviderState = derivedStateOf(referentialEqualityPolicy()) {
-            ComponentProvider(kMaPContentState.value)
-        }
-        kmapProviderState::value
     }
 }
+
+@Composable
+fun rememberComponentProviderLambda(content: State<KMaPContent>): () -> ComponentProvider =
+    remember(content) {
+        val componentProvider = derivedStateOf(referentialEqualityPolicy()) {
+            ComponentProvider(content.value)
+        }
+        componentProvider::value
+    }
 
 @OptIn(ExperimentalFoundationApi::class)
 class ComponentProvider(

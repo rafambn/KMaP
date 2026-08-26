@@ -8,7 +8,7 @@ plugins {
 
 extensions.configure<ApplicationExtension>("android") {
     namespace = "com.rafambn.KMaP.demo"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 24

@@ -41,7 +41,7 @@ abstract class CanvasEngine<T : Tile>(
     fun renderTiles(visibleTiles: List<TileSpecs>, zoomLevel: Int) {
         currentVisibleTiles = visibleTiles
         val tilesToRender = filterActiveTiles(currentVisibleTiles, zoomLevel)
-        coroutineScope.launch { tileRenderer.tilesToProcessChannel.send(tilesToRender) }
+        tileRenderer.tilesToProcessChannel.trySend(tilesToRender)
     }
 
     private fun filterActiveTiles(visibleTiles: List<TileSpecs>, zoomLevel: Int): List<TileSpecs> {

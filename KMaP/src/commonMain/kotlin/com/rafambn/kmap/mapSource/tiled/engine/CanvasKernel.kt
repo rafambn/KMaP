@@ -14,6 +14,9 @@ import com.rafambn.kmap.mapSource.tiled.ActiveTiles
 import com.rafambn.kmap.mapSource.tiled.tiles.TileSpecs
 import com.rafambn.kmap.utils.toIntFloor
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlin.math.pow
 
 class CanvasKernel(
@@ -21,7 +24,11 @@ class CanvasKernel(
     val mapState: MapState
 ) {
 
-    val canvas = mutableMapOf<Int, CanvasEngine<*>>()
+    private val canvas = mutableMapOf<Int, CanvasEngine<*>>()
+    private val canvasParameters = mutableMapOf<Int, CanvasParameters>()
+    private val canvasScopes = mutableMapOf<Int, CoroutineScope>()
+    private var lastVisibleTiles: List<TileSpecs>? = null
+    private var lastZoomLevel: Int? = null
 
     fun getActiveTiles(id: Int): ActiveTiles = canvas.getValue(id).activeTiles.value
 
@@ -34,6 +41,8 @@ class CanvasKernel(
                 mapProperties.tileSize
             )
         }
+        lastVisibleTiles = visibleTiles
+        lastZoomLevel = zoomLevel
         canvas.forEach{ (_, canvasEngine) -> canvasEngine.renderTiles(visibleTiles, zoomLevel) }
     }
 
@@ -41,26 +50,46 @@ class CanvasKernel(
         val currentIds = currentParameters.map { it.id }.toSet()
 
         val keysToRemove = canvas.keys.filter { it !in currentIds }
-        keysToRemove.forEach { canvas.remove(it) }
+        keysToRemove.forEach(::removeCanvas)
 
         currentParameters.forEach { parameter ->
-            if (parameter.id !in canvas) {
-                if (parameter is RasterCanvasParameters) {
-                    canvas[parameter.id] = RasterCanvasEngine(
+            val previous = canvasParameters[parameter.id]
+            if (previous == null || previous.requiresNewEngine(parameter)) {
+                removeCanvas(parameter.id)
+                val engineJob = SupervisorJob(coroutineScope.coroutineContext[Job])
+                val engineScope = CoroutineScope(coroutineScope.coroutineContext + engineJob)
+                val engine = if (parameter is RasterCanvasParameters) {
+                    RasterCanvasEngine(
                         parameter.maxCacheTiles,
                         parameter.tileSource,
-                        coroutineScope
+                        engineScope,
                     )
                 } else if (parameter is VectorCanvasParameters) {
-                    canvas[parameter.id] = VectorCanvasEngine(
+                    VectorCanvasEngine(
                         parameter.maxCacheTiles,
                         parameter.tileSource,
-                        coroutineScope,
-                        parameter.style
+                        engineScope,
+                        parameter.style,
                     )
+                } else {
+                    error("Unsupported canvas parameters: ${parameter::class.simpleName}")
+                }
+                canvas[parameter.id] = engine
+                canvasParameters[parameter.id] = parameter
+                canvasScopes[parameter.id] = engineScope
+                val visibleTiles = lastVisibleTiles
+                val zoomLevel = lastZoomLevel
+                if (visibleTiles != null && zoomLevel != null) {
+                    engine.renderTiles(visibleTiles, zoomLevel)
                 }
             }
         }
+    }
+
+    private fun removeCanvas(id: Int) {
+        canvas.remove(id)
+        canvasParameters.remove(id)
+        canvasScopes.remove(id)?.cancel()
     }
 
     private fun Density.getVisibleTilesForLevel(
@@ -128,4 +157,11 @@ class CanvasKernel(
         (position.x / tileDimension.width.toPx() * (1 shl zoomLevel)).toIntFloor(),
         (position.y / tileDimension.height.toPx() * (1 shl zoomLevel)).toIntFloor()
     )
+}
+
+private fun CanvasParameters.requiresNewEngine(current: CanvasParameters): Boolean = when {
+    this::class != current::class -> true
+    maxCacheTiles != current.maxCacheTiles -> true
+    this is VectorCanvasParameters && current is VectorCanvasParameters -> style != current.style
+    else -> false
 }

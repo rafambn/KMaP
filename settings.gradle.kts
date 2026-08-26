@@ -1,5 +1,17 @@
 rootProject.name = "KMaP"
 
+val graphiteSurfacePath = providers.gradleProperty("graphiteSurfacePath").orNull
+    ?: "../GraphiteSurface".takeIf { file("$it/settings.gradle.kts").isFile }
+
+graphiteSurfacePath?.let { path ->
+    includeBuild(path) {
+        dependencySubstitution {
+            substitute(module("com.rafambn:graphite-surface"))
+                .using(project(":graphite-surface"))
+        }
+    }
+}
+
 include(":KMaP")
 include(":DemoApp:shared")
 include(":DemoApp:androidApp")

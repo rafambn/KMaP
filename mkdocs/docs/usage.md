@@ -66,6 +66,33 @@ data class CameraState(
 )
 ```
 
+## Render backend
+
+`KMaP` accepts a `MapRenderBackend`:
+
+```kotlin
+KMaP(
+    mapState = mapState,
+    renderBackend = MapRenderBackend.Auto,
+) {
+    // map content
+}
+```
+
+- `Auto` uses Graphite when the platform has a GraphiteSurface host and the
+  complete map contains compatible vector canvases.
+- `Compose` always uses the regular renderer.
+- `Graphite` requires a compatible map and throws an `IllegalStateException`
+  containing the first unsupported feature.
+
+The first Graphite renderer supports opaque vector canvases whose styles use
+only `background`, `fill`, and `line` layers. Raster canvases, mixed
+raster/vector maps, symbol layers, markers, clusters, paths, and partial canvas
+alpha keep the whole map on Compose. A fatal Graphite runtime error in `Auto`
+also fixes that `KMaP` instance to Compose. Android, iOS, JVM macOS/Linux, JS
+browser, and Wasm browser have Graphite hosts. Browser hosts additionally
+require WebGPU. JVM Windows, Node, d8, and native macOS use Compose.
+
 ## MotionController
 
 It's responsible for handling the movement of the map like zooming, panning, and rotating for either user input or app input.
