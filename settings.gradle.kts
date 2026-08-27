@@ -1,13 +1,54 @@
 rootProject.name = "KMaP"
 
-val graphiteSurfacePath = providers.gradleProperty("graphiteSurfacePath").orNull
-    ?: "../GraphiteSurface".takeIf { file("$it/settings.gradle.kts").isFile }
+val graphiteSurfaceDirectory = providers.gradleProperty("graphiteSurfacePath").orNull
+    ?.let(::file)
+    ?: file("../GraphiteSurface").takeIf { it.resolve("settings.gradle.kts").isFile }
 
-graphiteSurfacePath?.let { path ->
-    includeBuild(path) {
+graphiteSurfaceDirectory?.let { directory ->
+    include(":graphite-surface")
+    project(":graphite-surface").projectDir =
+        directory.resolve("graphite-surface/graphite-surface")
+
+    include(":graphite-engine")
+    project(":graphite-engine").projectDir =
+        directory.resolve("graphite-surface/graphite-engine")
+
+    includeBuild(directory.resolve("skiko-fork/skiko/skiko")) {
+        name = "skiko"
         dependencySubstitution {
-            substitute(module("com.rafambn:graphite-surface"))
-                .using(project(":graphite-surface"))
+            substitute(module("org.jetbrains.skiko:skiko")).using(project(":"))
+            substitute(module("org.jetbrains.skiko:skiko-js")).using(project(":"))
+            substitute(module("org.jetbrains.skiko:skiko-wasm-js")).using(project(":"))
+            substitute(module("org.jetbrains.skiko:skiko-graphite"))
+                .using(project(":skiko-graphite"))
+            substitute(module("org.jetbrains.skiko:skiko-graphite-js"))
+                .using(project(":skiko-graphite"))
+            substitute(module("org.jetbrains.skiko:skiko-graphite-wasm-js"))
+                .using(project(":skiko-graphite"))
+            substitute(module("org.jetbrains.skiko:skiko-awt-runtime-macos-arm64"))
+                .using(project(":"))
+            substitute(module("org.jetbrains.skiko:skiko-graphite-awt-runtime-macos-arm64"))
+                .using(project(":skiko-graphite"))
+            substitute(module("org.jetbrains.skiko:skiko-awt-runtime-macos-x64"))
+                .using(project(":"))
+            substitute(module("org.jetbrains.skiko:skiko-graphite-awt-runtime-macos-x64"))
+                .using(project(":skiko-graphite"))
+            substitute(module("org.jetbrains.skiko:skiko-awt-runtime-linux-arm64"))
+                .using(project(":"))
+            substitute(module("org.jetbrains.skiko:skiko-graphite-awt-runtime-linux-arm64"))
+                .using(project(":skiko-graphite"))
+            substitute(module("org.jetbrains.skiko:skiko-awt-runtime-linux-x64"))
+                .using(project(":"))
+            substitute(module("org.jetbrains.skiko:skiko-graphite-awt-runtime-linux-x64"))
+                .using(project(":skiko-graphite"))
+            substitute(module("org.jetbrains.skiko:skiko-awt-runtime-windows-arm64"))
+                .using(project(":"))
+            substitute(module("org.jetbrains.skiko:skiko-graphite-awt-runtime-windows-arm64"))
+                .using(project(":skiko-graphite"))
+            substitute(module("org.jetbrains.skiko:skiko-awt-runtime-windows-x64"))
+                .using(project(":"))
+            substitute(module("org.jetbrains.skiko:skiko-graphite-awt-runtime-windows-x64"))
+                .using(project(":skiko-graphite"))
         }
     }
 }

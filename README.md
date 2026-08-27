@@ -41,7 +41,7 @@
 
 🧪 **Vector tiles experimental**: Compatible `background`, `fill`, and `line`
 styles use the Graphite renderer on Android, iOS, JVM macOS/Linux, and WebGPU browsers.
-Symbols and maps with Compose overlays continue to use the Compose renderer.
+Symbol layers remain a Compose overlay on the same Graphite-backed map.
 ✅ **Raster tiles done**: All raster features are complete and ready to use.
 
 ### Key Features

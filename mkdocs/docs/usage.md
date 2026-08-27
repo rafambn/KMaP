@@ -79,19 +79,21 @@ KMaP(
 }
 ```
 
-- `Auto` uses Graphite when the platform has a GraphiteSurface host and the
-  complete map contains compatible vector canvases.
+- `Auto` uses Graphite for compatible vector canvases and falls back to Compose
+  when the Graphite runtime is unavailable.
 - `Compose` always uses the regular renderer.
 - `Graphite` requires a compatible map and throws an `IllegalStateException`
   containing the first unsupported feature.
 
-The first Graphite renderer supports opaque vector canvases whose styles use
-only `background`, `fill`, and `line` layers. Raster canvases, mixed
-raster/vector maps, symbol layers, markers, clusters, paths, and partial canvas
-alpha keep the whole map on Compose. A fatal Graphite runtime error in `Auto`
-also fixes that `KMaP` instance to Compose. Android, iOS, JVM macOS/Linux, JS
-browser, and Wasm browser have Graphite hosts. Browser hosts additionally
-require WebGPU. JVM Windows, Node, d8, and native macOS use Compose.
+The Graphite renderer draws opaque vector `background`, `fill`, and `line`
+layers. Symbol layers are drawn as a Compose overlay, so the Remote Vector Tiles
+demo keeps its labels while Graphite renders its geometry. Raster canvases,
+mixed raster/vector maps, markers, clusters, paths, and partial canvas alpha keep
+the whole map on Compose. A fatal Graphite runtime error in `Auto` also fixes
+that `KMaP` instance to Compose. Android, iOS, and supported JVM hosts use
+Graphite. Browser hosts additionally require WebGPU, Web Workers,
+`SharedArrayBuffer`, and COOP/COEP isolation. Unsupported browser or native
+hosts use Compose.
 
 ## MotionController
 

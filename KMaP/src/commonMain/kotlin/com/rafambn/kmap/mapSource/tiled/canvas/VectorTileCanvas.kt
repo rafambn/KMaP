@@ -347,7 +347,7 @@ private fun DrawScope.drawSymbolFeature(
 ) {
     val text = optimizedStyleLayer.layout.properties["text-field"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? String
     text?.let {
-        drawTextSymbol(canvas, geometry, properties, fontResolver, density, optimizedStyleLayer, 1.0, it, textScale, rotationDegrees)
+        drawTextSymbol(canvas, geometry, properties, fontResolver, density, optimizedStyleLayer, zoom, it, textScale, rotationDegrees)
     }
 
     // TODO: Image symbol rendering would go here

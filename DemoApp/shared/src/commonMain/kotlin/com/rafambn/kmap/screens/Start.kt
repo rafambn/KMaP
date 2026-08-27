@@ -19,7 +19,6 @@ fun StartScreen(
     navigateClustering: () -> Unit,
     navigateSavedStateHandle: () -> Unit,
     navigateVectorTile: () -> Unit,
-    navigateGraphiteDiagnostic: () -> Unit,
 ) {
     val columnItems = listOf(
         Pair(navigateSimpleMap, "SimpleMap"),
@@ -30,8 +29,7 @@ fun StartScreen(
         Pair(navigateOSM, "Remote with Open Street Maps"),
         Pair(navigateClustering, "Clustering"),
         Pair(navigateSavedStateHandle, "SavedStateHandle with ViewModel"),
-        Pair(navigateVectorTile, "Remote Vector Tiles (Under Development, see README.md)"),
-        Pair(navigateGraphiteDiagnostic, "Graphite vector diagnostic"),
+        Pair(navigateVectorTile, "Remote Vector Tiles"),
     )
     LazyColumn(
         horizontalAlignment = Alignment.CenterHorizontally,

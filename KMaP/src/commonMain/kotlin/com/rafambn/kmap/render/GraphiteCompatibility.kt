@@ -28,20 +28,9 @@ internal fun KMaPContent.graphiteIncompatibility(): String? {
 
     canvas.forEach { canvas ->
         val parameters = canvas.parameters as VectorCanvasParameters
-        parameters.style.layers.firstOrNull { it.type == "symbol" }?.let { layer ->
-            return "Graphite does not render vector symbol layers yet: ${layer.id}"
-        }
-    }
-
-    canvas.forEach { canvas ->
-        val parameters = canvas.parameters as VectorCanvasParameters
         parameters.style.layers.firstOrNull { it.type !in supportedLayerTypes }?.let { layer ->
             return "Graphite does not render vector layer type '${layer.type}' yet: ${layer.id}"
         }
-    }
-
-    canvas.forEach { canvas ->
-        val parameters = canvas.parameters as VectorCanvasParameters
         parameters.style.layers.forEach { layer ->
             layer.unsupportedGraphiteProperty()?.let { property ->
                 return "Graphite does not render property '$property' yet: ${layer.id}"
@@ -53,6 +42,8 @@ internal fun KMaPContent.graphiteIncompatibility(): String? {
 }
 
 private fun OptimizedStyleLayer.unsupportedGraphiteProperty(): String? {
+    if (type == "symbol") return null
+
     val supportedLayout = when (type) {
         "line" -> setOf("line-cap", "line-join")
         else -> emptySet()
@@ -68,4 +59,4 @@ private fun OptimizedStyleLayer.unsupportedGraphiteProperty(): String? {
         ?: paint.properties.keys.firstOrNull { it !in supportedPaint }
 }
 
-private val supportedLayerTypes = setOf("background", "fill", "line")
+private val supportedLayerTypes = setOf("background", "fill", "line", "symbol")

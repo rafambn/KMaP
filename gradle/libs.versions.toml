@@ -7,6 +7,8 @@ agp = "9.3.1"
 coroutines-core = "1.11.0"
 kotlinx-serialization = "1.11.0"
 graphite-surface = "0.1.0-SNAPSHOT"
+graphite-engine-skiko = "0.152.0-alpha01"
+kotlinx-browser = "0.5.0"
 
 # DemoApp
 androidx-appcompat = "1.7.1"
@@ -22,6 +24,7 @@ kmap = "0.4.2"
 
 # KMaP & DemoApp
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines-core" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines-core" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 kotlinx-serialization-protobuf = { module = "org.jetbrains.kotlinx:kotlinx-serialization-protobuf", version.ref = "kotlinx-serialization" }
 
@@ -33,6 +36,9 @@ kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose" }
 ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
 graphite-surface = { module = "com.rafambn:graphite-surface", version.ref = "graphite-surface" }
+engine-skiko = { module = "org.jetbrains.skiko:skiko", version.ref = "graphite-engine-skiko" }
+engine-skiko-graphite = { module = "org.jetbrains.skiko:skiko-graphite", version.ref = "graphite-engine-skiko" }
+kotlinx-browser = { module = "org.jetbrains.kotlinx:kotlinx-browser", version.ref = "kotlinx-browser" }
 
 # DemoApp
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }

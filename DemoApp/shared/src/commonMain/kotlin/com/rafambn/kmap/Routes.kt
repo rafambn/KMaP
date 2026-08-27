@@ -32,7 +32,4 @@ sealed interface Routes {
 
     @Serializable
     data object VectorTiles
-
-    @Serializable
-    data object GraphiteDiagnostic
 }

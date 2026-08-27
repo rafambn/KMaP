@@ -2,6 +2,7 @@
 
 package com.rafambn.kmap.render
 
+import androidx.compose.ui.unit.IntSize
 import com.rafambn.graphitesurface.GraphiteEngine
 import com.rafambn.graphitesurface.GraphiteEngineState
 import com.rafambn.graphitesurface.GraphiteRenderMode
@@ -9,7 +10,9 @@ import com.rafambn.graphitesurface.GraphiteRenderer
 import kotlin.concurrent.atomics.AtomicBoolean
 import kotlin.concurrent.atomics.AtomicReference
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 internal class GraphiteMapController(
     private val onFatalError: (Throwable) -> Unit,
@@ -19,13 +22,16 @@ internal class GraphiteMapController(
     private val scene = AtomicReference<GraphiteMapScene?>(null)
     private val engine = GraphiteEngine(recorderCount = 2)
     private val vectorRenderer = GraphiteVectorRenderer(engine)
+    private val mutableSurfaceSize = MutableStateFlow<IntSize?>(null)
 
     val engineState: StateFlow<GraphiteEngineState> = engine.diagnostics.state
+    val surfaceSize: StateFlow<IntSize?> = mutableSurfaceSize.asStateFlow()
 
     val renderer = GraphiteRenderer(
         runtime = engine,
         renderMode = GraphiteRenderMode.OnDemand,
     ) { _, presentation ->
+        mutableSurfaceSize.value = presentation.pixelSize
         val currentScene = scene.load() ?: return@GraphiteRenderer
         try {
             vectorRenderer.render(currentScene, presentation)

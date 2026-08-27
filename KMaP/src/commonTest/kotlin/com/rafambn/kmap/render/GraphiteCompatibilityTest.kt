@@ -74,13 +74,14 @@ class GraphiteCompatibilityTest {
     }
 
     @Test
-    fun rejectsSymbolUnknownLayerAndUnknownProperty() {
+    fun acceptsSymbolLayers() {
         withContent({ vectorCanvas(vectorParameters(style = style(layer("labels", "symbol")))) }) {
-            assertEquals(
-                "Graphite does not render vector symbol layers yet: labels",
-                it.graphiteIncompatibility(),
-            )
+            assertNull(it.graphiteIncompatibility())
         }
+    }
+
+    @Test
+    fun rejectsUnknownLayersAndProperties() {
         withContent({ vectorCanvas(vectorParameters(style = style(layer("heat", "heatmap")))) }) {
             assertEquals(
                 "Graphite does not render vector layer type 'heatmap' yet: heat",

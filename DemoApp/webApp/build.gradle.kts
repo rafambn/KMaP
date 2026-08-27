@@ -19,7 +19,10 @@ val graphiteWebRuntime = configurations.create("graphiteWebRuntime") {
 }
 
 dependencies {
-    add(graphiteWebRuntime.name, libs.graphite.surface)
+    add(
+        graphiteWebRuntime.name,
+        findProject(":graphite-surface") ?: libs.graphite.surface,
+    )
 }
 
 configurations.configureEach {
@@ -29,11 +32,18 @@ configurations.configureEach {
 
 kotlin {
     js {
-        browser()
+        browser {
+            commonWebpackConfig {
+                configDirectory = projectDir.resolve("webpack.config.d")
+            }
+        }
         binaries.executable()
     }
     wasmJs {
         browser {
+            commonWebpackConfig {
+                configDirectory = projectDir.resolve("webpack.config.d")
+            }
             @OptIn(ExperimentalDistributionDsl::class)
             distribution {
                 outputDirectory = File("../../mkdocs/docs/kmapdemo")

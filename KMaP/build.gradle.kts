@@ -16,6 +16,8 @@ plugins {
 
 group = "com.rafambn"
 version = "0.4.2"
+val graphiteSurfaceDependency: Any =
+    findProject(":graphite-surface") ?: libs.graphite.surface
 
 kotlin {
     jvmToolchain(17)
@@ -57,28 +59,12 @@ kotlin {
             implementation(libs.kotlinx.serialization.core)
             implementation(libs.kotlinx.serialization.protobuf)
             implementation(libs.kotlinx.serialization.json)
+            implementation(graphiteSurfaceDependency)
         }
 
-        val graphiteMain = create("graphiteMain") {
-            dependsOn(commonMain.get())
-            dependencies {
-                implementation(libs.graphite.surface)
-            }
-        }
-
-        androidMain.get().dependsOn(graphiteMain)
-        jvmMain.get().dependsOn(graphiteMain)
-        jsMain.get().dependsOn(graphiteMain)
-        wasmJsMain.get().dependsOn(graphiteMain)
-        val iosMain = maybeCreate("iosMain").apply {
-            dependsOn(graphiteMain)
-        }
-        iosArm64Main.get().dependsOn(iosMain)
-        iosSimulatorArm64Main.get().dependsOn(iosMain)
-
-        jvmTest.dependencies {
+        commonTest.dependencies {
             implementation(kotlin("test"))
-            implementation(compose.desktop.currentOs)
+            implementation(libs.kotlinx.coroutines.test)
         }
     }
 
@@ -89,12 +75,6 @@ kotlin {
             }
         }
     }
-}
-
-configurations.matching { it.name.startsWith("macosArm64") }.configureEach {
-    // The GraphiteSurface composite substitutes Skiko with an iOS-only fork.
-    // Native macOS is intentionally outside graphiteMain and keeps upstream Skiko.
-    resolutionStrategy.useGlobalDependencySubstitutionRules = false
 }
 
 mavenPublishing {

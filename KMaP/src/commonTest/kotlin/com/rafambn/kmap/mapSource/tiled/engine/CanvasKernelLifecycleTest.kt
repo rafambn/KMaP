@@ -22,12 +22,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.test.runTest
+import kotlin.time.Duration.Companion.seconds
 
 class CanvasKernelLifecycleTest {
     @Test
-    fun newlyAddedCanvasStartsLatestRequestAndRemovalCancelsIt() = runBlocking {
+    fun newlyAddedCanvasStartsLatestRequestAndRemovalCancelsIt() = runTest(timeout = 10.seconds) {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         val requestStarted = CompletableDeferred<Unit>()
         val requestCancelled = CompletableDeferred<Unit>()
@@ -48,9 +48,9 @@ class CanvasKernelLifecycleTest {
                 )
             )
 
-            withTimeout(5_000) { requestStarted.await() }
+            requestStarted.await()
             mapState.canvasKernel.refreshCanvas(emptyList())
-            withTimeout(5_000) { requestCancelled.await() }
+            requestCancelled.await()
         } finally {
             scope.cancel()
         }

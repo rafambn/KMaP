@@ -60,7 +60,7 @@ internal fun GraphiteMapScene.vectorBatches(): List<GraphiteVectorBatch> = build
         }
 
         canvas.style.layers.forEachIndexed { styleLayerIndex, styleLayer ->
-            if (styleLayer.type == "background") return@forEachIndexed
+            if (styleLayer.type !in graphiteGeometryLayerTypes) return@forEachIndexed
             add(
                 GraphiteVectorBatch(
                     canvasId = canvas.id,
@@ -73,3 +73,5 @@ internal fun GraphiteMapScene.vectorBatches(): List<GraphiteVectorBatch> = build
         }
     }
 }
+
+private val graphiteGeometryLayerTypes = setOf("fill", "line")
