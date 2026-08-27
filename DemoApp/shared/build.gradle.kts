@@ -30,7 +30,6 @@ kotlin {
         browser()
     }
     listOf(
-        iosX64(),
         iosArm64(),
         iosSimulatorArm64()
     ).forEach {
@@ -76,9 +75,6 @@ kotlin {
             dependencies {
                 implementation(libs.ktor.client.darwin)
             }
-        }
-        iosX64Main {
-            dependsOn(iosMain)
         }
         iosArm64Main {
             dependsOn(iosMain)

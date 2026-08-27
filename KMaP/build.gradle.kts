@@ -59,8 +59,24 @@ kotlin {
             implementation(libs.kotlinx.serialization.core)
             implementation(libs.kotlinx.serialization.protobuf)
             implementation(libs.kotlinx.serialization.json)
-            implementation(graphiteSurfaceDependency)
         }
+
+        val graphiteMain = create("graphiteMain") {
+            dependsOn(commonMain.get())
+            dependencies {
+                implementation(graphiteSurfaceDependency)
+            }
+        }
+
+        androidMain.get().dependsOn(graphiteMain)
+        jvmMain.get().dependsOn(graphiteMain)
+        jsMain.get().dependsOn(graphiteMain)
+        wasmJsMain.get().dependsOn(graphiteMain)
+        val iosMain = maybeCreate("iosMain").apply {
+            dependsOn(graphiteMain)
+        }
+        iosArm64Main.get().dependsOn(iosMain)
+        iosSimulatorArm64Main.get().dependsOn(iosMain)
 
         commonTest.dependencies {
             implementation(kotlin("test"))
@@ -75,6 +91,10 @@ kotlin {
             }
         }
     }
+}
+
+configurations.matching { it.name.startsWith("macosArm64") }.configureEach {
+    resolutionStrategy.useGlobalDependencySubstitutionRules = false
 }
 
 mavenPublishing {

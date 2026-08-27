@@ -6,11 +6,11 @@ import kotlin.test.assertEquals
 class GraphiteRecordingOrderTest {
     @Test
     fun completionOrderDoesNotChangeVisualInsertionOrder() {
-        val completed = listOf(3 to "last", 1 to "second", 0 to "first", 2 to "third")
+        val recordings = listOf(3 to "last", 1 to "second", 0 to "first", 2 to "third")
 
         assertEquals(
             listOf("first", "second", "third", "last"),
-            completed.inVisualOrder().map { it.second },
+            recordings.inVisualOrder().map { it.second },
         )
     }
 }

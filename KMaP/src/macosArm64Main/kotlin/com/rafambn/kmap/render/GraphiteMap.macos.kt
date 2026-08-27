@@ -6,11 +6,12 @@ import com.rafambn.kmap.components.KMaPContent
 import com.rafambn.kmap.core.MapState
 
 @Composable
-internal expect fun GraphiteMap(
+internal actual fun GraphiteMap(
     modifier: Modifier,
     mapState: MapState,
     content: KMaPContent,
     onFatalError: (Throwable) -> Unit,
-)
+): Unit = error("Graphite is unavailable on macOS Arm64")
 
-internal expect fun platformGraphiteIncompatibility(): String?
+internal actual fun platformGraphiteIncompatibility(): String? =
+    "Graphite is unavailable on macOS Arm64"

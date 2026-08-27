@@ -12,23 +12,30 @@ class MapRenderBackendTest {
             resolveGraphiteBackend(
                 renderBackend = MapRenderBackend.Compose,
                 contentIncompatibility = null,
+                platformIncompatibility = null,
                 graphiteFailed = false,
             )
         )
     }
 
     @Test
-    fun autoRequiresCompatibleContentAndRuntime() {
-        assertTrue(resolveGraphiteBackend(MapRenderBackend.Auto, null, false))
-        assertFalse(resolveGraphiteBackend(MapRenderBackend.Auto, "content", false))
-        assertFalse(resolveGraphiteBackend(MapRenderBackend.Auto, null, true))
+    fun autoRequiresCompatibleContentPlatformAndRuntime() {
+        assertTrue(resolveGraphiteBackend(MapRenderBackend.Auto, null, null, false))
+        assertFalse(resolveGraphiteBackend(MapRenderBackend.Auto, "content", null, false))
+        assertFalse(resolveGraphiteBackend(MapRenderBackend.Auto, null, "platform", false))
+        assertFalse(resolveGraphiteBackend(MapRenderBackend.Auto, null, null, true))
     }
 
     @Test
     fun forcedGraphiteReportsTheFirstResolvedIncompatibility() {
         val contentFailure = assertFailsWith<IllegalStateException> {
-            resolveGraphiteBackend(MapRenderBackend.Graphite, "content", false)
+            resolveGraphiteBackend(MapRenderBackend.Graphite, "content", "platform", false)
         }
         kotlin.test.assertEquals("content", contentFailure.message)
+
+        val platformFailure = assertFailsWith<IllegalStateException> {
+            resolveGraphiteBackend(MapRenderBackend.Graphite, null, "platform", false)
+        }
+        kotlin.test.assertEquals("platform", platformFailure.message)
     }
 }

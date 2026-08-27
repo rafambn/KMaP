@@ -14,6 +14,7 @@ import com.rafambn.kmap.components.rememberKMaPContent
 import com.rafambn.kmap.render.GraphiteMap
 import com.rafambn.kmap.render.MapRenderBackend
 import com.rafambn.kmap.render.graphiteIncompatibility
+import com.rafambn.kmap.render.platformGraphiteIncompatibility
 import com.rafambn.kmap.render.resolveGraphiteBackend
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -38,9 +39,17 @@ fun KMaP(
     } else {
         currentContent.value.graphiteIncompatibility()
     }
+    val platformIncompatibility = if (
+        renderBackend == MapRenderBackend.Compose || incompatibility != null
+    ) {
+        null
+    } else {
+        platformGraphiteIncompatibility()
+    }
     val useGraphite = resolveGraphiteBackend(
         renderBackend = renderBackend,
         contentIncompatibility = incompatibility,
+        platformIncompatibility = platformIncompatibility,
         graphiteFailed = graphiteFailure != null,
     )
 
