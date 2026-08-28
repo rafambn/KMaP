@@ -1,50 +1,46 @@
-# Future GraphiteSurface integration
+# GraphiteSurface integration
 
-Status: parked until GraphiteSurface has a stable runtime, recorder manager,
-and native render-thread model. Do not add another KMaP rendering experiment
-before those contracts exist.
+KMaP uses GraphiteSurface for vector canvases through `MapRenderBackend.Auto`
+when the Graphite backend is available. Raster canvases and map components that
+are not part of the vector recording remain on the Compose path.
 
-KMaP should initially use one `GraphiteSurface` composable and one presentation
-target. The map does not need multiple windows or presentation targets to
-parallelize its work.
+The integration uses the current `GraphiteEngine` API. Do not restore the old
+`GraphiteRuntime`, `GraphitePaint`, or `GraphitePath` API from earlier
+experiments.
 
-The intended future split is:
+The rendering split is:
 
 ```text
 Compose/UI thread
-    publishes camera and immutable scene changes
-
-CPU preparation workers
-    decode tiles, build geometry, shape labels, prepare transferable data
+    publishes immutable camera and scene snapshots
 
 Graphite recorder workers
-    record independent work with stable tile/layer keys
+    record missing tile/layer entries under stable cache keys
 
-Graphite render thread
-    assembles a complete frame in Mapbox layer order, submits, and presents
+Graphite presentation
+    inserts cached recordings in Mapbox order with one camera transform
 ```
 
-Requirements KMaP will place on GraphiteSurface:
+Camera-only changes must not re-record vector geometry. Pan, rotation, canvas
+size, and magnifier scale are applied when cached recordings are inserted into
+the frame. A recording is invalidated when its tile object, style layer, style
+zoom, integer tile zoom, or tile dimensions change.
 
-- camera input uses latest-value semantics so gesture events do not build a
-  backlog;
-- recorder and preparation queues are bounded;
-- obsolete tile, zoom, and camera work can be cancelled or discarded;
-- recorder completion order never changes Mapbox visual order;
-- the render thread never waits for a late tile or recorder;
-- an old complete scene remains drawable while a newer scene is incomplete;
-- tile and layer recordings have stable identities for reuse;
-- text atlas and GPU resources do not reset on every camera update;
-- diagnostics expose UI time, queue wait, record time, submit time, GPU
-  completion, queue depth, and dropped work;
-- Android, Apple, and JVM use dedicated native threads; Web uses Web Workers.
+Scene requests use latest-value semantics. Recorder work may finish for an old
+scene, but that scene is checked again before presentation and is discarded if
+a newer snapshot exists. The renderer retains all recordings used by the
+current scene plus a bounded recent cache.
 
-The exact public API is intentionally not specified here. GraphiteSurface must
-first decide whether users submit typed scene data, portable command buffers,
-or code registered inside each worker. That choice determines what KMaP can
-share across JVM, Kotlin/Native, JS, and Wasm.
+GraphiteSurface frame insertion accepts a `GraphiteTransform`, rather than only
+an integer translation, so reusable recordings can follow the camera without
+encoding their paths again. This contract is shared by Android, JVM, JS, WASM,
+iOS, and macOS implementations.
 
-The earlier main-thread canvas experiments are not the architecture. Their
-results only showed that reducing Compose invalidation helps but cannot remove
-gesture stutter while recording and presentation remain coupled to the UI
-thread.
+macOS Arm64 currently replays the immutable Graphite command program through a
+Compose canvas because GraphiteSurface does not yet expose a native AppKit/Metal
+presentation bridge. It still uses the same engine, cache keys, scheduling, and
+camera transforms and must not be marked as an unsupported target.
+
+Vector point/symbol overlays are still drawn by Compose over the Graphite
+surface. Keep their ordering and coordinate conversion aligned with the vector
+scene compiler when changing either path.

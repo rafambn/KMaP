@@ -1,172 +1,184 @@
 package com.rafambn.kmap.render
 
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathSegment
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import com.rafambn.graphitesurface.GraphiteDrawStyle
 import com.rafambn.graphitesurface.GraphiteEncoder
-import com.rafambn.graphitesurface.GraphiteColor
-import com.rafambn.graphitesurface.GraphitePaint
-import com.rafambn.graphitesurface.GraphitePath
+import com.rafambn.graphitesurface.GraphiteEngine
 import com.rafambn.graphitesurface.GraphitePresentationInfo
 import com.rafambn.graphitesurface.GraphitePresentResult
 import com.rafambn.graphitesurface.GraphiteRecording
-import com.rafambn.graphitesurface.GraphiteRect
-import com.rafambn.graphitesurface.GraphiteRuntime
 import com.rafambn.graphitesurface.GraphiteTransform
-import com.rafambn.kmap.mapSource.tiled.tiles.OptimizedVectorTile
 import com.rafambn.kmap.utils.style.OptimizedStyleLayer
+import com.rafambn.kmap.utils.toIntFloor
 import com.rafambn.kmap.utils.vectorTile.OptimizedGeometry
 import kotlin.math.pow
-import kotlin.math.roundToInt
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 
 internal class GraphiteVectorRenderer(
-    private val runtime: GraphiteRuntime,
+    private val engine: GraphiteEngine,
 ) {
+    private val recordings = LinkedHashMap<GraphiteVectorRecordingKey, GraphiteRecording>()
+
     suspend fun render(
         scene: GraphiteMapScene,
         presentation: GraphitePresentationInfo,
+        isCurrent: () -> Boolean,
     ) {
-        val batches = scene.vectorBatches()
-        val recordings = recordBatches(scene.camera, batches, presentation)
-        try {
-            val frame = runtime.createFrame(presentation) {
-                recordings.inVisualOrder().forEach { (_, recording) ->
-                    insert(recording)
-                }
-            }
-            try {
-                when (runtime.present(frame)) {
-                    GraphitePresentResult.Accepted,
-                    GraphitePresentResult.ReplacedPending,
-                    GraphitePresentResult.NoPresentation,
-                    GraphitePresentResult.StalePresentation -> Unit
+        val items = scene.vectorRenderItems()
+        recordMissing(items, isCurrent)
+        retainActiveAndRecent(items)
+        if (!isCurrent()) return
 
-                    GraphitePresentResult.RuntimeUnavailable ->
-                        error("Graphite runtime became unavailable while presenting a map frame")
+        val transform = scene.camera.frameTransform()
+        when (
+            engine.present(presentation) {
+                items.forEach { item ->
+                    recordings[item.recordingKey]?.let { recording ->
+                        insert(recording, transform = transform)
+                    }
                 }
-            } finally {
-                frame.close()
             }
-        } finally {
-            recordings.forEach { (_, recording) -> recording.close() }
+        ) {
+            GraphitePresentResult.Accepted,
+            GraphitePresentResult.ReplacedPending,
+            GraphitePresentResult.NoPresentation,
+            GraphitePresentResult.StalePresentation -> Unit
+
+            GraphitePresentResult.RuntimeUnavailable ->
+                error("Graphite engine became unavailable while presenting a map frame")
         }
     }
 
-    private suspend fun recordBatches(
-        camera: GraphiteMapCamera,
-        batches: List<GraphiteVectorBatch>,
-        presentation: GraphitePresentationInfo,
-    ): List<Pair<Int, GraphiteRecording>> = coroutineScope {
-        val target = runtime.createRecordingTarget(presentation.pixelSize)
-        batches.withIndex()
-            .groupBy { (_, batch) -> recorderIndex(batch) }
-            .map { (recorderIndex, indexedBatches) ->
+    private suspend fun recordMissing(
+        items: List<GraphiteVectorRenderItem>,
+        isCurrent: () -> Boolean,
+    ) = coroutineScope {
+        val missing = items.filter { it.recordingKey !in recordings }
+        missing.groupBy(::recorderIndex)
+            .map { (recorderIndex, recorderItems) ->
                 async {
-                    indexedBatches.map { (batchIndex, batch) ->
-                        batchIndex to runtime.recorders[recorderIndex].record(target) {
-                            drawBatch(camera, batch)
+                    recorderItems.mapNotNull { item ->
+                        if (!isCurrent()) return@mapNotNull null
+                        item.recordingKey to engine.recorders[recorderIndex].record {
+                            drawItem(item)
                         }
                     }
                 }
             }
             .awaitAll()
             .flatten()
+            .forEach { (key, recording) -> recordings[key] = recording }
     }
 
-    private fun recorderIndex(batch: GraphiteVectorBatch): Int =
-        (batch.canvasId * 31 + batch.styleLayerIndex).mod(runtime.recorders.size)
-}
+    private fun recorderIndex(item: GraphiteVectorRenderItem): Int {
+        val tile = item.tile
+        var hash = item.batch.canvasId
+        hash = 31 * hash + item.batch.styleLayerIndex
+        hash = 31 * hash + tile.zoom
+        hash = 31 * hash + tile.row
+        hash = 31 * hash + tile.col
+        return hash.mod(engine.recorders.size)
+    }
 
-private fun GraphiteEncoder.drawBatch(
-    camera: GraphiteMapCamera,
-    batch: GraphiteVectorBatch,
-) {
-    val magnifierScale = 2f.pow(camera.magnifierScale)
-    withTransform(GraphiteTransform.translation(camera.translation.x, camera.translation.y)) {
-        withTransform(GraphiteTransform.rotationDegrees(camera.rotationDegrees)) {
-            withTransform(GraphiteTransform.scale(magnifierScale)) {
-                if (batch.styleLayer.type == "background") {
-                    drawBackground(camera, batch)
-                } else {
-                    drawFeatures(camera, batch)
-                }
-            }
+    private fun retainActiveAndRecent(items: List<GraphiteVectorRenderItem>) {
+        val activeKeys = items.mapTo(mutableSetOf()) { it.recordingKey }
+        activeKeys.forEach { key ->
+            val recording = recordings.remove(key) ?: return@forEach
+            recordings[key] = recording
+        }
+        val maximumSize = activeKeys.size + RECENT_RECORDING_CAPACITY
+        while (recordings.size > maximumSize) {
+            recordings.remove(recordings.keys.first())
         }
     }
-}
 
-private fun GraphiteEncoder.drawBackground(
-    camera: GraphiteMapCamera,
-    batch: GraphiteVectorBatch,
-) {
-    val layer = batch.styleLayer
-    val color = layer.paint.properties["background-color"]
-        ?.evaluate(camera.zoom, emptyMap(), "") as? Color ?: Color.Magenta
-    val opacity = layer.paint.properties["background-opacity"]
-        ?.evaluate(camera.zoom, emptyMap(), "") as? Number ?: 1f
-
-    batch.activeTiles.tiles.forEach { tile ->
-        val scaleAdjustment = 2f.pow(batch.activeTiles.currentZoom - tile.zoom)
-        val tileLeft = camera.tileSizePx.width * tile.col * scaleAdjustment + camera.positionOffset.x
-        val tileTop = camera.tileSizePx.height * tile.row * scaleAdjustment + camera.positionOffset.y
-        drawRect(
-            rect = GraphiteRect(
-                left = tileLeft,
-                top = tileTop,
-                right = tileLeft + camera.tileSizePx.width * scaleAdjustment,
-                bottom = tileTop + camera.tileSizePx.height * scaleAdjustment,
-            ),
-            paint = GraphitePaint(
-                color = color.copy(alpha = opacity.toFloat()).toGraphiteColor(),
-                antiAlias = false,
-            ),
-        )
+    private companion object {
+        const val RECENT_RECORDING_CAPACITY = 512
     }
 }
 
-private fun GraphiteEncoder.drawFeatures(
-    camera: GraphiteMapCamera,
-    batch: GraphiteVectorBatch,
-) {
-    batch.activeTiles.tiles.forEach { tile ->
-        tile as OptimizedVectorTile
-        val optimizedTile = tile.optimizedTile ?: return@forEach
-        val tileTransform = resolveGraphiteTileTransform(
-            camera = camera,
-            currentZoom = batch.activeTiles.currentZoom,
-            tile = tile,
-        ) ?: return@forEach
+internal fun GraphiteMapCamera.frameTransform(): GraphiteTransform {
+    val magnifierScale = 2f.pow(magnifierScale)
+    return GraphiteTransform.translation(translation.x, translation.y) *
+        GraphiteTransform.rotationDegrees(rotationDegrees) *
+        GraphiteTransform.scale(magnifierScale) *
+        GraphiteTransform.translation(
+            positionOffset.x.toIntFloor().toFloat(),
+            positionOffset.y.toIntFloor().toFloat(),
+        )
+}
 
-        withTransform(GraphiteTransform.translation(tileTransform.left, tileTransform.top)) {
-            withTransform(
-                GraphiteTransform.scale(
-                    x = tileTransform.scaleX,
-                    y = tileTransform.scaleY,
-                )
-            ) {
-                withClip(GraphiteRect(0f, 0f, tileTransform.extent, tileTransform.extent)) {
-                    optimizedTile.layerFeatures[batch.styleLayer.id]?.forEach { feature ->
-                        when (val geometry = feature.geometry) {
-                            is OptimizedGeometry.Polygon -> drawFill(
-                                geometry = geometry,
-                                properties = feature.properties,
-                                layer = batch.styleLayer,
-                                zoom = camera.zoom,
-                            )
+private fun GraphiteEncoder.drawItem(item: GraphiteVectorRenderItem) {
+    if (item.batch.styleLayer.type == "background") {
+        drawBackground(item)
+    } else {
+        drawFeatures(item)
+    }
+}
 
-                            is OptimizedGeometry.LineString -> drawLine(
-                                geometry = geometry,
-                                properties = feature.properties,
-                                layer = batch.styleLayer,
-                                zoom = camera.zoom,
-                                scaleAdjustment = tileTransform.scaleAdjustment,
-                            )
+private fun GraphiteEncoder.drawBackground(item: GraphiteVectorRenderItem) {
+    val key = item.recordingKey
+    val layer = item.batch.styleLayer
+    val color = layer.paint.properties["background-color"]
+        ?.evaluate(key.styleZoom, emptyMap(), "") as? Color ?: Color.Magenta
+    val opacity = layer.paint.properties["background-opacity"]
+        ?.evaluate(key.styleZoom, emptyMap(), "") as? Number ?: 1f
+    val scaleAdjustment = 2f.pow(key.currentZoom - item.tile.zoom)
+    val width = key.tileWidth * scaleAdjustment
+    val height = key.tileHeight * scaleAdjustment
+    val left = width * item.tile.col
+    val top = height * item.tile.row
 
-                            is OptimizedGeometry.Point -> Unit
-                        }
+    drawRect(
+        rect = Rect(left, top, left + width, top + height),
+        color = color.copy(alpha = opacity.toFloat()),
+        antiAlias = false,
+    )
+}
+
+private fun GraphiteEncoder.drawFeatures(item: GraphiteVectorRenderItem) {
+    val optimizedTile = item.tile.optimizedTile ?: return
+    val key = item.recordingKey
+    val tileTransform = resolveGraphiteTileTransform(
+        tileSizePx = Size(key.tileWidth, key.tileHeight),
+        currentZoom = key.currentZoom,
+        tile = item.tile,
+        positionOffset = Offset.Zero,
+    ) ?: return
+
+    withTransform(GraphiteTransform.translation(tileTransform.left, tileTransform.top)) {
+        withTransform(
+            GraphiteTransform.scale(
+                x = tileTransform.scaleX,
+                y = tileTransform.scaleY,
+            )
+        ) {
+            withClip(Rect(0f, 0f, tileTransform.extent, tileTransform.extent)) {
+                optimizedTile.layerFeatures[item.batch.styleLayer.id]?.forEach { feature ->
+                    when (val geometry = feature.geometry) {
+                        is OptimizedGeometry.Polygon -> drawFill(
+                            geometry = geometry,
+                            properties = feature.properties,
+                            layer = item.batch.styleLayer,
+                            zoom = key.styleZoom,
+                        )
+
+                        is OptimizedGeometry.LineString -> drawLine(
+                            geometry = geometry,
+                            properties = feature.properties,
+                            layer = item.batch.styleLayer,
+                            zoom = key.styleZoom,
+                            scaleAdjustment = tileTransform.scaleAdjustment,
+                        )
+
+                        is OptimizedGeometry.Point -> Unit
                     }
                 }
             }
@@ -188,18 +200,12 @@ private fun GraphiteEncoder.drawFill(
         ?.evaluate(zoom, properties, layer.id) as? Color
 
     geometry.paths.forEach { path ->
-        val graphitePath = path.toGraphitePath()
-        drawPath(
-            graphitePath,
-            GraphitePaint(color.copy(alpha = opacity.toFloat()).toGraphiteColor()),
-        )
+        drawPath(path, color.copy(alpha = opacity.toFloat()))
         outlineColor?.let { outline ->
             drawPath(
-                graphitePath,
-                GraphitePaint(
-                    color = outline.toGraphiteColor(),
-                    style = GraphitePaint.Style.Stroke,
-                ),
+                path = path,
+                color = outline,
+                style = GraphiteDrawStyle.Stroke(),
             )
         }
     }
@@ -218,39 +224,29 @@ private fun GraphiteEncoder.drawLine(
         ?.evaluate(zoom, properties, layer.id) as? Double ?: 1.0
     val opacity = layer.paint.properties["line-opacity"]
         ?.evaluate(zoom, properties, layer.id) as? Double ?: 1.0
+    val cap = layer.layout.properties["line-cap"]
+        ?.evaluate(zoom, properties, layer.id) as? String
+    val join = layer.layout.properties["line-join"]
+        ?.evaluate(zoom, properties, layer.id) as? String
+    val miterLimit = layer.layout.properties["line-miter-limit"]
+        ?.evaluate(zoom, properties, layer.id) as? Double ?: 2.0
 
     drawPath(
-        path = geometry.path.toGraphitePath(),
-        paint = GraphitePaint(
-            color = color.copy(alpha = opacity.toFloat()).toGraphiteColor(),
-            style = GraphitePaint.Style.Stroke,
-            strokeWidth = width.toFloat() * scaleAdjustment,
+        path = geometry.path,
+        color = color.copy(alpha = opacity.toFloat()),
+        style = GraphiteDrawStyle.Stroke(
+            width = width.toFloat() * scaleAdjustment,
+            cap = when (cap) {
+                "round" -> StrokeCap.Round
+                "square" -> StrokeCap.Square
+                else -> StrokeCap.Butt
+            },
+            join = when (join) {
+                "round" -> StrokeJoin.Round
+                "bevel" -> StrokeJoin.Bevel
+                else -> StrokeJoin.Miter
+            },
+            miter = miterLimit.toFloat(),
         ),
     )
 }
-
-private fun Path.toGraphitePath(): GraphitePath = GraphitePath.build {
-    for (segment in this@toGraphitePath) {
-        when (segment.type) {
-            PathSegment.Type.Move ->
-                moveTo(segment.points[0], segment.points[1])
-
-            PathSegment.Type.Line ->
-                lineTo(segment.points[2], segment.points[3])
-
-            PathSegment.Type.Close -> close()
-            PathSegment.Type.Done -> Unit
-            PathSegment.Type.Quadratic,
-            PathSegment.Type.Conic,
-            PathSegment.Type.Cubic ->
-                error("Graphite vector tiles only support line-based paths")
-        }
-    }
-}
-
-private fun Color.toGraphiteColor(): GraphiteColor = GraphiteColor.rgba(
-    red = (red * 255).roundToInt(),
-    green = (green * 255).roundToInt(),
-    blue = (blue * 255).roundToInt(),
-    alpha = (alpha * 255).roundToInt(),
-)

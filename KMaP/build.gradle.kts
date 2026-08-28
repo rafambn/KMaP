@@ -72,6 +72,7 @@ kotlin {
         jvmMain.get().dependsOn(graphiteMain)
         jsMain.get().dependsOn(graphiteMain)
         wasmJsMain.get().dependsOn(graphiteMain)
+        macosArm64Main.get().dependsOn(graphiteMain)
         val iosMain = maybeCreate("iosMain").apply {
             dependsOn(graphiteMain)
         }
@@ -91,10 +92,6 @@ kotlin {
             }
         }
     }
-}
-
-configurations.matching { it.name.startsWith("macosArm64") }.configureEach {
-    resolutionStrategy.useGlobalDependencySubstitutionRules = false
 }
 
 mavenPublishing {
