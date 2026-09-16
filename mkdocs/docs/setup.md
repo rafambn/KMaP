@@ -1,33 +1,22 @@
 # Setup
 
-Add Maven Central to your repositories if needed
+The Kotlin Toolchain uses Maven Central by default. Add KMaP to your module's `module.yaml`:
+
+```yaml
+dependencies:
+  - com.rafambn:KMaP:0.5.0
+```
+
+For Gradle-based consumers, use the equivalent `commonMain` dependency:
 
 ```kotlin
-repositories {
-    mavenCentral()
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation("com.rafambn:KMaP:0.5.0")
+        }
+    }
 }
 ```
 
-Add the desired dependencies to your module's `build.gradle.kts` file
-
-=== "Dependencies"
-
-    ```kotlin
-    sourceSets {
-        commonMain.dependencies {
-            implementation("com.rafambn:KMaP:0.4.1")
-        }
-    }
-    ```
-
-=== "Version Catalog"
-
-    ```toml
-    [versions]
-    kmap = "0.4.1"
-
-    [libraries]
-    kmap = { module = "com.rafambn:KMaP", version.ref = "kmap" }
-    ```
-
-!!! note "Current version: 0.4.1 ([releases](https://github.com/rafambn/kmap/releases))."
+!!! note "Current version: 0.5.0 ([releases](https://github.com/rafambn/kmap/releases))."

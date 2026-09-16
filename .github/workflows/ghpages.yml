@@ -25,18 +25,13 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Clean Yarn Cache
-        run: yarn cache clean --all
-
       - name: Build KMaP Wasm target
-        run: | 
-          chmod +x ./gradlew 
-          ./gradlew :DemoApp:webApp:wasmJsBrowserDistribution
+        run: |
+          chmod +x ./kotlin
+          ./kotlin build -m webApp -p wasmJs -v release
+          rm -rf mkdocs/docs/kmapdemo
+          mkdir -p mkdocs/docs/kmapdemo
+          cp -R build/tasks/_webApp_buildWasmJsAppWasmJsRelease/. mkdocs/docs/kmapdemo/
 
       - name: Build MkDocs
         run: |

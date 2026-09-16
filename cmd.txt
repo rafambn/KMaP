@@ -1,27 +1,26 @@
-
 ### Android
-To run the application on android device/emulator:  
- - open project in Android Studio and run imported android run configuration
+Build the application bundle:
+ - `./kotlin build -m androidApp -p android -v debug`
 
-To build the application bundle:
- - run `./gradlew :DemoApp:androidApp:assembleDebug`
- - find `.apk` file in `DemoApp/androidApp/build/outputs/apk/debug/androidApp-debug.apk`
-Run android UI tests on the connected device: `./gradlew :DemoApp:androidApp:connectedDebugAndroidTest`
+Run Android UI tests from Android Studio on a connected device or emulator.
 
 ### Desktop
-Run the desktop application: `./gradlew :DemoApp:desktopApp:run`
-Run desktop UI tests: `./gradlew :DemoApp:shared:jvmTest`
+Run the desktop application: `./kotlin run -m desktopApp`
+Package the desktop application as an executable JAR: `./kotlin package -m desktopApp`
+Run JVM tests: `./kotlin test -m shared -p jvm`
+Native DMG/MSI/DEB installers remain outside the current Kotlin Toolchain product.
 
 ### iOS
-To run the application on iPhone device/simulator:
- - Open `DemoApp/iosApp/iosApp.xcodeproj` in Xcode and run standard configuration
- - Or use [Kotlin Multiplatform Mobile plugin](https://plugins.jetbrains.com/plugin/14936-kotlin-multiplatform-mobile) for Android Studio
-Run iOS simulator UI tests: `./gradlew :DemoApp:shared:iosSimulatorArm64Test`
+Open `DemoApp/iosApp/module.xcodeproj` in Xcode and run the standard configuration.
+The Xcode build phase invokes the Kotlin Toolchain integration for the shared framework.
 
 ### JS Browser (Experimental)
-Run the browser application: `./gradlew :DemoApp:webApp:jsBrowserDevelopmentRun --continue`
-Run browser UI tests: `./gradlew :DemoApp:webApp:jsBrowserTest`
+Build and assemble the browser distribution: `./scripts/package-js-browser.sh`
+Serve `build/jsApp-browser` over HTTP and open its `index.html` in a browser.
+The Kotlin Toolchain does not package `js/app` automatically; the script adds the
+Skiko JS runtime and Compose resources required by this Compose demo.
 
 ### Wasm Browser (Alpha)
-Run the browser application: `./gradlew :DemoApp:webApp:wasmJsBrowserDevelopmentRun --continue`
-Run browser UI tests: `./gradlew :DemoApp:webApp:wasmJsBrowserTest`
+Run the application locally: `./kotlin run -m webApp`
+Build the deployable package: `./kotlin build -m webApp -p wasmJs -v release`
+Wasm tests are not supported by the Kotlin Toolchain yet.

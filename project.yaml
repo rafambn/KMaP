@@ -1,0 +1,8 @@
+modules:
+  - DemoApp/androidApp
+  - DemoApp/desktopApp
+  - DemoApp/iosApp
+  - DemoApp/jsApp
+  - DemoApp/shared
+  - DemoApp/webApp
+  - KMaP

@@ -1,0 +1,7 @@
+product: ios/app
+
+apply:
+  - ../../templates/common.module-template.yaml
+
+dependencies:
+  - //DemoApp/shared
