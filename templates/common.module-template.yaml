@@ -4,7 +4,7 @@ repositories:
 
 settings:
   kotlin:
-    version: 2.4.10
+    version: 2.3.21
   compose:
     enabled: true
-    version: 1.11.1
+    version: 1.12.0

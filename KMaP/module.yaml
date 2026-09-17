@@ -8,7 +8,7 @@ apply:
 description: A flexible and powerful Compose Multiplatform mapping library.
 
 dependencies:
-  - $compose.material3
+  - org.jetbrains.compose.material3:material3:1.12.0-alpha03
   - $libs.kotlinx.coroutines.core
   - $kotlin.serialization.json
   - $kotlin.serialization.protobuf

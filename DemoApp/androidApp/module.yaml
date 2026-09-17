@@ -12,7 +12,7 @@ settings:
   android:
     namespace: com.rafambn.KMaP.demo
     applicationId: com.rafambn.kmapdemo
-    compileSdk: 36
+    compileSdk: 37
     minSdk: 24
     targetSdk: 36
     versionCode: 1

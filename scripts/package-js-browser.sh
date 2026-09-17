@@ -6,8 +6,8 @@ script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 project_dir=$(CDPATH= cd -- "$script_dir/.." && pwd)
 artifact_root="$project_dir/build/artifacts/CompiledWebArtifact"
 output_dir="$project_dir/build/jsApp-browser"
-runtime_version="0.144.6"
-runtime_sha256="233ca8fe757358d54b2bcc70c1d76c1a1d325b0e40c11371e66165e57ee060ed"
+runtime_version="0.150.1"
+runtime_sha256="aff08515ebd22863e9bb0b776068dfd2c7f7a384ed5e7e480b2ded349b653a0c"
 runtime_url="https://repo1.maven.org/maven2/org/jetbrains/skiko/skiko-js-wasm-runtime/$runtime_version/skiko-js-wasm-runtime-$runtime_version.jar"
 
 "$project_dir/kotlin" build -m jsApp -p js -v release
