@@ -1,0 +1,19 @@
+product: android/app
+
+apply:
+  - ../../templates/common.module-template.yaml
+
+dependencies:
+  - //DemoApp/shared
+  - $libs.androidx.activityCompose
+  - $libs.androidx.appcompat
+
+settings:
+  android:
+    namespace: com.rafambn.KMaP.demo
+    applicationId: com.rafambn.kmapdemo
+    compileSdk: 37
+    minSdk: 24
+    targetSdk: 36
+    versionCode: 1
+    versionName: 1.0.0

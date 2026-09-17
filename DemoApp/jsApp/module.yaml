@@ -1,0 +1,9 @@
+product: js/app
+
+apply:
+  - ../../templates/common.module-template.yaml
+
+dependencies:
+  - //DemoApp/shared
+  - $compose.ui
+  - org.jetbrains.kotlinx:kotlinx-browser:0.5.0

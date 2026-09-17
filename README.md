@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  KMaP is a Kotlin Compose Multiplatform mapping library designed for shared map UIs across all KMP targets. It gives you a single composable API to build map experiences once in <code>commonMain</code>, while still supporting platform-specific runtime targets.
+  KMaP is a Kotlin Compose Multiplatform mapping library designed for shared map UIs across all KMP targets. It gives you a single composable API to build map experiences once in shared code, while still supporting platform-specific runtime targets.
 </p>
 
 
@@ -57,13 +57,20 @@
 
 ### Setup
 
-Add KMaP to your `commonMain` dependencies:
+Add KMaP to your Kotlin Toolchain module:
+
+```yaml
+dependencies:
+  - com.rafambn:KMaP:0.5.0
+```
+
+For a Gradle-based consumer, add KMaP to `commonMain`:
 
 ```kotlin
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("com.rafambn:KMaP:0.4.1")
+            implementation("com.rafambn:KMaP:0.5.0")
         }
     }
 }

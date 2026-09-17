@@ -1,0 +1,53 @@
+product:
+  type: kmp/lib
+  platforms: [android, jvm, js, wasmJs, iosArm64, iosSimulatorArm64]
+
+apply:
+  - ../../templates/common.module-template.yaml
+
+dependencies:
+  - $compose.foundation
+  - org.jetbrains.compose.material3:material3:1.12.0-alpha03
+  - $libs.compose.material.icons.extended
+  - $libs.androidx.lifecycle.viewmodel
+  - $libs.androidx.lifecycle.runtime.compose
+  - $libs.androidx.lifecycle.viewmodel.savedstate
+  - org.jetbrains.androidx.navigation:navigation-compose:2.10.0-alpha02
+  - $libs.kotlinx.coroutines.core
+  - $kotlin.serialization.json
+  - $kotlin.serialization.protobuf
+  - //KMaP
+  - $libs.ktor.client.core
+
+dependencies@android:
+  - $libs.androidx.appcompat
+  - $libs.ktor.client.okhttp
+  - $libs.kotlinx.coroutines.android
+
+dependencies@jvm:
+  - $libs.ktor.client.okhttp
+
+dependencies@ios:
+  - $libs.ktor.client.darwin
+
+dependencies@web:
+  - $libs.ktor.client.js
+
+settings:
+  compose:
+    resources:
+      packageName: kmap.kmapdemo.generated.resources
+  android:
+    namespace: com.rafambn.KMaP.demo.shared
+    compileSdk: 36
+    minSdk: 24
+  jvm:
+    jdk:
+      version: 17
+    release: 17
+  kotlin:
+    serialization:
+      enabled: true
+      version: 1.11.0
+    optIns:
+      - org.jetbrains.compose.resources.ExperimentalResourceApi

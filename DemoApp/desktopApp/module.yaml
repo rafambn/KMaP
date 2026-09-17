@@ -1,0 +1,16 @@
+product: jvm/app
+
+apply:
+  - ../../templates/common.module-template.yaml
+
+dependencies:
+  - //DemoApp/shared
+  - $compose.desktop.currentOs
+  - $libs.kotlinx.coroutines.swing
+  - $libs.logback.classic
+
+settings:
+  jvm:
+    jdk:
+      version: 17
+    release: 17
