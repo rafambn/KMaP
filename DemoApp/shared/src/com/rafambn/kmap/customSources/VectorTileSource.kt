@@ -13,9 +13,6 @@ import io.ktor.http.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
-import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.InternalResourceApi
-import org.jetbrains.compose.resources.readResourceBytes
 
 class VectorTileSource : TileSource<VectorTile> {
     private val client = HttpClient()
@@ -26,7 +23,7 @@ class VectorTileSource : TileSource<VectorTile> {
         useArrayPolymorphism = false
     }
 
-    @OptIn(ExperimentalResourceApi::class, InternalResourceApi::class, ExperimentalUnsignedTypes::class, ExperimentalSerializationApi::class)
+    @OptIn(ExperimentalUnsignedTypes::class, ExperimentalSerializationApi::class)
     override suspend fun getTile(zoom: Int, row: Int, column: Int): TileResult<VectorTile> {
         try {
 //            val compressedBytes = client.get("https://vtiles.openhistoricalmap.org/maps/osm/$zoom/$row/$column") {
@@ -45,7 +42,7 @@ class VectorTileSource : TileSource<VectorTile> {
                 accept(ContentType.Application.ProtoBuf)
             }.readRawBytes()
             val rawMVTile = ProtoBuf.decodeFromByteArray(RawMVTile.serializer(), compressedBytes)
-//            val rawMVTile = json.decodeFromString(RawMVTile.serializer(), readResourceBytes("000.json").decodeToString())
+//            val rawMVTile = json.decodeFromString(RawMVTile.serializer(), Res.readBytes("files/000.json").decodeToString())
             val mvTile = rawMVTile.parse()
 //            if (zoom == 0 && row == 0 && column == 0){
 //                val jsonTile = Json.encodeToString(RawMVTile.serializer(),ProtoBuf.decodeFromByteArray(RawMVTile.serializer(), compressedBytes))

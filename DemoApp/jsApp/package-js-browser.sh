@@ -3,7 +3,7 @@
 set -eu
 
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-project_dir=$(CDPATH= cd -- "$script_dir/.." && pwd)
+project_dir=$(CDPATH= cd -- "$script_dir/../.." && pwd)
 artifact_root="$project_dir/build/artifacts/CompiledWebArtifact"
 output_dir="$project_dir/build/jsApp-browser"
 runtime_version="0.150.1"
