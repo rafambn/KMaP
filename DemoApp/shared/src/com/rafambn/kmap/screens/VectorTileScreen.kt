@@ -30,7 +30,6 @@ import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.InternalResourceApi
-import org.jetbrains.compose.resources.readResourceBytes
 import org.jetbrains.compose.resources.vectorResource
 
 @OptIn(InternalResourceApi::class)
@@ -54,7 +53,7 @@ fun VectorTileScreen(
     val styleState = remember { mutableStateOf<OptimizedStyle?>(null) }
 
     LaunchedEffect(Unit) {
-        val styleJson = readResourceBytes("stylev4.json").decodeToString()
+        val styleJson = Res.readBytes("files/stylev4.json").decodeToString()
         styleState.value = StyleResolver().resolve(json.decodeFromString<Style>(styleJson), locale = "pt")
     }
 

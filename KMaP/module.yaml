@@ -8,7 +8,7 @@ apply:
 description: A flexible and powerful Compose Multiplatform mapping library.
 
 dependencies:
-  - org.jetbrains.compose.material3:material3:1.12.0-alpha03
+  - $compose.foundation
   - $libs.kotlinx.coroutines.core
   - $kotlin.serialization.json
   - $kotlin.serialization.protobuf
@@ -20,7 +20,7 @@ settings:
     minSdk: 24
   jvm:
     jdk:
-      version: 17
+      version: 25
     release: 17
   kotlin:
     serialization:
@@ -46,8 +46,3 @@ settings:
           name: Rafael Mendonca
           email: rafambn@gmail.com
       scm: https://github.com/rafambn/KMaP
-
-settings@native:
-  kotlin:
-    freeCompilerArgs:
-      - -Xexport-kdoc

@@ -12,7 +12,7 @@ dependencies:
   - $libs.androidx.lifecycle.viewmodel
   - $libs.androidx.lifecycle.runtime.compose
   - $libs.androidx.lifecycle.viewmodel.savedstate
-  - org.jetbrains.androidx.navigation:navigation-compose:2.10.0-alpha02
+  - $libs.androidx.navigation.composee
   - $libs.kotlinx.coroutines.core
   - $kotlin.serialization.json
   - $kotlin.serialization.protobuf
@@ -43,7 +43,7 @@ settings:
     minSdk: 24
   jvm:
     jdk:
-      version: 17
+      version: 25
     release: 17
   kotlin:
     serialization:

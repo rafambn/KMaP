@@ -12,5 +12,5 @@ dependencies:
 settings:
   jvm:
     jdk:
-      version: 17
+      version: 25
     release: 17
