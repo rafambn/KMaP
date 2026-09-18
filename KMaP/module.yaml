@@ -1,6 +1,6 @@
 product:
   type: kmp/lib
-  platforms: [android, jvm, js, wasmJs, iosArm64, iosSimulatorArm64, macosArm64]
+  platforms: [android, jvm, js, wasmJs, iosArm64, iosSimulatorArm64]
 
 apply:
   - ../templates/common.module-template.yaml
@@ -16,7 +16,7 @@ dependencies:
 settings:
   android:
     namespace: com.rafambn.KMaP
-    compileSdk: 36
+    compileSdk: 37
     minSdk: 24
   jvm:
     jdk:

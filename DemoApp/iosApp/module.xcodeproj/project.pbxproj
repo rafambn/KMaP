@@ -33,7 +33,7 @@
 		A93A952E29CC810C00F8E227 = {
 			isa = PBXGroup;
 			children = (
-				A93A953929CC810C00F8E227 /* iosApp */,
+				A93A953929CC810C00F8E227 /* src */,
 				A93A953829CC810C00F8E227 /* Products */,
 				C4127409AE3703430489E7BC /* Frameworks */,
 			);
@@ -47,7 +47,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		A93A953929CC810C00F8E227 /* iosApp */ = {
+		A93A953929CC810C00F8E227 /* src */ = {
 			isa = PBXGroup;
 			children = (
 				A93A953A29CC810C00F8E227 /* iosApp.swift */,
@@ -79,7 +79,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = A93A954529CC810D00F8E227 /* Build configuration list for PBXNativeTarget "iosApp" */;
 			buildPhases = (
-				A9D80A052AAB5CDE006C8738 /* ShellScript */,
+				A9D80A052AAB5CDE006C8738 /* Build Kotlin */,
 				A93A953329CC810C00F8E227 /* Sources */,
 				A93A953429CC810C00F8E227 /* Frameworks */,
 				A93A953529CC810C00F8E227 /* Resources */,
@@ -107,7 +107,7 @@
 					};
 				};
 			};
-			buildConfigurationList = A93A953229CC810C00F8E227 /* Build configuration list for PBXProject "iosApp" */;
+			buildConfigurationList = A93A953229CC810C00F8E227 /* Build configuration list for PBXProject "module" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -138,8 +138,9 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		A9D80A052AAB5CDE006C8738 /* ShellScript */ = {
+		A9D80A052AAB5CDE006C8738 /* Build Kotlin */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -147,6 +148,7 @@
 			);
 			inputPaths = (
 			);
+			name = "Build Kotlin";
 			outputFileListPaths = (
 			);
 			outputPaths = (
@@ -295,6 +297,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = src/Info.plist;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				KOTLIN_CLI_WRAPPER_PATH = ../../kotlin;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -302,7 +305,6 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.company.app.iosApp;
 				PRODUCT_NAME = "Multiplatform App";
-				KOTLIN_CLI_WRAPPER_PATH = ../../kotlin;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -321,6 +323,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = src/Info.plist;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				KOTLIN_CLI_WRAPPER_PATH = ../../kotlin;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -328,7 +331,6 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = org.company.app.iosApp;
 				PRODUCT_NAME = "Multiplatform App";
-				KOTLIN_CLI_WRAPPER_PATH = ../../kotlin;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -338,7 +340,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A93A953229CC810C00F8E227 /* Build configuration list for PBXProject "iosApp" */ = {
+		A93A953229CC810C00F8E227 /* Build configuration list for PBXProject "module" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A93A954329CC810D00F8E227 /* Debug */,
