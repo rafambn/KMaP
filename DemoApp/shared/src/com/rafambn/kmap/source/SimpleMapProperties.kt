@@ -1,12 +1,15 @@
-package com.rafambn.kmap.customSources
+package com.rafambn.kmap.source
 
 import androidx.compose.ui.unit.dp
-import com.rafambn.kmap.mapProperties.*
-import com.rafambn.kmap.mapProperties.border.BoundMapBorder
-import com.rafambn.kmap.mapProperties.border.MapBorderType
-import com.rafambn.kmap.mapProperties.border.OutsideTilesType
-import com.rafambn.kmap.utils.Coordinates
-import com.rafambn.kmap.utils.ProjectedCoordinates
+import com.rafambn.kmap.map.CoordinatesRange
+import com.rafambn.kmap.map.MapProperties
+import com.rafambn.kmap.map.TileDimension
+import com.rafambn.kmap.map.ZoomLevelRange
+import com.rafambn.kmap.map.border.BoundMapBorder
+import com.rafambn.kmap.map.border.MapBorderType
+import com.rafambn.kmap.map.border.OutsideTilesType
+import com.rafambn.kmap.geometry.Coordinates
+import com.rafambn.kmap.geometry.ProjectedCoordinates
 
 data class SimpleMapProperties(
     override val boundMap: BoundMapBorder = BoundMapBorder(MapBorderType.BOUND, MapBorderType.BOUND),
@@ -25,10 +28,3 @@ data class SimpleMapProperties(
         projectedCoordinates.y
     )
 }
-
-data class SimpleZoomLevelRange(override val max: Int = 2, override val min: Int = 0) : ZoomLevelRange
-
-data class SimpleCoordinatesRange(
-    override val latitude: Latitude = Latitude(north = 90.0, south = -90.0),
-    override val longitude: Longitude = Longitude(west = -180.0, east = 180.0)
-) : CoordinatesRange

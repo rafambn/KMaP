@@ -1,12 +1,15 @@
-package com.rafambn.kmap.customSources
+package com.rafambn.kmap.source
 
 import androidx.compose.ui.unit.dp
-import com.rafambn.kmap.mapProperties.*
-import com.rafambn.kmap.mapProperties.border.BoundMapBorder
-import com.rafambn.kmap.mapProperties.border.MapBorderType
-import com.rafambn.kmap.mapProperties.border.OutsideTilesType
-import com.rafambn.kmap.utils.Coordinates
-import com.rafambn.kmap.utils.ProjectedCoordinates
+import com.rafambn.kmap.map.CoordinatesRange
+import com.rafambn.kmap.map.MapProperties
+import com.rafambn.kmap.map.TileDimension
+import com.rafambn.kmap.map.ZoomLevelRange
+import com.rafambn.kmap.map.border.BoundMapBorder
+import com.rafambn.kmap.map.border.MapBorderType
+import com.rafambn.kmap.map.border.OutsideTilesType
+import com.rafambn.kmap.geometry.Coordinates
+import com.rafambn.kmap.geometry.ProjectedCoordinates
 import kotlin.math.*
 
 data class OSMMapProperties(
@@ -26,10 +29,3 @@ data class OSMMapProperties(
         (atan(E.pow(projectedCoordinates.y * (PI / 85.051129))) - PI / 4) * 360 / PI
     )
 }
-
-data class OSMZoomLevelRange(override val max: Int = 19, override val min: Int = 0) : ZoomLevelRange
-
-data class OSMCoordinatesRange(
-    override val latitude: Latitude = Latitude(north = 85.051129, south = -85.051129),
-    override val longitude: Longitude = Longitude(east = 180.0, west = -180.0)
-) : CoordinatesRange

@@ -3,6 +3,8 @@ site_url: https://kmap.rafambn.com/
 site_description: Flexible and powerful mapping library for Compose Multiplatform
 repo_name: rafambn/KMaP
 repo_url: https://github.com/rafambn/KMaP
+exclude_docs: |
+  kmapdemo/vendors/**/*.md
 
 theme:
   name: material
@@ -46,4 +48,7 @@ nav:
   - Setup: setup.md
   - Usage: usage.md
   - Upcoming: upcoming.md
+  - Development: development.md
+  - Research:
+      - Text properties: research/text-properties.md
   - KMaP Demo App: kmapdemo/index.html

@@ -16,5 +16,5 @@ Pods/
 .kotlin
 CLAUDE.md
 kotlin-js-store
-mkdocs/docs/kmapdemo
-mkdocs/site
+docs/kmapdemo
+site

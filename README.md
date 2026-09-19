@@ -3,7 +3,7 @@
 <p align="center">A flexible and powerful compose multiplatform mapping library</p>
 
 <p align="center">
-  <img src="/mkdocs/docs/assets/KMaP-Logo.svg" alt="KMaP-Logo" width="200" height="200">
+  <img src="/docs/assets/KMaP-Logo.svg" alt="KMaP-Logo" width="200" height="200">
 </p>
 
 <p align="center">

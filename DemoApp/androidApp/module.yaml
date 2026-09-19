@@ -10,7 +10,7 @@ dependencies:
 
 settings:
   android:
-    namespace: com.rafambn.KMaP.demo
+    namespace: com.rafambn.kmap.demo
     applicationId: com.rafambn.kmapdemo
     compileSdk: 37
     minSdk: 24

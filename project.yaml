@@ -4,5 +4,5 @@ modules:
   - DemoApp/iosApp
   - DemoApp/jsApp
   - DemoApp/shared
-  - DemoApp/webApp
+  - DemoApp/wasmApp
   - KMaP
