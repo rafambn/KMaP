@@ -1,6 +1,6 @@
 package com.rafambn.kmap.utils
 
-import com.rafambn.kmap.mapProperties.CardinalRange
+import com.rafambn.kmap.mapProperties.coordinates.CardinalRange
 import kotlin.math.floor
 
 fun Double.loopInRange(coordinatesRange: CardinalRange): Double =

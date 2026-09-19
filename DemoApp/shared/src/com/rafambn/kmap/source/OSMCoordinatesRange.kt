@@ -1,8 +1,8 @@
 package com.rafambn.kmap.source
 
-import com.rafambn.kmap.mapProperties.CoordinatesRange
-import com.rafambn.kmap.mapProperties.Latitude
-import com.rafambn.kmap.mapProperties.Longitude
+import com.rafambn.kmap.mapProperties.coordinates.CoordinatesRange
+import com.rafambn.kmap.mapProperties.coordinates.Latitude
+import com.rafambn.kmap.mapProperties.coordinates.Longitude
 
 data class OSMCoordinatesRange(
     override val latitude: Latitude = Latitude(north = 85.051129, south = -85.051129),

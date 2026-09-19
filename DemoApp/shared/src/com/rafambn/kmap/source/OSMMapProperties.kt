@@ -1,7 +1,7 @@
 package com.rafambn.kmap.source
 
 import androidx.compose.ui.unit.dp
-import com.rafambn.kmap.mapProperties.CoordinatesRange
+import com.rafambn.kmap.mapProperties.coordinates.CoordinatesRange
 import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.mapProperties.ZoomLevelRange
