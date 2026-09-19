@@ -1,8 +1,8 @@
 package com.rafambn.kmap.source
 
-import com.rafambn.kmap.map.CoordinatesRange
-import com.rafambn.kmap.map.Latitude
-import com.rafambn.kmap.map.Longitude
+import com.rafambn.kmap.mapProperties.CoordinatesRange
+import com.rafambn.kmap.mapProperties.Latitude
+import com.rafambn.kmap.mapProperties.Longitude
 
 data class SimpleCoordinatesRange(
     override val latitude: Latitude = Latitude(north = 90.0, south = -90.0),

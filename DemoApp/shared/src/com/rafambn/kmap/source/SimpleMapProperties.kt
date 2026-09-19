@@ -1,15 +1,15 @@
 package com.rafambn.kmap.source
 
 import androidx.compose.ui.unit.dp
-import com.rafambn.kmap.map.CoordinatesRange
-import com.rafambn.kmap.map.MapProperties
-import com.rafambn.kmap.map.TileDimension
-import com.rafambn.kmap.map.ZoomLevelRange
-import com.rafambn.kmap.map.border.BoundMapBorder
-import com.rafambn.kmap.map.border.MapBorderType
-import com.rafambn.kmap.map.border.OutsideTilesType
-import com.rafambn.kmap.geometry.Coordinates
-import com.rafambn.kmap.geometry.ProjectedCoordinates
+import com.rafambn.kmap.mapProperties.CoordinatesRange
+import com.rafambn.kmap.mapProperties.MapProperties
+import com.rafambn.kmap.mapProperties.TileDimension
+import com.rafambn.kmap.mapProperties.ZoomLevelRange
+import com.rafambn.kmap.mapProperties.border.BoundMapBorder
+import com.rafambn.kmap.mapProperties.border.MapBorderType
+import com.rafambn.kmap.mapProperties.border.OutsideTilesType
+import com.rafambn.kmap.utils.Coordinates
+import com.rafambn.kmap.utils.ProjectedCoordinates
 
 data class SimpleMapProperties(
     override val boundMap: BoundMapBorder = BoundMapBorder(MapBorderType.BOUND, MapBorderType.BOUND),

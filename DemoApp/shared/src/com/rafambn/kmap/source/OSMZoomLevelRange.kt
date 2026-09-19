@@ -1,6 +1,6 @@
 package com.rafambn.kmap.source
 
-import com.rafambn.kmap.map.ZoomLevelRange
+import com.rafambn.kmap.mapProperties.ZoomLevelRange
 
 data class OSMZoomLevelRange(
     override val max: Int = 19,
