@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
-import com.rafambn.kmap.gestures.MapGestureWrapper
+import com.rafambn.kmap.gesture.MapGestureWrapper
 import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.mapSource.tiled.ActiveTiles
 import com.rafambn.kmap.mapSource.tiled.tiles.OptimizedVectorTile

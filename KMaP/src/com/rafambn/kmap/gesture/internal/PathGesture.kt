@@ -1,4 +1,4 @@
-package com.rafambn.kmap.gestures
+package com.rafambn.kmap.gesture.internal
 
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.calculatePan
@@ -207,4 +207,3 @@ suspend fun PointerInputScope.detectPathGestures(
         } while (this@coroutineScope.isActive && !event.changes.any { it.isOutOfBounds(size, extendedTouchPadding) })
     }
 }
-

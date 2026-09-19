@@ -3,7 +3,7 @@ package com.rafambn.kmap.components
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.layout.LazyLayoutItemProvider
 import androidx.compose.runtime.*
-import com.rafambn.kmap.core.MapState
+import com.rafambn.kmap.MapState
 
 @Composable
 fun rememberComponentProviderLambda(content: KMaPContent.() -> Unit, mapState: MapState): () -> ComponentProvider {

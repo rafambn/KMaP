@@ -5,7 +5,7 @@ import androidx.compose.ui.unit.Density
 import com.rafambn.kmap.components.CanvasParameters
 import com.rafambn.kmap.components.RasterCanvasParameters
 import com.rafambn.kmap.components.VectorCanvasParameters
-import com.rafambn.kmap.core.MapState
+import com.rafambn.kmap.MapState
 import com.rafambn.kmap.core.ViewPort
 import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.TileDimension

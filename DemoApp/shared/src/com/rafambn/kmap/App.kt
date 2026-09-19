@@ -14,7 +14,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.rafambn.kmap.core.MotionController
-import com.rafambn.kmap.gestures.MapGestureWrapper
+import com.rafambn.kmap.gesture.MapGestureWrapper
 import com.rafambn.kmap.screens.*
 import com.rafambn.kmap.theme.AppTheme
 

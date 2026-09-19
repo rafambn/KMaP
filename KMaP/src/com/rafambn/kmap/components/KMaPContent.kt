@@ -10,11 +10,11 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.layout.Layout
-import com.rafambn.kmap.core.MapState
-import com.rafambn.kmap.gestures.MapGestureWrapper
-import com.rafambn.kmap.gestures.PathGestureWrapper
-import com.rafambn.kmap.gestures.detectPathGestures
-import com.rafambn.kmap.gestures.sharedPointerInput
+import com.rafambn.kmap.MapState
+import com.rafambn.kmap.gesture.MapGestureWrapper
+import com.rafambn.kmap.gesture.PathGestureWrapper
+import com.rafambn.kmap.gesture.internal.detectPathGestures
+import com.rafambn.kmap.gesture.internal.sharedPointerInput
 import com.rafambn.kmap.mapSource.tiled.canvas.RasterTileCanvas
 import com.rafambn.kmap.mapSource.tiled.canvas.VectorTileCanvas
 import com.rafambn.kmap.utils.ProjectedCoordinates

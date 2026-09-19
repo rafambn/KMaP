@@ -17,8 +17,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.rafambn.kmap.components.RasterCanvasParameters
-import com.rafambn.kmap.core.KMaP
-import com.rafambn.kmap.core.MapState
+import com.rafambn.kmap.KMaP
+import com.rafambn.kmap.MapState
 import com.rafambn.kmap.source.SimpleMapProperties
 import com.rafambn.kmap.source.SimpleMapTileSource
 import com.rafambn.kmap.getGestureDetector

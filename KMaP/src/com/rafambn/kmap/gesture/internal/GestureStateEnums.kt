@@ -1,4 +1,4 @@
-package com.rafambn.kmap.gestures
+package com.rafambn.kmap.gesture.internal
 
 
 /**

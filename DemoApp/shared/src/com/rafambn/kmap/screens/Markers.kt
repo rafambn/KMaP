@@ -19,8 +19,8 @@ import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.components.MarkerParameters
 import com.rafambn.kmap.components.RasterCanvasParameters
 import com.rafambn.kmap.core.DrawPosition
-import com.rafambn.kmap.core.KMaP
-import com.rafambn.kmap.core.rememberMapState
+import com.rafambn.kmap.KMaP
+import com.rafambn.kmap.rememberMapState
 import com.rafambn.kmap.source.SimpleMapProperties
 import com.rafambn.kmap.source.SimpleMapTileSource
 import com.rafambn.kmap.getGestureDetector

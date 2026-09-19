@@ -1,5 +1,6 @@
 package com.rafambn.kmap.core
 
+import com.rafambn.kmap.MapState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.ui.util.lerp

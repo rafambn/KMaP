@@ -1,4 +1,4 @@
-package com.rafambn.kmap.core
+package com.rafambn.kmap
 
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.mapSaver
@@ -7,6 +7,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
+import com.rafambn.kmap.core.CameraState
+import com.rafambn.kmap.core.MotionController
 import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.ZoomLevelRange
 import com.rafambn.kmap.mapProperties.border.MapBorderType

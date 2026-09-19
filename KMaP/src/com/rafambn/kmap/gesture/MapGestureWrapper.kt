@@ -1,4 +1,4 @@
-package com.rafambn.kmap.gestures
+package com.rafambn.kmap.gesture
 
 import com.rafambn.kmap.utils.DifferentialScreenOffset
 import com.rafambn.kmap.utils.ScreenOffset

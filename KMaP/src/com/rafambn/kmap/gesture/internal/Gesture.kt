@@ -1,4 +1,4 @@
-package com.rafambn.kmap.gestures
+package com.rafambn.kmap.gesture.internal
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope

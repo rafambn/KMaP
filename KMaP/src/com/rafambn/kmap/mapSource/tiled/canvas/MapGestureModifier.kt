@@ -3,9 +3,9 @@ package com.rafambn.kmap.mapSource.tiled.canvas
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
-import com.rafambn.kmap.gestures.MapGestureWrapper
-import com.rafambn.kmap.gestures.detectMapGestures
-import com.rafambn.kmap.gestures.sharedPointerInput
+import com.rafambn.kmap.gesture.MapGestureWrapper
+import com.rafambn.kmap.gesture.internal.detectMapGestures
+import com.rafambn.kmap.gesture.internal.sharedPointerInput
 import com.rafambn.kmap.utils.asScreenOffset
 
 internal fun Modifier.mapGestures(gestureWrapper: MapGestureWrapper?): Modifier = this.then(

@@ -13,8 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.components.VectorCanvasParameters
-import com.rafambn.kmap.core.KMaP
-import com.rafambn.kmap.core.rememberMapState
+import com.rafambn.kmap.KMaP
+import com.rafambn.kmap.rememberMapState
 import com.rafambn.kmap.source.OSMMapProperties
 import com.rafambn.kmap.source.SimpleZoomLevelRange
 import com.rafambn.kmap.source.VectorTileSource

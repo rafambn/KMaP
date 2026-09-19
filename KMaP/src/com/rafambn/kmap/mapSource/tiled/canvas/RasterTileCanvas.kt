@@ -15,7 +15,7 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import com.rafambn.kmap.gestures.MapGestureWrapper
+import com.rafambn.kmap.gesture.MapGestureWrapper
 import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.mapSource.tiled.ActiveTiles
 import com.rafambn.kmap.mapSource.tiled.tiles.RasterTile
