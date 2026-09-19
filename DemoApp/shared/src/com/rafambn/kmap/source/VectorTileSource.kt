@@ -4,8 +4,8 @@ import com.rafambn.kmap.mapSource.tiled.TileResult
 import com.rafambn.kmap.mapSource.tiled.TileSource
 import com.rafambn.kmap.mapSource.tiled.tiles.TileSpecs
 import com.rafambn.kmap.mapSource.tiled.tiles.VectorTile
-import com.rafambn.kmap.utils.vectorTile.RawMVTile
-import com.rafambn.kmap.utils.vectorTile.parse
+import com.rafambn.kmap.mvttile.RawMVTile
+import com.rafambn.kmap.mvttile.parse
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*

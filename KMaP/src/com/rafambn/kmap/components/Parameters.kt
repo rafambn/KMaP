@@ -14,7 +14,7 @@ import com.rafambn.kmap.mapSource.tiled.tiles.VectorTile
 import com.rafambn.kmap.utils.Coordinates
 import com.rafambn.kmap.utils.Degrees
 import com.rafambn.kmap.utils.ProjectedCoordinates
-import com.rafambn.kmap.utils.style.OptimizedStyle
+import com.rafambn.kmap.style.OptimizedStyle
 
 sealed interface Parameters
 

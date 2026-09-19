@@ -1,4 +1,5 @@
-import com.rafambn.kmap.utils.vectorTile.*
+package com.rafambn.kmap.mvttile
+
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull

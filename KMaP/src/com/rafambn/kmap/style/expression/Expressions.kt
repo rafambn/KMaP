@@ -1,8 +1,8 @@
-package com.rafambn.kmap.utils.style.expressions
+package com.rafambn.kmap.style.expression
 
 import androidx.compose.ui.graphics.Color
-import com.rafambn.kmap.utils.style.EvaluationContext
-import com.rafambn.kmap.utils.style.ExpressionEvaluator
+import com.rafambn.kmap.style.EvaluationContext
+import com.rafambn.kmap.style.ExpressionEvaluator
 
 // Logical
 internal fun evaluateAll(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): Boolean {

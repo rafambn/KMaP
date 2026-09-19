@@ -1,4 +1,4 @@
-package com.rafambn.kmap.utils.vectorTile
+package com.rafambn.kmap.mvttile
 
 const val CMD_MOVETO = 1
 const val CMD_LINETO = 2

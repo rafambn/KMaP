@@ -1,6 +1,6 @@
 package com.rafambn.kmap.mapSource.tiled.tiles
 
-import com.rafambn.kmap.utils.vectorTile.MVTile
+import com.rafambn.kmap.mvttile.MVTile
 
 class VectorTile(
     zoom: Int,

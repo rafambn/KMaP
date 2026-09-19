@@ -1,4 +1,4 @@
-package com.rafambn.kmap.utils.vectorTile
+package com.rafambn.kmap.mvttile
 
 data class MVTile(
     val layers: List<MVTLayer>

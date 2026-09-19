@@ -1,6 +1,6 @@
-package com.rafambn.kmap.utils.style
+package com.rafambn.kmap.style
 
-import com.rafambn.kmap.utils.style.expressions.*
+import com.rafambn.kmap.style.expression.*
 
 class ExpressionEvaluator {
 

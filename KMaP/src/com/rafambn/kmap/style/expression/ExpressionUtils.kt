@@ -1,4 +1,4 @@
-package com.rafambn.kmap.utils.style.expressions
+package com.rafambn.kmap.style.expression
 
 import androidx.compose.ui.graphics.Color
 import kotlin.math.pow

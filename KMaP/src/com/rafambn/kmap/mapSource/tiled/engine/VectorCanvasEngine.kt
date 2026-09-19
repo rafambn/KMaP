@@ -4,8 +4,8 @@ import androidx.compose.ui.graphics.Path
 import com.rafambn.kmap.mapSource.tiled.TileResult
 import com.rafambn.kmap.mapSource.tiled.tiles.OptimizedVectorTile
 import com.rafambn.kmap.mapSource.tiled.tiles.VectorTile
-import com.rafambn.kmap.utils.style.OptimizedStyle
-import com.rafambn.kmap.utils.vectorTile.*
+import com.rafambn.kmap.style.OptimizedStyle
+import com.rafambn.kmap.mvttile.*
 import kotlinx.coroutines.CoroutineScope
 
 class VectorCanvasEngine(

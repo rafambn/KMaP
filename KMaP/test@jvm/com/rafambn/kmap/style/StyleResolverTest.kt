@@ -1,4 +1,4 @@
-package com.rafambn.kmap.utils.style
+package com.rafambn.kmap.style
 
 import androidx.compose.ui.graphics.Color
 import kotlinx.serialization.json.Json

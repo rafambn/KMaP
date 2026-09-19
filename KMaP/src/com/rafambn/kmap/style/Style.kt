@@ -1,4 +1,4 @@
-package com.rafambn.kmap.utils.style
+package com.rafambn.kmap.style
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -75,4 +75,3 @@ data class StyleLayer(
     val layout: Map<String, JsonElement>? = null,
     val paint: Map<String, JsonElement>? = null
 )
-

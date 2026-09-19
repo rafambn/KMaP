@@ -33,11 +33,11 @@ import com.rafambn.kmap.mapSource.tiled.tiles.OptimizedVectorTile
 import com.rafambn.kmap.mapSource.tiled.tiles.Tile
 import com.rafambn.kmap.utils.CanvasDrawReference
 import com.rafambn.kmap.utils.ScreenOffset
-import com.rafambn.kmap.utils.style.OptimizedStyle
-import com.rafambn.kmap.utils.style.OptimizedStyleLayer
+import com.rafambn.kmap.style.OptimizedStyle
+import com.rafambn.kmap.style.OptimizedStyleLayer
 import com.rafambn.kmap.utils.toIntFloor
-import com.rafambn.kmap.utils.vectorTile.OptimizedGeometry
-import com.rafambn.kmap.utils.vectorTile.OptimizedRenderFeature
+import com.rafambn.kmap.mvttile.OptimizedGeometry
+import com.rafambn.kmap.mvttile.OptimizedRenderFeature
 import kotlin.math.pow
 
 @Composable

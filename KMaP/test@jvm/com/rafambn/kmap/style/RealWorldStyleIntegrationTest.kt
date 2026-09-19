@@ -1,4 +1,4 @@
-package com.rafambn.kmap.utils.style
+package com.rafambn.kmap.style
 
 import kotlinx.serialization.json.Json
 import java.io.File
