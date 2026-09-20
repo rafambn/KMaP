@@ -9,6 +9,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import com.rafambn.kmap.core.CameraState
 import com.rafambn.kmap.core.MotionController
+import com.rafambn.kmap.geometry.angle.Degrees
 import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.ZoomLevelRange
 import com.rafambn.kmap.mapProperties.border.MapBorderType
@@ -116,7 +117,7 @@ class MapState(
         cameraState = cameraState.copy(zoom = zoom.coerceZoom())
     }
 
-    fun setAngle(angle: Double) {
+    fun setAngle(angle: Degrees) {
         cameraState = cameraState.copy(angleDegrees = angle)
     }
 
@@ -137,7 +138,7 @@ class MapState(
                     "fontScale" to mapState.fontScale,
                     "canvasSize" to Pair(mapState.cameraState.canvasSize.x, mapState.cameraState.canvasSize.y),
                     "zoom" to mapState.cameraState.zoom,
-                    "angleDegrees" to mapState.cameraState.angleDegrees,
+                    "angleDegrees" to mapState.cameraState.angleDegrees.value,
                     "coordinates" to Pair(mapState.cameraState.coordinates.x, mapState.cameraState.coordinates.y),
                     "tilePoint" to Pair(mapState.cameraState.tilePoint.x, mapState.cameraState.tilePoint.y),
                 )
@@ -155,7 +156,7 @@ class MapState(
                     initialCameraState = CameraState(
                         canvasSize = (map["canvasSize"] as Pair<*, *>).let { ScreenOffset(it.first as Float, it.second as Float) },
                         zoom = map["zoom"] as Float,
-                        angleDegrees = map["angleDegrees"] as Double,
+                        angleDegrees = Degrees(map["angleDegrees"] as Double),
                         coordinates = (map["coordinates"] as Pair<*, *>).let { Coordinates(it.first as Double, it.second as Double) },
                         tilePoint = (map["tilePoint"] as Pair<*, *>).let { TilePoint(it.first as Double, it.second as Double) },
                     ),

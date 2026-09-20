@@ -2,6 +2,8 @@ package com.rafambn.kmap.utils
 
 import androidx.compose.ui.geometry.Offset
 import com.rafambn.kmap.MapState
+import com.rafambn.kmap.geometry.angle.rotate
+import com.rafambn.kmap.geometry.angle.toRadians
 import kotlin.math.pow
 
 open class Reference(val x: Double, val y: Double) {

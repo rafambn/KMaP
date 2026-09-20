@@ -20,7 +20,7 @@ KMaP(
         gestureWrapper = MapGestureWrapper(
             onGesture = { centroid, pan, zoom, rotation ->
                 mapState.motionController.move {
-                    rotateByCentered(rotation.toDouble(), centroid)
+                    rotateByCentered(rotation, centroid)
                     zoomByCentered(zoom, centroid)
                     positionBy(pan)
                 }
@@ -61,7 +61,7 @@ MapState calculates the visible tiles so each canvas can render its images.
 data class CameraState(
     val canvasSize: ScreenOffset = ScreenOffset.Zero,
     val zoom: Float = 0F,
-    val angleDegrees: Double = 0.0,
+    val angleDegrees: Degrees = Degrees.Zero,
     val coordinates: Coordinates,
 )
 ```
@@ -109,10 +109,10 @@ interface MoveInterface {
     fun zoomBy(zoom: Float)
     fun zoomToCentered(zoom: Float, center: Reference)
     fun zoomByCentered(zoom: Float, center: Reference)
-    fun rotateTo(degrees: Double)
-    fun rotateBy(degrees: Double)
-    fun rotateToCentered(degrees: Double, center: Reference)
-    fun rotateByCentered(degrees: Double, center: Reference)
+    fun rotateTo(degrees: Degrees)
+    fun rotateBy(degrees: Degrees)
+    fun rotateToCentered(degrees: Degrees, center: Reference)
+    fun rotateByCentered(degrees: Degrees, center: Reference)
 }
 ```
 
@@ -125,7 +125,7 @@ mapState.motionController.move {
     positionTo(Coordinates.Zero) # (3)!
     zoomBy(5F) # (4)!
     zoomToCentered(7F, TilePoint.Zero) # (5)!
-    rotateByCentered(45.0, ScreenOffset.Zero) # (6)!
+    rotateByCentered(Degrees(45.0), ScreenOffset.Zero) # (6)!
 }
 ```
 
@@ -148,10 +148,10 @@ interface AnimateInterface {
     suspend fun zoomBy(zoom: Float, animationSpec: AnimationSpec<Float> = SpringSpec())
     suspend fun zoomToCentered(zoom: Float, center: Reference, animationSpec: AnimationSpec<Float> = SpringSpec())
     suspend fun zoomByCentered(zoom: Float, center: Reference, animationSpec: AnimationSpec<Float> = SpringSpec())
-    suspend fun rotateTo(degrees: Double, animationSpec: AnimationSpec<Float> = SpringSpec())
-    suspend fun rotateBy(degrees: Double, animationSpec: AnimationSpec<Float> = SpringSpec())
-    suspend fun rotateToCentered(degrees: Double, center: Reference, animationSpec: AnimationSpec<Float> = SpringSpec())
-    suspend fun rotateByCentered(degrees: Double, center: Reference, animationSpec: AnimationSpec<Float> = SpringSpec())
+    suspend fun rotateTo(degrees: Degrees, animationSpec: AnimationSpec<Float> = SpringSpec())
+    suspend fun rotateBy(degrees: Degrees, animationSpec: AnimationSpec<Float> = SpringSpec())
+    suspend fun rotateToCentered(degrees: Degrees, center: Reference, animationSpec: AnimationSpec<Float> = SpringSpec())
+    suspend fun rotateByCentered(degrees: Degrees, center: Reference, animationSpec: AnimationSpec<Float> = SpringSpec())
 }
 ```
 
@@ -166,10 +166,10 @@ scope.launch {
         zoomBy(1F, TweenSpec(2000))
         zoomBy(-1F, TweenSpec(2000))
         zoomToCentered(1F, Coordinates(0.0, 0.0), TweenSpec(2000))
-        rotateBy(360.0, TweenSpec(2000))
+        rotateBy(Degrees(360.0), TweenSpec(2000))
     }
     mapState.motionController.animate {
-        rotateByCentered(-360.0, Coordinates(0.0, 0.0), TweenSpec(2000))
+        rotateByCentered(Degrees(-360.0), Coordinates(0.0, 0.0), TweenSpec(2000))
     }
 }
 ```
@@ -207,7 +207,7 @@ MapGestureWrapper(
     onTwoFingersTap = { offset -> mapState.motionController.move { zoomByCentered(1 / 3F, offset) } },
     onGesture = { centroid, pan, zoom, rotation ->
         mapState.motionController.move {
-            rotateByCentered(rotation.toDouble(), centroid)
+            rotateByCentered(rotation, centroid)
             zoomByCentered(zoom, centroid)
             positionBy(pan)
         }
@@ -254,7 +254,7 @@ open class MarkerParameters(
     val zoomVisibilityRange: ClosedFloatingPointRange<Float> = 0F..Float.MAX_VALUE,
     val zoomToFix: Float? = null,
     val rotateWithMap: Boolean = false,
-    val rotation: Degrees = 0.0,
+    val rotation: Degrees = Degrees.Zero,
     val clusterId: Int? = null
 ) : Parameters
 ```
@@ -287,7 +287,7 @@ open class ClusterParameters(
     val alpha: Float = 1F,
     val zIndex: Float = 2F,
     val rotateWithMap: Boolean = false,
-    val rotation: Degrees = 0.0
+    val rotation: Degrees = Degrees.Zero
 ) : Parameters
 ```
 

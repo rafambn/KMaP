@@ -3,6 +3,7 @@ package com.rafambn.kmap.gesture.internal
 import androidx.compose.foundation.gestures.*
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.*
+import com.rafambn.kmap.geometry.angle.Degrees
 import com.rafambn.kmap.utils.DifferentialScreenOffset
 import com.rafambn.kmap.utils.ScreenOffset
 import com.rafambn.kmap.utils.asDifferentialScreenOffset
@@ -16,8 +17,8 @@ suspend fun PointerInputScope.detectMapGestures(
     onDoubleTap: ((screenOffset: ScreenOffset) -> Unit)? = null,
     onLongPress: ((screenOffset: ScreenOffset) -> Unit)? = null,
     onTapLongPress: ((screenOffset: ScreenOffset) -> Unit)? = null,
-    onTapSwipe: ((zoomChange: Float, rotationChange: Double) -> Unit)? = null,
-    onGesture: ((screenOffset: ScreenOffset, screenOffsetDiff: DifferentialScreenOffset, zoom: Float, rotation: Float) -> Unit)? = null,
+    onTapSwipe: ((zoomChange: Float, rotationChange: Degrees) -> Unit)? = null,
+    onGesture: ((screenOffset: ScreenOffset, screenOffsetDiff: DifferentialScreenOffset, zoom: Float, rotation: Degrees) -> Unit)? = null,
 
     // mobile use
     onTwoFingersTap: ((screenOffset: ScreenOffset) -> Unit)? = null,
@@ -278,7 +279,7 @@ suspend fun PointerInputScope.detectMapGestures(
                                 if (eventZoomCentroid == 0f || previousEventZoomCentroid == 0f)
                                     zoomChange = 0.0F
 
-                                val rotationChange = event.calculateRotation()
+                                val rotationChange = Degrees(event.calculateRotation().toDouble())
 
                                 val panChange = event.calculatePan()
                                 val centroid = event.calculateCentroid()

@@ -24,6 +24,7 @@ import com.rafambn.kmap.rememberMapState
 import com.rafambn.kmap.source.SimpleMapProperties
 import com.rafambn.kmap.source.SimpleMapTileSource
 import com.rafambn.kmap.getGestureDetector
+import com.rafambn.kmap.geometry.angle.Degrees
 import com.rafambn.kmap.utils.Coordinates
 import com.rafambn.kmap.utils.asDifferentialScreenOffset
 import com.rafambn.kmap.utils.minus
@@ -101,7 +102,7 @@ fun MarkersScreen(
                     Coordinates(0.0, -20.0),
                     drawPosition = DrawPosition.TOP_RIGHT,
                     rotateWithMap = true,
-                    rotation = -45.0,
+                    rotation = Degrees(-45.0),
                 )
             ) {
                 Text(

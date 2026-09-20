@@ -1,21 +1,23 @@
-package com.rafambn.kmap.utils
+package com.rafambn.kmap.geometry.angle
 
+import com.rafambn.kmap.utils.CanvasDrawReference
+import com.rafambn.kmap.utils.Coordinates
+import com.rafambn.kmap.utils.DifferentialScreenOffset
+import com.rafambn.kmap.utils.ProjectedCoordinates
+import com.rafambn.kmap.utils.Reference
+import com.rafambn.kmap.utils.ScreenOffset
+import com.rafambn.kmap.utils.TilePoint
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-typealias Degrees = Double
-typealias Radians = Double
+fun Degrees.toRadians(): Radians = Radians(value * PI / 180)
 
-fun Degrees.toRadians(): Radians = this * PI / 180
-
-fun Radians.toDegrees(): Degrees = this * 180 / PI
-
-fun Degrees.modulo(): Degrees = this.mod(180.0)
+fun Radians.toDegrees(): Degrees = Degrees(value * 180 / PI)
 
 inline fun <reified T : Reference> T.rotate(radians: Radians): T {
-    val cosRadians = cos(radians)
-    val sinRadians = sin(radians)
+    val cosRadians = cos(radians.value)
+    val sinRadians = sin(radians.value)
     val newX = this.x * cosRadians - this.y * sinRadians
     val newY = this.x * sinRadians + this.y * cosRadians
 
@@ -31,8 +33,8 @@ inline fun <reified T : Reference> T.rotate(radians: Radians): T {
 }
 
 inline fun <reified T : Reference> T.rotateCentered(center: T, radians: Radians): T {
-    val cosRadians = cos(radians)
-    val sinRadians = sin(radians)
+    val cosRadians = cos(radians.value)
+    val sinRadians = sin(radians.value)
 
     val translatedX = this.x - center.x
     val translatedY = this.y - center.y

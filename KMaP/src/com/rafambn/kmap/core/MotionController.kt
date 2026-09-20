@@ -4,6 +4,7 @@ import com.rafambn.kmap.MapState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.ui.util.lerp
+import com.rafambn.kmap.geometry.angle.Degrees
 import com.rafambn.kmap.utils.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -103,25 +104,25 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
         }
     }
 
-    override suspend fun rotateTo(degrees: Double, animationSpec: AnimationSpec<Float>) {
-        val startZoom = mapState.cameraState.angleDegrees
+    override suspend fun rotateTo(degrees: Degrees, animationSpec: AnimationSpec<Float>) {
+        val startAngle = mapState.cameraState.angleDegrees
         animatable.snapTo(0F)
         animatable.animateTo(1f, animationSpec) {
-            mapState.setAngle(lerp(startZoom, degrees, value.toDouble()))
+            mapState.setAngle(Degrees(lerp(startAngle.value, degrees.value, value.toDouble())))
         }
     }
 
-    override suspend fun rotateBy(degrees: Double, animationSpec: AnimationSpec<Float>) {
+    override suspend fun rotateBy(degrees: Degrees, animationSpec: AnimationSpec<Float>) {
         val startAngle = mapState.cameraState.angleDegrees
         val endAngle = mapState.cameraState.angleDegrees + degrees
         animatable.snapTo(0f)
         animatable.animateTo(1f, animationSpec) {
-            mapState.setAngle(lerp(startAngle, endAngle, value.toDouble()))
+            mapState.setAngle(Degrees(lerp(startAngle.value, endAngle.value, value.toDouble())))
         }
     }
 
     override suspend fun rotateToCentered(
-        degrees: Double,
+        degrees: Degrees,
         center: Reference,
         animationSpec: AnimationSpec<Float>
     ) {
@@ -130,13 +131,13 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
         val previousPosition = getTilePoint(center)
         animatable.snapTo(0F)
         animatable.animateTo(1f, animationSpec) {
-            mapState.setAngle(lerp(startAngle, degrees, value.toDouble()))
+            mapState.setAngle(Degrees(lerp(startAngle.value, degrees.value, value.toDouble())))
             mapState.centerPointAtOffset(previousPosition, previousOffset)
         }
     }
 
     override suspend fun rotateByCentered(
-        degrees: Double,
+        degrees: Degrees,
         center: Reference,
         animationSpec: AnimationSpec<Float>
     ) {
@@ -146,7 +147,7 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
         val previousPosition = getTilePoint(center)
         animatable.snapTo(0F)
         animatable.animateTo(1f, animationSpec) {
-            mapState.setAngle(lerp(startAngle, endAngle, value.toDouble()))
+            mapState.setAngle(Degrees(lerp(startAngle.value, endAngle.value, value.toDouble())))
             mapState.centerPointAtOffset(previousPosition, previousOffset)
         }
     }
@@ -181,22 +182,22 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
         mapState.centerPointAtOffset(previousPosition, previousOffset)
     }
 
-    override fun rotateTo(degrees: Double) {
+    override fun rotateTo(degrees: Degrees) {
         mapState.setAngle(degrees)
     }
 
-    override fun rotateBy(degrees: Double) {
+    override fun rotateBy(degrees: Degrees) {
         mapState.setAngle(degrees + mapState.cameraState.angleDegrees)
     }
 
-    override fun rotateToCentered(degrees: Double, center: Reference) {
+    override fun rotateToCentered(degrees: Degrees, center: Reference) {
         val previousOffset = getScreenOffset(center)
         val previousPosition = getTilePoint(center)
         mapState.setAngle(degrees)
         mapState.centerPointAtOffset(previousPosition, previousOffset)
     }
 
-    override fun rotateByCentered(degrees: Double, center: Reference) {
+    override fun rotateByCentered(degrees: Degrees, center: Reference) {
         val previousOffset = getScreenOffset(center)
         val previousPosition = getTilePoint(center)
         mapState.setAngle(degrees + mapState.cameraState.angleDegrees)

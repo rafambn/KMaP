@@ -12,7 +12,7 @@ import com.rafambn.kmap.mapSource.tiled.TileResult
 import com.rafambn.kmap.mapSource.tiled.tiles.RasterTile
 import com.rafambn.kmap.mapSource.tiled.tiles.VectorTile
 import com.rafambn.kmap.utils.Coordinates
-import com.rafambn.kmap.utils.Degrees
+import com.rafambn.kmap.geometry.angle.Degrees
 import com.rafambn.kmap.utils.ProjectedCoordinates
 import com.rafambn.kmap.style.OptimizedStyle
 
@@ -26,7 +26,7 @@ open class MarkerParameters(
     val zoomVisibilityRange: ClosedFloatingPointRange<Float> = 0F..Float.MAX_VALUE,
     val zoomToFix: Float? = null,
     val rotateWithMap: Boolean = false,
-    val rotation: Degrees = 0.0,
+    val rotation: Degrees = Degrees.Zero,
     val clusterId: Int? = null
 ) : Parameters
 
@@ -35,7 +35,7 @@ open class ClusterParameters(
     val alpha: Float = 1F,
     val zIndex: Float = 2F,
     val rotateWithMap: Boolean = false,
-    val rotation: Degrees = 0.0
+    val rotation: Degrees = Degrees.Zero
 ) : Parameters
 
 open class PathParameters(

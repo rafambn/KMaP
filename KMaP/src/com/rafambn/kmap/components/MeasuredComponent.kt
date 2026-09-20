@@ -5,10 +5,10 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.Placeable
 import com.rafambn.kmap.core.DrawPosition
-import com.rafambn.kmap.utils.Degrees
+import com.rafambn.kmap.geometry.angle.Degrees
+import com.rafambn.kmap.geometry.angle.rotate
+import com.rafambn.kmap.geometry.angle.toRadians
 import com.rafambn.kmap.utils.ScreenOffset
-import com.rafambn.kmap.utils.rotate
-import com.rafambn.kmap.utils.toRadians
 import kotlin.math.pow
 
 class MeasuredComponent(

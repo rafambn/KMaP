@@ -1,0 +1,9 @@
+KMaP TODO
+
+- Keep PathParameters as input-only configuration. Move the derived drawPoint and
+  totalPadding values to the internal Path or MeasuredComponent state so reusing
+  one PathParameters instance cannot share rendering state between paths or maps.
+
+- Improve ReferenceUtils by moving each reference type into its own file and
+  replacing the reified generic operations and unchecked casts with type-safe
+  operations.

@@ -21,6 +21,7 @@ import com.rafambn.kmap.rememberMapState
 import com.rafambn.kmap.source.SimpleMapProperties
 import com.rafambn.kmap.source.SimpleMapTileSource
 import com.rafambn.kmap.getGestureDetector
+import com.rafambn.kmap.geometry.angle.Degrees
 import com.rafambn.kmap.utils.Coordinates
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
@@ -54,11 +55,11 @@ fun AnimationScreen(
                 withContext(Dispatchers.Main) { description = "Zooming centered on (0.0, 0.0)" }
                 zoomToCentered(1F, Coordinates(0.0, 0.0), TweenSpec(2000))
                 withContext(Dispatchers.Main) { description = "Rotating around screen center" }
-                rotateBy(360.0, TweenSpec(2000))
+                rotateBy(Degrees(360.0), TweenSpec(2000))
                 withContext(Dispatchers.Main) { description = "Rotating centered on (0.0, 0.0)" }
             }
             mapState.motionController.animate {
-                rotateByCentered(-360.0, Coordinates(0.0, 0.0), TweenSpec(2000))
+                rotateByCentered(Degrees(-360.0), Coordinates(0.0, 0.0), TweenSpec(2000))
                 withContext(Dispatchers.Main) { description = "No Animation" }
             }
         }

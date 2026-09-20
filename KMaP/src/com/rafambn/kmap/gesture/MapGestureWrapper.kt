@@ -1,5 +1,6 @@
 package com.rafambn.kmap.gesture
 
+import com.rafambn.kmap.geometry.angle.Degrees
 import com.rafambn.kmap.utils.DifferentialScreenOffset
 import com.rafambn.kmap.utils.ScreenOffset
 
@@ -9,8 +10,8 @@ data class MapGestureWrapper(
     val onDoubleTap: ((screenOffset: ScreenOffset) -> Unit)? = null,
     val onLongPress: ((screenOffset: ScreenOffset) -> Unit)? = null,
     val onTapLongPress: ((screenOffset: ScreenOffset) -> Unit)? = null,
-    val onTapSwipe: ((zoomChange: Float, rotationChange: Double) -> Unit)? = null,
-    val onGesture: ((screenOffset: ScreenOffset, screenOffsetDiff: DifferentialScreenOffset, zoom: Float, rotation: Float) -> Unit)? = null,
+    val onTapSwipe: ((zoomChange: Float, rotationChange: Degrees) -> Unit)? = null,
+    val onGesture: ((screenOffset: ScreenOffset, screenOffsetDiff: DifferentialScreenOffset, zoom: Float, rotation: Degrees) -> Unit)? = null,
 
     // mobile use
     val onTwoFingersTap: ((screenOffset: ScreenOffset) -> Unit)? = null,

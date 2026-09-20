@@ -53,7 +53,7 @@ KMaP(
         gestureWrapper = MapGestureWrapper(
             onGesture = { centroid, pan, zoom, rotation ->
                 mapState.motionController.move {
-                    rotateByCentered(rotation.toDouble(), centroid)
+                    rotateByCentered(rotation, centroid)
                     zoomByCentered(zoom, centroid)
                     positionBy(pan)
                 }

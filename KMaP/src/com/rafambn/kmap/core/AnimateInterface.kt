@@ -2,6 +2,7 @@ package com.rafambn.kmap.core
 
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.SpringSpec
+import com.rafambn.kmap.geometry.angle.Degrees
 import com.rafambn.kmap.utils.Reference
 
 interface AnimateInterface {
@@ -11,8 +12,8 @@ interface AnimateInterface {
     suspend fun zoomBy(zoom: Float, animationSpec: AnimationSpec<Float> = SpringSpec())
     suspend fun zoomToCentered(zoom: Float, center: Reference, animationSpec: AnimationSpec<Float> = SpringSpec())
     suspend fun zoomByCentered(zoom: Float, center: Reference, animationSpec: AnimationSpec<Float> = SpringSpec())
-    suspend fun rotateTo(degrees: Double, animationSpec: AnimationSpec<Float> = SpringSpec())
-    suspend fun rotateBy(degrees: Double, animationSpec: AnimationSpec<Float> = SpringSpec())
-    suspend fun rotateToCentered(degrees: Double, center: Reference, animationSpec: AnimationSpec<Float> = SpringSpec())
-    suspend fun rotateByCentered(degrees: Double, center: Reference, animationSpec: AnimationSpec<Float> = SpringSpec())
+    suspend fun rotateTo(degrees: Degrees, animationSpec: AnimationSpec<Float> = SpringSpec())
+    suspend fun rotateBy(degrees: Degrees, animationSpec: AnimationSpec<Float> = SpringSpec())
+    suspend fun rotateToCentered(degrees: Degrees, center: Reference, animationSpec: AnimationSpec<Float> = SpringSpec())
+    suspend fun rotateByCentered(degrees: Degrees, center: Reference, animationSpec: AnimationSpec<Float> = SpringSpec())
 }
