@@ -204,7 +204,7 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
     }
 
     fun getTilePoint(center: Reference): TilePoint {
-        return with(mapState) {
+        return context(mapState) {
             when (center) {
                 is ScreenOffset -> center.toTilePoint()
                 is TilePoint -> center
@@ -216,7 +216,7 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
     }
 
     fun getScreenOffset(center: Reference): ScreenOffset {
-        return with(mapState) {
+        return context(mapState) {
             when (center) {
                 is ScreenOffset -> center
                 is TilePoint -> center.toScreenOffset()

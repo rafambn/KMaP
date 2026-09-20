@@ -15,7 +15,6 @@ import com.rafambn.kmap.mapProperties.border.MapBorderType
 import com.rafambn.kmap.mapSource.tiled.engine.CanvasKernel
 import com.rafambn.kmap.utils.*
 import kotlinx.coroutines.CoroutineScope
-import kotlin.math.pow
 import kotlin.reflect.KProperty
 
 @Composable
@@ -105,77 +104,6 @@ class MapState(
 
     fun centerPointAtOffset(tilePoint: TilePoint, offset: ScreenOffset) {
         setPosition(cameraState.tilePoint + tilePoint - offset.toTilePoint())
-    }
-
-    fun ScreenOffset.toTilePoint(): TilePoint =
-        (cameraState.canvasSize / 2F - this).asDifferentialScreenOffset().toTilePoint() + cameraState.tilePoint
-
-    fun DifferentialScreenOffset.toTilePoint(): TilePoint = this
-        .asCanvasPosition()
-        .scale(
-            (mapProperties.tileSize.width.toPx().toDouble() / (mapProperties.tileSize.width.toPx() * 2F.pow(cameraState.zoom))),
-            (mapProperties.tileSize.height.toPx().toDouble() / (mapProperties.tileSize.height.toPx() * 2F.pow(cameraState.zoom)))
-        )
-        .rotate(-cameraState.angleDegrees.toRadians())
-        .unaryMinus()
-
-    fun TilePoint.toScreenOffset(): ScreenOffset = (this - cameraState.tilePoint)
-        .unaryMinus()
-        .rotate(cameraState.angleDegrees.toRadians())
-        .scale(
-            mapProperties.tileSize.width.toPx() * 2F.pow(cameraState.zoom) / mapProperties.tileSize.width.toPx().toDouble(),
-            mapProperties.tileSize.height.toPx() * 2F.pow(cameraState.zoom) / mapProperties.tileSize.height.toPx().toDouble()
-        )
-        .asScreenOffset()
-        .minus(cameraState.canvasSize / 2F)
-        .unaryMinus()
-
-    private fun TilePoint.toCanvasDrawReference(): CanvasDrawReference = this
-        .scale(
-            mapProperties.tileSize.width.toPx() * (1 shl zoomLevel) / mapProperties.tileSize.width.toPx().toDouble(),
-            mapProperties.tileSize.height.toPx() * (1 shl zoomLevel) / mapProperties.tileSize.height.toPx().toDouble()
-        )
-        .unaryMinus()
-        .asCanvasDrawReference()
-
-    private fun TilePoint.scale(horizontal: Double, vertical: Double): TilePoint =
-        TilePoint(this.x * horizontal, this.y * vertical)
-
-    fun Coordinates.toTilePoint(): TilePoint {
-        val projectedCoordinates = mapProperties.toProjectedCoordinates(this@toTilePoint)
-        val scaledTilePoint = transformReference(
-            projectedCoordinates.x,
-            projectedCoordinates.y,
-            Pair(mapProperties.coordinatesRange.longitude.west, mapProperties.coordinatesRange.longitude.east),
-            Pair(mapProperties.coordinatesRange.latitude.north, mapProperties.coordinatesRange.latitude.south),
-            Pair(0.0, mapProperties.tileSize.width.toPx().toDouble()),
-            Pair(0.0, mapProperties.tileSize.height.toPx().toDouble()),
-        )
-        return TilePoint(scaledTilePoint.first, scaledTilePoint.second)
-    }
-
-    fun ProjectedCoordinates.toTilePoint(): TilePoint {
-        val scaledTilePoint = transformReference(
-            this.x,
-            this.y,
-            Pair(mapProperties.coordinatesRange.longitude.west, mapProperties.coordinatesRange.longitude.east),
-            Pair(mapProperties.coordinatesRange.latitude.north, mapProperties.coordinatesRange.latitude.south),
-            Pair(0.0, mapProperties.tileSize.width.toPx().toDouble()),
-            Pair(0.0, mapProperties.tileSize.height.toPx().toDouble()),
-        )
-        return TilePoint(scaledTilePoint.first, scaledTilePoint.second)
-    }
-
-    fun TilePoint.toCoordinates(): Coordinates {
-        val scaledTileCoordinates = transformReference(
-            this.x,
-            this.y,
-            Pair(0.0, mapProperties.tileSize.width.toPx().toDouble()),
-            Pair(0.0, mapProperties.tileSize.height.toPx().toDouble()),
-            Pair(mapProperties.coordinatesRange.longitude.west, mapProperties.coordinatesRange.longitude.east),
-            Pair(mapProperties.coordinatesRange.latitude.north, mapProperties.coordinatesRange.latitude.south),
-        )
-        return mapProperties.toCoordinates(ProjectedCoordinates(scaledTileCoordinates.first, scaledTileCoordinates.second))
     }
 
     fun setCanvasSize(offset: Offset) {

@@ -33,6 +33,8 @@ import com.rafambn.kmap.source.SimpleMapTileSource
 import com.rafambn.kmap.gesture.PathGestureWrapper
 import com.rafambn.kmap.getGestureDetector
 import com.rafambn.kmap.utils.Coordinates
+import com.rafambn.kmap.utils.toCoordinates
+import com.rafambn.kmap.utils.toTilePoint
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import org.jetbrains.compose.resources.vectorResource
@@ -77,7 +79,7 @@ fun PathScreen(
                 ),
                 gestureWrapper = PathGestureWrapper(
                     onTap = {
-                        markerCoordinates = with(mapState) {
+                        markerCoordinates = context(mapState) {
                             it.toTilePoint().toCoordinates()
                         }
                     },
@@ -93,7 +95,7 @@ fun PathScreen(
                 ),
                 gestureWrapper = PathGestureWrapper(
                     onTap = {
-                        markerCoordinates = with(mapState) {
+                        markerCoordinates = context(mapState) {
                             it.toTilePoint().toCoordinates()
                         }
                     },

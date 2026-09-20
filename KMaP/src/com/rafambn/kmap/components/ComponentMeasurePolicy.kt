@@ -15,6 +15,8 @@ import com.rafambn.kmap.MapState
 import com.rafambn.kmap.core.getViewPort
 import com.rafambn.kmap.utils.asOffset
 import com.rafambn.kmap.utils.asScreenOffset
+import com.rafambn.kmap.utils.toScreenOffset
+import com.rafambn.kmap.utils.toTilePoint
 
 @ExperimentalFoundationApi
 @Composable
@@ -71,7 +73,7 @@ internal fun measureComponent(
         )
         measuredMarkers.forEach { measuredComponent ->
             require(measuredComponent.parameters is MarkerParameters)
-            measuredComponent.offset = with(mapState) {
+            measuredComponent.offset = context(mapState) {
                 measuredComponent.parameters.coordinates.toTilePoint().toScreenOffset()
             }
             measuredComponent.viewPort = getViewPort(
@@ -110,7 +112,7 @@ internal fun measureComponent(
             require(measuredPath.parameters is PathParameters)
             if (measuredPath.parameters.zoomVisibilityRange.contains(mapState.cameraState.zoom)) {
                 val path = measuredPath.parameters.drawPoint
-                measuredPath.offset = with(mapState) {
+                measuredPath.offset = context(mapState) {
                     path.toTilePoint().toScreenOffset()
                 }
                 measuredPats.add(measuredPath)

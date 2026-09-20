@@ -27,6 +27,8 @@ import com.rafambn.kmap.getGestureDetector
 import com.rafambn.kmap.utils.Coordinates
 import com.rafambn.kmap.utils.asDifferentialScreenOffset
 import com.rafambn.kmap.utils.minus
+import com.rafambn.kmap.utils.toCoordinates
+import com.rafambn.kmap.utils.toTilePoint
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import kmap.kmapdemo.generated.resources.pin
@@ -156,7 +158,7 @@ fun MarkersScreen(
                     modifier = Modifier
                         .pointerInput(Unit) {
                             detectDragGestures { change, dragAmount ->
-                                with(mapState) {
+                                context(mapState) {
                                     change.consume()
                                     draggableMarkerPos =
                                         (draggableMarkerPos.toTilePoint() - dragAmount.asDifferentialScreenOffset().toTilePoint()).toCoordinates()
