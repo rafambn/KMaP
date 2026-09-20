@@ -18,7 +18,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.components.MarkerParameters
 import com.rafambn.kmap.components.RasterCanvasParameters
-import com.rafambn.kmap.core.DrawPosition
+import com.rafambn.kmap.components.DrawPosition
 import com.rafambn.kmap.KMaP
 import com.rafambn.kmap.rememberMapState
 import com.rafambn.kmap.source.SimpleMapProperties
@@ -177,7 +177,7 @@ fun MarkersScreen(
                 markersList.add(
                     MarkerParameters(
                         Coordinates(-90.0, 0.0),
-                        drawPosition = DrawPosition.BOTTOM_CENTER,
+                        drawPosition = DrawPosition.CENTER_BOTTOM,
                     )
                 )
             },

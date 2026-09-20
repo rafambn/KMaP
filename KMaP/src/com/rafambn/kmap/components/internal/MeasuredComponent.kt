@@ -1,17 +1,20 @@
-package com.rafambn.kmap.components
+package com.rafambn.kmap.components.internal
 
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.Placeable
-import com.rafambn.kmap.core.DrawPosition
+import com.rafambn.kmap.components.CanvasParameters
+import com.rafambn.kmap.components.ClusterParameters
+import com.rafambn.kmap.components.DrawPosition
+import com.rafambn.kmap.components.MarkerParameters
+import com.rafambn.kmap.components.Parameters
+import com.rafambn.kmap.components.PathParameters
+import com.rafambn.kmap.components.ViewPort
 import com.rafambn.kmap.geometry.angle.Degrees
 import com.rafambn.kmap.geometry.angle.rotate
 import com.rafambn.kmap.geometry.angle.toRadians
 import com.rafambn.kmap.utils.ScreenOffset
 import kotlin.math.pow
 
-class MeasuredComponent(
+internal class MeasuredComponent(
     val index: Int,
     val placeables: List<Placeable>,
     val parameters: Parameters
@@ -19,7 +22,7 @@ class MeasuredComponent(
     val maxWidth: Int = placeables.maxOf { placeable -> placeable.width }
     val maxHeight: Int = placeables.maxOf { placeable -> placeable.height }
     var offset = ScreenOffset.Zero
-    var viewPort = Rect(Offset.Zero, Size.Zero)
+    var viewPort = ViewPort.Zero
 
     private val placeablesCount: Int get() = placeables.size
 

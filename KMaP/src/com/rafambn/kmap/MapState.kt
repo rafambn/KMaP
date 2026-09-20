@@ -9,6 +9,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import com.rafambn.kmap.camera.CameraState
 import com.rafambn.kmap.camera.MotionController
+import com.rafambn.kmap.components.ViewPort
 import com.rafambn.kmap.geometry.angle.Degrees
 import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.ZoomLevelRange
@@ -69,11 +70,13 @@ class MapState(
         val topRight = ScreenOffset(value.canvasSize.xFloat, 0F).toTilePoint()
         val bottomLeft = ScreenOffset(0F, value.canvasSize.yFloat).toTilePoint()
         val bottomRight = value.canvasSize.toTilePoint()
-        val viewPort = Rect(
-            minOf(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x).toFloat(),
-            minOf(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y).toFloat(),
-            maxOf(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x).toFloat(),
-            maxOf(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y).toFloat()
+        val viewPort = ViewPort(
+            Rect(
+                minOf(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x).toFloat(),
+                minOf(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y).toFloat(),
+                maxOf(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x).toFloat(),
+                maxOf(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y).toFloat()
+            )
         )
         canvasKernel.resolveVisibleTiles(viewPort, value.zoom.toIntFloor(), mapProperties)
     }

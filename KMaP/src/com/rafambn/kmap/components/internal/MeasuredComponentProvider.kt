@@ -1,4 +1,4 @@
-package com.rafambn.kmap.components
+package com.rafambn.kmap.components.internal
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.layout.LazyLayoutMeasureScope

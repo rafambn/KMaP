@@ -7,7 +7,6 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope.Companion.DefaultBlendMode
 import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Fill
-import com.rafambn.kmap.core.DrawPosition
 import com.rafambn.kmap.mapSource.tiled.TileResult
 import com.rafambn.kmap.mapSource.tiled.tiles.RasterTile
 import com.rafambn.kmap.mapSource.tiled.tiles.VectorTile

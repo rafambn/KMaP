@@ -1,12 +1,14 @@
-package com.rafambn.kmap.components
+package com.rafambn.kmap.components.internal
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.layout.LazyLayoutItemProvider
 import androidx.compose.runtime.*
 import com.rafambn.kmap.MapState
+import com.rafambn.kmap.components.KMaPContent
+import com.rafambn.kmap.components.Parameters
 
 @Composable
-fun rememberComponentProviderLambda(content: KMaPContent.() -> Unit, mapState: MapState): () -> ComponentProvider {
+internal fun rememberComponentProviderLambda(content: KMaPContent.() -> Unit, mapState: MapState): () -> ComponentProvider {
     val latestContent = rememberUpdatedState(content)
 
     return remember(mapState) {
@@ -21,7 +23,7 @@ fun rememberComponentProviderLambda(content: KMaPContent.() -> Unit, mapState: M
 }
 
 @OptIn(ExperimentalFoundationApi::class)
-class ComponentProvider(
+internal class ComponentProvider(
     private val kmapContent: KMaPContent
 ) : LazyLayoutItemProvider {
 

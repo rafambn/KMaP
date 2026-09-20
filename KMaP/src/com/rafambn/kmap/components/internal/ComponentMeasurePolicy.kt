@@ -1,4 +1,4 @@
-package com.rafambn.kmap.components
+package com.rafambn.kmap.components.internal
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.layout.LazyLayoutMeasureScope
@@ -12,7 +12,10 @@ import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.util.fastForEach
 import com.rafambn.kmap.MapState
-import com.rafambn.kmap.core.getViewPort
+import com.rafambn.kmap.components.MarkerParameters
+import com.rafambn.kmap.components.PathParameters
+import com.rafambn.kmap.components.ViewPort
+import com.rafambn.kmap.components.getViewPort
 import com.rafambn.kmap.utils.asOffset
 import com.rafambn.kmap.utils.asScreenOffset
 import com.rafambn.kmap.utils.toScreenOffset
@@ -20,7 +23,7 @@ import com.rafambn.kmap.utils.toTilePoint
 
 @ExperimentalFoundationApi
 @Composable
-fun rememberComponentMeasurePolicy(
+internal fun rememberComponentMeasurePolicy(
     componentProviderLambda: () -> ComponentProvider,
     mapState: MapState,
 ) = remember<LazyLayoutMeasureScope.(Constraints) -> MeasureResult>(
@@ -67,9 +70,11 @@ internal fun measureComponent(
             measuredMarkers.add(measuredItemProvider.getAndMeasureMarker(index))
         }
 
-        val mapViewPort = Rect(
-            Offset.Zero,
-            Size(mapState.cameraState.canvasSize.xFloat, mapState.cameraState.canvasSize.yFloat)
+        val mapViewPort = ViewPort(
+            Rect(
+                Offset.Zero,
+                Size(mapState.cameraState.canvasSize.xFloat, mapState.cameraState.canvasSize.yFloat)
+            )
         )
         measuredMarkers.forEach { measuredComponent ->
             require(measuredComponent.parameters is MarkerParameters)
