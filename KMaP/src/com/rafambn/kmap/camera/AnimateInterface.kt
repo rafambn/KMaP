@@ -1,4 +1,4 @@
-package com.rafambn.kmap.core
+package com.rafambn.kmap.camera
 
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.SpringSpec

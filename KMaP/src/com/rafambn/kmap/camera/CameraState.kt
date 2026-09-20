@@ -1,4 +1,4 @@
-package com.rafambn.kmap.core
+package com.rafambn.kmap.camera
 
 import com.rafambn.kmap.utils.Coordinates
 import com.rafambn.kmap.geometry.angle.Degrees

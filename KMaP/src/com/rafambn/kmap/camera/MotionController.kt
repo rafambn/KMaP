@@ -1,4 +1,4 @@
-package com.rafambn.kmap.core
+package com.rafambn.kmap.camera
 
 import com.rafambn.kmap.MapState
 import androidx.compose.animation.core.Animatable

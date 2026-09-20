@@ -7,8 +7,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
-import com.rafambn.kmap.core.CameraState
-import com.rafambn.kmap.core.MotionController
+import com.rafambn.kmap.camera.CameraState
+import com.rafambn.kmap.camera.MotionController
 import com.rafambn.kmap.geometry.angle.Degrees
 import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.ZoomLevelRange
