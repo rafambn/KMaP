@@ -10,7 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.rafambn.kmap.components.RasterCanvasParameters
+import com.rafambn.kmap.components.parameters.RasterCanvasParameters
 import com.rafambn.kmap.KMaP
 import com.rafambn.kmap.rememberMapState
 import com.rafambn.kmap.source.SimpleMapProperties

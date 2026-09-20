@@ -2,12 +2,10 @@ package com.rafambn.kmap.components
 
 import androidx.compose.ui.graphics.TransformOrigin
 
-class DrawPosition(x: Float, y: Float) {
-    val x = x.coerceIn(0.0f, 1.0f).also {
-        if (it != x) println("Warning: x was coerced to the range [0, 1]")
-    }
-    val y = y.coerceIn(0.0f, 1.0f).also {
-        if (it != y) println("Warning: y was coerced to the range [0, 1]")
+data class DrawPosition(val x: Float, val y: Float) {
+    init {
+        require(x in 0F..1F) { "x must be in the range [0, 1]" }
+        require(y in 0F..1F) { "y must be in the range [0, 1]" }
     }
 
     fun asTransformOrigin(): TransformOrigin = TransformOrigin(x, y)

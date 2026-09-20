@@ -22,9 +22,9 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.PathData
 import androidx.compose.ui.graphics.vector.toPath
 import androidx.compose.ui.unit.dp
-import com.rafambn.kmap.components.MarkerParameters
-import com.rafambn.kmap.components.PathParameters
-import com.rafambn.kmap.components.RasterCanvasParameters
+import com.rafambn.kmap.components.parameters.MarkerParameters
+import com.rafambn.kmap.components.parameters.PathParameters
+import com.rafambn.kmap.components.parameters.RasterCanvasParameters
 import com.rafambn.kmap.components.DrawPosition
 import com.rafambn.kmap.KMaP
 import com.rafambn.kmap.rememberMapState

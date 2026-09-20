@@ -16,7 +16,7 @@ import androidx.lifecycle.viewmodel.compose.saveable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.rafambn.kmap.components.RasterCanvasParameters
+import com.rafambn.kmap.components.parameters.RasterCanvasParameters
 import com.rafambn.kmap.KMaP
 import com.rafambn.kmap.MapState
 import com.rafambn.kmap.source.SimpleMapProperties

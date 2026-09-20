@@ -5,7 +5,7 @@ import androidx.compose.foundation.lazy.layout.LazyLayoutItemProvider
 import androidx.compose.runtime.*
 import com.rafambn.kmap.MapState
 import com.rafambn.kmap.components.KMaPContent
-import com.rafambn.kmap.components.Parameters
+import com.rafambn.kmap.components.parameters.Parameters
 
 @Composable
 internal fun rememberComponentProviderLambda(content: KMaPContent.() -> Unit, mapState: MapState): () -> ComponentProvider {

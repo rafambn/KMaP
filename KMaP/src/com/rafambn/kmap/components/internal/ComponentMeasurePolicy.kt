@@ -12,10 +12,10 @@ import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.util.fastForEach
 import com.rafambn.kmap.MapState
-import com.rafambn.kmap.components.MarkerParameters
-import com.rafambn.kmap.components.PathParameters
 import com.rafambn.kmap.components.ViewPort
 import com.rafambn.kmap.components.getViewPort
+import com.rafambn.kmap.components.parameters.MarkerParameters
+import com.rafambn.kmap.components.parameters.PathParameters
 import com.rafambn.kmap.utils.asOffset
 import com.rafambn.kmap.utils.asScreenOffset
 import com.rafambn.kmap.utils.toScreenOffset

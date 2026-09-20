@@ -12,7 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
-import com.rafambn.kmap.components.VectorCanvasParameters
+import com.rafambn.kmap.components.parameters.VectorCanvasParameters
 import com.rafambn.kmap.KMaP
 import com.rafambn.kmap.rememberMapState
 import com.rafambn.kmap.source.OSMMapProperties

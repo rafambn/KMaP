@@ -11,6 +11,11 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.layout.Layout
 import com.rafambn.kmap.MapState
+import com.rafambn.kmap.components.parameters.ClusterParameters
+import com.rafambn.kmap.components.parameters.MarkerParameters
+import com.rafambn.kmap.components.parameters.PathParameters
+import com.rafambn.kmap.components.parameters.RasterCanvasParameters
+import com.rafambn.kmap.components.parameters.VectorCanvasParameters
 import com.rafambn.kmap.gesture.MapGestureWrapper
 import com.rafambn.kmap.gesture.PathGestureWrapper
 import com.rafambn.kmap.gesture.internal.detectPathGestures

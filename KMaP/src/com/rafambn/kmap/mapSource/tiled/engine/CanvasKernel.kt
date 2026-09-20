@@ -2,11 +2,11 @@ package com.rafambn.kmap.mapSource.tiled.engine
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Density
-import com.rafambn.kmap.components.CanvasParameters
-import com.rafambn.kmap.components.RasterCanvasParameters
-import com.rafambn.kmap.components.VectorCanvasParameters
 import com.rafambn.kmap.MapState
 import com.rafambn.kmap.components.ViewPort
+import com.rafambn.kmap.components.parameters.CanvasParameters
+import com.rafambn.kmap.components.parameters.RasterCanvasParameters
+import com.rafambn.kmap.components.parameters.VectorCanvasParameters
 import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
