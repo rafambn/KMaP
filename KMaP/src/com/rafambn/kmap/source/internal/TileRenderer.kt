@@ -1,8 +1,8 @@
-package com.rafambn.kmap.mapSource.tiled.engine
+package com.rafambn.kmap.source.internal
 
-import com.rafambn.kmap.mapSource.tiled.TileResult
-import com.rafambn.kmap.mapSource.tiled.tiles.Tile
-import com.rafambn.kmap.mapSource.tiled.tiles.TileSpecs
+import com.rafambn.kmap.source.Tile
+import com.rafambn.kmap.source.TileResult
+import com.rafambn.kmap.source.TileSpecs
 import com.rafambn.kmap.utils.loopInZoom
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel

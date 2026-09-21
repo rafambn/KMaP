@@ -1,6 +1,8 @@
-package com.rafambn.kmap.mapSource.tiled.tiles
+package com.rafambn.kmap.source.internal
 
 import com.rafambn.kmap.mvttile.OptimizedMVTile
+import com.rafambn.kmap.source.Tile
+import com.rafambn.kmap.source.TileSpecs
 
 class OptimizedVectorTile(
     zoom: Int,

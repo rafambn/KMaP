@@ -19,8 +19,8 @@ import com.rafambn.kmap.gesture.MapGestureWrapper
 import com.rafambn.kmap.gesture.PathGestureWrapper
 import com.rafambn.kmap.gesture.internal.detectPathGestures
 import com.rafambn.kmap.gesture.internal.sharedPointerInput
-import com.rafambn.kmap.mapSource.tiled.canvas.RasterTileCanvas
-import com.rafambn.kmap.mapSource.tiled.canvas.VectorTileCanvas
+import com.rafambn.kmap.source.internal.render.RasterTileCanvas
+import com.rafambn.kmap.source.internal.render.VectorTileCanvas
 import com.rafambn.kmap.geometry.plane.ProjectedCoordinates
 import com.rafambn.kmap.geometry.plane.ScreenOffset
 

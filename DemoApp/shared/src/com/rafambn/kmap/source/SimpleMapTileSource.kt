@@ -1,8 +1,8 @@
 package com.rafambn.kmap.source
 
-import com.rafambn.kmap.mapSource.tiled.TileResult
-import com.rafambn.kmap.mapSource.tiled.TileSource
-import com.rafambn.kmap.mapSource.tiled.tiles.RasterTile
+import com.rafambn.kmap.source.RasterTile
+import com.rafambn.kmap.source.TileResult
+import com.rafambn.kmap.source.TileSource
 import kmap.kmapdemo.generated.resources.Res
 import org.jetbrains.compose.resources.decodeToImageBitmap
 

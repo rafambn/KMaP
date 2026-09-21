@@ -1,9 +1,8 @@
-package com.rafambn.kmap.mapSource.tiled.engine
+package com.rafambn.kmap.source.internal
 
 import androidx.compose.ui.graphics.Path
-import com.rafambn.kmap.mapSource.tiled.TileResult
-import com.rafambn.kmap.mapSource.tiled.tiles.OptimizedVectorTile
-import com.rafambn.kmap.mapSource.tiled.tiles.VectorTile
+import com.rafambn.kmap.source.TileResult
+import com.rafambn.kmap.source.VectorTile
 import com.rafambn.kmap.style.OptimizedStyle
 import com.rafambn.kmap.mvttile.*
 import kotlinx.coroutines.CoroutineScope

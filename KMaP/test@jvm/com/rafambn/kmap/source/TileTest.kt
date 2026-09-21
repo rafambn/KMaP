@@ -1,4 +1,4 @@
-package com.rafambn.kmap.mapSource.tiled.tiles
+package com.rafambn.kmap.source
 
 import kotlin.test.Test
 import kotlin.test.assertFalse

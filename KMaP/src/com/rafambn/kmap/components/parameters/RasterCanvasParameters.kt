@@ -1,7 +1,7 @@
 package com.rafambn.kmap.components.parameters
 
-import com.rafambn.kmap.mapSource.tiled.TileResult
-import com.rafambn.kmap.mapSource.tiled.tiles.RasterTile
+import com.rafambn.kmap.source.RasterTile
+import com.rafambn.kmap.source.TileResult
 
 open class RasterCanvasParameters(
     override val id: Int,

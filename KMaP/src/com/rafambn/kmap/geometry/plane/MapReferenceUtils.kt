@@ -4,6 +4,7 @@ import androidx.compose.ui.geometry.Offset
 import com.rafambn.kmap.MapState
 import com.rafambn.kmap.geometry.angle.rotate
 import com.rafambn.kmap.geometry.angle.toRadians
+import com.rafambn.kmap.mapProperties.border.MapBorderType
 import com.rafambn.kmap.utils.toIntFloor
 import kotlin.math.pow
 
@@ -27,32 +28,32 @@ fun ScreenOffset.toTilePoint(): TilePoint =
 
 context(mapState: MapState)
 fun DifferentialScreenOffset.toTilePoint(): TilePoint {
-    val tileWidth = with(mapState) { mapProperties.tileSize.width.toPx() }
-    val tileHeight = with(mapState) { mapProperties.tileSize.height.toPx() }
-    val zoomScale = 2F.pow(mapState.cameraState.zoom)
+    val inverseZoomScale = 2.0.pow(-mapState.cameraState.zoom.toDouble())
 
     return asCanvasPosition()
-        .scale(
-            tileWidth.toDouble() / (tileWidth * zoomScale),
-            tileHeight.toDouble() / (tileHeight * zoomScale)
-        )
+        .scale(inverseZoomScale, inverseZoomScale)
         .rotate(-mapState.cameraState.angleDegrees.toRadians())
         .unaryMinus()
 }
 
 context(mapState: MapState)
 fun TilePoint.toScreenOffset(): ScreenOffset {
-    val tileWidth = with(mapState) { mapProperties.tileSize.width.toPx() }
-    val tileHeight = with(mapState) { mapProperties.tileSize.height.toPx() }
-    val zoomScale = 2F.pow(mapState.cameraState.zoom)
+    val (mapWidth, mapHeight) = mapState.mapSizeInPixels()
+    val zoomScale = 2.0.pow(mapState.cameraState.zoom.toDouble())
+    val cameraOffset = this - mapState.cameraState.tilePoint
+    val horizontalOffset = if (mapState.mapProperties.boundMap.horizontal == MapBorderType.LOOP)
+        cameraOffset.x.nearestLoopOffset(mapWidth)
+    else
+        cameraOffset.x
+    val verticalOffset = if (mapState.mapProperties.boundMap.vertical == MapBorderType.LOOP)
+        cameraOffset.y.nearestLoopOffset(mapHeight)
+    else
+        cameraOffset.y
 
-    return (this - mapState.cameraState.tilePoint)
+    return TilePoint(horizontalOffset, verticalOffset)
         .unaryMinus()
         .rotate(mapState.cameraState.angleDegrees.toRadians())
-        .scale(
-            tileWidth * zoomScale / tileWidth.toDouble(),
-            tileHeight * zoomScale / tileHeight.toDouble()
-        )
+        .scale(zoomScale, zoomScale)
         .asScreenOffset()
         .minus(mapState.cameraState.canvasSize / 2.0)
         .unaryMinus()
@@ -60,14 +61,10 @@ fun TilePoint.toScreenOffset(): ScreenOffset {
 
 context(mapState: MapState)
 internal fun TilePoint.toCanvasDrawReference(): CanvasDrawReference {
-    val tileWidth = with(mapState) { mapProperties.tileSize.width.toPx() }
-    val tileHeight = with(mapState) { mapProperties.tileSize.height.toPx() }
     val zoomLevel = mapState.cameraState.zoom.toIntFloor()
+    val zoomScale = 2.0.pow(zoomLevel)
 
-    return scale(
-        tileWidth * (1 shl zoomLevel) / tileWidth.toDouble(),
-        tileHeight * (1 shl zoomLevel) / tileHeight.toDouble()
-    )
+    return scale(zoomScale, zoomScale)
         .unaryMinus()
         .asCanvasDrawReference()
 }
@@ -82,8 +79,7 @@ fun Coordinates.toTilePoint(): TilePoint {
 context(mapState: MapState)
 fun ProjectedCoordinates.toTilePoint(): TilePoint {
     val mapProperties = mapState.mapProperties
-    val tileWidth = with(mapState) { mapProperties.tileSize.width.toPx().toDouble() }
-    val tileHeight = with(mapState) { mapProperties.tileSize.height.toPx().toDouble() }
+    val (tileWidth, tileHeight) = mapState.mapSizeInPixels()
     val scaledTilePoint = transformReference(
         x,
         y,
@@ -98,8 +94,7 @@ fun ProjectedCoordinates.toTilePoint(): TilePoint {
 context(mapState: MapState)
 fun TilePoint.toCoordinates(): Coordinates {
     val mapProperties = mapState.mapProperties
-    val tileWidth = with(mapState) { mapProperties.tileSize.width.toPx().toDouble() }
-    val tileHeight = with(mapState) { mapProperties.tileSize.height.toPx().toDouble() }
+    val (tileWidth, tileHeight) = mapState.mapSizeInPixels()
     val scaledTileCoordinates = transformReference(
         x,
         y,
@@ -114,6 +109,19 @@ fun TilePoint.toCoordinates(): Coordinates {
 private fun TilePoint.scale(horizontal: Double, vertical: Double): TilePoint =
     TilePoint(x * horizontal, y * vertical)
 
+private fun MapState.mapSizeInPixels(): Pair<Double, Double> {
+    val width = with(this) { mapProperties.tileSize.width.toPx().toDouble() }
+    val height = with(this) { mapProperties.tileSize.height.toPx().toDouble() }
+
+    require(width.isFinite() && width > 0.0) { "Tile width must be finite and greater than zero" }
+    require(height.isFinite() && height > 0.0) { "Tile height must be finite and greater than zero" }
+
+    return Pair(width, height)
+}
+
+private fun Double.nearestLoopOffset(size: Double): Double =
+    (this + size / 2.0).mod(size) - size / 2.0
+
 fun transformReference(
     pointX: Double,
     pointY: Double,
@@ -126,6 +134,9 @@ fun transformReference(
     val sourceHeight = sourceRangeY.second - sourceRangeY.first
     val targetWidth = targetRangeX.second - targetRangeX.first
     val targetHeight = targetRangeY.second - targetRangeY.first
+
+    require(sourceWidth.isFinite() && sourceWidth != 0.0) { "Source X range must have a finite, non-zero span" }
+    require(sourceHeight.isFinite() && sourceHeight != 0.0) { "Source Y range must have a finite, non-zero span" }
 
     val normalizedX = (pointX - sourceRangeX.first) / sourceWidth
     val normalizedY = (pointY - sourceRangeY.first) / sourceHeight

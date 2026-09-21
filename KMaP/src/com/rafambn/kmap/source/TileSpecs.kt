@@ -1,4 +1,4 @@
-package com.rafambn.kmap.mapSource.tiled.tiles
+package com.rafambn.kmap.source
 
 open class TileSpecs(
     val zoom: Int,

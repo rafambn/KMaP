@@ -1,0 +1,137 @@
+package com.rafambn.kmap.geometry.plane
+
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
+import com.rafambn.kmap.MapState
+import com.rafambn.kmap.camera.CameraState
+import com.rafambn.kmap.geometry.angle.Degrees
+import com.rafambn.kmap.mapProperties.MapProperties
+import com.rafambn.kmap.mapProperties.TileDimension
+import com.rafambn.kmap.mapProperties.ZoomLevelRange
+import com.rafambn.kmap.mapProperties.border.BoundMapBorder
+import com.rafambn.kmap.mapProperties.border.MapBorderType
+import com.rafambn.kmap.mapProperties.border.OutsideTilesType
+import com.rafambn.kmap.mapProperties.coordinates.CoordinatesRange
+import com.rafambn.kmap.mapProperties.coordinates.Latitude
+import com.rafambn.kmap.mapProperties.coordinates.Longitude
+import kotlinx.coroutines.CoroutineScope
+import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+
+class MapReferenceUtilsTest {
+    @Test
+    fun screenAndTileConversionsAreInverseWithZoomAndRotation() {
+        val mapState = mapState(
+            cameraPoint = TilePoint(170.0, 210.0),
+            canvasSize = ScreenOffset(800.0, 600.0),
+            zoom = 4.25F,
+            angle = Degrees(37.0),
+        )
+        val tilePoint = TilePoint(182.5, 194.25)
+
+        val converted = context(mapState) {
+            tilePoint.toScreenOffset().toTilePoint()
+        }
+
+        assertEquals(tilePoint.x, converted.x, 0.0000000001)
+        assertEquals(tilePoint.y, converted.y, 0.0000000001)
+    }
+
+    @Test
+    fun loopedMapUsesTheNearestCopy() {
+        val mapState = mapState(
+            cameraPoint = TilePoint(511.0, 511.0),
+            canvasSize = ScreenOffset(100.0, 100.0),
+            boundMap = BoundMapBorder(MapBorderType.LOOP, MapBorderType.LOOP),
+        )
+
+        val offset = context(mapState) {
+            TilePoint(1.0, 1.0).toScreenOffset()
+        }
+
+        assertEquals(ScreenOffset(52.0, 52.0), offset)
+    }
+
+    @Test
+    fun canvasReferenceSupportsZoomAboveIntShiftRange() {
+        val mapState = mapState(
+            cameraPoint = TilePoint(1.0, 2.0),
+            zoom = 31F,
+        )
+
+        val reference = context(mapState) {
+            mapState.cameraState.tilePoint.toCanvasDrawReference()
+        }
+
+        assertEquals(CanvasDrawReference(-2_147_483_648.0, -4_294_967_296.0), reference)
+    }
+
+    @Test
+    fun transformReferenceRejectsZeroSourceSpan() {
+        assertFailsWith<IllegalArgumentException> {
+            transformReference(
+                pointX = 1.0,
+                pointY = 1.0,
+                sourceRangeX = Pair(1.0, 1.0),
+                sourceRangeY = Pair(0.0, 2.0),
+                targetRangeX = Pair(0.0, 10.0),
+                targetRangeY = Pair(0.0, 10.0),
+            )
+        }
+    }
+
+    @Test
+    fun coordinateConversionRejectsZeroTileSize() {
+        val mapState = mapState(tileSize = TileDimension(512.dp, 0.dp))
+
+        assertFailsWith<IllegalArgumentException> {
+            context(mapState) {
+                Coordinates.Zero.toTilePoint()
+            }
+        }
+    }
+
+    private fun mapState(
+        cameraPoint: TilePoint = TilePoint(256.0, 256.0),
+        canvasSize: ScreenOffset = ScreenOffset.Zero,
+        zoom: Float = 0F,
+        angle: Degrees = Degrees.Zero,
+        boundMap: BoundMapBorder = BoundMapBorder(MapBorderType.BOUND, MapBorderType.BOUND),
+        tileSize: TileDimension = TileDimension(512.dp, 512.dp),
+    ): MapState {
+        val mapProperties = object : MapProperties {
+            override val boundMap = boundMap
+            override val outsideTiles = OutsideTilesType.NONE
+            override val zoomLevels = object : ZoomLevelRange {
+                override val min = 0
+                override val max = 31
+            }
+            override val coordinatesRange = object : CoordinatesRange {
+                override val latitude = Latitude(north = 90.0, south = -90.0)
+                override val longitude = Longitude(west = -180.0, east = 180.0)
+            }
+            override val tileSize = tileSize
+
+            override fun toProjectedCoordinates(coordinates: Coordinates) =
+                ProjectedCoordinates(coordinates.x, coordinates.y)
+
+            override fun toCoordinates(projectedCoordinates: ProjectedCoordinates) =
+                Coordinates(projectedCoordinates.x, projectedCoordinates.y)
+        }
+
+        return MapState(
+            mapProperties = mapProperties,
+            initialCameraState = CameraState(
+                canvasSize = canvasSize,
+                zoom = zoom,
+                angleDegrees = angle,
+                coordinates = Coordinates.Zero,
+                tilePoint = cameraPoint,
+            ),
+            coroutineScope = CoroutineScope(EmptyCoroutineContext),
+            density = Density(1F),
+        )
+    }
+}

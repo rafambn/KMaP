@@ -1,9 +1,8 @@
-package com.rafambn.kmap.mapSource.tiled.engine
+package com.rafambn.kmap.source.internal
 
 import androidx.compose.runtime.mutableStateOf
-import com.rafambn.kmap.mapSource.tiled.ActiveTiles
-import com.rafambn.kmap.mapSource.tiled.tiles.Tile
-import com.rafambn.kmap.mapSource.tiled.tiles.TileSpecs
+import com.rafambn.kmap.source.Tile
+import com.rafambn.kmap.source.TileSpecs
 import com.rafambn.kmap.utils.loopInZoom
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.isActive

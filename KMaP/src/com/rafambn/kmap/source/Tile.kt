@@ -1,4 +1,4 @@
-package com.rafambn.kmap.mapSource.tiled.tiles
+package com.rafambn.kmap.source
 
 abstract class Tile(zoom: Int, row: Int, col: Int): TileSpecs(zoom, row, col){
     fun isParentOf(childCandidate: TileSpecs): Boolean {

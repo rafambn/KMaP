@@ -1,7 +1,7 @@
 package com.rafambn.kmap.components.parameters
 
-import com.rafambn.kmap.mapSource.tiled.TileResult
-import com.rafambn.kmap.mapSource.tiled.tiles.VectorTile
+import com.rafambn.kmap.source.TileResult
+import com.rafambn.kmap.source.VectorTile
 import com.rafambn.kmap.style.OptimizedStyle
 
 open class VectorCanvasParameters(

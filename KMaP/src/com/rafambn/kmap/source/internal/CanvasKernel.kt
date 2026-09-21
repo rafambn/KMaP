@@ -1,4 +1,4 @@
-package com.rafambn.kmap.mapSource.tiled.engine
+package com.rafambn.kmap.source.internal
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Density
@@ -10,8 +10,7 @@ import com.rafambn.kmap.components.parameters.VectorCanvasParameters
 import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
-import com.rafambn.kmap.mapSource.tiled.ActiveTiles
-import com.rafambn.kmap.mapSource.tiled.tiles.TileSpecs
+import com.rafambn.kmap.source.TileSpecs
 import com.rafambn.kmap.utils.toIntFloor
 import kotlinx.coroutines.CoroutineScope
 import kotlin.math.pow
