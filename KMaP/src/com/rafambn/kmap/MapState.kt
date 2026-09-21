@@ -11,6 +11,7 @@ import com.rafambn.kmap.camera.CameraState
 import com.rafambn.kmap.camera.MotionController
 import com.rafambn.kmap.components.ViewPort
 import com.rafambn.kmap.geometry.angle.Degrees
+import com.rafambn.kmap.geometry.plane.*
 import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.ZoomLevelRange
 import com.rafambn.kmap.mapProperties.border.MapBorderType
@@ -67,8 +68,8 @@ class MapState(
     operator fun MutableState<CameraState>.setValue(thisObj: Any?, property: KProperty<*>, value: CameraState) {
         this.value = value
         val topLeft = ScreenOffset.Zero.toTilePoint()
-        val topRight = ScreenOffset(value.canvasSize.xFloat, 0F).toTilePoint()
-        val bottomLeft = ScreenOffset(0F, value.canvasSize.yFloat).toTilePoint()
+        val topRight = ScreenOffset(value.canvasSize.x, 0.0).toTilePoint()
+        val bottomLeft = ScreenOffset(0.0, value.canvasSize.y).toTilePoint()
         val bottomRight = value.canvasSize.toTilePoint()
         val viewPort = ViewPort(
             Rect(
@@ -157,7 +158,7 @@ class MapState(
                     },
                     density = Density(map["density"] as Float, map["fontScale"] as Float),
                     initialCameraState = CameraState(
-                        canvasSize = (map["canvasSize"] as Pair<*, *>).let { ScreenOffset(it.first as Float, it.second as Float) },
+                        canvasSize = (map["canvasSize"] as Pair<*, *>).let { ScreenOffset(it.first as Double, it.second as Double) },
                         zoom = map["zoom"] as Float,
                         angleDegrees = Degrees(map["angleDegrees"] as Double),
                         coordinates = (map["coordinates"] as Pair<*, *>).let { Coordinates(it.first as Double, it.second as Double) },

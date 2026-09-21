@@ -7,9 +7,9 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathHitTester
 import androidx.compose.ui.graphics.PathMeasure
 import androidx.compose.ui.input.pointer.*
-import com.rafambn.kmap.utils.ProjectedCoordinates
-import com.rafambn.kmap.utils.ScreenOffset
-import com.rafambn.kmap.utils.asScreenOffset
+import com.rafambn.kmap.geometry.plane.ProjectedCoordinates
+import com.rafambn.kmap.geometry.plane.ScreenOffset
+import com.rafambn.kmap.geometry.plane.asScreenOffset
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 

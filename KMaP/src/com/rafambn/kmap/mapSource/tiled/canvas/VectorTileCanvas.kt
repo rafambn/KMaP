@@ -31,8 +31,8 @@ import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.mapSource.tiled.ActiveTiles
 import com.rafambn.kmap.mapSource.tiled.tiles.OptimizedVectorTile
 import com.rafambn.kmap.mapSource.tiled.tiles.Tile
-import com.rafambn.kmap.utils.CanvasDrawReference
-import com.rafambn.kmap.utils.ScreenOffset
+import com.rafambn.kmap.geometry.plane.CanvasDrawReference
+import com.rafambn.kmap.geometry.plane.ScreenOffset
 import com.rafambn.kmap.style.OptimizedStyle
 import com.rafambn.kmap.style.OptimizedStyleLayer
 import com.rafambn.kmap.utils.toIntFloor
@@ -102,7 +102,7 @@ fun VectorTileCanvas(
                 }
             }
     ) { _, _ ->
-        layout(canvasSize.xInt, canvasSize.yInt) {}
+        layout(canvasSize.x.toInt(), canvasSize.y.toInt()) {}
     }
 }
 

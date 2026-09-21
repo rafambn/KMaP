@@ -21,7 +21,7 @@ import com.rafambn.kmap.rememberMapState
 import com.rafambn.kmap.source.SimpleMapProperties
 import com.rafambn.kmap.source.SimpleMapTileSource
 import com.rafambn.kmap.getGestureDetector
-import com.rafambn.kmap.utils.Coordinates
+import com.rafambn.kmap.geometry.plane.Coordinates
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import org.jetbrains.compose.resources.vectorResource

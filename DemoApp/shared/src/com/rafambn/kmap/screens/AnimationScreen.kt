@@ -22,7 +22,7 @@ import com.rafambn.kmap.source.SimpleMapProperties
 import com.rafambn.kmap.source.SimpleMapTileSource
 import com.rafambn.kmap.getGestureDetector
 import com.rafambn.kmap.geometry.angle.Degrees
-import com.rafambn.kmap.utils.Coordinates
+import com.rafambn.kmap.geometry.plane.Coordinates
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import kotlinx.coroutines.Dispatchers

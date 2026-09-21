@@ -8,8 +8,8 @@ import com.rafambn.kmap.mapProperties.ZoomLevelRange
 import com.rafambn.kmap.mapProperties.border.BoundMapBorder
 import com.rafambn.kmap.mapProperties.border.MapBorderType
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
-import com.rafambn.kmap.utils.Coordinates
-import com.rafambn.kmap.utils.ProjectedCoordinates
+import com.rafambn.kmap.geometry.plane.Coordinates
+import com.rafambn.kmap.geometry.plane.ProjectedCoordinates
 import kotlin.math.*
 
 data class OSMMapProperties(

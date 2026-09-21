@@ -4,10 +4,10 @@ import androidx.compose.foundation.gestures.*
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.*
 import com.rafambn.kmap.geometry.angle.Degrees
-import com.rafambn.kmap.utils.DifferentialScreenOffset
-import com.rafambn.kmap.utils.ScreenOffset
-import com.rafambn.kmap.utils.asDifferentialScreenOffset
-import com.rafambn.kmap.utils.asScreenOffset
+import com.rafambn.kmap.geometry.plane.DifferentialScreenOffset
+import com.rafambn.kmap.geometry.plane.ScreenOffset
+import com.rafambn.kmap.geometry.plane.asDifferentialScreenOffset
+import com.rafambn.kmap.geometry.plane.asScreenOffset
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 

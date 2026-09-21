@@ -3,7 +3,7 @@ package com.rafambn.kmap.camera
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.SpringSpec
 import com.rafambn.kmap.geometry.angle.Degrees
-import com.rafambn.kmap.utils.Reference
+import com.rafambn.kmap.geometry.plane.Reference
 
 interface AnimateInterface {
     suspend fun positionTo(center: Reference, animationSpec: AnimationSpec<Float> = SpringSpec())

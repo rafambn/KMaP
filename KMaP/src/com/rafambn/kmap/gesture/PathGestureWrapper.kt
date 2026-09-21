@@ -1,6 +1,6 @@
 package com.rafambn.kmap.gesture
 
-import com.rafambn.kmap.utils.ProjectedCoordinates
+import com.rafambn.kmap.geometry.plane.ProjectedCoordinates
 
 data class PathGestureWrapper(
     val onTap: ((ProjectedCoordinates) -> Unit)? = null,

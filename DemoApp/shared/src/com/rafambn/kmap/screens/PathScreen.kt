@@ -32,9 +32,9 @@ import com.rafambn.kmap.source.SimpleMapProperties
 import com.rafambn.kmap.source.SimpleMapTileSource
 import com.rafambn.kmap.gesture.PathGestureWrapper
 import com.rafambn.kmap.getGestureDetector
-import com.rafambn.kmap.utils.Coordinates
-import com.rafambn.kmap.utils.toCoordinates
-import com.rafambn.kmap.utils.toTilePoint
+import com.rafambn.kmap.geometry.plane.Coordinates
+import com.rafambn.kmap.geometry.plane.toCoordinates
+import com.rafambn.kmap.geometry.plane.toTilePoint
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import org.jetbrains.compose.resources.vectorResource
@@ -56,7 +56,7 @@ fun PathScreen(
         lineTo(-180F, -80F)
         lineTo(-180F, 80F)
     }.toPath()
-    var markerCoordinates by remember { mutableStateOf(Coordinates(0f, 0f)) }
+    var markerCoordinates by remember { mutableStateOf(Coordinates(0.0, 0.0)) }
     Box {
         KMaP(
             modifier = Modifier.fillMaxSize(),

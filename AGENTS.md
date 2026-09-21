@@ -13,7 +13,7 @@ KMaP is a Compose Multiplatform map library.
 ## Project rules
 
 - Keep common code in `src/` and platform HTTP clients in `src@<platform>/`.
-- Use coordinate reference types from `ReferenceUtils.kt` across layers. Preserve zoom, rotation, density, and map border behavior when changing conversions in `MapState`.
+- Use coordinate reference types from `MapReferenceUtils.kt` across layers. Preserve zoom, rotation, density, and map border behavior when changing conversions in `MapState`.
 - Canvas IDs must be unique.
 - When adding overlays, update `Component`, parameters, measure/provider logic, and DSL examples together.
 - Tile sources return `TileResult`.

@@ -20,8 +20,8 @@ import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.mapSource.tiled.ActiveTiles
 import com.rafambn.kmap.mapSource.tiled.tiles.RasterTile
 import com.rafambn.kmap.mapSource.tiled.tiles.Tile
-import com.rafambn.kmap.utils.CanvasDrawReference
-import com.rafambn.kmap.utils.ScreenOffset
+import com.rafambn.kmap.geometry.plane.CanvasDrawReference
+import com.rafambn.kmap.geometry.plane.ScreenOffset
 import com.rafambn.kmap.utils.toIntFloor
 import kotlin.math.pow
 
@@ -66,7 +66,7 @@ fun RasterTileCanvas(
                 }
             }
     ) { _, _ ->
-        layout(canvasSize.xInt, canvasSize.yInt) {}
+        layout(canvasSize.x.toInt(), canvasSize.y.toInt()) {}
     }
 }
 

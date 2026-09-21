@@ -6,7 +6,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import com.rafambn.kmap.gesture.MapGestureWrapper
 import com.rafambn.kmap.gesture.internal.detectMapGestures
 import com.rafambn.kmap.gesture.internal.sharedPointerInput
-import com.rafambn.kmap.utils.asScreenOffset
+import com.rafambn.kmap.geometry.plane.asScreenOffset
 
 internal fun Modifier.mapGestures(gestureWrapper: MapGestureWrapper?): Modifier = this.then(
     gestureWrapper?.let {

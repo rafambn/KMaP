@@ -16,11 +16,11 @@ import com.rafambn.kmap.components.ViewPort
 import com.rafambn.kmap.components.getViewPort
 import com.rafambn.kmap.components.parameters.MarkerParameters
 import com.rafambn.kmap.components.parameters.PathParameters
-import com.rafambn.kmap.utils.ProjectedCoordinates
-import com.rafambn.kmap.utils.asOffset
-import com.rafambn.kmap.utils.asScreenOffset
-import com.rafambn.kmap.utils.toScreenOffset
-import com.rafambn.kmap.utils.toTilePoint
+import com.rafambn.kmap.geometry.plane.ProjectedCoordinates
+import com.rafambn.kmap.geometry.plane.asOffset
+import com.rafambn.kmap.geometry.plane.asScreenOffset
+import com.rafambn.kmap.geometry.plane.toScreenOffset
+import com.rafambn.kmap.geometry.plane.toTilePoint
 
 @ExperimentalFoundationApi
 @Composable
@@ -74,7 +74,10 @@ internal fun measureComponent(
         val mapViewPort = ViewPort(
             Rect(
                 Offset.Zero,
-                Size(mapState.cameraState.canvasSize.xFloat, mapState.cameraState.canvasSize.yFloat)
+                Size(
+                    mapState.cameraState.canvasSize.x.toFloat(),
+                    mapState.cameraState.canvasSize.y.toFloat()
+                )
             )
         )
         measuredMarkers.forEach { measuredComponent ->
@@ -120,8 +123,8 @@ internal fun measureComponent(
                 val bounds = measuredPath.parameters.path.getBounds()
                 val coordinatesRange = mapState.mapProperties.coordinatesRange
                 val drawPoint = ProjectedCoordinates(
-                    if (coordinatesRange.longitude.orientation == 1) bounds.left else bounds.right,
-                    if (coordinatesRange.latitude.orientation == 1) bounds.top else bounds.bottom
+                    (if (coordinatesRange.longitude.orientation == 1) bounds.left else bounds.right).toDouble(),
+                    (if (coordinatesRange.latitude.orientation == 1) bounds.top else bounds.bottom).toDouble()
                 )
                 measuredPath.offset = context(mapState) {
                     drawPoint.toTilePoint().toScreenOffset()

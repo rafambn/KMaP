@@ -1,8 +1,8 @@
 package com.rafambn.kmap.gesture
 
 import com.rafambn.kmap.geometry.angle.Degrees
-import com.rafambn.kmap.utils.DifferentialScreenOffset
-import com.rafambn.kmap.utils.ScreenOffset
+import com.rafambn.kmap.geometry.plane.DifferentialScreenOffset
+import com.rafambn.kmap.geometry.plane.ScreenOffset
 
 data class MapGestureWrapper(
     // common use

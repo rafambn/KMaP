@@ -25,11 +25,10 @@ import com.rafambn.kmap.source.SimpleMapProperties
 import com.rafambn.kmap.source.SimpleMapTileSource
 import com.rafambn.kmap.getGestureDetector
 import com.rafambn.kmap.geometry.angle.Degrees
-import com.rafambn.kmap.utils.Coordinates
-import com.rafambn.kmap.utils.asDifferentialScreenOffset
-import com.rafambn.kmap.utils.minus
-import com.rafambn.kmap.utils.toCoordinates
-import com.rafambn.kmap.utils.toTilePoint
+import com.rafambn.kmap.geometry.plane.Coordinates
+import com.rafambn.kmap.geometry.plane.asDifferentialScreenOffset
+import com.rafambn.kmap.geometry.plane.toCoordinates
+import com.rafambn.kmap.geometry.plane.toTilePoint
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import kmap.kmapdemo.generated.resources.pin

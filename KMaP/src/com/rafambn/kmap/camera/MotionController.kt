@@ -5,6 +5,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.ui.util.lerp
 import com.rafambn.kmap.geometry.angle.Degrees
+import com.rafambn.kmap.geometry.plane.*
 import com.rafambn.kmap.utils.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job

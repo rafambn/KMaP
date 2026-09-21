@@ -21,9 +21,8 @@ import com.rafambn.kmap.gesture.internal.detectPathGestures
 import com.rafambn.kmap.gesture.internal.sharedPointerInput
 import com.rafambn.kmap.mapSource.tiled.canvas.RasterTileCanvas
 import com.rafambn.kmap.mapSource.tiled.canvas.VectorTileCanvas
-import com.rafambn.kmap.utils.ProjectedCoordinates
-import com.rafambn.kmap.utils.ScreenOffset
-import com.rafambn.kmap.utils.plus
+import com.rafambn.kmap.geometry.plane.ProjectedCoordinates
+import com.rafambn.kmap.geometry.plane.ScreenOffset
 
 class KMaPContent(
     content: KMaPContent.() -> Unit,
@@ -146,7 +145,10 @@ class KMaPContent(
                                     threshold = padding,
                                     checkForInsideClick = parameters.checkForClickInsidePath,
                                     convertScreenOffsetToProjectedCoordinates = {
-                                        val untranslatedPoint = it.plus(ScreenOffset(bounds.left - padding, bounds.top - padding))
+                                        val untranslatedPoint = it + ScreenOffset(
+                                            (bounds.left - padding).toDouble(),
+                                            (bounds.top - padding).toDouble()
+                                        )
                                         return@detectPathGestures ProjectedCoordinates(
                                             untranslatedPoint.x * orientationX / (scale.x * mapState.density),
                                             untranslatedPoint.y * orientationY / (scale.y * mapState.density),

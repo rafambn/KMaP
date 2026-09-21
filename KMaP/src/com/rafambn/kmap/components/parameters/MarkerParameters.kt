@@ -2,7 +2,7 @@ package com.rafambn.kmap.components.parameters
 
 import com.rafambn.kmap.components.DrawPosition
 import com.rafambn.kmap.geometry.angle.Degrees
-import com.rafambn.kmap.utils.Coordinates
+import com.rafambn.kmap.geometry.plane.Coordinates
 
 open class MarkerParameters(
     val coordinates: Coordinates,

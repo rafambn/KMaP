@@ -11,7 +11,7 @@ import com.rafambn.kmap.components.parameters.PathParameters
 import com.rafambn.kmap.geometry.angle.Degrees
 import com.rafambn.kmap.geometry.angle.rotate
 import com.rafambn.kmap.geometry.angle.toRadians
-import com.rafambn.kmap.utils.ScreenOffset
+import com.rafambn.kmap.geometry.plane.ScreenOffset
 import kotlin.math.pow
 
 internal class MeasuredComponent(
@@ -43,8 +43,8 @@ internal class MeasuredComponent(
                     ) {
                         alpha = parameters.alpha
 
-                        translationX = placeOffset.xFloat
-                        translationY = placeOffset.yFloat
+                        translationX = placeOffset.x.toFloat()
+                        translationY = placeOffset.y.toFloat()
                         rotationZ =
                             if (parameters.rotateWithMap)
                                 (cameraAngle + parameters.rotation).toFloat()
@@ -61,8 +61,8 @@ internal class MeasuredComponent(
                     ) {
                         alpha = parameters.alpha
 
-                        translationX = placeOffset.xFloat - parameters.drawPosition.x * placeables[index].width
-                        translationY = placeOffset.yFloat - parameters.drawPosition.y * placeables[index].height
+                        translationX = placeOffset.x.toFloat() - parameters.drawPosition.x * placeables[index].width
+                        translationY = placeOffset.y.toFloat() - parameters.drawPosition.y * placeables[index].height
                         transformOrigin = parameters.drawPosition.asTransformOrigin()
                         parameters.zoomToFix?.let { zoom ->
                             scaleX = 2F.pow(cameraZoom - zoom)
@@ -78,15 +78,18 @@ internal class MeasuredComponent(
 
                 is PathParameters -> {
                     val paddingWithZoom = parameters.totalPadding * 2F.pow(cameraZoom)
-                    val paddingOffset = ScreenOffset(paddingWithZoom, paddingWithZoom).rotate(cameraAngle.toRadians())
+                    val paddingOffset = ScreenOffset(
+                        paddingWithZoom.toDouble(),
+                        paddingWithZoom.toDouble()
+                    ).rotate(cameraAngle.toRadians())
                     placeables[index].placeWithLayer(
                         x = 0,
                         y = 0,
                         zIndex = parameters.zIndex
                     ) {
                         transformOrigin = DrawPosition.TOP_LEFT.asTransformOrigin()
-                        translationX = offset.xFloat - paddingOffset.xFloat
-                        translationY = offset.yFloat - paddingOffset.yFloat
+                        translationX = offset.x.toFloat() - paddingOffset.x.toFloat()
+                        translationY = offset.y.toFloat() - paddingOffset.y.toFloat()
                         alpha = parameters.alpha
                         rotationZ = cameraAngle.toFloat()
                         scaleX = 2F.pow(cameraZoom)

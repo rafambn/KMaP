@@ -1,7 +1,7 @@
 package com.rafambn.kmap.camera
 
 import com.rafambn.kmap.geometry.angle.Degrees
-import com.rafambn.kmap.utils.Reference
+import com.rafambn.kmap.geometry.plane.Reference
 
 interface MoveInterface {
     fun positionTo(center: Reference)
