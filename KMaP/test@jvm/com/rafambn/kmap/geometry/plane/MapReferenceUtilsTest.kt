@@ -40,18 +40,71 @@ class MapReferenceUtilsTest {
     }
 
     @Test
-    fun loopedMapUsesTheNearestCopy() {
+    fun markerUsesTheNearestCopyWhenOutsideTilesRepeat() {
         val mapState = mapState(
             cameraPoint = TilePoint(511.0, 511.0),
             canvasSize = ScreenOffset(100.0, 100.0),
+            outsideTiles = OutsideTilesType.LOOP,
+        )
+
+        val offset = context(mapState) {
+            TilePoint(1.0, 1.0).toNearestScreenOffset()
+        }
+
+        assertEquals(ScreenOffset(52.0, 52.0), offset)
+    }
+
+    @Test
+    fun markerStaysOnOriginalTileWhenOutsideTilesAreDisabled() {
+        val mapState = mapState(
+            cameraPoint = TilePoint(511.0, 511.0),
+            canvasSize = ScreenOffset(1024.0, 1024.0),
             boundMap = BoundMapBorder(MapBorderType.LOOP, MapBorderType.LOOP),
         )
 
         val offset = context(mapState) {
-            TilePoint(1.0, 1.0).toScreenOffset()
+            TilePoint(1.0, 1.0).toNearestScreenOffset()
         }
 
-        assertEquals(ScreenOffset(52.0, 52.0), offset)
+        assertEquals(ScreenOffset(2.0, 2.0), offset)
+    }
+
+    @Test
+    fun widePathStillPassesThroughCameraPosition() {
+        val mapState = mapState(
+            cameraPoint = TilePoint(400.0, 400.0),
+            canvasSize = ScreenOffset(800.0, 800.0),
+            boundMap = BoundMapBorder(MapBorderType.LOOP, MapBorderType.LOOP),
+            outsideTiles = OutsideTilesType.LOOP,
+        )
+
+        val pathOrigin = context(mapState) {
+            TilePoint(100.0, 100.0).toScreenOffset()
+        }
+        val pathEnd = pathOrigin + ScreenOffset(300.0, 300.0)
+
+        assertEquals(ScreenOffset(400.0, 400.0), pathEnd)
+    }
+
+    @Test
+    fun screenConversionPreservesMapCopyWithLoopZoomRotationAndDensity() {
+        val mapState = mapState(
+            cameraPoint = TilePoint(1000.0, 1000.0),
+            canvasSize = ScreenOffset(800.0, 600.0),
+            zoom = 2.5F,
+            angle = Degrees(37.0),
+            boundMap = BoundMapBorder(MapBorderType.LOOP, MapBorderType.LOOP),
+            outsideTiles = OutsideTilesType.LOOP,
+            density = Density(2F),
+        )
+        val tilePoint = TilePoint(1.0, 1.0)
+
+        val converted = context(mapState) {
+            tilePoint.toScreenOffset().toTilePoint()
+        }
+
+        assertEquals(tilePoint.x, converted.x, 0.0000000001)
+        assertEquals(tilePoint.y, converted.y, 0.0000000001)
     }
 
     @Test
@@ -99,11 +152,13 @@ class MapReferenceUtilsTest {
         zoom: Float = 0F,
         angle: Degrees = Degrees.Zero,
         boundMap: BoundMapBorder = BoundMapBorder(MapBorderType.BOUND, MapBorderType.BOUND),
+        outsideTiles: OutsideTilesType = OutsideTilesType.NONE,
         tileSize: TileDimension = TileDimension(512.dp, 512.dp),
+        density: Density = Density(1F),
     ): MapState {
         val mapProperties = object : MapProperties {
             override val boundMap = boundMap
-            override val outsideTiles = OutsideTilesType.NONE
+            override val outsideTiles = outsideTiles
             override val zoomLevels = object : ZoomLevelRange {
                 override val min = 0
                 override val max = 31
@@ -131,7 +186,7 @@ class MapReferenceUtilsTest {
                 tilePoint = cameraPoint,
             ),
             coroutineScope = CoroutineScope(EmptyCoroutineContext),
-            density = Density(1F),
+            density = density,
         )
     }
 }

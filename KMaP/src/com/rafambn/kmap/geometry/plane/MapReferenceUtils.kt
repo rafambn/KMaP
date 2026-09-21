@@ -4,7 +4,7 @@ import androidx.compose.ui.geometry.Offset
 import com.rafambn.kmap.MapState
 import com.rafambn.kmap.geometry.angle.rotate
 import com.rafambn.kmap.geometry.angle.toRadians
-import com.rafambn.kmap.mapProperties.border.MapBorderType
+import com.rafambn.kmap.mapProperties.border.OutsideTilesType
 import com.rafambn.kmap.utils.toIntFloor
 import kotlin.math.pow
 
@@ -38,25 +38,29 @@ fun DifferentialScreenOffset.toTilePoint(): TilePoint {
 
 context(mapState: MapState)
 fun TilePoint.toScreenOffset(): ScreenOffset {
-    val (mapWidth, mapHeight) = mapState.mapSizeInPixels()
     val zoomScale = 2.0.pow(mapState.cameraState.zoom.toDouble())
     val cameraOffset = this - mapState.cameraState.tilePoint
-    val horizontalOffset = if (mapState.mapProperties.boundMap.horizontal == MapBorderType.LOOP)
-        cameraOffset.x.nearestLoopOffset(mapWidth)
-    else
-        cameraOffset.x
-    val verticalOffset = if (mapState.mapProperties.boundMap.vertical == MapBorderType.LOOP)
-        cameraOffset.y.nearestLoopOffset(mapHeight)
-    else
-        cameraOffset.y
 
-    return TilePoint(horizontalOffset, verticalOffset)
+    return cameraOffset
         .unaryMinus()
         .rotate(mapState.cameraState.angleDegrees.toRadians())
         .scale(zoomScale, zoomScale)
         .asScreenOffset()
         .minus(mapState.cameraState.canvasSize / 2.0)
         .unaryMinus()
+}
+
+context(mapState: MapState)
+internal fun TilePoint.toNearestScreenOffset(): ScreenOffset {
+    if (mapState.mapProperties.outsideTiles != OutsideTilesType.LOOP) return toScreenOffset()
+
+    val (mapWidth, mapHeight) = mapState.mapSizeInPixels()
+    val cameraPoint = mapState.cameraState.tilePoint
+    val cameraOffset = this - cameraPoint
+    return (cameraPoint + TilePoint(
+        cameraOffset.x.nearestLoopOffset(mapWidth),
+        cameraOffset.y.nearestLoopOffset(mapHeight),
+    )).toScreenOffset()
 }
 
 context(mapState: MapState)

@@ -20,6 +20,7 @@ import com.rafambn.kmap.geometry.plane.ProjectedCoordinates
 import com.rafambn.kmap.geometry.plane.asOffset
 import com.rafambn.kmap.geometry.plane.asScreenOffset
 import com.rafambn.kmap.geometry.plane.toScreenOffset
+import com.rafambn.kmap.geometry.plane.toNearestScreenOffset
 import com.rafambn.kmap.geometry.plane.toTilePoint
 
 @ExperimentalFoundationApi
@@ -83,7 +84,7 @@ internal fun measureComponent(
         measuredMarkers.forEach { measuredComponent ->
             require(measuredComponent.parameters is MarkerParameters)
             measuredComponent.offset = context(mapState) {
-                measuredComponent.parameters.coordinates.toTilePoint().toScreenOffset()
+                measuredComponent.parameters.coordinates.toTilePoint().toNearestScreenOffset()
             }
             measuredComponent.viewPort = getViewPort(
                 measuredComponent.parameters.drawPosition,
