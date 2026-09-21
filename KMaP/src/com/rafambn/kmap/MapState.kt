@@ -3,10 +3,10 @@ package com.rafambn.kmap
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.mapSaver
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.IntSize
 import com.rafambn.kmap.camera.CameraState
 import com.rafambn.kmap.camera.MotionController
 import com.rafambn.kmap.components.ViewPort
@@ -111,10 +111,11 @@ class MapState(
         setPosition(cameraState.tilePoint + tilePoint - offset.toTilePoint())
     }
 
-    fun setCanvasSize(offset: Offset) {
-        if (offset.asScreenOffset() == cameraState.canvasSize)
-            return
-        cameraState = cameraState.copy(canvasSize = offset.asScreenOffset())
+    internal fun setCanvasSize(size: IntSize) {
+        val canvasSize = ScreenOffset(size.width.toDouble(), size.height.toDouble())
+        if (canvasSize == cameraState.canvasSize) return
+
+        cameraState = cameraState.copy(canvasSize = canvasSize)
     }
 
     fun setZoom(zoom: Float) {

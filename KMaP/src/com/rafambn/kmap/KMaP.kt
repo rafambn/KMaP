@@ -5,39 +5,33 @@ import androidx.compose.foundation.lazy.layout.LazyLayout
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
 import com.rafambn.kmap.components.KMaPContent
 import com.rafambn.kmap.components.internal.rememberComponentMeasurePolicy
 import com.rafambn.kmap.components.internal.rememberComponentProviderLambda
 
+/**
+ * Displays map components within bounded width and height constraints.
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun KMaP(
-    modifier: Modifier = Modifier,
     mapState: MapState,
-    content: KMaPContent.() -> Unit
+    modifier: Modifier = Modifier,
+    content: KMaPContent.() -> Unit,
 ) {
-    val itemProvider = rememberComponentProviderLambda(content, mapState)
+    val componentProvider = rememberComponentProviderLambda(content, mapState)
 
     val measurePolicy = rememberComponentMeasurePolicy(
-        componentProviderLambda = itemProvider,
+        componentProviderLambda = componentProvider,
         mapState = mapState,
     )
 
     LazyLayout(
-        itemProvider = itemProvider,
+        itemProvider = componentProvider,
         modifier = modifier
             .clipToBounds()
-            .onGloballyPositioned { coordinates ->
-                mapState.setCanvasSize(
-                    Offset(
-                        coordinates.size.width.toFloat(),
-                        coordinates.size.height.toFloat()
-                    )
-                )
-            },
-        prefetchState = null,
-        measurePolicy = measurePolicy
+            .onSizeChanged(mapState::setCanvasSize),
+        measurePolicy = measurePolicy,
     )
 }
