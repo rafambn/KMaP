@@ -28,15 +28,14 @@ jobs:
       - name: Build KMaP Wasm target
         run: |
           chmod +x ./kotlin
-          ./kotlin build -m webApp -p wasmJs -v release
-          rm -rf mkdocs/docs/kmapdemo
-          mkdir -p mkdocs/docs/kmapdemo
-          cp -R build/tasks/_webApp_buildWasmJsAppWasmJsRelease/. mkdocs/docs/kmapdemo/
+          ./kotlin build -m wasmApp -p wasmJs -v release
+          rm -rf docs/kmapdemo
+          mkdir -p docs/kmapdemo
+          cp -R build/tasks/_wasmApp_buildWasmJsAppWasmJsRelease/. docs/kmapdemo/
 
       - name: Build MkDocs
         run: |
           pip install mkdocs-material
-          cd mkdocs 
           mkdocs build
 
       - name: Deploy
@@ -45,5 +44,5 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
           BRANCH: gh-pages
-          FOLDER: mkdocs/site
+          FOLDER: site
           SINGLE_COMMIT: true

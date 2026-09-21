@@ -22,17 +22,19 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.PathData
 import androidx.compose.ui.graphics.vector.toPath
 import androidx.compose.ui.unit.dp
-import com.rafambn.kmap.components.MarkerParameters
-import com.rafambn.kmap.components.PathParameters
-import com.rafambn.kmap.components.RasterCanvasParameters
-import com.rafambn.kmap.core.DrawPosition
-import com.rafambn.kmap.core.KMaP
-import com.rafambn.kmap.core.rememberMapState
-import com.rafambn.kmap.customSources.SimpleMapProperties
-import com.rafambn.kmap.customSources.SimpleMapTileSource
-import com.rafambn.kmap.gestures.PathGestureWrapper
+import com.rafambn.kmap.components.parameters.MarkerParameters
+import com.rafambn.kmap.components.parameters.PathParameters
+import com.rafambn.kmap.components.parameters.RasterCanvasParameters
+import com.rafambn.kmap.components.DrawPosition
+import com.rafambn.kmap.KMaP
+import com.rafambn.kmap.rememberMapState
+import com.rafambn.kmap.source.SimpleMapProperties
+import com.rafambn.kmap.source.SimpleMapTileSource
+import com.rafambn.kmap.gesture.PathGestureWrapper
 import com.rafambn.kmap.getGestureDetector
-import com.rafambn.kmap.utils.Coordinates
+import com.rafambn.kmap.geometry.plane.Coordinates
+import com.rafambn.kmap.geometry.plane.toCoordinates
+import com.rafambn.kmap.geometry.plane.toTilePoint
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import org.jetbrains.compose.resources.vectorResource
@@ -54,7 +56,7 @@ fun PathScreen(
         lineTo(-180F, -80F)
         lineTo(-180F, 80F)
     }.toPath()
-    var markerCoordinates by remember { mutableStateOf(Coordinates(0f, 0f)) }
+    var markerCoordinates by remember { mutableStateOf(Coordinates(0.0, 0.0)) }
     Box {
         KMaP(
             modifier = Modifier.fillMaxSize(),
@@ -77,7 +79,7 @@ fun PathScreen(
                 ),
                 gestureWrapper = PathGestureWrapper(
                     onTap = {
-                        markerCoordinates = with(mapState) {
+                        markerCoordinates = context(mapState) {
                             it.toTilePoint().toCoordinates()
                         }
                     },
@@ -93,7 +95,7 @@ fun PathScreen(
                 ),
                 gestureWrapper = PathGestureWrapper(
                     onTap = {
-                        markerCoordinates = with(mapState) {
+                        markerCoordinates = context(mapState) {
                             it.toTilePoint().toCoordinates()
                         }
                     },

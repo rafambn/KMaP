@@ -12,7 +12,7 @@ dependencies:
   - $libs.androidx.lifecycle.viewmodel
   - $libs.androidx.lifecycle.runtime.compose
   - $libs.androidx.lifecycle.viewmodel.savedstate
-  - $libs.androidx.navigation.composee
+  - $libs.androidx.navigation.compose
   - $libs.kotlinx.coroutines.core
   - $kotlin.serialization.json
   - $kotlin.serialization.protobuf
@@ -38,7 +38,7 @@ settings:
     resources:
       packageName: kmap.kmapdemo.generated.resources
   android:
-    namespace: com.rafambn.KMaP.demo.shared
+    namespace: com.rafambn.kmap.demo.shared
     compileSdk: 36
     minSdk: 24
   jvm:

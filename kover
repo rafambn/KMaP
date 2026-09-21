@@ -1,0 +1,183 @@
+#!/usr/bin/env sh
+
+set -eu
+
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+project_dir="$script_dir"
+kmap_dir="$project_dir/KMaP"
+kover_version="0.9.9"
+kover_base_url="https://repo1.maven.org/maven2/org/jetbrains/kotlinx"
+kover_dir="$project_dir/build/kover"
+tool_dir="$kover_dir/tools/$kover_version"
+report_dir="$kmap_dir/build/reports/kover"
+classes_dir="$kmap_dir/build/classes/kotlin/jvm/main"
+sources_dir="$kmap_dir/src"
+coverage_file="$report_dir/report.ic"
+agent_args="$report_dir/agent.args"
+xml_file="$report_dir/report.xml"
+html_dir="$report_dir/html"
+required_source_file="${KOVER_REQUIRED_SOURCE_FILE:-}"
+required_line_coverage="${KOVER_REQUIRED_LINE_COVERAGE:-100}"
+cli_jar="$tool_dir/kover-cli-$kover_version.jar"
+agent_jar="$tool_dir/kover-jvm-agent-$kover_version.jar"
+
+mkdir -p "$tool_dir" "$report_dir"
+
+if [ -n "$required_source_file" ]; then
+    case "$required_line_coverage" in
+        ''|*[!0-9]*)
+            echo "KOVER_REQUIRED_LINE_COVERAGE must be an integer from 0 to 100" >&2
+            exit 1
+            ;;
+    esac
+
+    if [ "$required_line_coverage" -gt 100 ]; then
+        echo "KOVER_REQUIRED_LINE_COVERAGE must be an integer from 0 to 100" >&2
+        exit 1
+    fi
+fi
+
+download_artifact() {
+    artifact_path="$1"
+    target_path="$2"
+
+    if [ -f "$target_path" ]; then
+        return
+    fi
+
+    download_path="$target_path.download"
+    rm -f "$download_path"
+    curl --fail --silent --show-error --location --retry 3 \
+        "$kover_base_url/$artifact_path" \
+        --output "$download_path"
+    mv "$download_path" "$target_path"
+}
+
+download_artifact \
+    "kover-cli/$kover_version/kover-cli-$kover_version.jar" \
+    "$cli_jar"
+download_artifact \
+    "kover-jvm-agent/$kover_version/kover-jvm-agent-$kover_version.jar" \
+    "$agent_jar"
+
+"$project_dir/kotlin" build -m KMaP -p jvm
+
+if [ ! -d "$classes_dir" ]; then
+    echo "KMaP JVM classes were not found at $classes_dir" >&2
+    exit 1
+fi
+
+rm -rf "$html_dir"
+rm -f "$coverage_file" "$xml_file" "$agent_args"
+
+printf '%s\n' \
+    "report.file=$coverage_file" \
+    'include.regex=com\.rafambn\.kmap\..*' \
+    > "$agent_args"
+
+"$project_dir/kotlin" test \
+    -m KMaP \
+    -p jvm \
+    --jvm-args="-javaagent:$agent_jar=file:$agent_args"
+
+java -jar "$cli_jar" report "$coverage_file" \
+    --classfiles "$classes_dir" \
+    --src "$sources_dir" \
+    --exclude 'com.rafambn.kmap.generated.*' \
+    --html "$html_dir" \
+    --xml "$xml_file" \
+    --title 'KMaP JVM test coverage'
+
+if [ -n "$required_source_file" ]; then
+    required_source_name=${required_source_file##*/}
+    required_source_package=${required_source_file%/*}
+
+    if [ "$required_source_package" = "$required_source_file" ]; then
+        required_source_package=""
+    else
+        required_source_package=${required_source_package#./}
+        case "$required_source_package" in
+            */src/*) required_source_package=${required_source_package#*/src/} ;;
+            src/*) required_source_package=${required_source_package#src/} ;;
+        esac
+    fi
+
+    source_coverage=$(
+        awk \
+            -v source_name="$required_source_name" \
+            -v source_package="$required_source_package" '
+            /<package name="/ {
+                package = $0
+                sub(/^.*<package name="/, "", package)
+                sub(/".*$/, "", package)
+            }
+
+            index($0, "<sourcefile name=\"" source_name "\">") {
+                if (source_package == "" || package == source_package) {
+                    in_source_file = 1
+                    matches += 1
+                }
+                next
+            }
+
+            in_source_file && /<sourcefile name=/ {
+                in_source_file = 0
+            }
+
+            in_source_file && /<counter type="LINE"/ {
+                line = $0
+                sub(/^.*missed="/, "", line)
+                sub(/".*$/, "", line)
+                missed = line
+
+                line = $0
+                sub(/^.*covered="/, "", line)
+                sub(/".*$/, "", line)
+                covered = line
+
+                line_counter_matches += 1
+                in_source_file = 0
+            }
+
+            END {
+                if (matches == 1 && line_counter_matches == 1) {
+                    print missed, covered
+                } else if (matches > 1) {
+                    print "ambiguous", matches
+                }
+            }
+        ' "$xml_file"
+    )
+
+    if [ -z "$source_coverage" ]; then
+        echo "Kover source file was not found in the XML report: $required_source_file" >&2
+        exit 1
+    fi
+
+    set -- $source_coverage
+    if [ "$1" = "ambiguous" ]; then
+        echo "Kover source file name is ambiguous; include its path relative to KMaP/src: $required_source_file" >&2
+        exit 1
+    fi
+
+    missed_lines="$1"
+    covered_lines="$2"
+    total_lines=$((missed_lines + covered_lines))
+
+    if [ "$total_lines" -eq 0 ]; then
+        echo "Kover source file has no executable lines: $required_source_file" >&2
+        exit 1
+    fi
+
+    if [ $((covered_lines * 100)) -lt $((total_lines * required_line_coverage)) ]; then
+        actual_line_coverage=$((covered_lines * 100 / total_lines))
+        echo "Kover line coverage failed for $required_source_file: $actual_line_coverage% (required ${required_line_coverage}%)" >&2
+        exit 1
+    fi
+
+    actual_line_coverage=$((covered_lines * 100 / total_lines))
+    echo "Kover line coverage passed for $required_source_file: $actual_line_coverage% (required ${required_line_coverage}%)"
+fi
+
+echo "KMaP Kover HTML report: $html_dir/index.html"
+echo "KMaP Kover XML report: $xml_file"

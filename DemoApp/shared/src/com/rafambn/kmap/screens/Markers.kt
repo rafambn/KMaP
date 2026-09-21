@@ -16,17 +16,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import com.rafambn.kmap.components.MarkerParameters
-import com.rafambn.kmap.components.RasterCanvasParameters
-import com.rafambn.kmap.core.DrawPosition
-import com.rafambn.kmap.core.KMaP
-import com.rafambn.kmap.core.rememberMapState
-import com.rafambn.kmap.customSources.SimpleMapProperties
-import com.rafambn.kmap.customSources.SimpleMapTileSource
+import com.rafambn.kmap.components.parameters.MarkerParameters
+import com.rafambn.kmap.components.parameters.RasterCanvasParameters
+import com.rafambn.kmap.components.DrawPosition
+import com.rafambn.kmap.KMaP
+import com.rafambn.kmap.rememberMapState
+import com.rafambn.kmap.source.SimpleMapProperties
+import com.rafambn.kmap.source.SimpleMapTileSource
 import com.rafambn.kmap.getGestureDetector
-import com.rafambn.kmap.utils.Coordinates
-import com.rafambn.kmap.utils.asDifferentialScreenOffset
-import com.rafambn.kmap.utils.minus
+import com.rafambn.kmap.geometry.angle.Degrees
+import com.rafambn.kmap.geometry.plane.Coordinates
+import com.rafambn.kmap.geometry.plane.asDifferentialScreenOffset
+import com.rafambn.kmap.geometry.plane.toCoordinates
+import com.rafambn.kmap.geometry.plane.toTilePoint
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import kmap.kmapdemo.generated.resources.pin
@@ -99,7 +101,7 @@ fun MarkersScreen(
                     Coordinates(0.0, -20.0),
                     drawPosition = DrawPosition.TOP_RIGHT,
                     rotateWithMap = true,
-                    rotation = -45.0,
+                    rotation = Degrees(-45.0),
                 )
             ) {
                 Text(
@@ -156,7 +158,7 @@ fun MarkersScreen(
                     modifier = Modifier
                         .pointerInput(Unit) {
                             detectDragGestures { change, dragAmount ->
-                                with(mapState) {
+                                context(mapState) {
                                     change.consume()
                                     draggableMarkerPos =
                                         (draggableMarkerPos.toTilePoint() - dragAmount.asDifferentialScreenOffset().toTilePoint()).toCoordinates()
@@ -174,7 +176,7 @@ fun MarkersScreen(
                 markersList.add(
                     MarkerParameters(
                         Coordinates(-90.0, 0.0),
-                        drawPosition = DrawPosition.BOTTOM_CENTER,
+                        drawPosition = DrawPosition.CENTER_BOTTOM,
                     )
                 )
             },

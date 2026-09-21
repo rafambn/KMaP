@@ -2,8 +2,9 @@ package com.rafambn.kmap.mapProperties
 
 import com.rafambn.kmap.mapProperties.border.BoundMapBorder
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
-import com.rafambn.kmap.utils.Coordinates
-import com.rafambn.kmap.utils.ProjectedCoordinates
+import com.rafambn.kmap.mapProperties.coordinates.CoordinatesRange
+import com.rafambn.kmap.geometry.plane.Coordinates
+import com.rafambn.kmap.geometry.plane.ProjectedCoordinates
 
 interface MapProperties {
     val boundMap: BoundMapBorder

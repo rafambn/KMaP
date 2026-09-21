@@ -6,20 +6,23 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.copy
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.layout.Layout
-import com.rafambn.kmap.core.MapState
-import com.rafambn.kmap.gestures.MapGestureWrapper
-import com.rafambn.kmap.gestures.PathGestureWrapper
-import com.rafambn.kmap.gestures.detectPathGestures
-import com.rafambn.kmap.gestures.sharedPointerInput
-import com.rafambn.kmap.mapSource.tiled.canvas.RasterTileCanvas
-import com.rafambn.kmap.mapSource.tiled.canvas.VectorTileCanvas
-import com.rafambn.kmap.utils.ProjectedCoordinates
-import com.rafambn.kmap.utils.ScreenOffset
-import com.rafambn.kmap.utils.plus
+import com.rafambn.kmap.MapState
+import com.rafambn.kmap.components.parameters.ClusterParameters
+import com.rafambn.kmap.components.parameters.MarkerParameters
+import com.rafambn.kmap.components.parameters.PathParameters
+import com.rafambn.kmap.components.parameters.RasterCanvasParameters
+import com.rafambn.kmap.components.parameters.VectorCanvasParameters
+import com.rafambn.kmap.gesture.MapGestureWrapper
+import com.rafambn.kmap.gesture.PathGestureWrapper
+import com.rafambn.kmap.gesture.internal.detectPathGestures
+import com.rafambn.kmap.gesture.internal.sharedPointerInput
+import com.rafambn.kmap.source.internal.render.RasterTileCanvas
+import com.rafambn.kmap.source.internal.render.VectorTileCanvas
+import com.rafambn.kmap.geometry.plane.ProjectedCoordinates
+import com.rafambn.kmap.geometry.plane.ScreenOffset
 
 class KMaPContent(
     content: KMaPContent.() -> Unit,
@@ -110,16 +113,7 @@ class KMaPContent(
         gestureWrapper: PathGestureWrapper? = null
     ) {
         val originalPath = parameters.path.copy()
-        var padding = if (parameters.style is Stroke) parameters.style.width / 2F else 0F
-        padding = maxOf(padding, parameters.clickPadding)
-        parameters.totalPadding = padding
-        val unmodBounds = originalPath.getBounds()
-        val pointY = if (mapState.mapProperties.coordinatesRange.latitude.orientation == 1)
-            unmodBounds.top else unmodBounds.bottom
-        val pointX = if (mapState.mapProperties.coordinatesRange.longitude.orientation == 1)
-            unmodBounds.left else unmodBounds.right
-        val topLeft = ProjectedCoordinates(pointX, pointY)
-        parameters.drawPoint = topLeft
+        val padding = parameters.totalPadding
         val orientationMatrix = Matrix()
         val orientationX = (mapState.mapProperties.coordinatesRange.longitude.orientation).toFloat()
         val orientationY = (mapState.mapProperties.coordinatesRange.latitude.orientation).toFloat()
@@ -151,7 +145,10 @@ class KMaPContent(
                                     threshold = padding,
                                     checkForInsideClick = parameters.checkForClickInsidePath,
                                     convertScreenOffsetToProjectedCoordinates = {
-                                        val untranslatedPoint = it.plus(ScreenOffset(bounds.left - padding, bounds.top - padding))
+                                        val untranslatedPoint = it + ScreenOffset(
+                                            (bounds.left - padding).toDouble(),
+                                            (bounds.top - padding).toDouble()
+                                        )
                                         return@detectPathGestures ProjectedCoordinates(
                                             untranslatedPoint.x * orientationX / (scale.x * mapState.density),
                                             untranslatedPoint.y * orientationY / (scale.y * mapState.density),

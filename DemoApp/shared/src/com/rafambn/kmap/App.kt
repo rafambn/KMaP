@@ -13,8 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.rafambn.kmap.core.MotionController
-import com.rafambn.kmap.gestures.MapGestureWrapper
+import com.rafambn.kmap.camera.MotionController
+import com.rafambn.kmap.geometry.angle.Degrees
+import com.rafambn.kmap.gesture.MapGestureWrapper
 import com.rafambn.kmap.screens.*
 import com.rafambn.kmap.theme.AppTheme
 
@@ -116,7 +117,7 @@ fun getGestureDetector(motionController: MotionController): MapGestureWrapper = 
     onTwoFingersTap = { offset -> motionController.move { zoomByCentered(1 / 3F, offset) } },
     onGesture = { centroid, pan, zoom, rotation ->
         motionController.move {
-            rotateByCentered(rotation.toDouble(), centroid)
+            rotateByCentered(rotation, centroid)
             zoomByCentered(zoom / gestureScale, centroid)
             positionBy(pan)
         }

@@ -1,0 +1,7 @@
+KMaP TODO
+
+- Ensure objects supplied through component parameters cannot be mutated, or
+  observe snapshots of their contents and cancel the previous component and create
+  a new one when those contents change. If using hashes, compare content hashes,
+  not object identity, and account for collisions. Measurement, drawing, and hit
+  testing must use the same snapshot, including for mutable Path geometry.

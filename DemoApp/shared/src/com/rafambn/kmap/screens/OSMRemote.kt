@@ -8,11 +8,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.rafambn.kmap.components.RasterCanvasParameters
-import com.rafambn.kmap.core.KMaP
-import com.rafambn.kmap.core.rememberMapState
-import com.rafambn.kmap.customSources.OSMMapProperties
-import com.rafambn.kmap.customSources.OSMTileSource
+import com.rafambn.kmap.components.parameters.RasterCanvasParameters
+import com.rafambn.kmap.KMaP
+import com.rafambn.kmap.rememberMapState
+import com.rafambn.kmap.source.OSMMapProperties
+import com.rafambn.kmap.source.OSMTileSource
 import com.rafambn.kmap.getGestureDetector
 import com.rafambn.kmap.mapProperties.border.BoundMapBorder
 import com.rafambn.kmap.mapProperties.border.MapBorderType
