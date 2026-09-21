@@ -50,6 +50,8 @@ class MapState(
     override val fontScale = density.fontScale
 
     val motionController = MotionController(this)
+    internal var viewportSize = IntSize.Zero
+        private set
 
     var zoomLevelPreference = zoomLevelPreference ?: mapProperties.zoomLevels
         set(value) {
@@ -67,10 +69,17 @@ class MapState(
 
     operator fun MutableState<CameraState>.setValue(thisObj: Any?, property: KProperty<*>, value: CameraState) {
         this.value = value
+        resolveVisibleTiles()
+    }
+
+    internal fun resolveVisibleTiles() {
+        if (viewportSize.width == 0 || viewportSize.height == 0) return
+
+        val screenSize = viewportSize.asScreenOffset()
         val topLeft = ScreenOffset.Zero.toTilePoint()
-        val topRight = ScreenOffset(value.canvasSize.x, 0.0).toTilePoint()
-        val bottomLeft = ScreenOffset(0.0, value.canvasSize.y).toTilePoint()
-        val bottomRight = value.canvasSize.toTilePoint()
+        val topRight = ScreenOffset(screenSize.x, 0.0).toTilePoint()
+        val bottomLeft = ScreenOffset(0.0, screenSize.y).toTilePoint()
+        val bottomRight = screenSize.toTilePoint()
         val viewPort = ViewPort(
             Rect(
                 minOf(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x).toFloat(),
@@ -79,14 +88,13 @@ class MapState(
                 maxOf(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y).toFloat()
             )
         )
-        canvasKernel.resolveVisibleTiles(viewPort, value.zoom.toIntFloor(), mapProperties)
+        canvasKernel.resolveVisibleTiles(viewPort, cameraState.zoom.toIntFloor(), mapProperties)
     }
 
     val drawMagScale = { cameraState.zoom - cameraState.zoom.toIntFloor() }
     val drawReference = { cameraState.tilePoint.toCanvasDrawReference() }
     val drawTileSize = { mapProperties.tileSize }
     val drawRotationDegrees = { cameraState.angleDegrees.toFloat() }
-    val drawTranslation = { cameraState.canvasSize.asOffset() / 2F }
 
     private val zoomLevel
         get() = cameraState.zoom.toIntFloor()
@@ -111,11 +119,11 @@ class MapState(
         setPosition(cameraState.tilePoint + tilePoint - offset.toTilePoint())
     }
 
-    internal fun setCanvasSize(size: IntSize) {
-        val canvasSize = ScreenOffset(size.width.toDouble(), size.height.toDouble())
-        if (canvasSize == cameraState.canvasSize) return
+    internal fun setViewportSize(size: IntSize) {
+        if (size == viewportSize) return
 
-        cameraState = cameraState.copy(canvasSize = canvasSize)
+        viewportSize = size
+        resolveVisibleTiles()
     }
 
     fun setZoom(zoom: Float) {
@@ -141,7 +149,6 @@ class MapState(
                     "zoomLevelPreference" to Pair(mapState.zoomLevelPreference.min, mapState.zoomLevelPreference.max),
                     "density" to mapState.density,
                     "fontScale" to mapState.fontScale,
-                    "canvasSize" to Pair(mapState.cameraState.canvasSize.x, mapState.cameraState.canvasSize.y),
                     "zoom" to mapState.cameraState.zoom,
                     "angleDegrees" to mapState.cameraState.angleDegrees.value,
                     "coordinates" to Pair(mapState.cameraState.coordinates.x, mapState.cameraState.coordinates.y),
@@ -159,7 +166,6 @@ class MapState(
                     },
                     density = Density(map["density"] as Float, map["fontScale"] as Float),
                     initialCameraState = CameraState(
-                        canvasSize = (map["canvasSize"] as Pair<*, *>).let { ScreenOffset(it.first as Double, it.second as Double) },
                         zoom = map["zoom"] as Float,
                         angleDegrees = Degrees(map["angleDegrees"] as Double),
                         coordinates = (map["coordinates"] as Pair<*, *>).let { Coordinates(it.first as Double, it.second as Double) },

@@ -38,6 +38,7 @@ class CanvasKernel(
 
     fun refreshCanvas(currentParameters: List<CanvasParameters>) {
         val currentIds = currentParameters.map { it.id }.toSet()
+        var canvasAdded = false
 
         val keysToRemove = canvas.keys.filter { it !in currentIds }
         keysToRemove.forEach { canvas.remove(it) }
@@ -50,6 +51,7 @@ class CanvasKernel(
                         parameter.tileSource,
                         coroutineScope
                     )
+                    canvasAdded = true
                 } else if (parameter is VectorCanvasParameters) {
                     canvas[parameter.id] = VectorCanvasEngine(
                         parameter.maxCacheTiles,
@@ -57,9 +59,12 @@ class CanvasKernel(
                         coroutineScope,
                         parameter.style
                     )
+                    canvasAdded = true
                 }
             }
         }
+
+        if (canvasAdded) mapState.resolveVisibleTiles()
     }
 
     private fun Density.getVisibleTilesForLevel(

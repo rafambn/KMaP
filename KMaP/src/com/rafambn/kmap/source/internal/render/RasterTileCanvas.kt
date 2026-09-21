@@ -22,33 +22,29 @@ import com.rafambn.kmap.source.RasterTile
 import com.rafambn.kmap.source.Tile
 import com.rafambn.kmap.source.internal.ActiveTiles
 import com.rafambn.kmap.geometry.plane.CanvasDrawReference
-import com.rafambn.kmap.geometry.plane.ScreenOffset
 import com.rafambn.kmap.utils.toIntFloor
 import kotlin.math.pow
 
 @Composable
 fun RasterTileCanvas(
-    canvasSize: ScreenOffset,
     gestureWrapper: MapGestureWrapper?,
     magnifierScale: () -> Float,
     positionOffset: () -> CanvasDrawReference,
     tileSize: () -> TileDimension,
     rotationDegrees: () -> Float,
-    translation: () -> Offset,
     activeTiles: () -> ActiveTiles,
 ) {
     Layout(
         modifier = Modifier
             .mapGestures(gestureWrapper)
             .drawBehind {
-                val translation = translation()
                 val rotation = rotationDegrees()
                 val magnifierScale = magnifierScale()
                 val tileSize = tileSize()
                 val positionOffset = positionOffset()
                 val activeTiles = activeTiles()
                 withTransform({
-                    translate(translation.x, translation.y)
+                    translate(center.x, center.y)
                     rotate(rotation, Offset.Zero)
                     scale(2F.pow(magnifierScale), Offset.Zero)
                 }) {
@@ -66,8 +62,8 @@ fun RasterTileCanvas(
                     }
                 }
             }
-    ) { _, _ ->
-        layout(canvasSize.x.toInt(), canvasSize.y.toInt()) {}
+    ) { _, constraints ->
+        layout(constraints.maxWidth, constraints.maxHeight) {}
     }
 }
 
