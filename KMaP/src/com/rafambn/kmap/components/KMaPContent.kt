@@ -50,14 +50,12 @@ class KMaPContent(
         canvas.add(
             Canvas(parameters) {
                 RasterTileCanvas(
-                    canvasSize = mapState.cameraState.canvasSize,
                     gestureWrapper = gestureWrapper,
                     activeTiles = { mapState.canvasKernel.getActiveTiles(parameters.id) },
                     magnifierScale = mapState.drawMagScale,
                     positionOffset = mapState.drawReference,
                     tileSize = mapState.drawTileSize,
                     rotationDegrees = mapState.drawRotationDegrees,
-                    translation = mapState.drawTranslation,
                 )
             }
         )
@@ -70,14 +68,12 @@ class KMaPContent(
         canvas.add(
             Canvas(parameters) {
                 VectorTileCanvas(
-                    canvasSize = mapState.cameraState.canvasSize,
                     gestureWrapper = gestureWrapper,
                     activeTiles = { mapState.canvasKernel.getActiveTiles(parameters.id) },
                     magnifierScale = mapState.drawMagScale,
                     positionOffset = mapState.drawReference,
                     tileSize = mapState.drawTileSize,
                     rotationDegrees = mapState.drawRotationDegrees,
-                    translation = mapState.drawTranslation,
                     style = { parameters.style },
                     zoom = { mapState.cameraState.zoom.toDouble() }
                 )

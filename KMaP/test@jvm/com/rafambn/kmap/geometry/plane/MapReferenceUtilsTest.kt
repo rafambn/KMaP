@@ -1,6 +1,7 @@
 package com.rafambn.kmap.geometry.plane
 
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.MapState
 import com.rafambn.kmap.camera.CameraState
@@ -25,7 +26,7 @@ class MapReferenceUtilsTest {
     fun screenAndTileConversionsAreInverseWithZoomAndRotation() {
         val mapState = mapState(
             cameraPoint = TilePoint(170.0, 210.0),
-            canvasSize = ScreenOffset(800.0, 600.0),
+            viewportSize = ScreenOffset(800.0, 600.0),
             zoom = 4.25F,
             angle = Degrees(37.0),
         )
@@ -43,7 +44,7 @@ class MapReferenceUtilsTest {
     fun markerUsesTheNearestCopyWhenOutsideTilesRepeat() {
         val mapState = mapState(
             cameraPoint = TilePoint(511.0, 511.0),
-            canvasSize = ScreenOffset(100.0, 100.0),
+            viewportSize = ScreenOffset(100.0, 100.0),
             outsideTiles = OutsideTilesType.LOOP,
         )
 
@@ -58,7 +59,7 @@ class MapReferenceUtilsTest {
     fun markerStaysOnOriginalTileWhenOutsideTilesAreDisabled() {
         val mapState = mapState(
             cameraPoint = TilePoint(511.0, 511.0),
-            canvasSize = ScreenOffset(1024.0, 1024.0),
+            viewportSize = ScreenOffset(1024.0, 1024.0),
             boundMap = BoundMapBorder(MapBorderType.LOOP, MapBorderType.LOOP),
         )
 
@@ -73,7 +74,7 @@ class MapReferenceUtilsTest {
     fun widePathStillPassesThroughCameraPosition() {
         val mapState = mapState(
             cameraPoint = TilePoint(400.0, 400.0),
-            canvasSize = ScreenOffset(800.0, 800.0),
+            viewportSize = ScreenOffset(800.0, 800.0),
             boundMap = BoundMapBorder(MapBorderType.LOOP, MapBorderType.LOOP),
             outsideTiles = OutsideTilesType.LOOP,
         )
@@ -90,7 +91,7 @@ class MapReferenceUtilsTest {
     fun screenConversionPreservesMapCopyWithLoopZoomRotationAndDensity() {
         val mapState = mapState(
             cameraPoint = TilePoint(1000.0, 1000.0),
-            canvasSize = ScreenOffset(800.0, 600.0),
+            viewportSize = ScreenOffset(800.0, 600.0),
             zoom = 2.5F,
             angle = Degrees(37.0),
             boundMap = BoundMapBorder(MapBorderType.LOOP, MapBorderType.LOOP),
@@ -146,9 +147,25 @@ class MapReferenceUtilsTest {
         }
     }
 
+    @Test
+    fun screenConversionUsesTheLatestViewportSize() {
+        val cameraPoint = TilePoint(256.0, 256.0)
+        val mapState = mapState(
+            cameraPoint = cameraPoint,
+            viewportSize = ScreenOffset(100.0, 80.0),
+        )
+
+        val initialCenter = context(mapState) { cameraPoint.toScreenOffset() }
+        mapState.setViewportSize(IntSize(300, 200))
+        val resizedCenter = context(mapState) { cameraPoint.toScreenOffset() }
+
+        assertEquals(ScreenOffset(50.0, 40.0), initialCenter)
+        assertEquals(ScreenOffset(150.0, 100.0), resizedCenter)
+    }
+
     private fun mapState(
         cameraPoint: TilePoint = TilePoint(256.0, 256.0),
-        canvasSize: ScreenOffset = ScreenOffset.Zero,
+        viewportSize: ScreenOffset = ScreenOffset.Zero,
         zoom: Float = 0F,
         angle: Degrees = Degrees.Zero,
         boundMap: BoundMapBorder = BoundMapBorder(MapBorderType.BOUND, MapBorderType.BOUND),
@@ -176,10 +193,9 @@ class MapReferenceUtilsTest {
                 Coordinates(projectedCoordinates.x, projectedCoordinates.y)
         }
 
-        return MapState(
+        val mapState = MapState(
             mapProperties = mapProperties,
             initialCameraState = CameraState(
-                canvasSize = canvasSize,
                 zoom = zoom,
                 angleDegrees = angle,
                 coordinates = Coordinates.Zero,
@@ -188,5 +204,7 @@ class MapReferenceUtilsTest {
             coroutineScope = CoroutineScope(EmptyCoroutineContext),
             density = density,
         )
+        mapState.setViewportSize(IntSize(viewportSize.x.toInt(), viewportSize.y.toInt()))
+        return mapState
     }
 }

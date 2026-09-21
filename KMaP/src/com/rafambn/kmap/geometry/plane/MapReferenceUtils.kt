@@ -1,6 +1,7 @@
 package com.rafambn.kmap.geometry.plane
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.IntSize
 import com.rafambn.kmap.MapState
 import com.rafambn.kmap.geometry.angle.rotate
 import com.rafambn.kmap.geometry.angle.toRadians
@@ -16,13 +17,14 @@ fun ScreenOffset.asDifferentialScreenOffset() = DifferentialScreenOffset(x, y)
 
 fun Offset.asScreenOffset() = ScreenOffset(x.toDouble(), y.toDouble())
 fun Offset.asDifferentialScreenOffset() = DifferentialScreenOffset(x.toDouble(), y.toDouble())
+internal fun IntSize.asScreenOffset() = ScreenOffset(width.toDouble(), height.toDouble())
 
 fun DifferentialScreenOffset.asCanvasPosition() = TilePoint(x, y)
 fun DifferentialScreenOffset.asTilePoint() = TilePoint(x, y)
 
 context(mapState: MapState)
 fun ScreenOffset.toTilePoint(): TilePoint =
-    (mapState.cameraState.canvasSize / 2.0 - this)
+    (mapState.viewportSize.asScreenOffset() / 2.0 - this)
         .asDifferentialScreenOffset()
         .toTilePoint() + mapState.cameraState.tilePoint
 
@@ -46,7 +48,7 @@ fun TilePoint.toScreenOffset(): ScreenOffset {
         .rotate(mapState.cameraState.angleDegrees.toRadians())
         .scale(zoomScale, zoomScale)
         .asScreenOffset()
-        .minus(mapState.cameraState.canvasSize / 2.0)
+        .minus(mapState.viewportSize.asScreenOffset() / 2.0)
         .unaryMinus()
 }
 

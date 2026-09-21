@@ -10,6 +10,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.util.fastForEach
 import com.rafambn.kmap.MapState
 import com.rafambn.kmap.components.ViewPort
@@ -32,7 +33,13 @@ internal fun rememberComponentMeasurePolicy(
     mapState,
 ) {
     { containerConstraints ->
+        require(containerConstraints.hasBoundedWidth && containerConstraints.hasBoundedHeight) {
+            "KMaP requires bounded width and height constraints"
+        }
+
+        val layoutSize = IntSize(containerConstraints.maxWidth, containerConstraints.maxHeight)
         val componentProvider = componentProviderLambda()
+        mapState.setViewportSize(layoutSize)
 
         val measuredItemProvider = MeasuredComponentProvider(componentProvider, this)
 
@@ -42,6 +49,7 @@ internal fun rememberComponentMeasurePolicy(
             pathsCount = componentProvider.pathsCount,
             measuredItemProvider = measuredItemProvider,
             mapState = mapState,
+            canvasConstraints = Constraints.fixed(layoutSize.width, layoutSize.height),
             layout = { placement ->
                 layout(
                     containerConstraints.maxWidth,
@@ -60,6 +68,7 @@ internal fun measureComponent(
     pathsCount: Int,
     measuredItemProvider: MeasuredComponentProvider,
     mapState: MapState,
+    canvasConstraints: Constraints,
     layout: (Placeable.PlacementScope.() -> Unit) -> MeasureResult
 ): MeasureResult {
     val visibleItems = mutableListOf<MeasuredComponent>()
@@ -76,8 +85,8 @@ internal fun measureComponent(
             Rect(
                 Offset.Zero,
                 Size(
-                    mapState.cameraState.canvasSize.x.toFloat(),
-                    mapState.cameraState.canvasSize.y.toFloat()
+                    mapState.viewportSize.width.toFloat(),
+                    mapState.viewportSize.height.toFloat()
                 )
             )
         )
@@ -138,7 +147,7 @@ internal fun measureComponent(
 
     if (canvasCount > 0) {
         repeat(canvasCount) { index ->
-            visibleItems.add(measuredItemProvider.getAndMeasureCanvas(index))
+            visibleItems.add(measuredItemProvider.getAndMeasureCanvas(index, canvasConstraints))
         }
     }
 
