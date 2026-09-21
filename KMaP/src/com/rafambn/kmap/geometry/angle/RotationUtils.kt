@@ -1,12 +1,6 @@
 package com.rafambn.kmap.geometry.angle
 
-import com.rafambn.kmap.geometry.plane.CanvasDrawReference
-import com.rafambn.kmap.geometry.plane.Coordinates
-import com.rafambn.kmap.geometry.plane.DifferentialScreenOffset
-import com.rafambn.kmap.geometry.plane.ProjectedCoordinates
-import com.rafambn.kmap.geometry.plane.Reference
-import com.rafambn.kmap.geometry.plane.ScreenOffset
-import com.rafambn.kmap.geometry.plane.TilePoint
+import com.rafambn.kmap.geometry.plane.*
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin

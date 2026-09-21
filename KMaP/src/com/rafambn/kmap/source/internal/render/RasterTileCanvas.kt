@@ -14,14 +14,13 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
+import com.rafambn.kmap.geometry.plane.CanvasDrawReference
 import com.rafambn.kmap.gesture.MapGestureWrapper
 import com.rafambn.kmap.gesture.internal.mapGestures
 import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.source.RasterTile
 import com.rafambn.kmap.source.Tile
 import com.rafambn.kmap.source.internal.ActiveTiles
-import com.rafambn.kmap.geometry.plane.CanvasDrawReference
 import com.rafambn.kmap.utils.toIntFloor
 import kotlin.math.pow
 

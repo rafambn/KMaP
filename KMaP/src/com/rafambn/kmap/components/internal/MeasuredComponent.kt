@@ -3,11 +3,7 @@ package com.rafambn.kmap.components.internal
 import androidx.compose.ui.layout.Placeable
 import com.rafambn.kmap.components.DrawPosition
 import com.rafambn.kmap.components.ViewPort
-import com.rafambn.kmap.components.parameters.CanvasParameters
-import com.rafambn.kmap.components.parameters.ClusterParameters
-import com.rafambn.kmap.components.parameters.MarkerParameters
-import com.rafambn.kmap.components.parameters.Parameters
-import com.rafambn.kmap.components.parameters.PathParameters
+import com.rafambn.kmap.components.parameters.*
 import com.rafambn.kmap.geometry.angle.Degrees
 import com.rafambn.kmap.geometry.angle.rotate
 import com.rafambn.kmap.geometry.angle.toRadians

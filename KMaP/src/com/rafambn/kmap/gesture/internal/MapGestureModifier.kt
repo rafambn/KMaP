@@ -3,8 +3,8 @@ package com.rafambn.kmap.gesture.internal
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
-import com.rafambn.kmap.gesture.MapGestureWrapper
 import com.rafambn.kmap.geometry.plane.asScreenOffset
+import com.rafambn.kmap.gesture.MapGestureWrapper
 
 internal fun Modifier.mapGestures(gestureWrapper: MapGestureWrapper?): Modifier = this.then(
     gestureWrapper?.let {

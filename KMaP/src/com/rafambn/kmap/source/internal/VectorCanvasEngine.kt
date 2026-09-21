@@ -1,10 +1,10 @@
 package com.rafambn.kmap.source.internal
 
 import androidx.compose.ui.graphics.Path
+import com.rafambn.kmap.mvttile.*
 import com.rafambn.kmap.source.TileResult
 import com.rafambn.kmap.source.VectorTile
 import com.rafambn.kmap.style.OptimizedStyle
-import com.rafambn.kmap.mvttile.*
 import kotlinx.coroutines.CoroutineScope
 
 class VectorCanvasEngine(

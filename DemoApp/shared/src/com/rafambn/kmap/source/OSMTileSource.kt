@@ -13,7 +13,6 @@ import org.jetbrains.compose.resources.decodeToImageBitmap
 class OSMTileSource(private val userAgent: String) : TileSource<RasterTile> {
     private val client = HttpClient()
 
-    @OptIn(ExperimentalResourceApi::class)
     override suspend fun getTile(zoom: Int, row: Int, column: Int): TileResult<RasterTile> {
         val imageBitmap: androidx.compose.ui.graphics.ImageBitmap
         try {

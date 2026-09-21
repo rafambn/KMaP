@@ -16,7 +16,8 @@ import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.ZoomLevelRange
 import com.rafambn.kmap.mapProperties.border.MapBorderType
 import com.rafambn.kmap.source.internal.CanvasKernel
-import com.rafambn.kmap.utils.*
+import com.rafambn.kmap.utils.loopInRange
+import com.rafambn.kmap.utils.toIntFloor
 import kotlinx.coroutines.CoroutineScope
 import kotlin.reflect.KProperty
 

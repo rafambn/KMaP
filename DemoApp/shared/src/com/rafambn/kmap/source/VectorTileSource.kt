@@ -23,7 +23,7 @@ class VectorTileSource : TileSource<VectorTile> {
         useArrayPolymorphism = false
     }
 
-    @OptIn(ExperimentalUnsignedTypes::class, ExperimentalSerializationApi::class)
+    @OptIn(ExperimentalSerializationApi::class)
     override suspend fun getTile(zoom: Int, row: Int, column: Int): TileResult<VectorTile> {
         try {
 //            val compressedBytes = client.get("https://vtiles.openhistoricalmap.org/maps/osm/$zoom/$row/$column") {

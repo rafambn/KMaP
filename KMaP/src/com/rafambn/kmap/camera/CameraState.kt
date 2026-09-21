@@ -1,7 +1,7 @@
 package com.rafambn.kmap.camera
 
-import com.rafambn.kmap.geometry.plane.Coordinates
 import com.rafambn.kmap.geometry.angle.Degrees
+import com.rafambn.kmap.geometry.plane.Coordinates
 import com.rafambn.kmap.geometry.plane.TilePoint
 
 data class CameraState(

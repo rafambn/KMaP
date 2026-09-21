@@ -1,6 +1,5 @@
 package com.rafambn.kmap.components.internal
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.layout.LazyLayoutItemProvider
 import androidx.compose.runtime.*
 import com.rafambn.kmap.MapState
@@ -22,7 +21,6 @@ internal fun rememberComponentProviderLambda(content: KMaPContent.() -> Unit, ma
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 internal class ComponentProvider(
     private val kmapContent: KMaPContent
 ) : LazyLayoutItemProvider {

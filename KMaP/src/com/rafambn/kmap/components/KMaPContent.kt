@@ -10,19 +10,15 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.layout.Layout
 import com.rafambn.kmap.MapState
-import com.rafambn.kmap.components.parameters.ClusterParameters
-import com.rafambn.kmap.components.parameters.MarkerParameters
-import com.rafambn.kmap.components.parameters.PathParameters
-import com.rafambn.kmap.components.parameters.RasterCanvasParameters
-import com.rafambn.kmap.components.parameters.VectorCanvasParameters
+import com.rafambn.kmap.components.parameters.*
+import com.rafambn.kmap.geometry.plane.ProjectedCoordinates
+import com.rafambn.kmap.geometry.plane.ScreenOffset
 import com.rafambn.kmap.gesture.MapGestureWrapper
 import com.rafambn.kmap.gesture.PathGestureWrapper
 import com.rafambn.kmap.gesture.internal.detectPathGestures
 import com.rafambn.kmap.gesture.internal.sharedPointerInput
 import com.rafambn.kmap.source.internal.render.RasterTileCanvas
 import com.rafambn.kmap.source.internal.render.VectorTileCanvas
-import com.rafambn.kmap.geometry.plane.ProjectedCoordinates
-import com.rafambn.kmap.geometry.plane.ScreenOffset
 
 class KMaPContent(
     content: KMaPContent.() -> Unit,

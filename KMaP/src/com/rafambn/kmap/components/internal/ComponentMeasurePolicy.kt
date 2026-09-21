@@ -17,12 +17,7 @@ import com.rafambn.kmap.components.ViewPort
 import com.rafambn.kmap.components.getViewPort
 import com.rafambn.kmap.components.parameters.MarkerParameters
 import com.rafambn.kmap.components.parameters.PathParameters
-import com.rafambn.kmap.geometry.plane.ProjectedCoordinates
-import com.rafambn.kmap.geometry.plane.asOffset
-import com.rafambn.kmap.geometry.plane.asScreenOffset
-import com.rafambn.kmap.geometry.plane.toScreenOffset
-import com.rafambn.kmap.geometry.plane.toNearestScreenOffset
-import com.rafambn.kmap.geometry.plane.toTilePoint
+import com.rafambn.kmap.geometry.plane.*
 
 @ExperimentalFoundationApi
 @Composable

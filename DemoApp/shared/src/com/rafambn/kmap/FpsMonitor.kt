@@ -13,7 +13,6 @@ import androidx.compose.ui.unit.sp
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalTime::class)
 @Composable
 fun FpsMonitor(modifier: Modifier = Modifier) {
     var frameCount by remember { mutableStateOf(0) }

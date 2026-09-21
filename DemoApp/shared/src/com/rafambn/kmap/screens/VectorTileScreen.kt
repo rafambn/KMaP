@@ -32,7 +32,6 @@ import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.InternalResourceApi
 import org.jetbrains.compose.resources.vectorResource
 
-@OptIn(InternalResourceApi::class)
 @Composable
 fun VectorTileScreen(
     navigateBack: () -> Unit

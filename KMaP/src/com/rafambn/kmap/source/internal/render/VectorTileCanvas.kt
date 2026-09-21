@@ -6,12 +6,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.Fill
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.drawscope.scale
-import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.graphics.drawscope.*
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
@@ -21,23 +16,19 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.*
+import com.rafambn.kmap.geometry.plane.CanvasDrawReference
 import com.rafambn.kmap.gesture.MapGestureWrapper
 import com.rafambn.kmap.gesture.internal.mapGestures
 import com.rafambn.kmap.mapProperties.TileDimension
+import com.rafambn.kmap.mvttile.OptimizedGeometry
+import com.rafambn.kmap.mvttile.OptimizedRenderFeature
 import com.rafambn.kmap.source.Tile
 import com.rafambn.kmap.source.internal.ActiveTiles
 import com.rafambn.kmap.source.internal.OptimizedVectorTile
-import com.rafambn.kmap.geometry.plane.CanvasDrawReference
 import com.rafambn.kmap.style.OptimizedStyle
 import com.rafambn.kmap.style.OptimizedStyleLayer
 import com.rafambn.kmap.utils.toIntFloor
-import com.rafambn.kmap.mvttile.OptimizedGeometry
-import com.rafambn.kmap.mvttile.OptimizedRenderFeature
 import kotlin.math.pow
 
 @Composable

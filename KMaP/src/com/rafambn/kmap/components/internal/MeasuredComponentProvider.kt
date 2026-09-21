@@ -1,11 +1,8 @@
 package com.rafambn.kmap.components.internal
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.layout.LazyLayoutMeasureScope
 import androidx.compose.ui.unit.Constraints
 
-
-@OptIn(ExperimentalFoundationApi::class)
 internal class MeasuredComponentProvider(
     private val componentProvider: ComponentProvider,
     private val measureScope: LazyLayoutMeasureScope,
