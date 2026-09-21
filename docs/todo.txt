@@ -5,3 +5,5 @@ KMaP TODO
   a new one when those contents change. If using hashes, compare content hashes,
   not object identity, and account for collisions. Measurement, drawing, and hit
   testing must use the same snapshot, including for mutable Path geometry.
+
+- Evaluate LazyLayoutPrefetchState for components approaching the viewport.

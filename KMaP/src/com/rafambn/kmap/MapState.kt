@@ -63,10 +63,17 @@ class MapState(
 
     var cameraState by mutableStateOf(
         initialCameraState ?: CameraState(
-            tilePoint = TilePoint(mapProperties.tileSize.width.toPx() / 2.0, mapProperties.tileSize.height.toPx() / 2.0),
-            coordinates = TilePoint(mapProperties.tileSize.width.toPx() / 2.0, mapProperties.tileSize.height.toPx() / 2.0).toCoordinates()
+            tilePoint = TilePoint(
+                mapProperties.tileSize.width.toPx() / 2.0,
+                mapProperties.tileSize.height.toPx() / 2.0
+            ),
+            coordinates = TilePoint(
+                mapProperties.tileSize.width.toPx() / 2.0,
+                mapProperties.tileSize.height.toPx() / 2.0
+            ).toCoordinates()
         )
     )
+        private set
 
     operator fun MutableState<CameraState>.setValue(thisObj: Any?, property: KProperty<*>, value: CameraState) {
         this.value = value
@@ -97,9 +104,6 @@ class MapState(
     val drawTileSize = { mapProperties.tileSize }
     val drawRotationDegrees = { cameraState.angleDegrees.toFloat() }
 
-    private val zoomLevel
-        get() = cameraState.zoom.toIntFloor()
-
     val canvasKernel = CanvasKernel(coroutineScope, this)
 
     private fun TilePoint.coerceInMap(): TilePoint {
@@ -114,7 +118,8 @@ class MapState(
         return TilePoint(x, y)
     }
 
-    private fun Float.coerceZoom(): Float = this.coerceIn(zoomLevelPreference.min.toFloat(), zoomLevelPreference.max.toFloat())
+    private fun Float.coerceZoom(): Float =
+        this.coerceIn(zoomLevelPreference.min.toFloat(), zoomLevelPreference.max.toFloat())
 
     fun centerPointAtOffset(tilePoint: TilePoint, offset: ScreenOffset) {
         setPosition(cameraState.tilePoint + tilePoint - offset.toTilePoint())
@@ -169,8 +174,18 @@ class MapState(
                     initialCameraState = CameraState(
                         zoom = map["zoom"] as Float,
                         angleDegrees = Degrees(map["angleDegrees"] as Double),
-                        coordinates = (map["coordinates"] as Pair<*, *>).let { Coordinates(it.first as Double, it.second as Double) },
-                        tilePoint = (map["tilePoint"] as Pair<*, *>).let { TilePoint(it.first as Double, it.second as Double) },
+                        coordinates = (map["coordinates"] as Pair<*, *>).let {
+                            Coordinates(
+                                it.first as Double,
+                                it.second as Double
+                            )
+                        },
+                        tilePoint = (map["tilePoint"] as Pair<*, *>).let {
+                            TilePoint(
+                                it.first as Double,
+                                it.second as Double
+                            )
+                        },
                     ),
                     coroutineScope = coroutineScope
                 )

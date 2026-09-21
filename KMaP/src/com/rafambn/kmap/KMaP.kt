@@ -23,7 +23,6 @@ fun KMaP(
         mapState = mapState,
     )
 
-    // TODO Evaluate LazyLayoutPrefetchState for components approaching the viewport.
     LazyLayout(
         itemProvider = componentProvider,
         modifier = modifier.clipToBounds(),
