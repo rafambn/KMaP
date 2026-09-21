@@ -1,8 +1,10 @@
 KMaP TODO
 
-- Keep PathParameters as input-only configuration. Move the derived drawPoint and
-  totalPadding values to the internal Path or MeasuredComponent state so reusing
-  one PathParameters instance cannot share rendering state between paths or maps.
+- Ensure objects supplied through component parameters cannot be mutated, or
+  observe snapshots of their contents and cancel the previous component and create
+  a new one when those contents change. If using hashes, compare content hashes,
+  not object identity, and account for collisions. Measurement, drawing, and hit
+  testing must use the same snapshot, including for mutable Path geometry.
 
 - Improve ReferenceUtils by moving each reference type into its own file and
   replacing the reified generic operations and unchecked casts with type-safe

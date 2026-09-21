@@ -7,7 +7,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope.Companion.DefaultBlendMode
 import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Fill
-import com.rafambn.kmap.utils.ProjectedCoordinates
+import androidx.compose.ui.graphics.drawscope.Stroke
 
 open class PathParameters(
     val path: Path,
@@ -21,6 +21,6 @@ open class PathParameters(
     val zoomVisibilityRange: ClosedFloatingPointRange<Float> = 0F..Float.MAX_VALUE,
     val checkForClickInsidePath: Boolean = false,
 ) : Parameters {
-    internal var drawPoint: ProjectedCoordinates = ProjectedCoordinates(0f, 0f)
-    internal var totalPadding: Float = 0f
+    internal val totalPadding: Float
+        get() = maxOf(if (style is Stroke) style.width / 2F else 0F, clickPadding)
 }

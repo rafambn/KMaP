@@ -16,6 +16,7 @@ import com.rafambn.kmap.components.ViewPort
 import com.rafambn.kmap.components.getViewPort
 import com.rafambn.kmap.components.parameters.MarkerParameters
 import com.rafambn.kmap.components.parameters.PathParameters
+import com.rafambn.kmap.utils.ProjectedCoordinates
 import com.rafambn.kmap.utils.asOffset
 import com.rafambn.kmap.utils.asScreenOffset
 import com.rafambn.kmap.utils.toScreenOffset
@@ -116,9 +117,14 @@ internal fun measureComponent(
             val measuredPath = measuredItemProvider.getAndMeasurePath(index)
             require(measuredPath.parameters is PathParameters)
             if (measuredPath.parameters.zoomVisibilityRange.contains(mapState.cameraState.zoom)) {
-                val path = measuredPath.parameters.drawPoint
+                val bounds = measuredPath.parameters.path.getBounds()
+                val coordinatesRange = mapState.mapProperties.coordinatesRange
+                val drawPoint = ProjectedCoordinates(
+                    if (coordinatesRange.longitude.orientation == 1) bounds.left else bounds.right,
+                    if (coordinatesRange.latitude.orientation == 1) bounds.top else bounds.bottom
+                )
                 measuredPath.offset = context(mapState) {
-                    path.toTilePoint().toScreenOffset()
+                    drawPoint.toTilePoint().toScreenOffset()
                 }
                 measuredPats.add(measuredPath)
             }

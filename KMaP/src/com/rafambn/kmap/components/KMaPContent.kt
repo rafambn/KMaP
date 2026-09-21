@@ -6,7 +6,6 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.copy
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.layout.Layout
@@ -115,16 +114,7 @@ class KMaPContent(
         gestureWrapper: PathGestureWrapper? = null
     ) {
         val originalPath = parameters.path.copy()
-        var padding = if (parameters.style is Stroke) parameters.style.width / 2F else 0F
-        padding = maxOf(padding, parameters.clickPadding)
-        parameters.totalPadding = padding
-        val unmodBounds = originalPath.getBounds()
-        val pointY = if (mapState.mapProperties.coordinatesRange.latitude.orientation == 1)
-            unmodBounds.top else unmodBounds.bottom
-        val pointX = if (mapState.mapProperties.coordinatesRange.longitude.orientation == 1)
-            unmodBounds.left else unmodBounds.right
-        val topLeft = ProjectedCoordinates(pointX, pointY)
-        parameters.drawPoint = topLeft
+        val padding = parameters.totalPadding
         val orientationMatrix = Matrix()
         val orientationX = (mapState.mapProperties.coordinatesRange.longitude.orientation).toFloat()
         val orientationY = (mapState.mapProperties.coordinatesRange.latitude.orientation).toFloat()
