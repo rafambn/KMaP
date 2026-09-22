@@ -1,12 +1,11 @@
 package com.rafambn.kmap.camera
 
 import com.rafambn.kmap.geometry.plane.TilePoint
-import kotlin.test.Test
+import de.infix.testBalloon.framework.core.testSuite
 import kotlin.test.assertFailsWith
 
-class CameraStateTest {
-    @Test
-    fun cameraStateRejectsNonFiniteZoom() {
+val CameraStateTest by testSuite {
+    test("cameraStateRejectsNonFiniteZoom") {
         assertFailsWith<IllegalArgumentException> {
             CameraState(
                 zoom = Float.NaN,

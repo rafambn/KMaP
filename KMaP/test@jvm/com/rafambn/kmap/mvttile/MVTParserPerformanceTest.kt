@@ -1,65 +1,63 @@
 package com.rafambn.kmap.mvttile
 
-import kotlin.test.Test
+import de.infix.testBalloon.framework.core.testSuite
 import kotlin.time.measureTime
 
-class MVTParserPerformanceTest {
-
-    private fun createLargeTestTile(layerCount: Int = 5, featuresPerLayer: Int = 1000): RawMVTile {
-        val layers = (1..layerCount).map { layerIndex ->
-            val features = (1..featuresPerLayer).map { featureIndex ->
-                RawMVTFeature(
-                    id = featureIndex.toLong(),
-                    type = RawMVTGeomType.POINT,
-                    geometry = listOf(
-                        (CMD_MOVETO or (1 shl 3)),
-                        featureIndex * 2, featureIndex * 4
-                    ),
-                    tags = listOf(0, 0)
-                )
-            }
-
-            RawMVTLayer(
-                name = "layer_$layerIndex",
-                extent = 4096,
-                keys = listOf("name", "type", "id"),
-                values = listOf(
-                    RawMVTValue(string_value = "feature_name"),
-                    RawMVTValue(string_value = "point"),
-                    RawMVTValue(int_value = 123L)
+private fun createLargeTestTile(layerCount: Int = 5, featuresPerLayer: Int = 1000): RawMVTile {
+    val layers = (1..layerCount).map { layerIndex ->
+        val features = (1..featuresPerLayer).map { featureIndex ->
+            RawMVTFeature(
+                id = featureIndex.toLong(),
+                type = RawMVTGeomType.POINT,
+                geometry = listOf(
+                    (CMD_MOVETO or (1 shl 3)),
+                    featureIndex * 2, featureIndex * 4
                 ),
-                features = features
+                tags = listOf(0, 0)
             )
         }
 
-        return RawMVTile(layers = layers)
-    }
-
-    private fun createComplexGeometryFeature(pointCount: Int): RawMVTFeature {
-        val geometry = mutableListOf<Int>()
-
-        geometry.add(CMD_MOVETO or (1 shl 3))
-        geometry.add(2)
-        geometry.add(4)
-
-        if (pointCount > 1) {
-            geometry.add(CMD_LINETO or ((pointCount - 1) shl 3))
-            for (i in 1 until pointCount) {
-                geometry.add(2)
-                geometry.add(2)
-            }
-        }
-
-        return RawMVTFeature(
-            id = 1L,
-            type = RawMVTGeomType.LINESTRING,
-            geometry = geometry,
-            tags = listOf(0, 0)
+        RawMVTLayer(
+            name = "layer_$layerIndex",
+            extent = 4096,
+            keys = listOf("name", "type", "id"),
+            values = listOf(
+                RawMVTValue(string_value = "feature_name"),
+                RawMVTValue(string_value = "point"),
+                RawMVTValue(int_value = 123L)
+            ),
+            features = features
         )
     }
 
-    @Test
-    fun benchmarkParseMVTPerformance() {
+    return RawMVTile(layers = layers)
+}
+
+private fun createComplexGeometryFeature(pointCount: Int): RawMVTFeature {
+    val geometry = mutableListOf<Int>()
+
+    geometry.add(CMD_MOVETO or (1 shl 3))
+    geometry.add(2)
+    geometry.add(4)
+
+    if (pointCount > 1) {
+        geometry.add(CMD_LINETO or ((pointCount - 1) shl 3))
+        for (i in 1 until pointCount) {
+            geometry.add(2)
+            geometry.add(2)
+        }
+    }
+
+    return RawMVTFeature(
+        id = 1L,
+        type = RawMVTGeomType.LINESTRING,
+        geometry = geometry,
+        tags = listOf(0, 0)
+    )
+}
+
+val MVTParserPerformanceTest by testSuite {
+    test("benchmarkParseMVTPerformance") {
         println("\n=== MVT Parsing Performance Benchmark ===")
 
         val testSizes = listOf(
@@ -85,8 +83,7 @@ class MVTParserPerformanceTest {
         }
     }
 
-    @Test
-    fun benchmarkGeometryDecodingPerformance() {
+    test("benchmarkGeometryDecodingPerformance") {
         println("\n=== Geometry Decoding Performance Benchmark ===")
 
         val pointCounts = listOf(10, 50, 100, 500, 1000)
@@ -105,8 +102,7 @@ class MVTParserPerformanceTest {
         }
     }
 
-    @Test
-    fun benchmarkPropertyResolutionPerformance() {
+    test("benchmarkPropertyResolutionPerformance") {
         println("\n=== Property Resolution Performance Benchmark ===")
 
         val propertyCounts = listOf(5, 20, 50, 100)
@@ -130,8 +126,7 @@ class MVTParserPerformanceTest {
         }
     }
 
-    @Test
-    fun benchmarkZigZagDecodingPerformance() {
+    test("benchmarkZigZagDecodingPerformance") {
         println("\n=== ZigZag Decoding Performance Benchmark ===")
 
         val testValues = listOf(
@@ -150,8 +145,7 @@ class MVTParserPerformanceTest {
         println("ZigZag decoding: ${avgTimePerValue.inWholeNanoseconds}ns avg per value")
     }
 
-    @Test
-    fun benchmarkEndToEndPerformance() {
+    test("benchmarkEndToEndPerformance") {
         println("\n=== End-to-End Performance Benchmark ===")
 
         val testTile = createLargeTestTile(layerCount = 8, featuresPerLayer = 1500)
@@ -186,8 +180,7 @@ class MVTParserPerformanceTest {
         println("Performance: ${featuresPerSecond.toInt()} features/second")
     }
 
-    @Test
-    fun memoryUsageEstimation() {
+    test("memoryUsageEstimation") {
         println("\n=== Memory Usage Estimation ===")
 
         val testTile = createLargeTestTile(layerCount = 3, featuresPerLayer = 1000)

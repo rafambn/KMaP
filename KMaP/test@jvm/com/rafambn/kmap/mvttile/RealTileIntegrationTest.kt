@@ -2,52 +2,51 @@
 
 package com.rafambn.kmap.mvttile
 
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.protobuf.ProtoBuf
+import de.infix.testBalloon.framework.core.testSuite
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
-import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.protobuf.ProtoBuf
 
-class RealTileIntegrationTest {
+private fun deserializeMVT(decompressedBytes: ByteArray): RawMVTile {
+    return ProtoBuf.decodeFromByteArray(RawMVTile.serializer(), decompressedBytes)
+}
 
-    fun deserializeMVT(decompressedBytes: ByteArray): RawMVTile {
-        return ProtoBuf.decodeFromByteArray(RawMVTile.serializer(), decompressedBytes)
+private fun serializeMVT(mvtTile: RawMVTile): ByteArray {
+    return ProtoBuf.encodeToByteArray(RawMVTile.serializer(), mvtTile)
+}
+
+private fun loadData(tileName: String): ByteArray {
+    val resourcePath = "tiles/$tileName"
+
+    val inputStream: InputStream? = Thread.currentThread().contextClassLoader.getResourceAsStream(resourcePath)
+
+    if (inputStream == null) {
+        throw IllegalArgumentException("Resource not found: $resourcePath")
     }
 
-    fun serializeMVT(mvtTile: RawMVTile): ByteArray {
-        return ProtoBuf.encodeToByteArray(RawMVTile.serializer(), mvtTile)
-    }
-
-    private fun loadData(tileName: String): ByteArray {
-        val resourcePath = "tiles/$tileName"
-
-        val inputStream: InputStream? = javaClass.classLoader.getResourceAsStream(resourcePath)
-
-        if (inputStream == null) {
-            throw IllegalArgumentException("Resource not found: $resourcePath")
+    return inputStream.use {
+        val buffer = ByteArray(1024)
+        val outputStream = ByteArrayOutputStream()
+        var bytesRead: Int
+        while (it.read(buffer).also { bytesRead = it } != -1) {
+            outputStream.write(buffer, 0, bytesRead)
         }
-
-        return inputStream.use {
-            val buffer = ByteArray(1024)
-            val outputStream = ByteArrayOutputStream()
-            var bytesRead: Int
-            while (it.read(buffer).also { bytesRead = it } != -1) {
-                outputStream.write(buffer, 0, bytesRead)
-            }
-            outputStream.toByteArray()
-        }
+        outputStream.toByteArray()
     }
+}
 
-    private fun getTileLevel10(): ByteArray = loadData("ohm_10_550_337.pbf")
+private fun getTileLevel10(): ByteArray = loadData("ohm_10_550_337.pbf")
 
-    private fun getTileLevel14(): ByteArray = loadData("ohm_14_8800_5374.pbf")
+private fun getTileLevel14(): ByteArray = loadData("ohm_14_8800_5374.pbf")
 
-    private fun getTileLevel16(): ByteArray = loadData("ohm_16_35200_21496.pbf")
-    @Test
-    fun testParseVariousZoomLevels() {
+private fun getTileLevel16(): ByteArray = loadData("ohm_16_35200_21496.pbf")
+
+val RealTileIntegrationTest by testSuite {
+    test("testParseVariousZoomLevels") {
         val tile10 = getTileLevel10()
         val parsed10 = deserializeMVT(tile10).parse()
         assertTrue(parsed10.layers.isNotEmpty())
@@ -61,8 +60,7 @@ class RealTileIntegrationTest {
         assertTrue(parsed16.layers.isNotEmpty())
     }
 
-    @Test
-    fun testRoundTripSerializationForDetailedTile() {
+    test("testRoundTripSerializationForDetailedTile") {
         val originalTileData = getTileLevel14()
         val mvtTile = deserializeMVT(originalTileData)
         val parsedTile = mvtTile.parse()
@@ -82,8 +80,7 @@ class RealTileIntegrationTest {
         }
     }
 
-    @Test
-    fun testBasicFeatureAndLayerProperties() {
+    test("testBasicFeatureAndLayerProperties") {
         val testTiles = listOf(getTileLevel10(), getTileLevel14(), getTileLevel16())
 
         testTiles.forEach { tileData ->
@@ -108,8 +105,7 @@ class RealTileIntegrationTest {
         }
     }
 
-    @Test
-    fun testEdgeCases() {
+    test("testEdgeCases") {
         val emptyTile = RawMVTile(layers = emptyList())
         val emptyTileData = serializeMVT(emptyTile)
         val parsedEmptyTile = deserializeMVT(emptyTileData).parse()
