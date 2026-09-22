@@ -27,6 +27,7 @@ fun rememberMapState(
     zoomLevelPreference: ZoomLevelRange? = null,
     density: Density = LocalDensity.current,
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
+    initialCameraState: CameraState? = null,
 ): MapState {
     val currentZoomLevelPreference = zoomLevelPreference ?: mapProperties.zoomLevels
     return rememberSaveable(
@@ -41,7 +42,7 @@ fun rememberMapState(
                 mapProperties = mapProperties,
                 zoomLevelPreference = currentZoomLevelPreference,
                 density = density,
-                initialCameraState = null,
+                initialCameraState = initialCameraState,
                 coroutineScope = coroutineScope,
             )
         }
@@ -214,11 +215,10 @@ class MapState(
                 )
             },
             restore = { map ->
-                val legacyDensity = (map["density"] as? Float)?.toDouble() ?: 1.0
                 val tilePoint = (map["tilePoint"] as Pair<*, *>).let {
                     TilePoint(
-                        (it.first as Double) / legacyDensity,
-                        (it.second as Double) / legacyDensity,
+                        it.first as Double,
+                        it.second as Double,
                     )
                 }
                 MapState(
