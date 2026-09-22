@@ -28,18 +28,26 @@ fun rememberMapState(
     zoomLevelPreference: ZoomLevelRange? = null,
     density: Density = LocalDensity.current,
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
-): MapState = rememberSaveable(
-    saver = MapState.saver(mapProperties, coroutineScope),
-    init = {
-        MapState(
+): MapState {
+    val currentZoomLevelPreference = zoomLevelPreference ?: mapProperties.zoomLevels
+    return rememberSaveable(
+        saver = MapState.saver(
             mapProperties = mapProperties,
-            zoomLevelPreference = zoomLevelPreference,
+            zoomLevelPreference = currentZoomLevelPreference,
             density = density,
-            initialCameraState = null,
             coroutineScope = coroutineScope,
-        )
-    }
-)
+        ),
+        init = {
+            MapState(
+                mapProperties = mapProperties,
+                zoomLevelPreference = currentZoomLevelPreference,
+                density = density,
+                initialCameraState = null,
+                coroutineScope = coroutineScope,
+            )
+        }
+    )
+}
 
 class MapState(
     val mapProperties: MapProperties,
@@ -200,11 +208,12 @@ class MapState(
     companion object {
         fun saver(
             mapProperties: MapProperties,
+            zoomLevelPreference: ZoomLevelRange,
+            density: Density,
             coroutineScope: CoroutineScope,
         ) = mapSaver(
             save = { mapState ->
                 mapOf(
-                    "zoomLevelPreference" to Pair(mapState.zoomLevelPreference.min, mapState.zoomLevelPreference.max),
                     "zoom" to mapState.internalCameraState.zoom,
                     "angleDegrees" to mapState.internalCameraState.angleDegrees.value,
                     "tilePoint" to Pair(
@@ -223,16 +232,15 @@ class MapState(
                 }
                 MapState(
                     mapProperties = mapProperties,
-                    zoomLevelPreference = (map["zoomLevelPreference"] as Pair<*, *>).let {
-                        object : ZoomLevelRange {
-                            override val max: Int = it.second as Int
-                            override val min: Int = it.first as Int
-                        }
-                    },
-                    coroutineScope = coroutineScope
+                    zoomLevelPreference = zoomLevelPreference,
+                    density = density,
+                    coroutineScope = coroutineScope,
                 ).apply {
                     internalCameraState = InternalCameraState(
-                        zoom = map["zoom"] as Float,
+                        zoom = (map["zoom"] as Float).coerceIn(
+                            zoomLevelPreference.min.toFloat(),
+                            zoomLevelPreference.max.toFloat(),
+                        ),
                         angleDegrees = Degrees(map["angleDegrees"] as Double),
                         tilePoint = tilePoint,
                     )

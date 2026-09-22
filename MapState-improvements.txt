@@ -46,9 +46,9 @@ Usar zoomLevelPreference atual durante a restauracao. Validar e limitar o zoom r
 contra esse intervalo, pois uma versao anterior do aplicativo pode ter salvo valores que
 ja nao sao permitidos.
 
-Adicionar uma identidade estavel do mapa aos inputs de rememberSaveable. Uma mudanca de
-fonte ou de MapProperties nao pode manter um MapState criado para outro sistema de
-coordenadas. Evitar usar como input um objeto mutavel ou recriado sem igualdade estavel.
+Cada mapa possui seu proprio MapState. Trocar a fonte ou MapProperties de um MapState
+existente nao e suportado, portanto rememberSaveable nao precisa de uma identidade do
+mapa nos inputs.
 
 Referencia sobre os inputs e a restauracao de rememberSaveable:
 https://developer.android.com/reference/kotlin/androidx/compose/runtime/saveable/rememberSaveable.composable

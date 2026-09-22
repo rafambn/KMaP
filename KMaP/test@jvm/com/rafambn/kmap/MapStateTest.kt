@@ -25,7 +25,9 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertSame
 
 class MapStateTest {
     @Test
@@ -137,7 +139,12 @@ class MapStateTest {
             density = Density(1F),
         )
         original.setPosition(TilePoint(128.0, 384.0))
-        val saver = MapState.saver(mapProperties, coroutineScope)
+        val saver = MapState.saver(
+            mapProperties = mapProperties,
+            zoomLevelPreference = mapProperties.zoomLevels,
+            density = Density(1F),
+            coroutineScope = coroutineScope,
+        )
         val saved = assertNotNull(with(saver) {
             SaverScope { true }.save(original)
         })
@@ -149,9 +156,44 @@ class MapStateTest {
     }
 
     @Test
+    fun saverRestoresWithCurrentConfigurationAndCoercesOldZoom() {
+        val mapProperties = mapProperties()
+        val coroutineScope = CoroutineScope(EmptyCoroutineContext)
+        val density = Density(2F, 1.5F)
+        val currentZoomLevelPreference = zoomRange(3, 8)
+        val original = mapState(mapProperties = mapProperties)
+        original.setZoom(20F)
+        val saver = MapState.saver(
+            mapProperties = mapProperties,
+            zoomLevelPreference = currentZoomLevelPreference,
+            density = density,
+            coroutineScope = coroutineScope,
+        )
+        val saved = assertNotNull(with(saver) {
+            SaverScope { true }.save(original)
+        })
+
+        assertFalse("zoomLevelPreference" in (saved as List<*>))
+
+        val restored = assertNotNull(saver.restore(saved))
+
+        assertSame(mapProperties, restored.mapProperties)
+        assertSame(coroutineScope, restored.canvasKernel.coroutineScope)
+        assertSame(currentZoomLevelPreference, restored.zoomLevelPreference)
+        assertEquals(2F, restored.density)
+        assertEquals(1.5F, restored.fontScale)
+        assertEquals(8F, restored.cameraState.zoom)
+    }
+
+    @Test
     fun saverMigratesDensityScaledTilePoint() {
         val mapProperties = mapProperties()
-        val saver = MapState.saver(mapProperties, CoroutineScope(EmptyCoroutineContext))
+        val saver = MapState.saver(
+            mapProperties = mapProperties,
+            zoomLevelPreference = mapProperties.zoomLevels,
+            density = Density(1F),
+            coroutineScope = CoroutineScope(EmptyCoroutineContext),
+        )
         val legacyState = listOf(
             "zoomLevelPreference", Pair(0, 31),
             "density", 2F,
