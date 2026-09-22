@@ -3,8 +3,10 @@ package com.rafambn.kmap
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.layout.LazyLayout
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.platform.LocalDensity
 import com.rafambn.kmap.components.KMaPContent
 import com.rafambn.kmap.components.internal.rememberComponentMeasurePolicy
 import com.rafambn.kmap.components.internal.rememberComponentProviderLambda
@@ -16,6 +18,11 @@ fun KMaP(
     modifier: Modifier = Modifier,
     content: KMaPContent.() -> Unit,
 ) {
+    val density = LocalDensity.current
+    SideEffect {
+        mapState.updateDensity(density)
+    }
+
     val componentProvider = rememberComponentProviderLambda(content, mapState)
 
     val measurePolicy = rememberComponentMeasurePolicy(

@@ -1,0 +1,140 @@
+MapState: melhorias restantes
+
+Contexto
+
+O setter de cameraState ja foi fechado e a propriedade zoomLevel sem uso ja foi removida.
+A branch fix/map-state-density tambem tornou tilePoint a fonte da posicao, independente
+de Density, passou a derivar coordinates para o usuario e fez a densidade acompanhar
+LocalDensity. O Saver guarda tilePoint diretamente, sem receber ou persistir Density,
+fontScale ou coordinates. InternalCameraState mantem tilePoint como estado canonico da
+biblioteca, enquanto cameraState deriva coordinates para a API publica.
+
+Os itens abaixo sao o restante da revisao, em ordem sugerida de execucao.
+
+1. Validar os invariantes de zoom
+
+O valor inicial de zoomLevelPreference nao passa pelo setter. A camera tambem comeca em
+zoom 0 mesmo quando o intervalo permitido comeca acima de zero. Trocar a preferencia
+nao ajusta o zoom atual.
+
+Validacoes necessarias:
+
+- zoomLevelPreference.min deve ser menor ou igual a max.
+- A preferencia deve estar contida em mapProperties.zoomLevels.
+- O zoom inicial deve pertencer a zoomLevelPreference.
+- Ao trocar a preferencia, limitar imediatamente o zoom atual ao novo intervalo.
+- Rejeitar zoom NaN.
+- Rejeitar angulo, coordenadas e TilePoint com valores nao finitos.
+- Validar os invariantes no construtor, sem depender apenas de setters.
+
+Quando nao houver zoom inicial explicito, usar zoomLevelPreference.min em vez de assumir
+zero.
+
+2. Finalizar o Saver
+
+O Saver ja persiste tilePoint, zoom e angleDegrees. Ele ainda salva
+zoomLevelPreference, que e configuracao fornecida pelo chamador.
+
+Usar na restauracao os valores atuais de:
+
+- MapProperties
+- zoomLevelPreference
+- Density
+- CoroutineScope
+
+Usar zoomLevelPreference atual durante a restauracao. Validar e limitar o zoom restaurado
+contra esse intervalo, pois uma versao anterior do aplicativo pode ter salvo valores que
+ja nao sao permitidos.
+
+Adicionar uma identidade estavel do mapa aos inputs de rememberSaveable. Uma mudanca de
+fonte ou de MapProperties nao pode manter um MapState criado para outro sistema de
+coordenadas. Evitar usar como input um objeto mutavel ou recriado sem igualdade estavel.
+
+Referencia sobre os inputs e a restauracao de rememberSaveable:
+https://developer.android.com/reference/kotlin/androidx/compose/runtime/saveable/rememberSaveable.composable
+
+3. Atualizar a camera de forma atomica
+
+Operacoes centralizadas de zoom e rotacao fazem duas mutacoes por frame. Primeiro mudam
+zoom ou angulo, depois corrigem a posicao para manter o ponto focal. Cada mutacao resolve
+os tiles e a primeira usa um estado intermediario que nunca deveria ser renderizado.
+
+Criar uma operacao interna que receba todas as mudancas da camera, publique um unico
+CameraState e execute resolveVisibleTiles apenas uma vez. MotionController deve usar essa
+operacao nos movimentos centralizados.
+
+Requisitos:
+
+- Uma mudanca logica da camera produz no maximo um novo CameraState.
+- Uma mudanca logica resolve tiles no maximo uma vez.
+- A atualizacao nao publica combinacoes intermediarias de zoom, angulo e posicao.
+- Uma atribuicao igual ao estado atual nao dispara trabalho.
+
+4. Evitar pedidos repetidos ou obsoletos de tiles
+
+Cada resolucao chama CanvasEngine.renderTiles, que cria uma coroutine e envia trabalho
+para um Channel.UNLIMITED. Durante gestos e animacoes isso pode acumular listas antigas
+de tiles.
+
+Mudancas sugeridas:
+
+- Comparar zoom inteiro e lista de TileSpecs com a ultima resolucao antes de enviar.
+- Nao enviar uma lista se o conjunto visivel nao mudou.
+- Preferir um mecanismo que mantenha o pedido mais recente quando houver varias mudancas
+  antes do renderer consumir a anterior.
+- Nao criar uma nova coroutine apenas para enviar a um canal ilimitado.
+- Preservar o pedido explicito feito quando um canvas novo entra no CanvasKernel.
+
+Essa mudanca deve ser feita junto com testes de pan, zoom e rotacao animados. Uma cache
+em MapState so vale a pena se reduzir trabalho medido ou impedir pedidos repetidos de
+forma observavel.
+
+5. Corrigir o limite real de zoom
+
+MapState aceita o intervalo fornecido por MapProperties, mas CanvasKernel e MathUtils
+usam 1 shl zoomLevel. Em zoom 31 o Int muda de sinal; acima disso o deslocamento tambem
+recicla bits. O calculo de tiles deixa de representar 2 elevado ao zoom.
+
+Escolher e documentar uma destas regras:
+
+- Suportar zoom alto, substituindo os deslocamentos de Int por calculos que nao estourem.
+- Definir um zoom maximo suportado e valida-lo na fronteira de MapProperties ou MapState.
+
+O teste atual de referencia usa zoom 31, entao limitar silenciosamente abaixo disso pode
+contradizer a intencao existente. A melhor opcao parece corrigir os calculos de tiles.
+
+6. Reduzir a API publica de implementacao
+
+- Tornar canvasKernel interno.
+- Tornar drawMagScale, drawReference, drawTileSize e drawRotationDegrees internos.
+- Calcular o TilePoint central uma vez durante a construcao.
+- Avaliar ZoomLevelRange como data class imutavel em vez de interface. Isso elimina as
+  implementacoes anonimas na restauracao e impede que min e max mudem sem passar pelo
+  MapState.
+
+Nao criar wrappers novos apenas para esconder propriedades. internal e uma data class
+simples sao suficientes.
+
+7. Completar os testes dedicados a MapState
+
+Criar MapStateTest com pelo menos estes casos:
+
+- O zoom inicial respeita um intervalo cujo minimo e maior que zero.
+- Intervalos invertidos ou fora de MapProperties falham na construcao.
+- Trocar zoomLevelPreference limita o zoom atual.
+- Zoom NaN e posicoes nao finitas sao rejeitados.
+- O Saver limita um zoom antigo contra a preferencia atual.
+- Uma atualizacao centralizada publica e resolve apenas uma vez.
+- Movimentos que mantem os mesmos TileSpecs nao enfileiram novo trabalho.
+- O maior zoom declarado por MapProperties calcula indices de tile sem overflow.
+
+Ordem pratica
+
+1. Invariantes de zoom e testes.
+2. Finalizar o Saver.
+3. Atualizacao atomica em MapState e MotionController.
+4. Deduplicacao e descarte de pedidos obsoletos no renderer.
+5. Limite de zoom e limpeza da visibilidade da API.
+
+Depois de cada etapa, compilar KMaP para JVM. Depois das mudancas de gestos, Density ou
+renderizacao de tiles, verificar tambem Android e iOS.

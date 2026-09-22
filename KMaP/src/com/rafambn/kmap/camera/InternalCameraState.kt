@@ -1,10 +1,10 @@
 package com.rafambn.kmap.camera
 
 import com.rafambn.kmap.geometry.angle.Degrees
-import com.rafambn.kmap.geometry.plane.Coordinates
+import com.rafambn.kmap.geometry.plane.TilePoint
 
-data class CameraState(
+internal data class InternalCameraState(
     val zoom: Float = 0F,
     val angleDegrees: Degrees = Degrees.Zero,
-    val coordinates: Coordinates,
+    val tilePoint: TilePoint,
 )

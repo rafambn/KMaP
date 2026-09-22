@@ -4,7 +4,6 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.MapState
-import com.rafambn.kmap.camera.CameraState
 import com.rafambn.kmap.geometry.angle.Degrees
 import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.TileDimension
@@ -116,7 +115,7 @@ class MapReferenceUtilsTest {
         )
 
         val reference = context(mapState) {
-            mapState.cameraState.tilePoint.toCanvasDrawReference()
+            mapState.internalCameraState.tilePoint.toCanvasDrawReference()
         }
 
         assertEquals(CanvasDrawReference(-2_147_483_648.0, -4_294_967_296.0), reference)
@@ -137,13 +136,9 @@ class MapReferenceUtilsTest {
     }
 
     @Test
-    fun coordinateConversionRejectsZeroTileSize() {
-        val mapState = mapState(tileSize = TileDimension(512.dp, 0.dp))
-
+    fun cameraStateRejectsZeroTileSizeWhenRead() {
         assertFailsWith<IllegalArgumentException> {
-            context(mapState) {
-                Coordinates.Zero.toTilePoint()
-            }
+            mapState(tileSize = TileDimension(512.dp, 0.dp)).cameraState
         }
     }
 
@@ -195,15 +190,12 @@ class MapReferenceUtilsTest {
 
         val mapState = MapState(
             mapProperties = mapProperties,
-            initialCameraState = CameraState(
-                zoom = zoom,
-                angleDegrees = angle,
-                coordinates = Coordinates.Zero,
-                tilePoint = cameraPoint,
-            ),
             coroutineScope = CoroutineScope(EmptyCoroutineContext),
             density = density,
         )
+        mapState.setPosition(cameraPoint)
+        mapState.setZoom(zoom)
+        mapState.setAngle(angle)
         mapState.setViewportSize(IntSize(viewportSize.x.toInt(), viewportSize.y.toInt()))
         return mapState
     }

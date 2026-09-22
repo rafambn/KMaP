@@ -1,7 +1,6 @@
 package com.rafambn.kmap.source.internal
 
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.unit.Density
 import com.rafambn.kmap.MapState
 import com.rafambn.kmap.components.ViewPort
 import com.rafambn.kmap.components.parameters.CanvasParameters
@@ -25,14 +24,12 @@ class CanvasKernel(
     fun getActiveTiles(id: Int): ActiveTiles = canvas.getValue(id).activeTiles.value
 
     fun resolveVisibleTiles(viewPort: ViewPort, zoomLevel: Int, mapProperties: MapProperties) {
-        val visibleTiles = with(mapState) {
-            getVisibleTilesForLevel(
-                viewPort,
-                zoomLevel,
-                mapProperties.outsideTiles,
-                mapProperties.tileSize
-            )
-        }
+        val visibleTiles = getVisibleTilesForLevel(
+            viewPort,
+            zoomLevel,
+            mapProperties.outsideTiles,
+            mapProperties.tileSize
+        )
         canvas.forEach{ (_, canvasEngine) -> canvasEngine.renderTiles(visibleTiles, zoomLevel) }
     }
 
@@ -67,7 +64,7 @@ class CanvasKernel(
         if (canvasAdded) mapState.resolveVisibleTiles()
     }
 
-    private fun Density.getVisibleTilesForLevel(
+    private fun getVisibleTilesForLevel(
         viewPort: ViewPort,
         zoomLevel: Int,
         outsideTilesType: OutsideTilesType,
@@ -128,8 +125,8 @@ class CanvasKernel(
         return visibleTileSpecs
     }
 
-    private fun Density.getXYTile(position: Offset, zoomLevel: Int, tileDimension: TileDimension): Pair<Int, Int> = Pair(
-        (position.x / tileDimension.width.toPx() * (1 shl zoomLevel)).toIntFloor(),
-        (position.y / tileDimension.height.toPx() * (1 shl zoomLevel)).toIntFloor()
+    private fun getXYTile(position: Offset, zoomLevel: Int, tileDimension: TileDimension): Pair<Int, Int> = Pair(
+        (position.x / tileDimension.width.value * (1 shl zoomLevel)).toIntFloor(),
+        (position.y / tileDimension.height.value * (1 shl zoomLevel)).toIntFloor()
     )
 }
