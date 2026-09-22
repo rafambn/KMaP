@@ -52,16 +52,22 @@ fun ViewmodelScreen(
 }
 
 class MyViewmodel(savedStateHandle: SavedStateHandle, density: Density) : ViewModel() {
+    private val mapProperties = SimpleMapProperties()
+
     @OptIn(SavedStateHandleSaveableApi::class)
     val mapState = savedStateHandle.saveable(
         key = "mapState",
-        saver = MapState.saver(SimpleMapProperties(), viewModelScope),
+        saver = MapState.saver(
+            mapProperties = mapProperties,
+            zoomLevelPreference = mapProperties.zoomLevels,
+            density = density,
+            coroutineScope = viewModelScope,
+        ),
         init = {
             MapState(
-                mapProperties = SimpleMapProperties(),
-                zoomLevelPreference = null,
+                mapProperties = mapProperties,
                 coroutineScope = viewModelScope,
-                density = density
+                density = density,
             )
         }
     )
