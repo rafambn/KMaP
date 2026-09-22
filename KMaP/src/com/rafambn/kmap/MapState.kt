@@ -60,11 +60,14 @@ class MapState(
     internal var viewportSize = IntSize.Zero
         private set
 
-    var zoomLevelPreference = zoomLevelPreference ?: mapProperties.zoomLevels
+    var zoomLevelPreference = validateZoomLevelPreference(zoomLevelPreference ?: mapProperties.zoomLevels)
         set(value) {
-            if (value.max > mapProperties.zoomLevels.max || value.min < mapProperties.zoomLevels.min)
-                throw IllegalArgumentException("Zoom level is out of bounds")
-            field = value
+            field = validateZoomLevelPreference(value)
+
+            val coercedZoom = internalCameraState.zoom.coerceZoom()
+            if (coercedZoom != internalCameraState.zoom) {
+                internalCameraState = internalCameraState.copy(zoom = coercedZoom)
+            }
         }
 
     internal var internalCameraState by mutableStateOf(
@@ -78,10 +81,15 @@ class MapState(
             tilePoint = TilePoint(
                 mapProperties.tileSize.width.value / 2.0,
                 mapProperties.tileSize.height.value / 2.0,
-            )
+            ),
+            zoom = this.zoomLevelPreference.min.toFloat(),
         )
     )
         private set
+
+    init {
+        validateZoom(internalCameraState.zoom)
+    }
 
     val cameraState: CameraState by derivedStateOf {
         CameraState(
@@ -96,6 +104,7 @@ class MapState(
         property: KProperty<*>,
         value: InternalCameraState,
     ) {
+        validateZoom(value.zoom)
         this.value = value
         resolveVisibleTiles()
     }
@@ -140,6 +149,22 @@ class MapState(
 
     private fun Float.coerceZoom(): Float =
         this.coerceIn(zoomLevelPreference.min.toFloat(), zoomLevelPreference.max.toFloat())
+
+    private fun validateZoomLevelPreference(value: ZoomLevelRange): ZoomLevelRange {
+        require(value.min <= value.max) { "Minimum zoom level must not exceed maximum zoom level" }
+        require(
+            value.min >= mapProperties.zoomLevels.min &&
+                value.max <= mapProperties.zoomLevels.max
+        ) { "Zoom level preference must be within the map zoom levels" }
+        return value
+    }
+
+    private fun validateZoom(zoom: Float) {
+        require(
+            zoom >= zoomLevelPreference.min &&
+                zoom <= zoomLevelPreference.max
+        ) { "Zoom must be within the zoom level preference" }
+    }
 
     fun centerPointAtOffset(tilePoint: TilePoint, offset: ScreenOffset) {
         setPosition(internalCameraState.tilePoint + tilePoint - offset.toTilePoint())

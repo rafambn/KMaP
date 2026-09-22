@@ -1,6 +1,10 @@
 package com.rafambn.kmap.geometry.plane
 
 data class TilePoint(override val x: Double, override val y: Double) : Reference {
+    init {
+        require(x.isFinite() && y.isFinite()) { "Tile point values must be finite" }
+    }
+
     operator fun plus(other: TilePoint) = TilePoint(x + other.x, y + other.y)
     operator fun minus(other: TilePoint) = TilePoint(x - other.x, y - other.y)
     operator fun unaryMinus() = TilePoint(-x, -y)

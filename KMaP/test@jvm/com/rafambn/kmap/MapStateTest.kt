@@ -5,6 +5,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.camera.CameraState
+import com.rafambn.kmap.geometry.angle.Degrees
 import com.rafambn.kmap.geometry.plane.Coordinates
 import com.rafambn.kmap.geometry.plane.ProjectedCoordinates
 import com.rafambn.kmap.geometry.plane.ScreenOffset
@@ -23,9 +24,66 @@ import kotlinx.coroutines.CoroutineScope
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 
 class MapStateTest {
+    @Test
+    fun initialZoomUsesPreferenceMinimum() {
+        val mapState = mapState(
+            zoomLevelPreference = zoomRange(3, 8),
+        )
+
+        assertEquals(3F, mapState.cameraState.zoom)
+    }
+
+    @Test
+    fun constructorRejectsInvertedZoomPreference() {
+        assertFailsWith<IllegalArgumentException> {
+            mapState(zoomLevelPreference = zoomRange(8, 3))
+        }
+    }
+
+    @Test
+    fun constructorRejectsZoomPreferenceOutsideMapRange() {
+        assertFailsWith<IllegalArgumentException> {
+            mapState(zoomLevelPreference = zoomRange(-1, 8))
+        }
+        assertFailsWith<IllegalArgumentException> {
+            mapState(zoomLevelPreference = zoomRange(3, 32))
+        }
+    }
+
+    @Test
+    fun constructorRejectsInitialZoomOutsidePreference() {
+        assertFailsWith<IllegalArgumentException> {
+            mapState(
+                zoomLevelPreference = zoomRange(3, 8),
+                initialCameraState = cameraState(zoom = 2F),
+            )
+        }
+    }
+
+    @Test
+    fun changingZoomPreferenceCoercesCurrentZoom() {
+        val zoomAboveMaximum = mapState(initialCameraState = cameraState(zoom = 8F))
+        val zoomBelowMinimum = mapState(initialCameraState = cameraState(zoom = 2F))
+
+        zoomAboveMaximum.zoomLevelPreference = zoomRange(2, 5)
+        zoomBelowMinimum.zoomLevelPreference = zoomRange(3, 9)
+
+        assertEquals(5F, zoomAboveMaximum.cameraState.zoom)
+        assertEquals(3F, zoomBelowMinimum.cameraState.zoom)
+    }
+
+    @Test
+    fun zoomRejectsNaN() {
+        val mapState = mapState()
+        assertFailsWith<IllegalArgumentException> {
+            mapState.setZoom(Float.NaN)
+        }
+    }
+
     @Test
     fun densityChangePreservesCoordinatesAndTilePoint() {
         val mapState = mapState(density = Density(1F))
@@ -93,20 +151,36 @@ class MapStateTest {
     private fun mapState(
         mapProperties: MapProperties = mapProperties(),
         coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext),
-        density: Density,
+        density: Density = Density(1F),
+        zoomLevelPreference: ZoomLevelRange? = null,
+        initialCameraState: CameraState? = null,
     ) = MapState(
         mapProperties = mapProperties,
         coroutineScope = coroutineScope,
         density = density,
+        zoomLevelPreference = zoomLevelPreference,
+        initialCameraState = initialCameraState,
     )
+
+    private fun cameraState(
+        zoom: Float = 0F,
+        angle: Degrees = Degrees.Zero,
+        coordinates: Coordinates = Coordinates.Zero,
+    ) = CameraState(
+        zoom = zoom,
+        angleDegrees = angle,
+        coordinates = coordinates,
+    )
+
+    private fun zoomRange(min: Int, max: Int) = object : ZoomLevelRange {
+        override val min = min
+        override val max = max
+    }
 
     private fun mapProperties() = object : MapProperties {
         override val boundMap = BoundMapBorder(MapBorderType.BOUND, MapBorderType.BOUND)
         override val outsideTiles = OutsideTilesType.NONE
-        override val zoomLevels = object : ZoomLevelRange {
-            override val min = 0
-            override val max = 31
-        }
+        override val zoomLevels = zoomRange(0, 31)
         override val coordinatesRange = object : CoordinatesRange {
             override val latitude = Latitude(north = 90.0, south = -90.0)
             override val longitude = Longitude(west = -180.0, east = 180.0)

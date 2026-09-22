@@ -7,4 +7,8 @@ internal data class InternalCameraState(
     val zoom: Float = 0F,
     val angleDegrees: Degrees = Degrees.Zero,
     val tilePoint: TilePoint,
-)
+) {
+    init {
+        require(zoom.isFinite()) { "Zoom must be finite" }
+    }
+}

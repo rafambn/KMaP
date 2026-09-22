@@ -1,6 +1,10 @@
 package com.rafambn.kmap.geometry.plane
 
 data class Coordinates(override val x: Double, override val y: Double) : Reference {
+    init {
+        require(x.isFinite() && y.isFinite()) { "Coordinate values must be finite" }
+    }
+
     operator fun plus(other: Coordinates) = Coordinates(x + other.x, y + other.y)
     operator fun minus(other: Coordinates) = Coordinates(x - other.x, y - other.y)
     operator fun unaryMinus() = Coordinates(-x, -y)
