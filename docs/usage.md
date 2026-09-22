@@ -55,15 +55,32 @@ interface MapProperties {
     fun toCoordinates(projectedCoordinates: ProjectedCoordinates): Coordinates
 }
 ```
-It also exposes the camera state (angle, zoom, and position) so you can display map info in your UI.
+`MapState.cameraState` exposes zoom, angle, and a `TilePoint` position.
+Read `MapState.coordinates` for the geographic position, which is converted on demand.
 MapState calculates the visible tiles so each canvas can render its images.
 ```kotlin
 data class CameraState(
     val zoom: Float = 0F,
     val angleDegrees: Degrees = Degrees.Zero,
-    val coordinates: Coordinates,
+    val tilePoint: TilePoint,
 )
 ```
+
+Use `mapState.updateCamera()` to change zoom, angle, and position in one update.
+Omitted values keep their current camera values. For example:
+
+```kotlin
+mapState.updateCamera(
+    zoom = 3F,
+    angle = Degrees(45.0),
+    tilePoint = TilePoint(128.0, 384.0),
+)
+```
+
+The tile point is placed at the viewport center by default. Pass `centerOffset`
+as a `DifferentialScreenOffset` to place it elsewhere, measured in screen pixels
+from the viewport center, positive right and down. Zoom is clamped to the zoom
+preference, and map borders may limit the requested placement.
 
 ## MotionController
 
