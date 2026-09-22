@@ -6,8 +6,8 @@ abstract class Tile(zoom: Int, row: Int, col: Int): TileSpecs(zoom, row, col){
 
         val zoomDiff = childCandidate.zoom - this.zoom
         val scaleFactor = 1 shl zoomDiff
-        val parentRow = childCandidate.row / scaleFactor
-        val parentCol = childCandidate.col / scaleFactor
+        val parentRow = childCandidate.row.floorDiv(scaleFactor)
+        val parentCol = childCandidate.col.floorDiv(scaleFactor)
 
         return this.row == parentRow && this.col == parentCol
     }
@@ -17,8 +17,8 @@ abstract class Tile(zoom: Int, row: Int, col: Int): TileSpecs(zoom, row, col){
 
         val zoomDiff = this.zoom - parentCandidate.zoom
         val scaleFactor = 1 shl zoomDiff
-        val parentRow = this.row / scaleFactor
-        val parentCol = this.col / scaleFactor
+        val parentRow = this.row.floorDiv(scaleFactor)
+        val parentCol = this.col.floorDiv(scaleFactor)
 
         return parentCandidate.row == parentRow && parentCandidate.col == parentCol
     }

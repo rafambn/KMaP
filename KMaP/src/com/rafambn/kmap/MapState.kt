@@ -3,13 +3,11 @@ package com.rafambn.kmap
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.mapSaver
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import com.rafambn.kmap.camera.CameraState
 import com.rafambn.kmap.camera.MotionController
-import com.rafambn.kmap.components.ViewPort
 import com.rafambn.kmap.geometry.angle.Degrees
 import com.rafambn.kmap.geometry.angle.rotate
 import com.rafambn.kmap.geometry.angle.toRadians
@@ -101,15 +99,18 @@ class MapState(
         val topRight = ScreenOffset(screenSize.x, 0.0).toTilePoint()
         val bottomLeft = ScreenOffset(0.0, screenSize.y).toTilePoint()
         val bottomRight = screenSize.toTilePoint()
-        val viewPort = ViewPort(
-            Rect(
-                minOf(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x).toFloat(),
-                minOf(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y).toFloat(),
-                maxOf(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x).toFloat(),
-                maxOf(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y).toFloat()
-            )
+        canvasKernel.resolveVisibleTiles(
+            TilePoint(
+                minOf(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x),
+                minOf(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y),
+            ),
+            TilePoint(
+                maxOf(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x),
+                maxOf(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y),
+            ),
+            cameraState.zoom.toIntFloor(),
+            mapProperties,
         )
-        canvasKernel.resolveVisibleTiles(viewPort, cameraState.zoom.toIntFloor(), mapProperties)
     }
 
     val drawMagScale = { cameraState.zoom - cameraState.zoom.toIntFloor() }
@@ -135,6 +136,9 @@ class MapState(
         this.coerceIn(zoomLevelPreference.min.toFloat(), zoomLevelPreference.max.toFloat())
 
     private fun validateZoomLevelPreference(value: ZoomLevelRange): ZoomLevelRange {
+        require(mapProperties.zoomLevels.min in 0..30 &&
+            mapProperties.zoomLevels.max in mapProperties.zoomLevels.min..30
+        ) { "Map zoom levels must be within 0..30" }
         require(value.min <= value.max) { "Minimum zoom level must not exceed maximum zoom level" }
         require(
             value.min >= mapProperties.zoomLevels.min &&
