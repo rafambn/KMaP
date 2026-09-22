@@ -1,21 +1,20 @@
 package com.rafambn.kmap.camera
 
-import com.rafambn.kmap.geometry.plane.Coordinates
 import com.rafambn.kmap.geometry.plane.TilePoint
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 
 class CameraStateTest {
     @Test
-    fun cameraStatesRejectNonFiniteZoom() {
+    fun cameraStateRejectsNonFiniteZoom() {
         assertFailsWith<IllegalArgumentException> {
             CameraState(
                 zoom = Float.NaN,
-                coordinates = Coordinates.Zero,
+                tilePoint = TilePoint.Zero,
             )
         }
         assertFailsWith<IllegalArgumentException> {
-            InternalCameraState(
+            CameraState(
                 zoom = Float.POSITIVE_INFINITY,
                 tilePoint = TilePoint.Zero,
             )

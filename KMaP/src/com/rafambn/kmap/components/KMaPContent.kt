@@ -71,7 +71,7 @@ class KMaPContent(
                     tileSize = mapState.drawTileSize,
                     rotationDegrees = mapState.drawRotationDegrees,
                     style = { parameters.style },
-                    zoom = { mapState.internalCameraState.zoom.toDouble() }
+                    zoom = { mapState.cameraState.zoom.toDouble() }
                 )
             }
         )

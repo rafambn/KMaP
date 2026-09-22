@@ -40,37 +40,37 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
     }
 
     override suspend fun positionTo(center: Reference, animationSpec: AnimationSpec<Float>) {
-        val startPosition = mapState.internalCameraState.tilePoint
+        val startPosition = mapState.cameraState.tilePoint
         val endPosition = getTilePoint(center)
         animatable.snapTo(0F)
         animatable.animateTo(1f, animationSpec) {
-            mapState.setPosition(lerp(startPosition, endPosition, value.toDouble()))
+            mapState.updateCamera(tilePoint = lerp(startPosition, endPosition, value.toDouble()))
         }
     }
 
     override suspend fun positionBy(center: Reference, animationSpec: AnimationSpec<Float>) {
-        val startPosition = mapState.internalCameraState.tilePoint
-        val endPosition = getTilePoint(center) + mapState.internalCameraState.tilePoint
+        val startPosition = mapState.cameraState.tilePoint
+        val endPosition = getTilePoint(center) + mapState.cameraState.tilePoint
         animatable.snapTo(0F)
         animatable.animateTo(1f, animationSpec) {
-            mapState.setPosition(lerp(startPosition, endPosition, value.toDouble()))
+            mapState.updateCamera(tilePoint = lerp(startPosition, endPosition, value.toDouble()))
         }
     }
 
     override suspend fun zoomTo(zoom: Float, animationSpec: AnimationSpec<Float>) {
-        val startZoom = mapState.internalCameraState.zoom
+        val startZoom = mapState.cameraState.zoom
         animatable.snapTo(0F)
         animatable.animateTo(1f, animationSpec) {
-            mapState.setZoom(lerp(startZoom, zoom, value))
+            mapState.updateCamera(zoom = lerp(startZoom, zoom, value))
         }
     }
 
     override suspend fun zoomBy(zoom: Float, animationSpec: AnimationSpec<Float>) {
-        val startZoom = mapState.internalCameraState.zoom
+        val startZoom = mapState.cameraState.zoom
         val endZoom = startZoom + zoom
         animatable.snapTo(0F)
         animatable.animateTo(1f, animationSpec) {
-            mapState.setZoom(lerp(startZoom, endZoom, value))
+            mapState.updateCamera(zoom = lerp(startZoom, endZoom, value))
         }
     }
 
@@ -79,13 +79,17 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
         center: Reference,
         animationSpec: AnimationSpec<Float>
     ) {
-        val startZoom = mapState.internalCameraState.zoom
-        val previousOffset = getScreenOffset(center)
+        val startZoom = mapState.cameraState.zoom
+        val previousOffset = (getScreenOffset(center) - mapState.viewportSize.asScreenOffset() / 2.0)
+            .asDifferentialScreenOffset()
         val previousPosition = getTilePoint(center)
         animatable.snapTo(0F)
         animatable.animateTo(1f, animationSpec) {
-            mapState.setZoom(lerp(startZoom, zoom, value))
-            mapState.centerPointAtOffset(previousPosition, previousOffset)
+            mapState.updateCamera(
+                zoom = lerp(startZoom, zoom, value),
+                tilePoint = previousPosition,
+                centerOffset = previousOffset,
+            )
         }
     }
 
@@ -94,31 +98,35 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
         center: Reference,
         animationSpec: AnimationSpec<Float>
     ) {
-        val startZoom = mapState.internalCameraState.zoom
-        val endZoom = mapState.internalCameraState.zoom + zoom
-        val previousOffset = getScreenOffset(center)
+        val startZoom = mapState.cameraState.zoom
+        val endZoom = mapState.cameraState.zoom + zoom
+        val previousOffset = (getScreenOffset(center) - mapState.viewportSize.asScreenOffset() / 2.0)
+            .asDifferentialScreenOffset()
         val previousPosition = getTilePoint(center)
         animatable.snapTo(0F)
         animatable.animateTo(1f, animationSpec) {
-            mapState.setZoom(lerp(startZoom, endZoom, value))
-            mapState.centerPointAtOffset(previousPosition, previousOffset)
+            mapState.updateCamera(
+                zoom = lerp(startZoom, endZoom, value),
+                tilePoint = previousPosition,
+                centerOffset = previousOffset,
+            )
         }
     }
 
     override suspend fun rotateTo(degrees: Degrees, animationSpec: AnimationSpec<Float>) {
-        val startAngle = mapState.internalCameraState.angleDegrees
+        val startAngle = mapState.cameraState.angleDegrees
         animatable.snapTo(0F)
         animatable.animateTo(1f, animationSpec) {
-            mapState.setAngle(Degrees(lerp(startAngle.value, degrees.value, value.toDouble())))
+            mapState.updateCamera(angle = Degrees(lerp(startAngle.value, degrees.value, value.toDouble())))
         }
     }
 
     override suspend fun rotateBy(degrees: Degrees, animationSpec: AnimationSpec<Float>) {
-        val startAngle = mapState.internalCameraState.angleDegrees
-        val endAngle = mapState.internalCameraState.angleDegrees + degrees
+        val startAngle = mapState.cameraState.angleDegrees
+        val endAngle = mapState.cameraState.angleDegrees + degrees
         animatable.snapTo(0f)
         animatable.animateTo(1f, animationSpec) {
-            mapState.setAngle(Degrees(lerp(startAngle.value, endAngle.value, value.toDouble())))
+            mapState.updateCamera(angle = Degrees(lerp(startAngle.value, endAngle.value, value.toDouble())))
         }
     }
 
@@ -127,13 +135,17 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
         center: Reference,
         animationSpec: AnimationSpec<Float>
     ) {
-        val startAngle = mapState.internalCameraState.angleDegrees
-        val previousOffset = getScreenOffset(center)
+        val startAngle = mapState.cameraState.angleDegrees
+        val previousOffset = (getScreenOffset(center) - mapState.viewportSize.asScreenOffset() / 2.0)
+            .asDifferentialScreenOffset()
         val previousPosition = getTilePoint(center)
         animatable.snapTo(0F)
         animatable.animateTo(1f, animationSpec) {
-            mapState.setAngle(Degrees(lerp(startAngle.value, degrees.value, value.toDouble())))
-            mapState.centerPointAtOffset(previousPosition, previousOffset)
+            mapState.updateCamera(
+                angle = Degrees(lerp(startAngle.value, degrees.value, value.toDouble())),
+                tilePoint = previousPosition,
+                centerOffset = previousOffset,
+            )
         }
     }
 
@@ -142,67 +154,87 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
         center: Reference,
         animationSpec: AnimationSpec<Float>
     ) {
-        val startAngle = mapState.internalCameraState.angleDegrees
-        val endAngle = mapState.internalCameraState.angleDegrees + degrees
-        val previousOffset = getScreenOffset(center)
+        val startAngle = mapState.cameraState.angleDegrees
+        val endAngle = mapState.cameraState.angleDegrees + degrees
+        val previousOffset = (getScreenOffset(center) - mapState.viewportSize.asScreenOffset() / 2.0)
+            .asDifferentialScreenOffset()
         val previousPosition = getTilePoint(center)
         animatable.snapTo(0F)
         animatable.animateTo(1f, animationSpec) {
-            mapState.setAngle(Degrees(lerp(startAngle.value, endAngle.value, value.toDouble())))
-            mapState.centerPointAtOffset(previousPosition, previousOffset)
+            mapState.updateCamera(
+                angle = Degrees(lerp(startAngle.value, endAngle.value, value.toDouble())),
+                tilePoint = previousPosition,
+                centerOffset = previousOffset,
+            )
         }
     }
 
     override fun positionTo(center: Reference) {
-        mapState.setPosition(getTilePoint(center))
+        mapState.updateCamera(tilePoint = getTilePoint(center))
     }
 
     override fun positionBy(center: Reference) {
-        mapState.setPosition(getTilePoint(center) + mapState.internalCameraState.tilePoint)
+        mapState.updateCamera(tilePoint = getTilePoint(center) + mapState.cameraState.tilePoint)
     }
 
     override fun zoomTo(zoom: Float) {
-        mapState.setZoom(zoom)
+        mapState.updateCamera(zoom = zoom)
     }
 
     override fun zoomBy(zoom: Float) {
-        mapState.setZoom(mapState.internalCameraState.zoom + zoom)
+        mapState.updateCamera(zoom = mapState.cameraState.zoom + zoom)
     }
 
     override fun zoomToCentered(zoom: Float, center: Reference) {
-        val previousOffset = getScreenOffset(center)
+        val previousOffset = (getScreenOffset(center) - mapState.viewportSize.asScreenOffset() / 2.0)
+            .asDifferentialScreenOffset()
         val previousPosition = getTilePoint(center)
-        mapState.setZoom(zoom)
-        mapState.centerPointAtOffset(previousPosition, previousOffset)
+        mapState.updateCamera(
+            zoom = zoom,
+            tilePoint = previousPosition,
+            centerOffset = previousOffset,
+        )
     }
 
     override fun zoomByCentered(zoom: Float, center: Reference) {
-        val previousOffset = getScreenOffset(center)
+        val previousOffset = (getScreenOffset(center) - mapState.viewportSize.asScreenOffset() / 2.0)
+            .asDifferentialScreenOffset()
         val previousPosition = getTilePoint(center)
-        mapState.setZoom(mapState.internalCameraState.zoom + zoom)
-        mapState.centerPointAtOffset(previousPosition, previousOffset)
+        mapState.updateCamera(
+            zoom = mapState.cameraState.zoom + zoom,
+            tilePoint = previousPosition,
+            centerOffset = previousOffset,
+        )
     }
 
     override fun rotateTo(degrees: Degrees) {
-        mapState.setAngle(degrees)
+        mapState.updateCamera(angle = degrees)
     }
 
     override fun rotateBy(degrees: Degrees) {
-        mapState.setAngle(degrees + mapState.internalCameraState.angleDegrees)
+        mapState.updateCamera(angle = degrees + mapState.cameraState.angleDegrees)
     }
 
     override fun rotateToCentered(degrees: Degrees, center: Reference) {
-        val previousOffset = getScreenOffset(center)
+        val previousOffset = (getScreenOffset(center) - mapState.viewportSize.asScreenOffset() / 2.0)
+            .asDifferentialScreenOffset()
         val previousPosition = getTilePoint(center)
-        mapState.setAngle(degrees)
-        mapState.centerPointAtOffset(previousPosition, previousOffset)
+        mapState.updateCamera(
+            angle = degrees,
+            tilePoint = previousPosition,
+            centerOffset = previousOffset,
+        )
     }
 
     override fun rotateByCentered(degrees: Degrees, center: Reference) {
-        val previousOffset = getScreenOffset(center)
+        val previousOffset = (getScreenOffset(center) - mapState.viewportSize.asScreenOffset() / 2.0)
+            .asDifferentialScreenOffset()
         val previousPosition = getTilePoint(center)
-        mapState.setAngle(degrees + mapState.internalCameraState.angleDegrees)
-        mapState.centerPointAtOffset(previousPosition, previousOffset)
+        mapState.updateCamera(
+            angle = degrees + mapState.cameraState.angleDegrees,
+            tilePoint = previousPosition,
+            centerOffset = previousOffset,
+        )
     }
 
     fun getTilePoint(center: Reference): TilePoint {
