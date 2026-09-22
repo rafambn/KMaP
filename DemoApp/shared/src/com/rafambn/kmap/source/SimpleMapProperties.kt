@@ -14,7 +14,7 @@ import com.rafambn.kmap.geometry.plane.ProjectedCoordinates
 data class SimpleMapProperties(
     override val boundMap: BoundMapBorder = BoundMapBorder(MapBorderType.BOUND, MapBorderType.BOUND),
     override val outsideTiles: OutsideTilesType = OutsideTilesType.NONE,
-    override val zoomLevels: ZoomLevelRange = SimpleZoomLevelRange(),
+    override val zoomLevels: ZoomLevelRange = ZoomLevelRange(min = 0, max = 2),
     override val coordinatesRange: CoordinatesRange = SimpleCoordinatesRange(),
     override val tileSize: TileDimension = TileDimension(512.dp, 512.dp)
 ) : MapProperties {

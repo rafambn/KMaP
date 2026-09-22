@@ -15,7 +15,7 @@ import kotlin.math.*
 data class OSMMapProperties(
     override val boundMap: BoundMapBorder = BoundMapBorder(MapBorderType.BOUND, MapBorderType.BOUND),
     override val outsideTiles: OutsideTilesType = OutsideTilesType.NONE,
-    override val zoomLevels: ZoomLevelRange = OSMZoomLevelRange(),
+    override val zoomLevels: ZoomLevelRange = ZoomLevelRange(min = 0, max = 19),
     override val coordinatesRange: CoordinatesRange = OSMCoordinatesRange(),
     override val tileSize: TileDimension = TileDimension(512.dp, 512.dp)
 ) : MapProperties {

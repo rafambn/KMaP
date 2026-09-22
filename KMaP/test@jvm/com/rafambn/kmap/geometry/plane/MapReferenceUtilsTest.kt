@@ -171,10 +171,7 @@ class MapReferenceUtilsTest {
         val mapProperties = object : MapProperties {
             override val boundMap = boundMap
             override val outsideTiles = outsideTiles
-            override val zoomLevels = object : ZoomLevelRange {
-                override val min = 0
-                override val max = 30
-            }
+            override val zoomLevels = ZoomLevelRange(min = 0, max = 30)
             override val coordinatesRange = object : CoordinatesRange {
                 override val latitude = Latitude(north = 90.0, south = -90.0)
                 override val longitude = Longitude(west = -180.0, east = 180.0)

@@ -16,7 +16,7 @@ import com.rafambn.kmap.components.parameters.VectorCanvasParameters
 import com.rafambn.kmap.KMaP
 import com.rafambn.kmap.rememberMapState
 import com.rafambn.kmap.source.OSMMapProperties
-import com.rafambn.kmap.source.SimpleZoomLevelRange
+import com.rafambn.kmap.mapProperties.ZoomLevelRange
 import com.rafambn.kmap.source.VectorTileSource
 import com.rafambn.kmap.getGestureDetector
 import com.rafambn.kmap.mapProperties.TileDimension
@@ -40,7 +40,7 @@ fun VectorTileScreen(
         mapProperties = OSMMapProperties(
             boundMap = BoundMapBorder(horizontal = MapBorderType.BOUND, vertical = MapBorderType.BOUND),
             outsideTiles = OutsideTilesType.NONE,
-            zoomLevels = SimpleZoomLevelRange(max = 14),
+            zoomLevels = ZoomLevelRange(min = 0, max = 14),
             tileSize = TileDimension(512.dp, 512.dp)
         )
     )

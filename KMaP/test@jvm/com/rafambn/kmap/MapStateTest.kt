@@ -93,12 +93,12 @@ class MapStateTest {
 
     @Test
     fun rejectsUnsupportedMapZoomRangeEvenWithNarrowPreference() {
-        for (range in listOf(zoomRange(-1, 30), zoomRange(0, 31), zoomRange(0, 32), zoomRange(8, 3))) {
+        for (range in listOf(ZoomLevelRange(-1, 30), ZoomLevelRange(0, 31), ZoomLevelRange(0, 32), ZoomLevelRange(8, 3))) {
             val properties = object : MapProperties by mapProperties() {
                 override val zoomLevels = range
             }
             assertFailsWith<IllegalArgumentException> {
-                mapState(mapProperties = properties, zoomLevelPreference = zoomRange(3, 3))
+                mapState(mapProperties = properties, zoomLevelPreference = ZoomLevelRange(3, 3))
             }
         }
     }
@@ -245,7 +245,7 @@ class MapStateTest {
     @Test
     fun initialZoomUsesPreferenceMinimum() {
         val mapState = mapState(
-            zoomLevelPreference = zoomRange(3, 8),
+            zoomLevelPreference = ZoomLevelRange(3, 8),
         )
 
         assertEquals(3F, mapState.cameraState.zoom)
@@ -254,17 +254,17 @@ class MapStateTest {
     @Test
     fun constructorRejectsInvertedZoomPreference() {
         assertFailsWith<IllegalArgumentException> {
-            mapState(zoomLevelPreference = zoomRange(8, 3))
+            mapState(zoomLevelPreference = ZoomLevelRange(8, 3))
         }
     }
 
     @Test
     fun constructorRejectsZoomPreferenceOutsideMapRange() {
         assertFailsWith<IllegalArgumentException> {
-            mapState(zoomLevelPreference = zoomRange(-1, 8))
+            mapState(zoomLevelPreference = ZoomLevelRange(-1, 8))
         }
         assertFailsWith<IllegalArgumentException> {
-            mapState(zoomLevelPreference = zoomRange(3, 32))
+            mapState(zoomLevelPreference = ZoomLevelRange(3, 32))
         }
     }
 
@@ -272,7 +272,7 @@ class MapStateTest {
     fun constructorRejectsInitialZoomOutsidePreference() {
         assertFailsWith<IllegalArgumentException> {
             mapState(
-                zoomLevelPreference = zoomRange(3, 8),
+                zoomLevelPreference = ZoomLevelRange(3, 8),
                 initialCameraState = cameraState(zoom = 2F),
             )
         }
@@ -283,8 +283,8 @@ class MapStateTest {
         val zoomAboveMaximum = mapState(initialCameraState = cameraState(zoom = 8F))
         val zoomBelowMinimum = mapState(initialCameraState = cameraState(zoom = 2F))
 
-        zoomAboveMaximum.zoomLevelPreference = zoomRange(2, 5)
-        zoomBelowMinimum.zoomLevelPreference = zoomRange(3, 9)
+        zoomAboveMaximum.zoomLevelPreference = ZoomLevelRange(2, 5)
+        zoomBelowMinimum.zoomLevelPreference = ZoomLevelRange(3, 9)
 
         assertEquals(5F, zoomAboveMaximum.cameraState.zoom)
         assertEquals(3F, zoomBelowMinimum.cameraState.zoom)
@@ -393,7 +393,7 @@ class MapStateTest {
 
     @Test
     fun focalPlacementUsesClampedZoomAndRespectsMapBorders() {
-        val mapState = mapState(zoomLevelPreference = zoomRange(0, 2))
+        val mapState = mapState(zoomLevelPreference = ZoomLevelRange(0, 2))
         mapState.setViewportSize(IntSize(800, 600))
         val point = TilePoint(270.0, 280.0)
 
@@ -505,7 +505,7 @@ class MapStateTest {
         val mapProperties = mapProperties()
         val coroutineScope = CoroutineScope(EmptyCoroutineContext)
         val density = Density(2F, 1.5F)
-        val currentZoomLevelPreference = zoomRange(3, 8)
+        val currentZoomLevelPreference = ZoomLevelRange(3, 8)
         val original = mapState(mapProperties = mapProperties)
         original.updateCamera(zoom = 20F)
         val saver = MapState.saver(
@@ -578,15 +578,10 @@ class MapStateTest {
         tilePoint = tilePoint,
     )
 
-    private fun zoomRange(min: Int, max: Int) = object : ZoomLevelRange {
-        override val min = min
-        override val max = max
-    }
-
     private fun mapProperties() = object : MapProperties {
         override val boundMap = BoundMapBorder(MapBorderType.BOUND, MapBorderType.BOUND)
         override val outsideTiles = OutsideTilesType.NONE
-        override val zoomLevels = zoomRange(0, 30)
+        override val zoomLevels = ZoomLevelRange(0, 30)
         override val coordinatesRange = object : CoordinatesRange {
             override val latitude = Latitude(north = 90.0, south = -90.0)
             override val longitude = Longitude(west = -180.0, east = 180.0)
