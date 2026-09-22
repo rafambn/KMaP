@@ -8,10 +8,11 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import com.rafambn.kmap.camera.CameraState
-import com.rafambn.kmap.camera.InternalCameraState
 import com.rafambn.kmap.camera.MotionController
 import com.rafambn.kmap.components.ViewPort
 import com.rafambn.kmap.geometry.angle.Degrees
+import com.rafambn.kmap.geometry.angle.rotate
+import com.rafambn.kmap.geometry.angle.toRadians
 import com.rafambn.kmap.geometry.plane.*
 import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.ZoomLevelRange
@@ -20,7 +21,7 @@ import com.rafambn.kmap.source.internal.CanvasKernel
 import com.rafambn.kmap.utils.loopInRange
 import com.rafambn.kmap.utils.toIntFloor
 import kotlinx.coroutines.CoroutineScope
-import kotlin.reflect.KProperty
+import kotlin.math.pow
 
 @Composable
 fun rememberMapState(
@@ -71,21 +72,11 @@ class MapState(
     var zoomLevelPreference = validateZoomLevelPreference(zoomLevelPreference ?: mapProperties.zoomLevels)
         set(value) {
             field = validateZoomLevelPreference(value)
-
-            val coercedZoom = internalCameraState.zoom.coerceZoom()
-            if (coercedZoom != internalCameraState.zoom) {
-                internalCameraState = internalCameraState.copy(zoom = coercedZoom)
-            }
+            updateCamera(zoom = cameraState.zoom)
         }
 
-    internal var internalCameraState by mutableStateOf(
-        initialCameraState?.let {
-            InternalCameraState(
-                tilePoint = it.coordinates.toTilePoint(),
-                zoom = it.zoom,
-                angleDegrees = it.angleDegrees,
-            )
-        } ?: InternalCameraState(
+    var cameraState by mutableStateOf(
+        initialCameraState ?: CameraState(
             tilePoint = TilePoint(
                 mapProperties.tileSize.width.value / 2.0,
                 mapProperties.tileSize.height.value / 2.0,
@@ -96,26 +87,11 @@ class MapState(
         private set
 
     init {
-        validateZoom(internalCameraState.zoom)
+        validateZoom(cameraState.zoom)
     }
 
-    val cameraState: CameraState by derivedStateOf {
-        CameraState(
-            zoom = internalCameraState.zoom,
-            angleDegrees = internalCameraState.angleDegrees,
-            coordinates = internalCameraState.tilePoint.toCoordinates(),
-        )
-    }
-
-    private operator fun MutableState<InternalCameraState>.setValue(
-        thisObj: Any?,
-        property: KProperty<*>,
-        value: InternalCameraState,
-    ) {
-        validateZoom(value.zoom)
-        this.value = value
-        resolveVisibleTiles()
-    }
+    val coordinates: Coordinates
+        get() = cameraState.tilePoint.toCoordinates()
 
     internal fun resolveVisibleTiles() {
         if (viewportSize.width == 0 || viewportSize.height == 0) return
@@ -133,13 +109,13 @@ class MapState(
                 maxOf(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y).toFloat()
             )
         )
-        canvasKernel.resolveVisibleTiles(viewPort, internalCameraState.zoom.toIntFloor(), mapProperties)
+        canvasKernel.resolveVisibleTiles(viewPort, cameraState.zoom.toIntFloor(), mapProperties)
     }
 
-    val drawMagScale = { internalCameraState.zoom - internalCameraState.zoom.toIntFloor() }
-    val drawReference = { internalCameraState.tilePoint.toCanvasDrawReference() }
+    val drawMagScale = { cameraState.zoom - cameraState.zoom.toIntFloor() }
+    val drawReference = { cameraState.tilePoint.toCanvasDrawReference() }
     val drawTileSize = { mapProperties.tileSize }
-    val drawRotationDegrees = { internalCameraState.angleDegrees.toFloat() }
+    val drawRotationDegrees = { cameraState.angleDegrees.toFloat() }
 
     val canvasKernel = CanvasKernel(coroutineScope, this)
 
@@ -174,10 +150,6 @@ class MapState(
         ) { "Zoom must be within the zoom level preference" }
     }
 
-    fun centerPointAtOffset(tilePoint: TilePoint, offset: ScreenOffset) {
-        setPosition(internalCameraState.tilePoint + tilePoint - offset.toTilePoint())
-    }
-
     internal fun setViewportSize(size: IntSize) {
         if (size == viewportSize) return
 
@@ -193,16 +165,32 @@ class MapState(
         if (densityChanged) resolveVisibleTiles()
     }
 
-    fun setZoom(zoom: Float) {
-        internalCameraState = internalCameraState.copy(zoom = zoom.coerceZoom())
-    }
+    /**
+     * Places [tilePoint] at [centerOffset] with the requested zoom and angle in one update.
+     * [centerOffset] is measured in screen pixels from the viewport center, positive right/down.
+     * Map borders may prevent the requested placement. Zoom, angle and tile point default to the
+     * current camera; the offset defaults to zero and is not stored in the camera state.
+     */
+    fun updateCamera(
+        zoom: Float = cameraState.zoom,
+        angle: Degrees = cameraState.angleDegrees,
+        tilePoint: TilePoint = cameraState.tilePoint,
+        centerOffset: DifferentialScreenOffset = DifferentialScreenOffset.Zero,
+    ) {
+        val newZoom = zoom.coerceZoom()
+        validateZoom(newZoom)
+        val inverseScale = 2.0.pow(-newZoom.toDouble()) / density
+        val tileOffset = TilePoint(centerOffset.x * inverseScale, centerOffset.y * inverseScale)
+            .rotate(-angle.toRadians())
+        val updatedCameraState = CameraState(
+            zoom = newZoom,
+            angleDegrees = angle,
+            tilePoint = (tilePoint - tileOffset).coerceInMap(),
+        )
+        if (updatedCameraState == cameraState) return
 
-    fun setAngle(angle: Degrees) {
-        internalCameraState = internalCameraState.copy(angleDegrees = angle)
-    }
-
-    fun setPosition(position: TilePoint) {
-        internalCameraState = internalCameraState.copy(tilePoint = position.coerceInMap())
+        cameraState = updatedCameraState
+        resolveVisibleTiles()
     }
 
     companion object {
@@ -214,11 +202,11 @@ class MapState(
         ) = mapSaver(
             save = { mapState ->
                 mapOf(
-                    "zoom" to mapState.internalCameraState.zoom,
-                    "angleDegrees" to mapState.internalCameraState.angleDegrees.value,
+                    "zoom" to mapState.cameraState.zoom,
+                    "angleDegrees" to mapState.cameraState.angleDegrees.value,
                     "tilePoint" to Pair(
-                        mapState.internalCameraState.tilePoint.x,
-                        mapState.internalCameraState.tilePoint.y,
+                        mapState.cameraState.tilePoint.x,
+                        mapState.cameraState.tilePoint.y,
                     ),
                 )
             },
@@ -236,12 +224,9 @@ class MapState(
                     density = density,
                     coroutineScope = coroutineScope,
                 ).apply {
-                    internalCameraState = InternalCameraState(
-                        zoom = (map["zoom"] as Float).coerceIn(
-                            zoomLevelPreference.min.toFloat(),
-                            zoomLevelPreference.max.toFloat(),
-                        ),
-                        angleDegrees = Degrees(map["angleDegrees"] as Double),
+                    updateCamera(
+                        zoom = map["zoom"] as Float,
+                        angle = Degrees(map["angleDegrees"] as Double),
                         tilePoint = tilePoint,
                     )
                 }

@@ -1,11 +1,13 @@
 package com.rafambn.kmap
 
 import androidx.compose.runtime.saveable.SaverScope
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.camera.CameraState
 import com.rafambn.kmap.geometry.angle.Degrees
+import com.rafambn.kmap.geometry.plane.DifferentialScreenOffset
 import com.rafambn.kmap.geometry.plane.Coordinates
 import com.rafambn.kmap.geometry.plane.ProjectedCoordinates
 import com.rafambn.kmap.geometry.plane.ScreenOffset
@@ -82,21 +84,154 @@ class MapStateTest {
     fun zoomRejectsNaN() {
         val mapState = mapState()
         assertFailsWith<IllegalArgumentException> {
-            mapState.setZoom(Float.NaN)
+            mapState.updateCamera(zoom = Float.NaN)
         }
+    }
+
+    @Test
+    fun centeredZoomPublishesOneCameraState() {
+        val mapState = mapState()
+        mapState.setViewportSize(IntSize(800, 600))
+        val centerPoint = TilePoint(270.0, 270.0)
+        val initialOffset = context(mapState) { centerPoint.toScreenOffset() }
+        var stateWrites = 0
+
+        Snapshot.observe(
+            readObserver = null,
+            writeObserver = { stateWrites++ },
+        ) {
+            mapState.motionController.zoomToCentered(2F, centerPoint)
+        }
+
+        val finalOffset = context(mapState) { centerPoint.toScreenOffset() }
+        assertEquals(1, stateWrites)
+        assertEquals(initialOffset.x, finalOffset.x, absoluteTolerance = 0.000001)
+        assertEquals(initialOffset.y, finalOffset.y, absoluteTolerance = 0.000001)
+    }
+
+    @Test
+    fun centeredRotationPublishesOneCameraState() {
+        val mapState = mapState()
+        mapState.setViewportSize(IntSize(800, 600))
+        val centerPoint = TilePoint(270.0, 270.0)
+        val initialOffset = context(mapState) { centerPoint.toScreenOffset() }
+        var stateWrites = 0
+
+        Snapshot.observe(
+            readObserver = null,
+            writeObserver = { stateWrites++ },
+        ) {
+            mapState.motionController.rotateToCentered(Degrees(90.0), centerPoint)
+        }
+
+        val finalOffset = context(mapState) { centerPoint.toScreenOffset() }
+        assertEquals(1, stateWrites)
+        assertEquals(initialOffset.x, finalOffset.x, absoluteTolerance = 0.000001)
+        assertEquals(initialOffset.y, finalOffset.y, absoluteTolerance = 0.000001)
+    }
+
+    @Test
+    fun equalCameraUpdateDoesNotPublishState() {
+        val mapState = mapState()
+        var stateWrites = 0
+
+        Snapshot.observe(
+            readObserver = null,
+            writeObserver = { stateWrites++ },
+        ) {
+            mapState.updateCamera()
+        }
+
+        assertEquals(0, stateWrites)
+    }
+
+    @Test
+    fun combinedCameraUpdatePlacesFocalPointWithDensityInOneWrite() {
+        val mapState = mapState(density = Density(2F))
+        mapState.setViewportSize(IntSize(800, 600))
+        val focalPoint = TilePoint(270.0, 280.0)
+        var stateWrites = 0
+
+        Snapshot.observe(readObserver = null, writeObserver = { stateWrites++ }) {
+            mapState.updateCamera(
+                zoom = 2F,
+                angle = Degrees(37.0),
+                tilePoint = focalPoint,
+                centerOffset = DifferentialScreenOffset(80.0, -40.0),
+            )
+        }
+
+        val offset = context(mapState) { focalPoint.toScreenOffset() }
+        assertEquals(1, stateWrites)
+        assertEquals(2F, mapState.cameraState.zoom)
+        assertEquals(Degrees(37.0), mapState.cameraState.angleDegrees)
+        assertEquals(480.0, offset.x, absoluteTolerance = 0.000001)
+        assertEquals(260.0, offset.y, absoluteTolerance = 0.000001)
+    }
+
+    @Test
+    fun defaultCenterOffsetPlacesTilePointAtViewportCenter() {
+        val mapState = mapState(density = Density(2F))
+        mapState.setViewportSize(IntSize(800, 600))
+        val point = TilePoint(128.0, 384.0)
+
+        mapState.updateCamera(zoom = 3F, angle = Degrees(45.0), tilePoint = point)
+
+        assertEquals(point, mapState.cameraState.tilePoint)
+        assertEquals(ScreenOffset(400.0, 300.0), context(mapState) { point.toScreenOffset() })
+    }
+
+    @Test
+    fun focalPlacementUsesClampedZoomAndRespectsMapBorders() {
+        val mapState = mapState(zoomLevelPreference = zoomRange(0, 2))
+        mapState.setViewportSize(IntSize(800, 600))
+        val point = TilePoint(270.0, 280.0)
+
+        mapState.updateCamera(
+            zoom = 10F,
+            tilePoint = point,
+            centerOffset = DifferentialScreenOffset(80.0, -40.0),
+        )
+
+        assertEquals(2F, mapState.cameraState.zoom)
+        assertEquals(ScreenOffset(480.0, 260.0), context(mapState) { point.toScreenOffset() })
+
+        mapState.updateCamera(tilePoint = TilePoint(-10.0, 600.0))
+
+        assertEquals(TilePoint(0.0, 512.0), mapState.cameraState.tilePoint)
+    }
+
+    @Test
+    fun coordinatesAreProjectedOnlyOnAccess() {
+        var projections = 0
+        val properties = mapProperties()
+        val mapState = mapState(mapProperties = object : MapProperties by properties {
+            override fun toCoordinates(projectedCoordinates: ProjectedCoordinates): Coordinates {
+                projections++
+                return properties.toCoordinates(projectedCoordinates)
+            }
+        })
+        mapState.setViewportSize(IntSize(800, 600))
+
+        mapState.updateCamera(zoom = 2F, tilePoint = TilePoint(128.0, 384.0))
+        assertEquals(TilePoint(128.0, 384.0), mapState.cameraState.tilePoint)
+        assertEquals(0, projections)
+
+        assertEquals(Coordinates(-90.0, -45.0), mapState.coordinates)
+        assertEquals(1, projections)
     }
 
     @Test
     fun densityChangePreservesCoordinatesAndTilePoint() {
         val mapState = mapState(density = Density(1F))
-        val coordinates = mapState.cameraState.coordinates
+        val coordinates = mapState.coordinates
 
         mapState.updateDensity(Density(2F, 1.5F))
 
         assertEquals(2F, mapState.density)
         assertEquals(1.5F, mapState.fontScale)
-        assertEquals(coordinates, mapState.cameraState.coordinates)
-        assertEquals(TilePoint(256.0, 256.0), mapState.internalCameraState.tilePoint)
+        assertEquals(coordinates, mapState.coordinates)
+        assertEquals(TilePoint(256.0, 256.0), mapState.cameraState.tilePoint)
     }
 
     @Test
@@ -111,22 +246,22 @@ class MapStateTest {
 
         assertEquals(ScreenOffset(410.0, 300.0), initialOffset)
         assertEquals(ScreenOffset(420.0, 300.0), scaledOffset)
-        assertEquals(TilePoint(256.0, 256.0), mapState.internalCameraState.tilePoint)
+        assertEquals(TilePoint(256.0, 256.0), mapState.cameraState.tilePoint)
     }
 
     @Test
-    fun initialCoordinatesDefineTilePoint() {
+    fun initialTilePointDefinesCoordinates() {
         val mapState = MapState(
             mapProperties = mapProperties(),
             initialCameraState = CameraState(
-                coordinates = Coordinates(-90.0, -45.0),
+                tilePoint = TilePoint(128.0, 384.0),
             ),
             coroutineScope = CoroutineScope(EmptyCoroutineContext),
             density = Density(2F),
         )
 
-        assertEquals(TilePoint(128.0, 384.0), mapState.internalCameraState.tilePoint)
-        assertEquals(Coordinates(-90.0, -45.0), mapState.cameraState.coordinates)
+        assertEquals(TilePoint(128.0, 384.0), mapState.cameraState.tilePoint)
+        assertEquals(Coordinates(-90.0, -45.0), mapState.coordinates)
     }
 
     @Test
@@ -138,7 +273,7 @@ class MapStateTest {
             coroutineScope = coroutineScope,
             density = Density(1F),
         )
-        original.setPosition(TilePoint(128.0, 384.0))
+        original.updateCamera(tilePoint = TilePoint(128.0, 384.0))
         val saver = MapState.saver(
             mapProperties = mapProperties,
             zoomLevelPreference = mapProperties.zoomLevels,
@@ -151,8 +286,8 @@ class MapStateTest {
 
         val restored = assertNotNull(saver.restore(saved))
 
-        assertEquals(original.cameraState.coordinates, restored.cameraState.coordinates)
-        assertEquals(TilePoint(128.0, 384.0), restored.internalCameraState.tilePoint)
+        assertEquals(original.coordinates, restored.coordinates)
+        assertEquals(TilePoint(128.0, 384.0), restored.cameraState.tilePoint)
     }
 
     @Test
@@ -162,7 +297,7 @@ class MapStateTest {
         val density = Density(2F, 1.5F)
         val currentZoomLevelPreference = zoomRange(3, 8)
         val original = mapState(mapProperties = mapProperties)
-        original.setZoom(20F)
+        original.updateCamera(zoom = 20F)
         val saver = MapState.saver(
             mapProperties = mapProperties,
             zoomLevelPreference = currentZoomLevelPreference,
@@ -206,7 +341,7 @@ class MapStateTest {
 
         val restored = assertNotNull(saver.restore(legacyState))
 
-        assertEquals(TilePoint(256.0, 256.0), restored.internalCameraState.tilePoint)
+        assertEquals(TilePoint(256.0, 256.0), restored.cameraState.tilePoint)
     }
 
     private fun mapState(
@@ -226,11 +361,11 @@ class MapStateTest {
     private fun cameraState(
         zoom: Float = 0F,
         angle: Degrees = Degrees.Zero,
-        coordinates: Coordinates = Coordinates.Zero,
+        tilePoint: TilePoint = TilePoint(256.0, 256.0),
     ) = CameraState(
         zoom = zoom,
         angleDegrees = angle,
-        coordinates = coordinates,
+        tilePoint = tilePoint,
     )
 
     private fun zoomRange(min: Int, max: Int) = object : ZoomLevelRange {
