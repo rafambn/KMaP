@@ -1,16 +1,17 @@
 package com.rafambn.kmap
 
-import androidx.compose.runtime.saveable.SaverScope
-import androidx.compose.runtime.MonotonicFrameClock
 import androidx.compose.animation.core.tween
+import androidx.compose.runtime.MonotonicFrameClock
+import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.camera.CameraState
+import com.rafambn.kmap.components.parameters.RasterCanvasParameters
 import com.rafambn.kmap.geometry.angle.Degrees
-import com.rafambn.kmap.geometry.plane.DifferentialScreenOffset
 import com.rafambn.kmap.geometry.plane.Coordinates
+import com.rafambn.kmap.geometry.plane.DifferentialScreenOffset
 import com.rafambn.kmap.geometry.plane.ProjectedCoordinates
 import com.rafambn.kmap.geometry.plane.ScreenOffset
 import com.rafambn.kmap.geometry.plane.TilePoint
@@ -24,28 +25,67 @@ import com.rafambn.kmap.mapProperties.border.OutsideTilesType
 import com.rafambn.kmap.mapProperties.coordinates.CoordinatesRange
 import com.rafambn.kmap.mapProperties.coordinates.Latitude
 import com.rafambn.kmap.mapProperties.coordinates.Longitude
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
 import com.rafambn.kmap.source.RasterTile
 import com.rafambn.kmap.source.TileResult
 import com.rafambn.kmap.source.TileSpecs
 import com.rafambn.kmap.source.internal.CanvasEngine
 import com.rafambn.kmap.source.internal.TileRenderer
-import com.rafambn.kmap.components.parameters.RasterCanvasParameters
+import de.infix.testBalloon.framework.core.testSuite
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 
-class MapStateTest {
-    @Test
-    fun repeatedWorldIndicesOutsideIntRangeAreRejected() {
+private fun mapState(
+    mapProperties: MapProperties = mapProperties(),
+    coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext),
+    density: Density = Density(1F),
+    zoomLevelPreference: ZoomLevelRange? = null,
+    initialCameraState: CameraState? = null,
+) = MapState(
+    mapProperties = mapProperties,
+    coroutineScope = coroutineScope,
+    density = density,
+    zoomLevelPreference = zoomLevelPreference,
+    initialCameraState = initialCameraState,
+)
+
+private fun cameraState(
+    zoom: Float = 0F,
+    angle: Degrees = Degrees.Zero,
+    tilePoint: TilePoint = TilePoint(256.0, 256.0),
+) = CameraState(
+    zoom = zoom,
+    angleDegrees = angle,
+    tilePoint = tilePoint,
+)
+
+private fun mapProperties() = object : MapProperties {
+    override val boundMap = BoundMapBorder(MapBorderType.BOUND, MapBorderType.BOUND)
+    override val outsideTiles = OutsideTilesType.NONE
+    override val zoomLevels = ZoomLevelRange(0, 30)
+    override val coordinatesRange = object : CoordinatesRange {
+        override val latitude = Latitude(north = 90.0, south = -90.0)
+        override val longitude = Longitude(west = -180.0, east = 180.0)
+    }
+    override val tileSize = TileDimension(512.dp, 512.dp)
+
+    override fun toProjectedCoordinates(coordinates: Coordinates) =
+        ProjectedCoordinates(coordinates.x, coordinates.y)
+
+    override fun toCoordinates(projectedCoordinates: ProjectedCoordinates) =
+        Coordinates(projectedCoordinates.x, projectedCoordinates.y)
+}
+
+val MapStateTest by testSuite {
+    test("repeatedWorldIndicesOutsideIntRangeAreRejected") {
         val properties = object : MapProperties by mapProperties() {
             override val outsideTiles = OutsideTilesType.LOOP
         }
@@ -62,37 +102,36 @@ class MapStateTest {
         )
     }
 
-    @Test
-    fun initialZoom31IsRejected() {
+    test("initialZoom31IsRejected") {
         assertFailsWith<IllegalArgumentException> {
             mapState(initialCameraState = cameraState(zoom = 31F))
         }
         assertFailsWith<IllegalArgumentException> { TileSpecs(31, 0, 0) }
     }
 
-    @Test
-    fun rendererWrapsZoom30CopiesBeforeCallingIntTileSource() = runBlocking {
-        val job = Job()
-        val renderer = TileRenderer<RasterTile, RasterTile>(
-            CoroutineScope(job),
-            { zoom, row, col ->
-                TileResult.Success(RasterTile(zoom, row, col, null))
-            },
-            { it },
-        )
-        try {
-            renderer.tilesToProcessChannel.send(listOf(TileSpecs(30, -1, 1073741824)))
-            val tile = withTimeout(5000) { renderer.tilesProcessedChannel.receive() }
-            assertEquals(30, tile.zoom)
-            assertEquals(1073741823, tile.row)
-            assertEquals(0, tile.col)
-        } finally {
-            job.cancel()
+    test("rendererWrapsZoom30CopiesBeforeCallingIntTileSource") {
+        runBlocking {
+            val job = Job()
+            val renderer = TileRenderer(
+                CoroutineScope(job),
+                { zoom, row, col ->
+                    TileResult.Success(RasterTile(zoom, row, col, null))
+                },
+                { it },
+            )
+            try {
+                renderer.tilesToProcessChannel.send(listOf(TileSpecs(30, -1, 1073741824)))
+                val tile = withTimeout(5000) { renderer.tilesProcessedChannel.receive() }
+                assertEquals(30, tile.zoom)
+                assertEquals(1073741823, tile.row)
+                assertEquals(0, tile.col)
+            } finally {
+                job.cancel()
+            }
         }
     }
 
-    @Test
-    fun rejectsUnsupportedMapZoomRangeEvenWithNarrowPreference() {
+    test("rejectsUnsupportedMapZoomRangeEvenWithNarrowPreference") {
         for (range in listOf(ZoomLevelRange(-1, 30), ZoomLevelRange(0, 31), ZoomLevelRange(0, 32), ZoomLevelRange(8, 3))) {
             val properties = object : MapProperties by mapProperties() {
                 override val zoomLevels = range
@@ -103,8 +142,7 @@ class MapStateTest {
         }
     }
 
-    @Test
-    fun maximumZoomRetainsViewportPrecisionAndClipsMapEdges() {
+    test("maximumZoomRetainsViewportPrecisionAndClipsMapEdges") {
         val scope = CoroutineScope(Job().apply { cancel() })
         val renderer = TileRenderer<RasterTile, RasterTile>(scope, { _, _, _ -> error("Consumer is paused") }, { it })
         val engine = object : CanvasEngine<RasterTile>(coroutineScope = scope, tileRenderer = renderer) {}
@@ -124,8 +162,7 @@ class MapStateTest {
         assertEquals(listOf(TileSpecs(30, 0, 0)), engine.currentVisibleTiles)
     }
 
-    @Test
-    fun maximumZoomKeepsRepeatedWorldIndicesWithinIntRange() {
+    test("maximumZoomKeepsRepeatedWorldIndicesWithinIntRange") {
         val scope = CoroutineScope(Job().apply { cancel() })
         val renderer = TileRenderer<RasterTile, RasterTile>(scope, { _, _, _ -> error("Consumer is paused") }, { it })
         val engine = object : CanvasEngine<RasterTile>(coroutineScope = scope, tileRenderer = renderer) {}
@@ -149,8 +186,7 @@ class MapStateTest {
         )
     }
 
-    @Test
-    fun animatedPanZoomAndRotationDoNotRepeatUnchangedTileRequests() {
+    test("animatedPanZoomAndRotationDoNotRepeatUnchangedTileRequests") {
         val scope = CoroutineScope(Job().apply { cancel() })
         val renderer = TileRenderer<RasterTile, RasterTile>(scope, { _, _, _ -> error("Consumer is paused") }, { it })
         val engine = object : CanvasEngine<RasterTile>(coroutineScope = scope, tileRenderer = renderer) {}
@@ -181,8 +217,7 @@ class MapStateTest {
         assertTrue(renderer.tilesToProcessChannel.tryReceive().isFailure)
     }
 
-    @Test
-    fun animatedPanKeepsOnlyLatestPendingTileRequest() {
+    test("animatedPanKeepsOnlyLatestPendingTileRequest") {
         val scope = CoroutineScope(Job().apply { cancel() })
         val renderer = TileRenderer<RasterTile, RasterTile>(scope, { _, _, _ -> error("Consumer is paused") }, { it })
         val engine = object : CanvasEngine<RasterTile>(coroutineScope = scope, tileRenderer = renderer) {}
@@ -210,8 +245,7 @@ class MapStateTest {
         assertTrue(renderer.tilesToProcessChannel.tryReceive().isFailure)
     }
 
-    @Test
-    fun emptyRequestReplacesObsoleteWorkAndZoomChangesArePublished() {
+    test("emptyRequestReplacesObsoleteWorkAndZoomChangesArePublished") {
         val scope = CoroutineScope(Job().apply { cancel() })
         val renderer = TileRenderer<RasterTile, RasterTile>(scope, { _, _, _ -> error("Consumer is paused") }, { it })
         val engine = object : CanvasEngine<RasterTile>(coroutineScope = scope, tileRenderer = renderer) {}
@@ -226,8 +260,7 @@ class MapStateTest {
         assertTrue(renderer.tilesToProcessChannel.tryReceive().isFailure)
     }
 
-    @Test
-    fun newCanvasReceivesCurrentTilesEvenWhenViewportHasNotChanged() {
+    test("newCanvasReceivesCurrentTilesEvenWhenViewportHasNotChanged") {
         val scope = CoroutineScope(Job().apply { cancel() })
         val mapState = mapState(coroutineScope = scope)
         mapState.setViewportSize(IntSize(64, 64))
@@ -242,8 +275,7 @@ class MapStateTest {
         assertEquals(initialTiles, mapState.canvasKernel.canvas.getValue(2).currentVisibleTiles)
     }
 
-    @Test
-    fun initialZoomUsesPreferenceMinimum() {
+    test("initialZoomUsesPreferenceMinimum") {
         val mapState = mapState(
             zoomLevelPreference = ZoomLevelRange(3, 8),
         )
@@ -251,15 +283,13 @@ class MapStateTest {
         assertEquals(3F, mapState.cameraState.zoom)
     }
 
-    @Test
-    fun constructorRejectsInvertedZoomPreference() {
+    test("constructorRejectsInvertedZoomPreference") {
         assertFailsWith<IllegalArgumentException> {
             mapState(zoomLevelPreference = ZoomLevelRange(8, 3))
         }
     }
 
-    @Test
-    fun constructorRejectsZoomPreferenceOutsideMapRange() {
+    test("constructorRejectsZoomPreferenceOutsideMapRange") {
         assertFailsWith<IllegalArgumentException> {
             mapState(zoomLevelPreference = ZoomLevelRange(-1, 8))
         }
@@ -268,8 +298,7 @@ class MapStateTest {
         }
     }
 
-    @Test
-    fun constructorRejectsInitialZoomOutsidePreference() {
+    test("constructorRejectsInitialZoomOutsidePreference") {
         assertFailsWith<IllegalArgumentException> {
             mapState(
                 zoomLevelPreference = ZoomLevelRange(3, 8),
@@ -278,8 +307,7 @@ class MapStateTest {
         }
     }
 
-    @Test
-    fun changingZoomPreferenceCoercesCurrentZoom() {
+    test("changingZoomPreferenceCoercesCurrentZoom") {
         val zoomAboveMaximum = mapState(initialCameraState = cameraState(zoom = 8F))
         val zoomBelowMinimum = mapState(initialCameraState = cameraState(zoom = 2F))
 
@@ -290,16 +318,14 @@ class MapStateTest {
         assertEquals(3F, zoomBelowMinimum.cameraState.zoom)
     }
 
-    @Test
-    fun zoomRejectsNaN() {
+    test("zoomRejectsNaN") {
         val mapState = mapState()
         assertFailsWith<IllegalArgumentException> {
             mapState.updateCamera(zoom = Float.NaN)
         }
     }
 
-    @Test
-    fun centeredZoomPublishesOneCameraState() {
+    test("centeredZoomPublishesOneCameraState") {
         val mapState = mapState()
         mapState.setViewportSize(IntSize(800, 600))
         val centerPoint = TilePoint(270.0, 270.0)
@@ -319,8 +345,7 @@ class MapStateTest {
         assertEquals(initialOffset.y, finalOffset.y, absoluteTolerance = 0.000001)
     }
 
-    @Test
-    fun centeredRotationPublishesOneCameraState() {
+    test("centeredRotationPublishesOneCameraState") {
         val mapState = mapState()
         mapState.setViewportSize(IntSize(800, 600))
         val centerPoint = TilePoint(270.0, 270.0)
@@ -340,8 +365,7 @@ class MapStateTest {
         assertEquals(initialOffset.y, finalOffset.y, absoluteTolerance = 0.000001)
     }
 
-    @Test
-    fun equalCameraUpdateDoesNotPublishState() {
+    test("equalCameraUpdateDoesNotPublishState") {
         val mapState = mapState()
         var stateWrites = 0
 
@@ -355,8 +379,7 @@ class MapStateTest {
         assertEquals(0, stateWrites)
     }
 
-    @Test
-    fun combinedCameraUpdatePlacesFocalPointWithDensityInOneWrite() {
+    test("combinedCameraUpdatePlacesFocalPointWithDensityInOneWrite") {
         val mapState = mapState(density = Density(2F))
         mapState.setViewportSize(IntSize(800, 600))
         val focalPoint = TilePoint(270.0, 280.0)
@@ -379,8 +402,7 @@ class MapStateTest {
         assertEquals(260.0, offset.y, absoluteTolerance = 0.000001)
     }
 
-    @Test
-    fun defaultCenterOffsetPlacesTilePointAtViewportCenter() {
+    test("defaultCenterOffsetPlacesTilePointAtViewportCenter") {
         val mapState = mapState(density = Density(2F))
         mapState.setViewportSize(IntSize(800, 600))
         val point = TilePoint(128.0, 384.0)
@@ -391,8 +413,7 @@ class MapStateTest {
         assertEquals(ScreenOffset(400.0, 300.0), context(mapState) { point.toScreenOffset() })
     }
 
-    @Test
-    fun focalPlacementUsesClampedZoomAndRespectsMapBorders() {
+    test("focalPlacementUsesClampedZoomAndRespectsMapBorders") {
         val mapState = mapState(zoomLevelPreference = ZoomLevelRange(0, 2))
         mapState.setViewportSize(IntSize(800, 600))
         val point = TilePoint(270.0, 280.0)
@@ -411,8 +432,7 @@ class MapStateTest {
         assertEquals(TilePoint(0.0, 512.0), mapState.cameraState.tilePoint)
     }
 
-    @Test
-    fun coordinatesAreProjectedOnlyOnAccess() {
+    test("coordinatesAreProjectedOnlyOnAccess") {
         var projections = 0
         val properties = mapProperties()
         val mapState = mapState(mapProperties = object : MapProperties by properties {
@@ -431,8 +451,7 @@ class MapStateTest {
         assertEquals(1, projections)
     }
 
-    @Test
-    fun densityChangePreservesCoordinatesAndTilePoint() {
+    test("densityChangePreservesCoordinatesAndTilePoint") {
         val mapState = mapState(density = Density(1F))
         val coordinates = mapState.coordinates
 
@@ -444,8 +463,7 @@ class MapStateTest {
         assertEquals(TilePoint(256.0, 256.0), mapState.cameraState.tilePoint)
     }
 
-    @Test
-    fun densityIsAppliedWhenTilePointIsConvertedToScreen() {
+    test("densityIsAppliedWhenTilePointIsConvertedToScreen") {
         val mapState = mapState(density = Density(1F))
         mapState.setViewportSize(IntSize(800, 600))
         val point = TilePoint(266.0, 256.0)
@@ -459,8 +477,7 @@ class MapStateTest {
         assertEquals(TilePoint(256.0, 256.0), mapState.cameraState.tilePoint)
     }
 
-    @Test
-    fun initialTilePointDefinesCoordinates() {
+    test("initialTilePointDefinesCoordinates") {
         val mapState = MapState(
             mapProperties = mapProperties(),
             initialCameraState = CameraState(
@@ -474,8 +491,7 @@ class MapStateTest {
         assertEquals(Coordinates(-90.0, -45.0), mapState.coordinates)
     }
 
-    @Test
-    fun saverRestoresTilePointWithoutDensity() {
+    test("saverRestoresTilePointWithoutDensity") {
         val mapProperties = mapProperties()
         val coroutineScope = CoroutineScope(EmptyCoroutineContext)
         val original = mapState(
@@ -500,8 +516,7 @@ class MapStateTest {
         assertEquals(TilePoint(128.0, 384.0), restored.cameraState.tilePoint)
     }
 
-    @Test
-    fun saverRestoresWithCurrentConfigurationAndCoercesOldZoom() {
+    test("saverRestoresWithCurrentConfigurationAndCoercesOldZoom") {
         val mapProperties = mapProperties()
         val coroutineScope = CoroutineScope(EmptyCoroutineContext)
         val density = Density(2F, 1.5F)
@@ -530,8 +545,7 @@ class MapStateTest {
         assertEquals(8F, restored.cameraState.zoom)
     }
 
-    @Test
-    fun saverDoesNotScaleTilePointFromSavedDensity() {
+    test("saverDoesNotScaleTilePointFromSavedDensity") {
         val mapProperties = mapProperties()
         val saver = MapState.saver(
             mapProperties = mapProperties,
@@ -549,46 +563,5 @@ class MapStateTest {
         val restored = assertNotNull(saver.restore(savedState))
 
         assertEquals(TilePoint(512.0, 512.0), restored.cameraState.tilePoint)
-    }
-
-    private fun mapState(
-        mapProperties: MapProperties = mapProperties(),
-        coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext),
-        density: Density = Density(1F),
-        zoomLevelPreference: ZoomLevelRange? = null,
-        initialCameraState: CameraState? = null,
-    ) = MapState(
-        mapProperties = mapProperties,
-        coroutineScope = coroutineScope,
-        density = density,
-        zoomLevelPreference = zoomLevelPreference,
-        initialCameraState = initialCameraState,
-    )
-
-    private fun cameraState(
-        zoom: Float = 0F,
-        angle: Degrees = Degrees.Zero,
-        tilePoint: TilePoint = TilePoint(256.0, 256.0),
-    ) = CameraState(
-        zoom = zoom,
-        angleDegrees = angle,
-        tilePoint = tilePoint,
-    )
-
-    private fun mapProperties() = object : MapProperties {
-        override val boundMap = BoundMapBorder(MapBorderType.BOUND, MapBorderType.BOUND)
-        override val outsideTiles = OutsideTilesType.NONE
-        override val zoomLevels = ZoomLevelRange(0, 30)
-        override val coordinatesRange = object : CoordinatesRange {
-            override val latitude = Latitude(north = 90.0, south = -90.0)
-            override val longitude = Longitude(west = -180.0, east = 180.0)
-        }
-        override val tileSize = TileDimension(512.dp, 512.dp)
-
-        override fun toProjectedCoordinates(coordinates: Coordinates) =
-            ProjectedCoordinates(coordinates.x, coordinates.y)
-
-        override fun toCoordinates(projectedCoordinates: ProjectedCoordinates) =
-            Coordinates(projectedCoordinates.x, projectedCoordinates.y)
     }
 }

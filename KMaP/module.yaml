@@ -13,6 +13,21 @@ dependencies:
   - $kotlin.serialization.json
   - $kotlin.serialization.protobuf
 
+test-dependencies:
+  - $libs.testBalloon.framework.core
+
+test-settings:
+  junit: none
+  jvm:
+    test:
+      extraEnvironment:
+        # Kotlin CLI class discovery does not discover TestBalloon's top-level suites.
+        - TESTBALLOON_INCLUDE_PATTERNS: '*'
+  kotlin:
+    compilerPlugins:
+      - id: de.infix.testBalloon
+        dependency: $libs.testBalloon.compiler.plugin
+
 settings:
   android:
     namespace: com.rafambn.KMaP

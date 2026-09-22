@@ -76,6 +76,23 @@ kotlin {
 }
 ```
 
+### Running tests
+
+The JVM tests use TestBalloon with `kotlin.test` assertions:
+
+```sh
+./kotlin test -m KMaP -p jvm
+./kotlin check
+```
+
+Kotlin CLI 0.12.2 class and method filters do not select TestBalloon suites. To run a subset,
+set `TESTBALLOON_INCLUDE_PATTERNS` in `KMaP/module.yaml`, for example
+`com.rafambn.kmap.camera.CameraStateTest↘*`. Restore `'*'` to run all tests.
+The configured value takes precedence over the shell environment variable.
+
+Use `--format teamcity` for machine-readable test results. The CLI's JUnit XML reports
+do not currently include the TestBalloon results.
+
 ### Usage
 
 With KMaP, you implement your map logic once. Provide a `MapProperties` and a `TileSource` and use it across targets:

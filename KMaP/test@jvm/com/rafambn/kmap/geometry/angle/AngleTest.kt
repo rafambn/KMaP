@@ -1,11 +1,10 @@
 package com.rafambn.kmap.geometry.angle
 
-import kotlin.test.Test
+import de.infix.testBalloon.framework.core.testSuite
 import kotlin.test.assertFailsWith
 
-class AngleTest {
-    @Test
-    fun anglesRejectNonFiniteValues() {
+val AngleTest by testSuite {
+    test("anglesRejectNonFiniteValues") {
         assertFailsWith<IllegalArgumentException> {
             Degrees(Double.NaN)
         }

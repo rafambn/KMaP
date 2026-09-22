@@ -2,24 +2,62 @@
 
 package com.rafambn.kmap.mvttile
 
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.protobuf.ProtoBuf
-import kotlin.test.Test
+import de.infix.testBalloon.framework.core.testSuite
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.protobuf.ProtoBuf
 
-class MVTSerializationTest {
+private fun deserializeMVT(decompressedBytes: ByteArray): RawMVTile {
+    return ProtoBuf.decodeFromByteArray(RawMVTile.serializer(), decompressedBytes)
+}
 
-    fun deserializeMVT(decompressedBytes: ByteArray): RawMVTile {
-        return ProtoBuf.decodeFromByteArray(RawMVTile.serializer(), decompressedBytes)
-    }
+private fun serializeMVT(mvtTile: RawMVTile): ByteArray {
+    return ProtoBuf.encodeToByteArray(RawMVTile.serializer(), mvtTile)
+}
 
-    fun serializeMVT(mvtTile: RawMVTile): ByteArray {
-        return ProtoBuf.encodeToByteArray(RawMVTile.serializer(), mvtTile)
-    }
+private fun createTestMVTile(): RawMVTile {
+    val feature1 = RawMVTFeature(
+        id = 1L,
+        type = RawMVTGeomType.POINT,
+        geometry = listOf(
+            (CMD_MOVETO or (1 shl 3)),
+            2, 4
+        ),
+        tags = listOf(0, 0, 1, 1)
+    )
 
-    @Test
-    fun testEncodeDecodeZigZag() {
+    val feature2 = RawMVTFeature(
+        id = 2L,
+        type = RawMVTGeomType.LINESTRING,
+        geometry = listOf(
+            (CMD_MOVETO or (1 shl 3)),
+            2, 4,
+            (CMD_LINETO or (2 shl 3)),
+            2, 2,
+            2, 2
+        ),
+        tags = listOf(0, 2, 2, 3)
+    )
+
+    val layer = RawMVTLayer(
+        name = "test_layer",
+        extent = 4096,
+        keys = listOf("name", "type", "category"),
+        values = listOf(
+            RawMVTValue(string_value = "test_point"),
+            RawMVTValue(string_value = "landmark"),
+            RawMVTValue(string_value = "test_line"),
+            RawMVTValue(int_value = 42L)
+        ),
+        features = listOf(feature1, feature2)
+    )
+
+    return RawMVTile(layers = listOf(layer))
+}
+
+val MVTSerializationTest by testSuite {
+    test("testEncodeDecodeZigZag") {
         val testValues = listOf(0, 1, -1, 2, -2, 15, -15, 16, -16, 100, -100, 1000000, -1000000, 1073741823, -1073741824)
 
         testValues.forEach { original ->
@@ -29,8 +67,7 @@ class MVTSerializationTest {
         }
     }
 
-    @Test
-    fun testRoundTripSerialization() {
+    test("testRoundTripSerialization") {
         val originalTile = createTestMVTile()
 
         val serializedBytes = serializeMVT(originalTile)
@@ -57,8 +94,7 @@ class MVTSerializationTest {
         }
     }
 
-    @Test
-    fun testRoundTripParsing() {
+    test("testRoundTripParsing") {
         val originalTile = createTestMVTile()
 
         val parsedTile = originalTile.parse()
@@ -85,8 +121,7 @@ class MVTSerializationTest {
         }
     }
 
-    @Test
-    fun testCompleteRoundTrip() {
+    test("testCompleteRoundTrip") {
         val originalTile = createTestMVTile()
 
         val serialized1 = serializeMVT(originalTile)
@@ -106,8 +141,7 @@ class MVTSerializationTest {
         }
     }
 
-    @Test
-    fun testGeometryEncoding() {
+    test("testGeometryEncoding") {
         val testCases = listOf(
             Triple(RawMVTGeomType.POINT, listOf(listOf(Pair(100, 200))), "Single point"),
             Triple(RawMVTGeomType.POINT, listOf(listOf(Pair(100, 200)), listOf(Pair(300, 400))), "Multi-point"),
@@ -125,8 +159,7 @@ class MVTSerializationTest {
         }
     }
 
-    @Test
-    fun testPropertyEncoding() {
+    test("testPropertyEncoding") {
         val properties = mapOf(
             "string_prop" to "test_value",
             "int_prop" to 42,
@@ -156,8 +189,7 @@ class MVTSerializationTest {
         assertFalse(decodedProperties.containsKey("null_prop"))
     }
 
-    @Test
-    fun testEmptyTileRoundTrip() {
+    test("testEmptyTileRoundTrip") {
         val emptyTile = RawMVTile(layers = emptyList())
 
         val serialized = serializeMVT(emptyTile)
@@ -166,8 +198,7 @@ class MVTSerializationTest {
         assertEquals(0, deserialized.layers.size)
     }
 
-    @Test
-    fun testEmptyLayerRoundTrip() {
+    test("testEmptyLayerRoundTrip") {
         val emptyLayer = RawMVTLayer(name = "empty", features = emptyList())
         val tile = RawMVTile(layers = listOf(emptyLayer))
 
@@ -177,45 +208,5 @@ class MVTSerializationTest {
         assertEquals(1, deparsed.layers.size)
         assertEquals("empty", deparsed.layers[0].name)
         assertEquals(0, deparsed.layers[0].features.size)
-    }
-
-    private fun createTestMVTile(): RawMVTile {
-        val feature1 = RawMVTFeature(
-            id = 1L,
-            type = RawMVTGeomType.POINT,
-            geometry = listOf(
-                (CMD_MOVETO or (1 shl 3)),
-                2, 4
-            ),
-            tags = listOf(0, 0, 1, 1)
-        )
-
-        val feature2 = RawMVTFeature(
-            id = 2L,
-            type = RawMVTGeomType.LINESTRING,
-            geometry = listOf(
-                (CMD_MOVETO or (1 shl 3)),
-                2, 4,
-                (CMD_LINETO or (2 shl 3)),
-                2, 2,
-                2, 2
-            ),
-            tags = listOf(0, 2, 2, 3)
-        )
-
-        val layer = RawMVTLayer(
-            name = "test_layer",
-            extent = 4096,
-            keys = listOf("name", "type", "category"),
-            values = listOf(
-                RawMVTValue(string_value = "test_point"),
-                RawMVTValue(string_value = "landmark"),
-                RawMVTValue(string_value = "test_line"),
-                RawMVTValue(int_value = 42L)
-            ),
-            features = listOf(feature1, feature2)
-        )
-
-        return RawMVTile(layers = listOf(layer))
     }
 }

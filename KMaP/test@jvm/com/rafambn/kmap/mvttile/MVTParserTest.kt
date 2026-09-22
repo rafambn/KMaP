@@ -1,14 +1,12 @@
 package com.rafambn.kmap.mvttile
 
-import kotlin.test.Test
+import de.infix.testBalloon.framework.core.testSuite
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class MVTParserTest {
-
-    @Test
-    fun testDecodeZigZag() {
+val MVTParserTest by testSuite {
+    test("testDecodeZigZag") {
         assertEquals(0, decodeZigZag(0))
         assertEquals(1, decodeZigZag(2))
         assertEquals(2, decodeZigZag(4))
@@ -20,8 +18,7 @@ class MVTParserTest {
         assertEquals(-16, decodeZigZag(31))
     }
 
-    @Test
-    fun testResolveFeaturePropertiesEmpty() {
+    test("testResolveFeaturePropertiesEmpty") {
         val feature = RawMVTFeature(tags = emptyList())
         val layer = RawMVTLayer(name = "test", keys = emptyList(), values = emptyList())
 
@@ -30,8 +27,7 @@ class MVTParserTest {
         assertTrue(properties.isEmpty())
     }
 
-    @Test
-    fun testResolveFeaturePropertiesWithStringValue() {
+    test("testResolveFeaturePropertiesWithStringValue") {
         val feature = RawMVTFeature(tags = listOf(0, 0))
         val layer = RawMVTLayer(
             name = "test",
@@ -45,8 +41,7 @@ class MVTParserTest {
         assertEquals("test_value", properties["name"])
     }
 
-    @Test
-    fun testResolveFeaturePropertiesWithMultipleTypes() {
+    test("testResolveFeaturePropertiesWithMultipleTypes") {
         val feature = RawMVTFeature(tags = listOf(0, 0, 1, 1, 2, 2, 3, 3))
         val layer = RawMVTLayer(
             name = "test",
@@ -68,8 +63,7 @@ class MVTParserTest {
         assertEquals(true, properties["bool_prop"])
     }
 
-    @Test
-    fun testResolveFeaturePropertiesWithInvalidIndices() {
+    test("testResolveFeaturePropertiesWithInvalidIndices") {
         val feature = RawMVTFeature(tags = listOf(0, 5, 10, 0))
         val layer = RawMVTLayer(
             name = "test",
@@ -82,8 +76,7 @@ class MVTParserTest {
         assertEquals(0, properties.size)
     }
 
-    @Test
-    fun testResolveFeaturePropertiesWithOddTagsCount() {
+    test("testResolveFeaturePropertiesWithOddTagsCount") {
         val feature = RawMVTFeature(tags = listOf(0, 0, 1))
         val layer = RawMVTLayer(
             name = "test",
@@ -97,8 +90,7 @@ class MVTParserTest {
         assertEquals("value1", properties["key1"])
     }
 
-    @Test
-    fun testDecodeFeatureGeometryPoint() {
+    test("testDecodeFeatureGeometryPoint") {
         val feature = RawMVTFeature(
             type = RawMVTGeomType.POINT,
             geometry = listOf(
@@ -114,8 +106,7 @@ class MVTParserTest {
         assertEquals(Pair(1, 2), decodedCoordinates[0][0])
     }
 
-    @Test
-    fun testDecodeFeatureGeometryLineString() {
+    test("testDecodeFeatureGeometryLineString") {
         val feature = RawMVTFeature(
             type = RawMVTGeomType.LINESTRING,
             geometry = listOf(
@@ -136,8 +127,7 @@ class MVTParserTest {
         assertEquals(Pair(3, 4), decodedCoordinates[0][2])
     }
 
-    @Test
-    fun testDecodeFeatureGeometryPolygon() {
+    test("testDecodeFeatureGeometryPolygon") {
         val feature = RawMVTFeature(
             type = RawMVTGeomType.POLYGON,
             geometry = listOf(
@@ -161,8 +151,7 @@ class MVTParserTest {
         assertEquals(Pair(1, 1), decodedCoordinates[0][3])
     }
 
-    @Test
-    fun testDecodeFeatureGeometryMultiPart() {
+    test("testDecodeFeatureGeometryMultiPart") {
         val feature = RawMVTFeature(
             type = RawMVTGeomType.POINT,
             geometry = listOf(
@@ -182,8 +171,7 @@ class MVTParserTest {
         assertEquals(Pair(3, 5), decodedCoordinates[1][0])
     }
 
-    @Test
-    fun testDecodeFeatureGeometryEmptyGeometry() {
+    test("testDecodeFeatureGeometryEmptyGeometry") {
         val feature = RawMVTFeature(
             type = RawMVTGeomType.UNKNOWN,
             geometry = emptyList()
@@ -194,8 +182,7 @@ class MVTParserTest {
         assertTrue(decodedCoordinates.isEmpty())
     }
 
-    @Test
-    fun testParseMVTWithEmptyTile() {
+    test("testParseMVTWithEmptyTile") {
         val mvtTile = RawMVTile(layers = emptyList())
 
         val parsed = mvtTile.parse()
@@ -203,8 +190,7 @@ class MVTParserTest {
         assertTrue(parsed.layers.isEmpty())
     }
 
-    @Test
-    fun testParseMVTWithSingleLayer() {
+    test("testParseMVTWithSingleLayer") {
         val feature = RawMVTFeature(
             id = 123L,
             type = RawMVTGeomType.POINT,
@@ -241,8 +227,7 @@ class MVTParserTest {
         assertEquals("test_feature", parsedFeature.properties["name"])
     }
 
-    @Test
-    fun testParseMVTWithFeatureWithoutId() {
+    test("testParseMVTWithFeatureWithoutId") {
         val feature = RawMVTFeature(
             id = 0L,
             type = RawMVTGeomType.POINT,
