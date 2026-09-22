@@ -97,7 +97,7 @@ internal fun measureComponent(
                 measuredComponent.offset.asOffset()
             )
             //TODO expand test for rotating markers and clustered markers
-            if (measuredComponent.parameters.zoomVisibilityRange.contains(mapState.internalCameraState.zoom) &&
+            if (measuredComponent.parameters.zoomVisibilityRange.contains(mapState.cameraState.zoom) &&
                 mapViewPort.overlaps(measuredComponent.viewPort)
             ) {
                 if (measuredComponent.parameters.clusterId != null) {
@@ -124,7 +124,7 @@ internal fun measureComponent(
         repeat(pathsCount) { index ->
             val measuredPath = measuredItemProvider.getAndMeasurePath(index)
             require(measuredPath.parameters is PathParameters)
-            if (measuredPath.parameters.zoomVisibilityRange.contains(mapState.internalCameraState.zoom)) {
+            if (measuredPath.parameters.zoomVisibilityRange.contains(mapState.cameraState.zoom)) {
                 val bounds = measuredPath.parameters.path.getBounds()
                 val coordinatesRange = mapState.mapProperties.coordinatesRange
                 val drawPoint = ProjectedCoordinates(
@@ -152,8 +152,8 @@ internal fun measureComponent(
                 this,
                 it.offset,
                 it.parameters,
-                mapState.internalCameraState.angleDegrees,
-                mapState.internalCameraState.zoom,
+                mapState.cameraState.angleDegrees,
+                mapState.cameraState.zoom,
             )
         }
     }

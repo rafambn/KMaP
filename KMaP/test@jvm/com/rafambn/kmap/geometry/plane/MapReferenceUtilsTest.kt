@@ -115,7 +115,7 @@ class MapReferenceUtilsTest {
         )
 
         val reference = context(mapState) {
-            mapState.internalCameraState.tilePoint.toCanvasDrawReference()
+            mapState.cameraState.tilePoint.toCanvasDrawReference()
         }
 
         assertEquals(CanvasDrawReference(-2_147_483_648.0, -4_294_967_296.0), reference)
@@ -136,9 +136,9 @@ class MapReferenceUtilsTest {
     }
 
     @Test
-    fun cameraStateRejectsZeroTileSizeWhenRead() {
+    fun coordinatesRejectZeroTileSizeWhenRead() {
         assertFailsWith<IllegalArgumentException> {
-            mapState(tileSize = TileDimension(512.dp, 0.dp)).cameraState
+            mapState(tileSize = TileDimension(512.dp, 0.dp)).coordinates
         }
     }
 
@@ -193,9 +193,7 @@ class MapReferenceUtilsTest {
             coroutineScope = CoroutineScope(EmptyCoroutineContext),
             density = density,
         )
-        mapState.setPosition(cameraPoint)
-        mapState.setZoom(zoom)
-        mapState.setAngle(angle)
+        mapState.updateCamera(tilePoint = cameraPoint, zoom = zoom, angle = angle)
         mapState.setViewportSize(IntSize(viewportSize.x.toInt(), viewportSize.y.toInt()))
         return mapState
     }
