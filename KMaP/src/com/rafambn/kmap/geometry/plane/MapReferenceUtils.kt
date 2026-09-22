@@ -30,7 +30,7 @@ fun ScreenOffset.toTilePoint(): TilePoint =
 
 context(mapState: MapState)
 fun DifferentialScreenOffset.toTilePoint(): TilePoint {
-    val inverseScale = 2.0.pow(-mapState.cameraState.zoom.toDouble()) / mapState.density
+    val inverseScale = 2.0.pow(-mapState.cameraState.zoom.toDouble()) / mapState.currentDensity.density
 
     return asCanvasPosition()
         .scale(inverseScale, inverseScale)
@@ -40,7 +40,7 @@ fun DifferentialScreenOffset.toTilePoint(): TilePoint {
 
 context(mapState: MapState)
 fun TilePoint.toScreenOffset(): ScreenOffset {
-    val scale = 2.0.pow(mapState.cameraState.zoom.toDouble()) * mapState.density
+    val scale = 2.0.pow(mapState.cameraState.zoom.toDouble()) * mapState.currentDensity.density
     val cameraOffset = this - mapState.cameraState.tilePoint
 
     return cameraOffset
@@ -68,7 +68,7 @@ internal fun TilePoint.toNearestScreenOffset(): ScreenOffset {
 context(mapState: MapState)
 internal fun TilePoint.toCanvasDrawReference(): CanvasDrawReference {
     val zoomLevel = mapState.cameraState.zoom.toIntFloor()
-    val scale = 2.0.pow(zoomLevel) * mapState.density
+    val scale = 2.0.pow(zoomLevel) * mapState.currentDensity.density
 
     return scale(scale, scale)
         .unaryMinus()

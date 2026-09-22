@@ -55,14 +55,9 @@ class MapState(
     initialCameraState: CameraState? = null,
     coroutineScope: CoroutineScope,
     density: Density = Density(1f, 1f),
-) : Density {
-    private var currentDensity by mutableStateOf(density)
-
-    override val density
-        get() = currentDensity.density
-
-    override val fontScale
-        get() = currentDensity.fontScale
+) {
+    internal var currentDensity by mutableStateOf(density)
+        private set
 
     val motionController = MotionController(this)
     internal var viewportSize = IntSize.Zero
@@ -162,9 +157,9 @@ class MapState(
     }
 
     internal fun updateDensity(newDensity: Density) {
-        val densityChanged = density != newDensity.density
-        if (!densityChanged && fontScale == newDensity.fontScale) return
+        if (currentDensity == newDensity) return
 
+        val densityChanged = currentDensity.density != newDensity.density
         currentDensity = newDensity
         if (densityChanged) resolveVisibleTiles()
     }
@@ -183,7 +178,7 @@ class MapState(
     ) {
         val newZoom = zoom.coerceZoom()
         validateZoom(newZoom)
-        val inverseScale = 2.0.pow(-newZoom.toDouble()) / density
+        val inverseScale = 2.0.pow(-newZoom.toDouble()) / currentDensity.density
         val tileOffset = TilePoint(centerOffset.x * inverseScale, centerOffset.y * inverseScale)
             .rotate(-angle.toRadians())
         val updatedCameraState = CameraState(
