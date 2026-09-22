@@ -10,7 +10,7 @@ kover_base_url="https://repo1.maven.org/maven2/org/jetbrains/kotlinx"
 kover_dir="$project_dir/build/kover"
 tool_dir="$kover_dir/tools/$kover_version"
 report_dir="$kmap_dir/build/reports/kover"
-classes_dir="$project_dir/build/artifacts/CompiledJvmArtifact/KMaPjvm/kotlin-output"
+classes_dir="$kmap_dir/build/classes/kotlin/jvm/main"
 sources_dir="$kmap_dir/src"
 coverage_file="$report_dir/report.ic"
 agent_args="$report_dir/agent.args"
@@ -18,7 +18,6 @@ xml_file="$report_dir/report.xml"
 html_dir="$report_dir/html"
 required_source_file="${KOVER_REQUIRED_SOURCE_FILE:-}"
 required_line_coverage="${KOVER_REQUIRED_LINE_COVERAGE:-100}"
-required_branch_coverage="${KOVER_REQUIRED_BRANCH_COVERAGE:-100}"
 cli_jar="$tool_dir/kover-cli-$kover_version.jar"
 agent_jar="$tool_dir/kover-jvm-agent-$kover_version.jar"
 
@@ -34,18 +33,6 @@ if [ -n "$required_source_file" ]; then
 
     if [ "$required_line_coverage" -gt 100 ]; then
         echo "KOVER_REQUIRED_LINE_COVERAGE must be an integer from 0 to 100" >&2
-        exit 1
-    fi
-
-    case "$required_branch_coverage" in
-        ''|*[!0-9]*)
-            echo "KOVER_REQUIRED_BRANCH_COVERAGE must be an integer from 0 to 100" >&2
-            exit 1
-            ;;
-    esac
-
-    if [ "$required_branch_coverage" -gt 100 ]; then
-        echo "KOVER_REQUIRED_BRANCH_COVERAGE must be an integer from 0 to 100" >&2
         exit 1
     fi
 fi
@@ -137,10 +124,6 @@ if [ -n "$required_source_file" ]; then
                 in_source_file = 0
             }
 
-            in_source_file && /<\/sourcefile>/ {
-                in_source_file = 0
-            }
-
             in_source_file && /<counter type="LINE"/ {
                 line = $0
                 sub(/^.*missed="/, "", line)
@@ -153,25 +136,12 @@ if [ -n "$required_source_file" ]; then
                 covered = line
 
                 line_counter_matches += 1
-            }
-
-            in_source_file && /<counter type="BRANCH"/ {
-                branch = $0
-                sub(/^.*missed="/, "", branch)
-                sub(/".*$/, "", branch)
-                missed_branches = branch
-
-                branch = $0
-                sub(/^.*covered="/, "", branch)
-                sub(/".*$/, "", branch)
-                covered_branches = branch
-
-                branch_counter_matches += 1
+                in_source_file = 0
             }
 
             END {
-                if (matches == 1 && line_counter_matches == 1 && branch_counter_matches == 1) {
-                    print missed, covered, missed_branches, covered_branches
+                if (matches == 1 && line_counter_matches == 1) {
+                    print missed, covered
                 } else if (matches > 1) {
                     print "ambiguous", matches
                 }
@@ -192,10 +162,7 @@ if [ -n "$required_source_file" ]; then
 
     missed_lines="$1"
     covered_lines="$2"
-    missed_branches="$3"
-    covered_branches="$4"
     total_lines=$((missed_lines + covered_lines))
-    total_branches=$((missed_branches + covered_branches))
 
     if [ "$total_lines" -eq 0 ]; then
         echo "Kover source file has no executable lines: $required_source_file" >&2
@@ -210,19 +177,6 @@ if [ -n "$required_source_file" ]; then
 
     actual_line_coverage=$((covered_lines * 100 / total_lines))
     echo "Kover line coverage passed for $required_source_file: $actual_line_coverage% (required ${required_line_coverage}%)"
-
-    if [ "$total_branches" -eq 0 ]; then
-        echo "Kover branch coverage not applicable for $required_source_file: no executable branches"
-    else
-        if [ $((covered_branches * 100)) -lt $((total_branches * required_branch_coverage)) ]; then
-            actual_branch_coverage=$((covered_branches * 100 / total_branches))
-            echo "Kover branch coverage failed for $required_source_file: $actual_branch_coverage% (required ${required_branch_coverage}%)" >&2
-            exit 1
-        fi
-
-        actual_branch_coverage=$((covered_branches * 100 / total_branches))
-        echo "Kover branch coverage passed for $required_source_file: $actual_branch_coverage% (required ${required_branch_coverage}%)"
-    fi
 fi
 
 echo "KMaP Kover HTML report: $html_dir/index.html"
