@@ -71,7 +71,7 @@ class KMaPContent(
                     tileSize = mapState.drawTileSize,
                     rotationDegrees = mapState.drawRotationDegrees,
                     style = { parameters.style },
-                    zoom = { mapState.cameraState.zoom.toDouble() }
+                    zoom = { mapState.internalCameraState.zoom.toDouble() }
                 )
             }
         )
@@ -112,8 +112,8 @@ class KMaPContent(
         orientationMatrix.scale(orientationX, orientationY)
         val scaleMatrix = Matrix()
         val scale = with(mapState) {
-            val scaleX = (mapState.mapProperties.tileSize.width.toPx() / mapState.mapProperties.coordinatesRange.longitude.span).toFloat()
-            val scaleY = (mapState.mapProperties.tileSize.height.toPx() / mapState.mapProperties.coordinatesRange.latitude.span).toFloat()
+            val scaleX = (mapState.mapProperties.tileSize.width.value / mapState.mapProperties.coordinatesRange.longitude.span).toFloat()
+            val scaleY = (mapState.mapProperties.tileSize.height.value / mapState.mapProperties.coordinatesRange.latitude.span).toFloat()
             Offset(scaleX, scaleY)
         }
         scaleMatrix.scale(scale.x, scale.y)

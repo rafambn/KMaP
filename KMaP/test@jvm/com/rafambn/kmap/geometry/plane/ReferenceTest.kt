@@ -5,9 +5,20 @@ import com.rafambn.kmap.geometry.angle.rotate
 import kotlin.math.PI
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
 
 class ReferenceTest {
+    @Test
+    fun mapReferencesRejectNonFiniteValues() {
+        assertFailsWith<IllegalArgumentException> {
+            Coordinates(Double.NaN, 0.0)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            TilePoint(0.0, Double.POSITIVE_INFINITY)
+        }
+    }
+
     @Test
     fun arithmeticPreservesTheReferenceType() {
         assertEquals(TilePoint(4.0, 6.0), TilePoint(1.0, 2.0) + TilePoint(3.0, 4.0))

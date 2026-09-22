@@ -40,7 +40,7 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
     }
 
     override suspend fun positionTo(center: Reference, animationSpec: AnimationSpec<Float>) {
-        val startPosition = mapState.cameraState.tilePoint
+        val startPosition = mapState.internalCameraState.tilePoint
         val endPosition = getTilePoint(center)
         animatable.snapTo(0F)
         animatable.animateTo(1f, animationSpec) {
@@ -49,8 +49,8 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
     }
 
     override suspend fun positionBy(center: Reference, animationSpec: AnimationSpec<Float>) {
-        val startPosition = mapState.cameraState.tilePoint
-        val endPosition = getTilePoint(center) + mapState.cameraState.tilePoint
+        val startPosition = mapState.internalCameraState.tilePoint
+        val endPosition = getTilePoint(center) + mapState.internalCameraState.tilePoint
         animatable.snapTo(0F)
         animatable.animateTo(1f, animationSpec) {
             mapState.setPosition(lerp(startPosition, endPosition, value.toDouble()))
@@ -58,7 +58,7 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
     }
 
     override suspend fun zoomTo(zoom: Float, animationSpec: AnimationSpec<Float>) {
-        val startZoom = mapState.cameraState.zoom
+        val startZoom = mapState.internalCameraState.zoom
         animatable.snapTo(0F)
         animatable.animateTo(1f, animationSpec) {
             mapState.setZoom(lerp(startZoom, zoom, value))
@@ -66,7 +66,7 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
     }
 
     override suspend fun zoomBy(zoom: Float, animationSpec: AnimationSpec<Float>) {
-        val startZoom = mapState.cameraState.zoom
+        val startZoom = mapState.internalCameraState.zoom
         val endZoom = startZoom + zoom
         animatable.snapTo(0F)
         animatable.animateTo(1f, animationSpec) {
@@ -79,7 +79,7 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
         center: Reference,
         animationSpec: AnimationSpec<Float>
     ) {
-        val startZoom = mapState.cameraState.zoom
+        val startZoom = mapState.internalCameraState.zoom
         val previousOffset = getScreenOffset(center)
         val previousPosition = getTilePoint(center)
         animatable.snapTo(0F)
@@ -94,8 +94,8 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
         center: Reference,
         animationSpec: AnimationSpec<Float>
     ) {
-        val startZoom = mapState.cameraState.zoom
-        val endZoom = mapState.cameraState.zoom + zoom
+        val startZoom = mapState.internalCameraState.zoom
+        val endZoom = mapState.internalCameraState.zoom + zoom
         val previousOffset = getScreenOffset(center)
         val previousPosition = getTilePoint(center)
         animatable.snapTo(0F)
@@ -106,7 +106,7 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
     }
 
     override suspend fun rotateTo(degrees: Degrees, animationSpec: AnimationSpec<Float>) {
-        val startAngle = mapState.cameraState.angleDegrees
+        val startAngle = mapState.internalCameraState.angleDegrees
         animatable.snapTo(0F)
         animatable.animateTo(1f, animationSpec) {
             mapState.setAngle(Degrees(lerp(startAngle.value, degrees.value, value.toDouble())))
@@ -114,8 +114,8 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
     }
 
     override suspend fun rotateBy(degrees: Degrees, animationSpec: AnimationSpec<Float>) {
-        val startAngle = mapState.cameraState.angleDegrees
-        val endAngle = mapState.cameraState.angleDegrees + degrees
+        val startAngle = mapState.internalCameraState.angleDegrees
+        val endAngle = mapState.internalCameraState.angleDegrees + degrees
         animatable.snapTo(0f)
         animatable.animateTo(1f, animationSpec) {
             mapState.setAngle(Degrees(lerp(startAngle.value, endAngle.value, value.toDouble())))
@@ -127,7 +127,7 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
         center: Reference,
         animationSpec: AnimationSpec<Float>
     ) {
-        val startAngle = mapState.cameraState.angleDegrees
+        val startAngle = mapState.internalCameraState.angleDegrees
         val previousOffset = getScreenOffset(center)
         val previousPosition = getTilePoint(center)
         animatable.snapTo(0F)
@@ -142,8 +142,8 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
         center: Reference,
         animationSpec: AnimationSpec<Float>
     ) {
-        val startAngle = mapState.cameraState.angleDegrees
-        val endAngle = mapState.cameraState.angleDegrees + degrees
+        val startAngle = mapState.internalCameraState.angleDegrees
+        val endAngle = mapState.internalCameraState.angleDegrees + degrees
         val previousOffset = getScreenOffset(center)
         val previousPosition = getTilePoint(center)
         animatable.snapTo(0F)
@@ -158,7 +158,7 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
     }
 
     override fun positionBy(center: Reference) {
-        mapState.setPosition(getTilePoint(center) + mapState.cameraState.tilePoint)
+        mapState.setPosition(getTilePoint(center) + mapState.internalCameraState.tilePoint)
     }
 
     override fun zoomTo(zoom: Float) {
@@ -166,7 +166,7 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
     }
 
     override fun zoomBy(zoom: Float) {
-        mapState.setZoom(mapState.cameraState.zoom + zoom)
+        mapState.setZoom(mapState.internalCameraState.zoom + zoom)
     }
 
     override fun zoomToCentered(zoom: Float, center: Reference) {
@@ -179,7 +179,7 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
     override fun zoomByCentered(zoom: Float, center: Reference) {
         val previousOffset = getScreenOffset(center)
         val previousPosition = getTilePoint(center)
-        mapState.setZoom(mapState.cameraState.zoom + zoom)
+        mapState.setZoom(mapState.internalCameraState.zoom + zoom)
         mapState.centerPointAtOffset(previousPosition, previousOffset)
     }
 
@@ -188,7 +188,7 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
     }
 
     override fun rotateBy(degrees: Degrees) {
-        mapState.setAngle(degrees + mapState.cameraState.angleDegrees)
+        mapState.setAngle(degrees + mapState.internalCameraState.angleDegrees)
     }
 
     override fun rotateToCentered(degrees: Degrees, center: Reference) {
@@ -201,7 +201,7 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
     override fun rotateByCentered(degrees: Degrees, center: Reference) {
         val previousOffset = getScreenOffset(center)
         val previousPosition = getTilePoint(center)
-        mapState.setAngle(degrees + mapState.cameraState.angleDegrees)
+        mapState.setAngle(degrees + mapState.internalCameraState.angleDegrees)
         mapState.centerPointAtOffset(previousPosition, previousOffset)
     }
 

@@ -4,6 +4,10 @@ import kotlin.jvm.JvmInline
 
 @JvmInline
 value class Degrees(val value: Double) {
+    init {
+        require(value.isFinite()) { "Degrees must be finite" }
+    }
+
     operator fun plus(other: Degrees): Degrees = Degrees(value + other.value)
 
     operator fun minus(other: Degrees): Degrees = Degrees(value - other.value)

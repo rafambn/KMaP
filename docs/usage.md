@@ -59,7 +59,6 @@ It also exposes the camera state (angle, zoom, and position) so you can display 
 MapState calculates the visible tiles so each canvas can render its images.
 ```kotlin
 data class CameraState(
-    val canvasSize: ScreenOffset = ScreenOffset.Zero,
     val zoom: Float = 0F,
     val angleDegrees: Degrees = Degrees.Zero,
     val coordinates: Coordinates,

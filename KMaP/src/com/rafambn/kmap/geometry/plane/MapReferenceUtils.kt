@@ -26,27 +26,27 @@ context(mapState: MapState)
 fun ScreenOffset.toTilePoint(): TilePoint =
     (mapState.viewportSize.asScreenOffset() / 2.0 - this)
         .asDifferentialScreenOffset()
-        .toTilePoint() + mapState.cameraState.tilePoint
+        .toTilePoint() + mapState.internalCameraState.tilePoint
 
 context(mapState: MapState)
 fun DifferentialScreenOffset.toTilePoint(): TilePoint {
-    val inverseZoomScale = 2.0.pow(-mapState.cameraState.zoom.toDouble())
+    val inverseScale = 2.0.pow(-mapState.internalCameraState.zoom.toDouble()) / mapState.density
 
     return asCanvasPosition()
-        .scale(inverseZoomScale, inverseZoomScale)
-        .rotate(-mapState.cameraState.angleDegrees.toRadians())
+        .scale(inverseScale, inverseScale)
+        .rotate(-mapState.internalCameraState.angleDegrees.toRadians())
         .unaryMinus()
 }
 
 context(mapState: MapState)
 fun TilePoint.toScreenOffset(): ScreenOffset {
-    val zoomScale = 2.0.pow(mapState.cameraState.zoom.toDouble())
-    val cameraOffset = this - mapState.cameraState.tilePoint
+    val scale = 2.0.pow(mapState.internalCameraState.zoom.toDouble()) * mapState.density
+    val cameraOffset = this - mapState.internalCameraState.tilePoint
 
     return cameraOffset
         .unaryMinus()
-        .rotate(mapState.cameraState.angleDegrees.toRadians())
-        .scale(zoomScale, zoomScale)
+        .rotate(mapState.internalCameraState.angleDegrees.toRadians())
+        .scale(scale, scale)
         .asScreenOffset()
         .minus(mapState.viewportSize.asScreenOffset() / 2.0)
         .unaryMinus()
@@ -56,8 +56,8 @@ context(mapState: MapState)
 internal fun TilePoint.toNearestScreenOffset(): ScreenOffset {
     if (mapState.mapProperties.outsideTiles != OutsideTilesType.LOOP) return toScreenOffset()
 
-    val (mapWidth, mapHeight) = mapState.mapSizeInPixels()
-    val cameraPoint = mapState.cameraState.tilePoint
+    val (mapWidth, mapHeight) = mapState.mapSize()
+    val cameraPoint = mapState.internalCameraState.tilePoint
     val cameraOffset = this - cameraPoint
     return (cameraPoint + TilePoint(
         cameraOffset.x.nearestLoopOffset(mapWidth),
@@ -67,10 +67,10 @@ internal fun TilePoint.toNearestScreenOffset(): ScreenOffset {
 
 context(mapState: MapState)
 internal fun TilePoint.toCanvasDrawReference(): CanvasDrawReference {
-    val zoomLevel = mapState.cameraState.zoom.toIntFloor()
-    val zoomScale = 2.0.pow(zoomLevel)
+    val zoomLevel = mapState.internalCameraState.zoom.toIntFloor()
+    val scale = 2.0.pow(zoomLevel) * mapState.density
 
-    return scale(zoomScale, zoomScale)
+    return scale(scale, scale)
         .unaryMinus()
         .asCanvasDrawReference()
 }
@@ -85,7 +85,7 @@ fun Coordinates.toTilePoint(): TilePoint {
 context(mapState: MapState)
 fun ProjectedCoordinates.toTilePoint(): TilePoint {
     val mapProperties = mapState.mapProperties
-    val (tileWidth, tileHeight) = mapState.mapSizeInPixels()
+    val (tileWidth, tileHeight) = mapState.mapSize()
     val scaledTilePoint = transformReference(
         x,
         y,
@@ -100,7 +100,7 @@ fun ProjectedCoordinates.toTilePoint(): TilePoint {
 context(mapState: MapState)
 fun TilePoint.toCoordinates(): Coordinates {
     val mapProperties = mapState.mapProperties
-    val (tileWidth, tileHeight) = mapState.mapSizeInPixels()
+    val (tileWidth, tileHeight) = mapState.mapSize()
     val scaledTileCoordinates = transformReference(
         x,
         y,
@@ -115,9 +115,9 @@ fun TilePoint.toCoordinates(): Coordinates {
 private fun TilePoint.scale(horizontal: Double, vertical: Double): TilePoint =
     TilePoint(x * horizontal, y * vertical)
 
-private fun MapState.mapSizeInPixels(): Pair<Double, Double> {
-    val width = with(this) { mapProperties.tileSize.width.toPx().toDouble() }
-    val height = with(this) { mapProperties.tileSize.height.toPx().toDouble() }
+private fun MapState.mapSize(): Pair<Double, Double> {
+    val width = mapProperties.tileSize.width.value.toDouble()
+    val height = mapProperties.tileSize.height.value.toDouble()
 
     require(width.isFinite() && width > 0.0) { "Tile width must be finite and greater than zero" }
     require(height.isFinite() && height > 0.0) { "Tile height must be finite and greater than zero" }
