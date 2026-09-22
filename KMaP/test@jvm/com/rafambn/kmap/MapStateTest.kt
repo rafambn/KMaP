@@ -438,8 +438,8 @@ class MapStateTest {
 
         mapState.updateDensity(Density(2F, 1.5F))
 
-        assertEquals(2F, mapState.density)
-        assertEquals(1.5F, mapState.fontScale)
+        assertEquals(2F, mapState.currentDensity.density)
+        assertEquals(1.5F, mapState.currentDensity.fontScale)
         assertEquals(coordinates, mapState.coordinates)
         assertEquals(TilePoint(256.0, 256.0), mapState.cameraState.tilePoint)
     }
@@ -525,8 +525,8 @@ class MapStateTest {
         assertSame(mapProperties, restored.mapProperties)
         assertSame(coroutineScope, restored.canvasKernel.coroutineScope)
         assertSame(currentZoomLevelPreference, restored.zoomLevelPreference)
-        assertEquals(2F, restored.density)
-        assertEquals(1.5F, restored.fontScale)
+        assertEquals(2F, restored.currentDensity.density)
+        assertEquals(1.5F, restored.currentDensity.fontScale)
         assertEquals(8F, restored.cameraState.zoom)
     }
 

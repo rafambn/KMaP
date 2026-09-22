@@ -120,7 +120,7 @@ class KMaPContent(
         originalPath.transform(orientationMatrix)
         originalPath.transform(scaleMatrix)
         val densityScale = Matrix()
-        densityScale.scale(mapState.density, mapState.density)
+        densityScale.scale(mapState.currentDensity.density, mapState.currentDensity.density)
         originalPath.transform(densityScale)
         val bounds = originalPath.getBounds()
         paths.add(
@@ -142,8 +142,8 @@ class KMaPContent(
                                             (bounds.top - padding).toDouble()
                                         )
                                         return@detectPathGestures ProjectedCoordinates(
-                                            untranslatedPoint.x * orientationX / (scale.x * mapState.density),
-                                            untranslatedPoint.y * orientationY / (scale.y * mapState.density),
+                                            untranslatedPoint.x * orientationX / (scale.x * mapState.currentDensity.density),
+                                            untranslatedPoint.y * orientationY / (scale.y * mapState.currentDensity.density),
                                         )
                                     }
                                 )
