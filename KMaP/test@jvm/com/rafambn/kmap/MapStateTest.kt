@@ -1,6 +1,8 @@
 package com.rafambn.kmap
 
 import androidx.compose.runtime.saveable.SaverScope
+import androidx.compose.runtime.MonotonicFrameClock
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
@@ -23,6 +25,14 @@ import com.rafambn.kmap.mapProperties.coordinates.CoordinatesRange
 import com.rafambn.kmap.mapProperties.coordinates.Latitude
 import com.rafambn.kmap.mapProperties.coordinates.Longitude
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.runBlocking
+import com.rafambn.kmap.source.RasterTile
+import com.rafambn.kmap.source.TileResult
+import com.rafambn.kmap.source.TileSpecs
+import com.rafambn.kmap.source.internal.CanvasEngine
+import com.rafambn.kmap.source.internal.TileRenderer
+import com.rafambn.kmap.components.parameters.RasterCanvasParameters
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -30,8 +40,102 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 class MapStateTest {
+    @Test
+    fun animatedPanZoomAndRotationDoNotRepeatUnchangedTileRequests() {
+        val scope = CoroutineScope(Job().apply { cancel() })
+        val renderer = TileRenderer<RasterTile, RasterTile>(scope, { _, _, _ -> error("Consumer is paused") }, { it })
+        val engine = object : CanvasEngine<RasterTile>(coroutineScope = scope, tileRenderer = renderer) {}
+        val mapState = mapState(coroutineScope = scope)
+        mapState.updateCamera(zoom = 2F)
+        mapState.canvasKernel.canvas[1] = engine
+        mapState.setViewportSize(IntSize(64, 64))
+        val initialTiles = renderer.tilesToProcessChannel.tryReceive().getOrThrow()
+        assertEquals(4, initialTiles.size)
+        var frames = 0
+        val clock = object : MonotonicFrameClock {
+            override suspend fun <R> withFrameNanos(onFrame: (Long) -> R): R {
+                assertTrue(renderer.tilesToProcessChannel.tryReceive().isFailure)
+                return onFrame(++frames * 16_000_000L)
+            }
+        }
+
+        runBlocking(clock) {
+            mapState.motionController.animate {
+                positionTo(TilePoint(258.0, 258.0), tween(160))
+                zoomTo(2.3F, tween(160))
+                rotateTo(Degrees(45.0), tween(160))
+            }
+        }
+
+        assertTrue(frames > 20)
+        assertEquals(initialTiles, engine.currentVisibleTiles)
+        assertTrue(renderer.tilesToProcessChannel.tryReceive().isFailure)
+    }
+
+    @Test
+    fun animatedPanKeepsOnlyLatestPendingTileRequest() {
+        val scope = CoroutineScope(Job().apply { cancel() })
+        val renderer = TileRenderer<RasterTile, RasterTile>(scope, { _, _, _ -> error("Consumer is paused") }, { it })
+        val engine = object : CanvasEngine<RasterTile>(coroutineScope = scope, tileRenderer = renderer) {}
+        val mapState = mapState(coroutineScope = scope)
+        mapState.updateCamera(zoom = 3F)
+        mapState.canvasKernel.canvas[1] = engine
+        mapState.setViewportSize(IntSize(64, 64))
+        val initialTiles = engine.currentVisibleTiles
+        var frames = 0
+        val clock = object : MonotonicFrameClock {
+            override suspend fun <R> withFrameNanos(onFrame: (Long) -> R): R =
+                onFrame(++frames * 16_000_000L)
+        }
+
+        runBlocking(clock) {
+            mapState.motionController.animate {
+                positionTo(TilePoint(400.0, 400.0), tween(320))
+                zoomTo(4F, tween(160))
+                rotateTo(Degrees(45.0), tween(160))
+            }
+        }
+
+        assertTrue(initialTiles != engine.currentVisibleTiles)
+        assertEquals(engine.currentVisibleTiles, renderer.tilesToProcessChannel.tryReceive().getOrThrow())
+        assertTrue(renderer.tilesToProcessChannel.tryReceive().isFailure)
+    }
+
+    @Test
+    fun emptyRequestReplacesObsoleteWorkAndZoomChangesArePublished() {
+        val scope = CoroutineScope(Job().apply { cancel() })
+        val renderer = TileRenderer<RasterTile, RasterTile>(scope, { _, _, _ -> error("Consumer is paused") }, { it })
+        val engine = object : CanvasEngine<RasterTile>(coroutineScope = scope, tileRenderer = renderer) {}
+        engine.renderTiles(listOf(TileSpecs(2, 1, 1)), 2)
+        engine.renderTiles(emptyList(), 2)
+        assertEquals(emptyList(), renderer.tilesToProcessChannel.tryReceive().getOrThrow())
+
+        engine.renderTiles(emptyList(), 3)
+        assertEquals(3, engine.activeTiles.value.currentZoom)
+        assertEquals(emptyList(), renderer.tilesToProcessChannel.tryReceive().getOrThrow())
+        engine.renderTiles(emptyList(), 3)
+        assertTrue(renderer.tilesToProcessChannel.tryReceive().isFailure)
+    }
+
+    @Test
+    fun newCanvasReceivesCurrentTilesEvenWhenViewportHasNotChanged() {
+        val scope = CoroutineScope(Job().apply { cancel() })
+        val mapState = mapState(coroutineScope = scope)
+        mapState.setViewportSize(IntSize(64, 64))
+        val first = RasterCanvasParameters(id = 1, tileSource = { z, r, c -> TileResult.Failure(TileSpecs(z, r, c)) })
+        val second = RasterCanvasParameters(id = 2, tileSource = first.tileSource)
+        mapState.canvasKernel.refreshCanvas(listOf(first))
+        val initialTiles = mapState.canvasKernel.canvas.getValue(1).currentVisibleTiles
+        assertTrue(initialTiles.isNotEmpty())
+
+        mapState.canvasKernel.refreshCanvas(listOf(first, second))
+
+        assertEquals(initialTiles, mapState.canvasKernel.canvas.getValue(2).currentVisibleTiles)
+    }
+
     @Test
     fun initialZoomUsesPreferenceMinimum() {
         val mapState = mapState(

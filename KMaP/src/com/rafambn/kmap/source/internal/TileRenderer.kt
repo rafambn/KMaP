@@ -14,12 +14,12 @@ class TileRenderer<T : Tile, R : Tile>(
     private val getTile: suspend (zoom: Int, row: Int, column: Int) -> TileResult<T>,
     private val processTile: suspend (T) -> R
 ) {
-    val tilesToProcessChannel = Channel<List<TileSpecs>>(capacity = Channel.UNLIMITED)
+    val tilesToProcessChannel = Channel<List<TileSpecs>>(capacity = Channel.CONFLATED)
     val tilesProcessedChannel = Channel<R>(capacity = Channel.UNLIMITED)
     private val workerResultChannel = Channel<TileResult<R>>(capacity = Channel.UNLIMITED)
 
     init {
-        coroutineScope.launch(Dispatchers.Default + SupervisorJob()) {
+        coroutineScope.launch(Dispatchers.Default + SupervisorJob(coroutineScope.coroutineContext[Job])) {
             val specsBeingProcessed = mutableListOf<TileSpecs>()
             val tilesBeingProcessed = mutableListOf<TileSpecs>()
 
@@ -90,6 +90,8 @@ class TileRenderer<T : Tile, R : Tile>(
                     tilesProcessResult.send(tileResult)
                 }
             }
+        } catch (ex: CancellationException) {
+            throw ex
         } catch (ex: Exception) {
             println("Failed to process tile: $ex")
             tilesProcessResult.send(TileResult.Failure(tileToProcess))
