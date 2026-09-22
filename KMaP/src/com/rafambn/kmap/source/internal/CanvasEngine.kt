@@ -17,6 +17,7 @@ abstract class CanvasEngine<T : Tile>(
     val activeTiles = mutableStateOf(ActiveTiles())
     var cachedTiles = listOf<T>()
     var currentVisibleTiles = listOf<TileSpecs>()
+    private var currentZoom: Int? = null
 
     init {
         coroutineScope.launch {
@@ -38,9 +39,13 @@ abstract class CanvasEngine<T : Tile>(
     }
 
     fun renderTiles(visibleTiles: List<TileSpecs>, zoomLevel: Int) {
+        if (currentZoom == zoomLevel && currentVisibleTiles == visibleTiles) return
+
+        currentZoom = zoomLevel
         currentVisibleTiles = visibleTiles
         val tilesToRender = filterActiveTiles(currentVisibleTiles, zoomLevel)
-        coroutineScope.launch { tileRenderer.tilesToProcessChannel.send(tilesToRender) }
+        // An empty request also replaces pending work for tiles that are no longer visible.
+        tileRenderer.tilesToProcessChannel.trySend(tilesToRender)
     }
 
     private fun filterActiveTiles(visibleTiles: List<TileSpecs>, zoomLevel: Int): List<TileSpecs> {
