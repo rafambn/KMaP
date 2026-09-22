@@ -148,6 +148,25 @@ class MapStateTest {
         assertEquals(TilePoint(128.0, 384.0), restored.internalCameraState.tilePoint)
     }
 
+    @Test
+    fun saverMigratesDensityScaledTilePoint() {
+        val mapProperties = mapProperties()
+        val saver = MapState.saver(mapProperties, CoroutineScope(EmptyCoroutineContext))
+        val legacyState = listOf(
+            "zoomLevelPreference", Pair(0, 31),
+            "density", 2F,
+            "fontScale", 1F,
+            "zoom", 0F,
+            "angleDegrees", 0.0,
+            "coordinates", Pair(0.0, 0.0),
+            "tilePoint", Pair(512.0, 512.0),
+        )
+
+        val restored = assertNotNull(saver.restore(legacyState))
+
+        assertEquals(TilePoint(256.0, 256.0), restored.internalCameraState.tilePoint)
+    }
+
     private fun mapState(
         mapProperties: MapProperties = mapProperties(),
         coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext),

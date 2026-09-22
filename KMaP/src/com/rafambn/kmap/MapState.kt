@@ -214,10 +214,11 @@ class MapState(
                 )
             },
             restore = { map ->
+                val legacyDensity = (map["density"] as? Float)?.toDouble() ?: 1.0
                 val tilePoint = (map["tilePoint"] as Pair<*, *>).let {
                     TilePoint(
-                        it.first as Double,
-                        it.second as Double,
+                        (it.first as Double) / legacyDensity,
+                        (it.second as Double) / legacyDensity,
                     )
                 }
                 MapState(
