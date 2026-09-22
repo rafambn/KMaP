@@ -56,12 +56,7 @@ class MapState(
     coroutineScope: CoroutineScope,
     density: Density = Density(1f, 1f),
 ) {
-    internal var currentDensity by mutableStateOf(density)
-        private set
-
     val motionController = MotionController(this)
-    internal var viewportSize = IntSize.Zero
-        private set
 
     var zoomLevelPreference = validateZoomLevelPreference(zoomLevelPreference ?: mapProperties.zoomLevels)
         set(value) {
@@ -87,6 +82,46 @@ class MapState(
     val coordinates: Coordinates
         get() = cameraState.tilePoint.toCoordinates()
 
+    /**
+     * Places [tilePoint] at [centerOffset] with the requested zoom and angle in one update.
+     * [centerOffset] is measured in screen pixels from the viewport center, positive right/down.
+     * Map borders may prevent the requested placement. Zoom, angle and tile point default to the
+     * current camera; the offset defaults to zero and is not stored in the camera state.
+     */
+    fun updateCamera(
+        zoom: Float = cameraState.zoom,
+        angle: Degrees = cameraState.angleDegrees,
+        tilePoint: TilePoint = cameraState.tilePoint,
+        centerOffset: DifferentialScreenOffset = DifferentialScreenOffset.Zero,
+    ) {
+        val newZoom = zoom.coerceZoom()
+        validateZoom(newZoom)
+        val inverseScale = 2.0.pow(-newZoom.toDouble()) / currentDensity.density
+        val tileOffset = TilePoint(centerOffset.x * inverseScale, centerOffset.y * inverseScale)
+            .rotate(-angle.toRadians())
+        val updatedCameraState = CameraState(
+            zoom = newZoom,
+            angleDegrees = angle,
+            tilePoint = (tilePoint - tileOffset).coerceInMap(),
+        )
+        if (updatedCameraState == cameraState) return
+
+        cameraState = updatedCameraState
+        resolveVisibleTiles()
+    }
+
+    internal var currentDensity by mutableStateOf(density)
+        private set
+
+    internal var viewportSize = IntSize.Zero
+        private set
+
+    internal val drawMagScale = { cameraState.zoom - cameraState.zoom.toIntFloor() }
+    internal val drawReference = { cameraState.tilePoint.toCanvasDrawReference() }
+    internal val drawTileSize = { mapProperties.tileSize }
+    internal val drawRotationDegrees = { cameraState.angleDegrees.toFloat() }
+    internal val canvasKernel = CanvasKernel(coroutineScope, this)
+
     internal fun resolveVisibleTiles() {
         if (viewportSize.width == 0 || viewportSize.height == 0) return
 
@@ -109,11 +144,20 @@ class MapState(
         )
     }
 
-    internal val drawMagScale = { cameraState.zoom - cameraState.zoom.toIntFloor() }
-    internal val drawReference = { cameraState.tilePoint.toCanvasDrawReference() }
-    internal val drawTileSize = { mapProperties.tileSize }
-    internal val drawRotationDegrees = { cameraState.angleDegrees.toFloat() }
-    internal val canvasKernel = CanvasKernel(coroutineScope, this)
+    internal fun setViewportSize(size: IntSize) {
+        if (size == viewportSize) return
+
+        viewportSize = size
+        resolveVisibleTiles()
+    }
+
+    internal fun updateDensity(newDensity: Density) {
+        if (currentDensity == newDensity) return
+
+        val densityChanged = currentDensity.density != newDensity.density
+        currentDensity = newDensity
+        if (densityChanged) resolveVisibleTiles()
+    }
 
     private fun TilePoint.coerceInMap(): TilePoint {
         val x = if (mapProperties.boundMap.horizontal == MapBorderType.BOUND)
@@ -147,49 +191,6 @@ class MapState(
             zoom >= zoomLevelPreference.min &&
                 zoom <= zoomLevelPreference.max
         ) { "Zoom must be within the zoom level preference" }
-    }
-
-    internal fun setViewportSize(size: IntSize) {
-        if (size == viewportSize) return
-
-        viewportSize = size
-        resolveVisibleTiles()
-    }
-
-    internal fun updateDensity(newDensity: Density) {
-        if (currentDensity == newDensity) return
-
-        val densityChanged = currentDensity.density != newDensity.density
-        currentDensity = newDensity
-        if (densityChanged) resolveVisibleTiles()
-    }
-
-    /**
-     * Places [tilePoint] at [centerOffset] with the requested zoom and angle in one update.
-     * [centerOffset] is measured in screen pixels from the viewport center, positive right/down.
-     * Map borders may prevent the requested placement. Zoom, angle and tile point default to the
-     * current camera; the offset defaults to zero and is not stored in the camera state.
-     */
-    fun updateCamera(
-        zoom: Float = cameraState.zoom,
-        angle: Degrees = cameraState.angleDegrees,
-        tilePoint: TilePoint = cameraState.tilePoint,
-        centerOffset: DifferentialScreenOffset = DifferentialScreenOffset.Zero,
-    ) {
-        val newZoom = zoom.coerceZoom()
-        validateZoom(newZoom)
-        val inverseScale = 2.0.pow(-newZoom.toDouble()) / currentDensity.density
-        val tileOffset = TilePoint(centerOffset.x * inverseScale, centerOffset.y * inverseScale)
-            .rotate(-angle.toRadians())
-        val updatedCameraState = CameraState(
-            zoom = newZoom,
-            angleDegrees = angle,
-            tilePoint = (tilePoint - tileOffset).coerceInMap(),
-        )
-        if (updatedCameraState == cameraState) return
-
-        cameraState = updatedCameraState
-        resolveVisibleTiles()
     }
 
     companion object {
