@@ -27,6 +27,7 @@ import com.rafambn.kmap.mapProperties.coordinates.Longitude
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import com.rafambn.kmap.source.RasterTile
 import com.rafambn.kmap.source.TileResult
 import com.rafambn.kmap.source.TileSpecs
@@ -43,6 +44,111 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class MapStateTest {
+    @Test
+    fun repeatedWorldIndicesOutsideIntRangeAreRejected() {
+        val properties = object : MapProperties by mapProperties() {
+            override val outsideTiles = OutsideTilesType.LOOP
+        }
+        val state = mapState(mapProperties = properties)
+        for (point in listOf(TilePoint(1024.0, 0.0), TilePoint(-1025.0, 0.0),
+            TilePoint(0.0, 1024.0), TilePoint(0.0, -1025.0))) {
+            assertFailsWith<IllegalArgumentException> {
+                state.canvasKernel.resolveVisibleTiles(point, point, 30, properties)
+            }
+        }
+        val lastColumn = 1024.0 - 512.0 / 1073741824.0
+        state.canvasKernel.resolveVisibleTiles(
+            TilePoint(lastColumn, 0.0), TilePoint(lastColumn, 0.0), 30, properties,
+        )
+    }
+
+    @Test
+    fun initialZoom31IsRejected() {
+        assertFailsWith<IllegalArgumentException> {
+            mapState(initialCameraState = cameraState(zoom = 31F))
+        }
+        assertFailsWith<IllegalArgumentException> { TileSpecs(31, 0, 0) }
+    }
+
+    @Test
+    fun rendererWrapsZoom30CopiesBeforeCallingIntTileSource() = runBlocking {
+        val job = Job()
+        val renderer = TileRenderer<RasterTile, RasterTile>(
+            CoroutineScope(job),
+            { zoom, row, col ->
+                TileResult.Success(RasterTile(zoom, row, col, null))
+            },
+            { it },
+        )
+        try {
+            renderer.tilesToProcessChannel.send(listOf(TileSpecs(30, -1, 1073741824)))
+            val tile = withTimeout(5000) { renderer.tilesProcessedChannel.receive() }
+            assertEquals(30, tile.zoom)
+            assertEquals(1073741823, tile.row)
+            assertEquals(0, tile.col)
+        } finally {
+            job.cancel()
+        }
+    }
+
+    @Test
+    fun rejectsUnsupportedMapZoomRangeEvenWithNarrowPreference() {
+        for (range in listOf(zoomRange(-1, 30), zoomRange(0, 31), zoomRange(0, 32), zoomRange(8, 3))) {
+            val properties = object : MapProperties by mapProperties() {
+                override val zoomLevels = range
+            }
+            assertFailsWith<IllegalArgumentException> {
+                mapState(mapProperties = properties, zoomLevelPreference = zoomRange(3, 3))
+            }
+        }
+    }
+
+    @Test
+    fun maximumZoomRetainsViewportPrecisionAndClipsMapEdges() {
+        val scope = CoroutineScope(Job().apply { cancel() })
+        val renderer = TileRenderer<RasterTile, RasterTile>(scope, { _, _, _ -> error("Consumer is paused") }, { it })
+        val engine = object : CanvasEngine<RasterTile>(coroutineScope = scope, tileRenderer = renderer) {}
+        val state = mapState(coroutineScope = scope)
+        state.updateCamera(zoom = 30F)
+        state.canvasKernel.canvas[1] = engine
+        state.setViewportSize(IntSize(512, 512))
+        val middle = 536870912
+        assertEquals(
+            listOf(TileSpecs(30, middle - 1, middle - 1), TileSpecs(30, middle, middle - 1),
+                TileSpecs(30, middle - 1, middle), TileSpecs(30, middle, middle)),
+            engine.currentVisibleTiles,
+        )
+        state.updateCamera(tilePoint = TilePoint(512.0, 512.0))
+        assertEquals(listOf(TileSpecs(30, 1073741823, 1073741823)), engine.currentVisibleTiles)
+        state.updateCamera(tilePoint = TilePoint.Zero)
+        assertEquals(listOf(TileSpecs(30, 0, 0)), engine.currentVisibleTiles)
+    }
+
+    @Test
+    fun maximumZoomKeepsRepeatedWorldIndicesWithinIntRange() {
+        val scope = CoroutineScope(Job().apply { cancel() })
+        val renderer = TileRenderer<RasterTile, RasterTile>(scope, { _, _, _ -> error("Consumer is paused") }, { it })
+        val engine = object : CanvasEngine<RasterTile>(coroutineScope = scope, tileRenderer = renderer) {}
+        val properties = object : MapProperties by mapProperties() {
+            override val outsideTiles = OutsideTilesType.LOOP
+        }
+        val state = mapState(mapProperties = properties, coroutineScope = scope)
+        state.updateCamera(zoom = 30F, tilePoint = TilePoint(512.0, 512.0))
+        state.canvasKernel.canvas[1] = engine
+        state.setViewportSize(IntSize(512, 512))
+        val edge = 1073741824
+        assertEquals(
+            listOf(TileSpecs(30, edge - 1, edge - 1), TileSpecs(30, edge, edge - 1),
+                TileSpecs(30, edge - 1, edge), TileSpecs(30, edge, edge)),
+            engine.currentVisibleTiles,
+        )
+        state.updateCamera(tilePoint = TilePoint.Zero)
+        assertEquals(
+            listOf(TileSpecs(30, -1, -1), TileSpecs(30, 0, -1), TileSpecs(30, -1, 0), TileSpecs(30, 0, 0)),
+            engine.currentVisibleTiles,
+        )
+    }
+
     @Test
     fun animatedPanZoomAndRotationDoNotRepeatUnchangedTileRequests() {
         val scope = CoroutineScope(Job().apply { cancel() })
@@ -480,7 +586,7 @@ class MapStateTest {
     private fun mapProperties() = object : MapProperties {
         override val boundMap = BoundMapBorder(MapBorderType.BOUND, MapBorderType.BOUND)
         override val outsideTiles = OutsideTilesType.NONE
-        override val zoomLevels = zoomRange(0, 31)
+        override val zoomLevels = zoomRange(0, 30)
         override val coordinatesRange = object : CoordinatesRange {
             override val latitude = Latitude(north = 90.0, south = -90.0)
             override val longitude = Longitude(west = -180.0, east = 180.0)

@@ -108,10 +108,10 @@ class MapReferenceUtilsTest {
     }
 
     @Test
-    fun canvasReferenceSupportsZoomAboveIntShiftRange() {
+    fun canvasReferenceSupportsPositionsBeyondIntRangeAtMaximumZoom() {
         val mapState = mapState(
-            cameraPoint = TilePoint(1.0, 2.0),
-            zoom = 31F,
+            cameraPoint = TilePoint(2.0, 4.0),
+            zoom = 30F,
         )
 
         val reference = context(mapState) {
@@ -173,7 +173,7 @@ class MapReferenceUtilsTest {
             override val outsideTiles = outsideTiles
             override val zoomLevels = object : ZoomLevelRange {
                 override val min = 0
-                override val max = 31
+                override val max = 30
             }
             override val coordinatesRange = object : CoordinatesRange {
                 override val latitude = Latitude(north = 90.0, south = -90.0)

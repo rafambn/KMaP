@@ -5,6 +5,10 @@ open class TileSpecs(
     val row: Int,
     val col: Int
 ){
+    init {
+        require(zoom in 0..30) { "Supported zoom levels are 0..30" }
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is TileSpecs) return false

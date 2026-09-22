@@ -9,7 +9,10 @@ fun Double.loopInRange(coordinatesRange: CardinalRange): Double =
 fun Double.loopInRange(tileConstraints: Double): Double =
     this.mod(tileConstraints)
 
-fun Int.loopInZoom(zoomLevel: Int): Int = this.mod(1 shl zoomLevel)
+fun Int.loopInZoom(zoomLevel: Int): Int {
+    require(zoomLevel in 0..30) { "Supported zoom levels are 0..30" }
+    return mod(1 shl zoomLevel)
+}
 
 fun lerp(start: Double, end: Double, value: Double): Double = start + (end - start) * value
 

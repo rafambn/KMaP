@@ -1,6 +1,5 @@
 package com.rafambn.kmap.source.internal
 
-import androidx.compose.ui.geometry.Offset
 import com.rafambn.kmap.MapState
 import com.rafambn.kmap.components.ViewPort
 import com.rafambn.kmap.components.parameters.CanvasParameters
@@ -10,27 +9,29 @@ import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
 import com.rafambn.kmap.source.TileSpecs
-import com.rafambn.kmap.utils.toIntFloor
+import com.rafambn.kmap.geometry.plane.TilePoint
 import kotlinx.coroutines.CoroutineScope
-import kotlin.math.pow
+import kotlin.math.floor
 
 class CanvasKernel(
     val coroutineScope: CoroutineScope,
     val mapState: MapState
 ) {
-
     val canvas = mutableMapOf<Int, CanvasEngine<*>>()
 
     fun getActiveTiles(id: Int): ActiveTiles = canvas.getValue(id).activeTiles.value
 
-    fun resolveVisibleTiles(viewPort: ViewPort, zoomLevel: Int, mapProperties: MapProperties) {
+    internal fun resolveVisibleTiles(
+        topLeft: TilePoint,
+        bottomRight: TilePoint,
+        zoomLevel: Int,
+        mapProperties: MapProperties,
+    ) {
         val visibleTiles = getVisibleTilesForLevel(
-            viewPort,
-            zoomLevel,
-            mapProperties.outsideTiles,
-            mapProperties.tileSize
+            topLeft, bottomRight, zoomLevel,
+            mapProperties.outsideTiles, mapProperties.tileSize,
         )
-        canvas.forEach{ (_, canvasEngine) -> canvasEngine.renderTiles(visibleTiles, zoomLevel) }
+        canvas.forEach { (_, engine) -> engine.renderTiles(visibleTiles, zoomLevel) }
     }
 
     fun refreshCanvas(currentParameters: List<CanvasParameters>) {
@@ -65,68 +66,32 @@ class CanvasKernel(
     }
 
     private fun getVisibleTilesForLevel(
-        viewPort: ViewPort,
+        topLeft: TilePoint,
+        bottomRight: TilePoint,
         zoomLevel: Int,
         outsideTilesType: OutsideTilesType,
-        tileDimension: TileDimension
+        tileDimension: TileDimension,
     ): List<TileSpecs> {
-        val topLeftTile = getXYTile(
-            viewPort.topLeft,
-            zoomLevel,
-            tileDimension
-        )
-        val topRightTile = getXYTile(
-            viewPort.topRight,
-            zoomLevel,
-            tileDimension
-        )
-        val bottomRightTile = getXYTile(
-            viewPort.bottomRight,
-            zoomLevel,
-            tileDimension
-        )
-        val bottomLeftTile = getXYTile(
-            viewPort.bottomLeft,
-            zoomLevel,
-            tileDimension
-        )
-        val horizontalTileIntRange =
-            IntRange(
-                minOf(topLeftTile.first, bottomRightTile.first, topRightTile.first, bottomLeftTile.first),
-                maxOf(topLeftTile.first, bottomRightTile.first, topRightTile.first, bottomLeftTile.first)
-            )
-        val verticalTileIntRange =
-            IntRange(
-                minOf(topLeftTile.second, bottomRightTile.second, topRightTile.second, bottomLeftTile.second),
-                maxOf(topLeftTile.second, bottomRightTile.second, topRightTile.second, bottomLeftTile.second)
-            )
-
-        val visibleTileSpecs = mutableListOf<TileSpecs>()
+        require(zoomLevel in 0..30) { "Supported zoom levels are 0..30" }
+        val tileCount = 1L shl zoomLevel
+        var minX = floor(topLeft.x / tileDimension.width.value * tileCount).toLong()
+        var maxX = floor(bottomRight.x / tileDimension.width.value * tileCount).toLong()
+        var minY = floor(topLeft.y / tileDimension.height.value * tileCount).toLong()
+        var maxY = floor(bottomRight.y / tileDimension.height.value * tileCount).toLong()
         if (outsideTilesType == OutsideTilesType.NONE) {
-            for (x in horizontalTileIntRange)
-                for (y in verticalTileIntRange) {
-                    var xTile: Int
-                    if (x < 0 || x > 2F.pow(zoomLevel) - 1)
-                        continue
-                    else
-                        xTile = x
-                    var yTile: Int
-                    if (y < 0 || y > 2F.pow(zoomLevel) - 1)
-                        continue
-                    else
-                        yTile = y
-                    visibleTileSpecs.add(TileSpecs(zoomLevel, yTile, xTile))
-                }
-        } else {
-            for (x in horizontalTileIntRange)
-                for (y in verticalTileIntRange)
-                    visibleTileSpecs.add(TileSpecs(zoomLevel, y, x))
+            minX = maxOf(minX, 0L)
+            maxX = minOf(maxX, tileCount - 1)
+            minY = maxOf(minY, 0L)
+            maxY = minOf(maxY, tileCount - 1)
         }
-        return visibleTileSpecs
+        if (minX > maxX || minY > maxY) return emptyList()
+        require(minX >= Int.MIN_VALUE && maxX <= Int.MAX_VALUE &&
+            minY >= Int.MIN_VALUE && maxY <= Int.MAX_VALUE
+        ) { "Visible tile indices exceed the supported Int range" }
+        val visibleTiles = mutableListOf<TileSpecs>()
+        for (x in minX..maxX)
+            for (y in minY..maxY)
+                visibleTiles.add(TileSpecs(zoomLevel, y.toInt(), x.toInt()))
+        return visibleTiles
     }
-
-    private fun getXYTile(position: Offset, zoomLevel: Int, tileDimension: TileDimension): Pair<Int, Int> = Pair(
-        (position.x / tileDimension.width.value * (1 shl zoomLevel)).toIntFloor(),
-        (position.y / tileDimension.height.value * (1 shl zoomLevel)).toIntFloor()
-    )
 }

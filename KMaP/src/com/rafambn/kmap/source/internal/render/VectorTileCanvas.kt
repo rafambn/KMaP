@@ -28,7 +28,6 @@ import com.rafambn.kmap.source.internal.ActiveTiles
 import com.rafambn.kmap.source.internal.OptimizedVectorTile
 import com.rafambn.kmap.style.OptimizedStyle
 import com.rafambn.kmap.style.OptimizedStyleLayer
-import com.rafambn.kmap.utils.toIntFloor
 import kotlin.math.pow
 
 @Composable
@@ -138,12 +137,10 @@ private fun DrawScope.drawVectorTileLayerWithClipping(
 ) {
     val sizeX = (scaleAdjustment * tileSize.width.toPx())
     val sizeY = (scaleAdjustment * tileSize.height.toPx())
-    val posOffsetX = positionOffset.x.toIntFloor()
-    val posOffsetY = positionOffset.y.toIntFloor()
     canvas.withSave {
         tile.optimizedTile?.let { optimizedData ->
-            val tileLeft = tile.col * sizeX + posOffsetX
-            val tileTop = tile.row * sizeY + posOffsetY
+            val tileLeft = (tile.col * sizeX.toDouble() + positionOffset.x).toFloat()
+            val tileTop = (tile.row * sizeY.toDouble() + positionOffset.y).toFloat()
             canvas.translate(tileLeft, tileTop)
             val scaleX = sizeX / optimizedData.extent.toFloat()
             val scaleY = sizeY / optimizedData.extent.toFloat()
@@ -194,8 +191,8 @@ private fun DrawScope.drawBackgroundForActiveTiles(
     activeTiles.tiles.forEach { tile ->
         canvas.withSave {
             val scaleAdjustment = 2F.pow(activeTiles.currentZoom - tile.zoom)
-            val tileLeft = tileSize.width.toPx() * tile.col * scaleAdjustment + positionOffset.x
-            val tileTop = tileSize.height.toPx() * tile.row * scaleAdjustment + positionOffset.y
+            val tileLeft = tileSize.width.toPx().toDouble() * tile.col * scaleAdjustment + positionOffset.x
+            val tileTop = tileSize.height.toPx().toDouble() * tile.row * scaleAdjustment + positionOffset.y
             val tileRight = tileLeft + tileSize.width.toPx() * scaleAdjustment
             val tileBottom = tileTop + tileSize.height.toPx() * scaleAdjustment
 

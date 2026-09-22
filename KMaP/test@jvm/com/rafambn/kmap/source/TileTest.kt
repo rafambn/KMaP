@@ -13,6 +13,19 @@ class TileTest {
     }
 
     @Test
+    fun zoom30DescendantsAndRepeatedWorldsHaveCorrectParents() {
+        val root = TestTile(0, 0, 0)
+        val child = TestTile(30, 1073741823, 1073741823)
+        assertTrue(root.isParentOf(child))
+        assertTrue(child.isChildOf(root))
+        val repeatedRoot = TestTile(0, -1, 1)
+        val repeatedChild = TestTile(30, -1, 1073741824)
+        assertTrue(repeatedRoot.isParentOf(repeatedChild))
+        assertTrue(repeatedChild.isChildOf(repeatedRoot))
+        assertFalse(root.isParentOf(repeatedChild))
+    }
+
+    @Test
     fun `isParentOf returns true for a direct child`() {
         val parent = TestTile(10, 5, 5)
         val child = TestTile(11, 10, 10)

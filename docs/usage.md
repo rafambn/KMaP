@@ -55,6 +55,8 @@ interface MapProperties {
     fun toCoordinates(projectedCoordinates: ProjectedCoordinates): Coordinates
 }
 ```
+`MapProperties.zoomLevels` must be an ordered range within `0..30`.
+`MapState` rejects unsupported ranges, even when `zoomLevelPreference` is narrower.
 `MapState.cameraState` exposes zoom, angle, and a `TilePoint` position.
 Read `MapState.coordinates` for the geographic position, which is converted on demand.
 MapState calculates the visible tiles so each canvas can render its images.
