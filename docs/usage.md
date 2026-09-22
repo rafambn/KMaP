@@ -57,6 +57,9 @@ interface MapProperties {
 ```
 `MapProperties.zoomLevels` must be an ordered range within `0..30`.
 `MapState` rejects unsupported ranges, even when `zoomLevelPreference` is narrower.
+Create ranges with `ZoomLevelRange(min = 0, max = 19)`. The range is an immutable data class;
+replace previous interface implementations with constructor calls. To change the preferred
+limits, assign a new range to `mapState.zoomLevelPreference`.
 `MapState.cameraState` exposes zoom, angle, and a `TilePoint` position.
 Read `MapState.coordinates` for the geographic position, which is converted on demand.
 MapState calculates the visible tiles so each canvas can render its images.

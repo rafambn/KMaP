@@ -113,12 +113,11 @@ class MapState(
         )
     }
 
-    val drawMagScale = { cameraState.zoom - cameraState.zoom.toIntFloor() }
-    val drawReference = { cameraState.tilePoint.toCanvasDrawReference() }
-    val drawTileSize = { mapProperties.tileSize }
-    val drawRotationDegrees = { cameraState.angleDegrees.toFloat() }
-
-    val canvasKernel = CanvasKernel(coroutineScope, this)
+    internal val drawMagScale = { cameraState.zoom - cameraState.zoom.toIntFloor() }
+    internal val drawReference = { cameraState.tilePoint.toCanvasDrawReference() }
+    internal val drawTileSize = { mapProperties.tileSize }
+    internal val drawRotationDegrees = { cameraState.angleDegrees.toFloat() }
+    internal val canvasKernel = CanvasKernel(coroutineScope, this)
 
     private fun TilePoint.coerceInMap(): TilePoint {
         val x = if (mapProperties.boundMap.horizontal == MapBorderType.BOUND)
