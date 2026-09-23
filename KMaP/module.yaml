@@ -15,6 +15,7 @@ dependencies:
 
 test-dependencies:
   - $libs.testBalloon.framework.core
+  - $compose.desktop.currentOs
 
 test-settings:
   junit: none
