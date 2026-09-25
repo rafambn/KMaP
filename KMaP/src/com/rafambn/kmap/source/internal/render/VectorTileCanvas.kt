@@ -382,14 +382,6 @@ private fun DrawScope.drawSymbolFeature(
     text?.let {
         drawTextSymbol(canvas, geometry, properties, fontResolver, density, optimizedStyleLayer, 1.0, it, textScale, rotationDegrees)
     }
-
-    // TODO: Image symbol rendering would go here
-    // This includes:
-    // - icon-image: which image to display
-    // - icon-size, icon-opacity, icon-rotation
-    // - icon-offset, icon-anchor
-    // - image resource loading and caching
-    // Pending implementation of image symbol system
 }
 
 private fun DrawScope.drawTextSymbol(

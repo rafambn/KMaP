@@ -126,7 +126,7 @@ class ExpressionEvaluator {
             regex.findAll(expression).forEach { matchResult ->
                 val lang = matchResult.groupValues[1]
                 if (lang.isNotEmpty()) {
-                    properties.add("name:$lang") //TODO the regex must not be only name but the variable name: {number}, {ref}, road_{ref_lenght}
+                    properties.add("name:$lang")
                 } else {
                     properties.add("name")
                 }
