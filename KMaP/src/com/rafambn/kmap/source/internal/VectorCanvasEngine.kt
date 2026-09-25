@@ -53,7 +53,7 @@ internal fun optimizeMVTile(tile: VectorTile, optimizedStyle: OptimizedStyle): O
 
             val isValidGeometry = when (optimizedStyleLayer.type) {
                 "fill" -> feature.type == RawMVTGeomType.POLYGON
-                "line" -> feature.type == RawMVTGeomType.LINESTRING
+                "line" -> feature.type == RawMVTGeomType.LINESTRING || feature.type == RawMVTGeomType.POLYGON
                 "symbol" -> feature.type == RawMVTGeomType.POINT
                 else -> false
             }

@@ -22,7 +22,8 @@ data class Style(
     val light: Light? = null,
     val sources: Map<String, Source>,
     val layers: List<StyleLayer>,
-    val sprite: String? = null,
+    @Serializable(with = SpriteElementSerializer::class)
+    val sprite: JsonElement? = null,
     val glyphs: String? = null,
     val transition: Transition? = null
 )

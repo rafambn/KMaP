@@ -52,7 +52,7 @@ fun VectorTileScreen(
     val styleState = remember { mutableStateOf<OptimizedStyle?>(null) }
 
     LaunchedEffect(Unit) {
-        val styleJson = Res.readBytes("files/stylev4.json").decodeToString()
+        val styleJson = Res.readBytes("files/map-tiler-streets.json").decodeToString()
         styleState.value = StyleResolver().resolve(json.decodeFromString<Style>(styleJson), locale = "pt")
     }
 

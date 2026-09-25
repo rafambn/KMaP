@@ -54,11 +54,12 @@ fun VectorTileCanvas(
                 val activeTiles = activeTiles()
                 val style = style()
                 val zoom = zoom()
+                val screenScale = 2F.pow(magnifierScale)
 
                 withTransform({
                     translate(center.x, center.y)
                     rotate(rotation, Offset.Zero)
-                    scale(2F.pow(magnifierScale), Offset.Zero)
+                    scale(screenScale, Offset.Zero)
                 }) {
                     drawIntoCanvas { canvas ->
                         val backgroundLayer = style.layers.find { it.type == "background" }
@@ -83,7 +84,8 @@ fun VectorTileCanvas(
                             fontResolver,
                             density,
                             zoom,
-                            rotation
+                            rotation,
+                            screenScale
                         )
                     }
                 }
@@ -104,6 +106,7 @@ private fun DrawScope.drawStyleLayersWithTileClipping(
     density: Density,
     zoom: Double,
     rotationDegrees: Float,
+    screenScale: Float,
 ) {
     style.layers.filter { it.type != "background" }.forEach { styleLayer ->
         tiles.forEach { tile ->
@@ -117,7 +120,8 @@ private fun DrawScope.drawStyleLayersWithTileClipping(
                 fontResolver,
                 density,
                 zoom,
-                rotationDegrees
+                rotationDegrees,
+                screenScale
             )
         }
     }
@@ -134,6 +138,7 @@ private fun DrawScope.drawVectorTileLayerWithClipping(
     density: Density,
     zoom: Double,
     rotationDegrees: Float,
+    screenScale: Float,
 ) {
     val sizeX = (scaleAdjustment * tileSize.width.toPx())
     val sizeY = (scaleAdjustment * tileSize.height.toPx())
@@ -156,13 +161,15 @@ private fun DrawScope.drawVectorTileLayerWithClipping(
                 drawRenderFeature(
                     canvas,
                     renderFeature,
-                    scaleAdjustment,
                     fontResolver,
                     density,
                     optimizedLayer,
                     zoom,
                     optimizedData.extent.toFloat() / tileSize.height.toPx(),
                     rotationDegrees,
+                    scaleX,
+                    scaleY,
+                    screenScale,
                 )
             }
         }
@@ -214,45 +221,48 @@ private fun DrawScope.drawBackgroundForActiveTiles(
 internal fun DrawScope.drawRenderFeature(
     canvas: Canvas,
     renderFeature: OptimizedRenderFeature,
-    scaleAdjustment: Float,
     fontResolver: FontFamily.Resolver,
     density: Density,
     optimizedStyleLayer: OptimizedStyleLayer,
     zoom: Double,
     textScale: Float,
     rotationDegrees: Float,
+    tileScaleX: Float,
+    tileScaleY: Float,
+    screenScale: Float,
 ) {
-    when (renderFeature.geometry) {
-        is OptimizedGeometry.Polygon -> {
-            drawFillFeature(canvas, renderFeature.geometry, renderFeature.properties, optimizedStyleLayer, zoom)
+    val geometry = renderFeature.geometry
+    when (optimizedStyleLayer.type) {
+        "fill" -> if (geometry is OptimizedGeometry.Polygon) {
+            drawFillFeature(canvas, geometry, renderFeature.properties, optimizedStyleLayer, zoom, tileScaleX, tileScaleY, screenScale)
         }
 
-        is OptimizedGeometry.LineString -> {
-            drawLineFeature(canvas, renderFeature.geometry, renderFeature.properties, scaleAdjustment, optimizedStyleLayer, zoom)
+        "line" -> {
+            val path = when (geometry) {
+                is OptimizedGeometry.LineString -> geometry.path
+                is OptimizedGeometry.Polygon -> geometry.path
+                is OptimizedGeometry.Point -> null
+            }
+            if (path != null) {
+                drawLineFeature(canvas, path, renderFeature.properties, optimizedStyleLayer, zoom, tileScaleX, tileScaleY, screenScale)
+            }
         }
 
-        is OptimizedGeometry.Point -> {
-            drawSymbolFeature(
-                canvas,
-                renderFeature.geometry,
-                renderFeature.properties,
-                fontResolver,
-                density,
-                optimizedStyleLayer,
-                zoom,
-                textScale,
-                rotationDegrees,
-            )
+        "symbol" -> if (geometry is OptimizedGeometry.Point) {
+            drawSymbolFeature(canvas, geometry, renderFeature.properties, fontResolver, density, optimizedStyleLayer, zoom, textScale, rotationDegrees)
         }
     }
 }
 
-private fun DrawScope.drawFillFeature(
+internal fun drawFillFeature(
     canvas: Canvas,
     geometry: OptimizedGeometry.Polygon,
     properties: Map<String, Any>,
     optimizedStyleLayer: OptimizedStyleLayer,
-    zoom: Double
+    zoom: Double,
+    tileScaleX: Float,
+    tileScaleY: Float,
+    screenScale: Float,
 ) {
     val fillColor =
         optimizedStyleLayer.paint.properties["fill-color"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? Color ?: Color.Magenta
@@ -260,61 +270,101 @@ private fun DrawScope.drawFillFeature(
         optimizedStyleLayer.paint.properties["fill-opacity"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? Double ?: 1.0
     val outlineColor =
         optimizedStyleLayer.paint.properties["fill-outline-color"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? Color
-    canvas.drawPath(
-        geometry.path,
-        Paint().apply {
-            color = fillColor.copy(alpha = opacity.toFloat())
-            isAntiAlias = true
-            style = PaintingStyle.Fill
-        }
-    )
-    outlineColor?.let {
+    val antialias =
+        optimizedStyleLayer.paint.properties["fill-antialias"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? Boolean ?: true
+    val fillAlpha = fillColor.alpha * opacity.toFloat()
+    val groupDefaultOutline = antialias && outlineColor == null && fillAlpha < 1f
+
+    val drawPaths = {
         canvas.drawPath(
             geometry.path,
             Paint().apply {
-                color = it
-                isAntiAlias = true
-                style = PaintingStyle.Stroke
-                strokeWidth = 1f
+                color = fillColor.copy(alpha = if (groupDefaultOutline) 1f else fillAlpha)
+                isAntiAlias = false
+                style = PaintingStyle.Fill
             }
         )
+
+        if (antialias) {
+            val screenPath = Path().apply {
+                fillType = geometry.path.fillType
+                addPath(geometry.path)
+                transform(Matrix().apply { scale(tileScaleX, tileScaleY) })
+            }
+            val strokeColor = outlineColor ?: fillColor
+            canvas.withSave {
+                canvas.scale(1f / tileScaleX, 1f / tileScaleY)
+                if (outlineColor == null) canvas.clipPath(screenPath, ClipOp.Difference)
+                canvas.drawPath(
+                    screenPath,
+                    Paint().apply {
+                        color = strokeColor.copy(alpha = if (groupDefaultOutline) 1f else strokeColor.alpha * opacity.toFloat())
+                        isAntiAlias = true
+                        style = PaintingStyle.Stroke
+                        strokeWidth = 1f / screenScale
+                    }
+                )
+            }
+        }
+    }
+
+    if (groupDefaultOutline) {
+        val bounds = geometry.path.getBounds()
+        val marginX = 2f / (tileScaleX * screenScale)
+        val marginY = 2f / (tileScaleY * screenScale)
+        canvas.withSaveLayer(
+            Rect(bounds.left - marginX, bounds.top - marginY, bounds.right + marginX, bounds.bottom + marginY),
+            Paint().apply { alpha = fillAlpha }
+        ) { drawPaths() }
+    } else {
+        drawPaths()
     }
 }
 
-private fun DrawScope.drawLineFeature(
+internal fun drawLineFeature(
     canvas: Canvas,
-    geometry: OptimizedGeometry.LineString,
+    path: Path,
     properties: Map<String, Any>,
-    scaleAdjustment: Float,
     optimizedStyleLayer: OptimizedStyleLayer,
-    zoom: Double
+    zoom: Double,
+    tileScaleX: Float,
+    tileScaleY: Float,
+    screenScale: Float,
 ) {
     val fillColor =
         optimizedStyleLayer.paint.properties["line-color"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? Color ?: Color.Magenta
-    val width = optimizedStyleLayer.paint.properties["line-width"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? Double ?: 1.0f
-    val opacity = optimizedStyleLayer.paint.properties["line-opacity"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? Double ?: 1.0f
+    val width = (optimizedStyleLayer.paint.properties["line-width"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? Number)?.toFloat() ?: 1f
+    if (width <= 0f) return
+    val opacity = (optimizedStyleLayer.paint.properties["line-opacity"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? Number)?.toFloat() ?: 1f
     val cap = optimizedStyleLayer.layout.properties["line-cap"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? String ?: "butt"
     val join = optimizedStyleLayer.layout.properties["line-join"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? String ?: "miter"
 
-    canvas.drawPath(
-        geometry.path,
-        Paint().apply {
-            color = fillColor.copy(alpha = opacity.toFloat())
-            isAntiAlias = true
-            style = PaintingStyle.Stroke
-            strokeWidth = width.toFloat() * scaleAdjustment
-            strokeCap = when (cap) {
-                "round" -> StrokeCap.Round
-                "square" -> StrokeCap.Square
-                else -> StrokeCap.Butt
+    val screenPath = Path().apply {
+        addPath(path)
+        transform(Matrix().apply { scale(tileScaleX, tileScaleY) })
+    }
+    canvas.withSave {
+        canvas.scale(1f / tileScaleX, 1f / tileScaleY)
+        canvas.drawPath(
+            screenPath,
+            Paint().apply {
+                color = fillColor.copy(alpha = fillColor.alpha * opacity)
+                isAntiAlias = true
+                style = PaintingStyle.Stroke
+                strokeWidth = width / screenScale
+                strokeCap = when (cap) {
+                    "round" -> StrokeCap.Round
+                    "square" -> StrokeCap.Square
+                    else -> StrokeCap.Butt
+                }
+                strokeJoin = when (join) {
+                    "round" -> StrokeJoin.Round
+                    "bevel" -> StrokeJoin.Bevel
+                    else -> StrokeJoin.Miter
+                }
             }
-            strokeJoin = when (join) {
-                "round" -> StrokeJoin.Round
-                "bevel" -> StrokeJoin.Bevel
-                else -> StrokeJoin.Miter
-            }
-        }
-    )
+        )
+    }
 }
 
 private fun DrawScope.drawSymbolFeature(

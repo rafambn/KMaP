@@ -108,12 +108,26 @@ val StyleModelSerializationCoverageTest by testSuite {
                 completeStyle.sources.getValue("source")
             )
             assertEquals("landuse", completeStyle.layers.single().sourceLayer)
-            assertEquals("https://example.test/sprite", completeStyle.sprite)
+            assertEquals(JsonPrimitive("https://example.test/sprite"), completeStyle.sprite)
             assertEquals(Transition(duration = 300, delay = 25), completeStyle.transition)
 
             val encoded = json.encodeToString(Style.serializer(), completeStyle)
             assertEquals(completeStyle, json.decodeFromString<Style>(encoded))
             assertEquals(minimalStyle, json.decodeFromString<Style>(json.encodeToString(Style.serializer(), minimalStyle)))
+        }
+
+        test("decodes named sprite sources") { json ->
+            val sprite = json.parseToJsonElement("""[
+                {"id":"default","url":"https://example.test/default"},
+                {"id":"transportation","url":"https://example.test/transportation"}
+            ]""")
+            val style = json.decodeFromString<Style>("""{
+                "version":8,"sources":{},"layers":[],"sprite":$sprite
+            }""")
+
+            assertEquals(sprite, style.sprite)
+            assertEquals(style, json.decodeFromString<Style>(json.encodeToString(Style.serializer(), style)))
+            assertEquals(style, ProtoBuf.decodeFromByteArray(Style.serializer(), ProtoBuf.encodeToByteArray(Style.serializer(), style)))
         }
 
         test("round trips nested model defaults when default encoding is enabled") { json ->
@@ -187,7 +201,7 @@ val StyleModelSerializationCoverageTest by testSuite {
             light = Light("map", listOf(1.0, 2.0, 3.0), "#ffffff", 0.5),
             sources = mapOf("source" to Source(type = "vector", url = "https://example.test/tiles")),
             layers = listOf(StyleLayer("layer", "fill", source = "source", sourceLayer = "landuse", minzoom = 1.0, maxzoom = 15.0)),
-            sprite = "https://example.test/sprite",
+            sprite = JsonPrimitive("https://example.test/sprite"),
             glyphs = "https://example.test/glyphs",
             transition = Transition(duration = 300, delay = 25)
         )

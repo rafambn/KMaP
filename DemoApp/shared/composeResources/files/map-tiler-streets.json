@@ -7,7 +7,7 @@
       "type": "vector"
     },
     "maptiler_planet_v4": {
-      "url": "https://api.maptiler.com/tiles/v4/tiles.json?key=GCqxEKWuBP1S6iQ1aSBG",
+      "url": "https://api.maptiler.com/tiles/v4/tiles.json?key=TRvgTCfAgciROrLkbKNj",
       "type": "vector"
     }
   },
@@ -28735,7 +28735,7 @@
       "spaceColor": "#B6E0FC"
     }
   },
-  "glyphs": "https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=GCqxEKWuBP1S6iQ1aSBG",
+  "glyphs": "https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=TRvgTCfAgciROrLkbKNj",
   "sprite": [
     {
       "id": "default",

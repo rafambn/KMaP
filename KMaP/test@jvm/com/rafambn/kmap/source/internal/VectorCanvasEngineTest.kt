@@ -49,4 +49,28 @@ val VectorCanvasEngineTest by testSuite {
         assertTrue(hitTester.contains(Offset(15f, 15f)))
         assertFalse(hitTester.contains(Offset(11f, 11f)))
     }
+
+    test("line style keeps polygon geometry for its outer and inner boundaries") {
+        val feature = MVTFeature(
+            id = null,
+            type = RawMVTGeomType.POLYGON,
+            geometry = listOf(
+                listOf(0 to 0, 20 to 0, 20 to 20, 0 to 20),
+                listOf(5 to 5, 5 to 15, 15 to 15, 15 to 5)
+            ),
+            properties = emptyMap()
+        )
+        val tile = VectorTile(0, 0, 0, MVTile(listOf(MVTLayer("land", 4096, listOf(feature)))))
+        val style = StyleResolver().resolve(
+            Style(
+                version = 8,
+                sources = emptyMap(),
+                layers = listOf(StyleLayer(id = "land-outline", type = "line", sourceLayer = "land"))
+            )
+        )
+
+        val geometry = optimizeMVTile(tile, style).optimizedTile!!
+            .layerFeatures.getValue("land-outline").single().geometry
+        assertTrue(geometry is OptimizedGeometry.Polygon)
+    }
 }

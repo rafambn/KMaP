@@ -46,7 +46,7 @@ val StyleValueSemanticsCoverageTest by testSuite {
             light = light,
             sources = mapOf("source" to source),
             layers = listOf(layer),
-            sprite = "sprite",
+            sprite = JsonPrimitive("sprite"),
             glyphs = "glyphs",
             transition = transition
         )
@@ -118,7 +118,7 @@ val StyleValueSemanticsCoverageTest by testSuite {
             style.copy(light = light.copy(intensity = 1.0)),
             style.copy(sources = emptyMap()),
             style.copy(layers = emptyList()),
-            style.copy(sprite = "other"),
+            style.copy(sprite = JsonPrimitive("other")),
             style.copy(glyphs = "other"),
             style.copy(transition = transition.copy(delay = 10))
         ).forEach { assertNotEquals(style, it) }
