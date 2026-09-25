@@ -338,6 +338,63 @@ internal fun drawLineFeature(
     val opacity = (optimizedStyleLayer.paint.properties["line-opacity"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? Number)?.toFloat() ?: 1f
     val cap = optimizedStyleLayer.layout.properties["line-cap"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? String ?: "butt"
     val join = optimizedStyleLayer.layout.properties["line-join"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? String ?: "miter"
+    val effectiveCap = if (join == "none") "butt" else cap
+    val dashArray = if (optimizedStyleLayer.paint.properties["line-pattern"]?.evaluate(zoom, properties, optimizedStyleLayer.id) == null) {
+        optimizedStyleLayer.paint.properties["line-dasharray"]?.evaluate(zoom.toInt().toDouble(), properties, optimizedStyleLayer.id) as? List<*>
+    } else null
+    val validDashArray = dashArray?.takeIf { values ->
+        values.isNotEmpty() && values.all { it is Number && it.toFloat().isFinite() && it.toFloat() >= 0f }
+    }
+    if (validDashArray?.all { (it as Number).toFloat() == 0f } == true) return
+    var dashEffect: PathEffect? = null
+    if (validDashArray != null && validDashArray.size > 1) {
+        val values = validDashArray
+        val odd = values.size % 2 != 0
+        val intervalCount = if (odd) values.size - 1 else values.size
+
+        // Mapbox joins the first and last dashes of an odd-length array at the repeat boundary.
+        var intervals = FloatArray(intervalCount) { index ->
+            val units = (values[index] as Number).toFloat() +
+                if (odd && index == 0) (values.last() as Number).toFloat() else 0f
+            units * width / screenScale
+        }
+        var phase = if (odd) (values.last() as Number).toFloat() * width / screenScale else 0f
+        if (intervals.all { it.isFinite() } && phase.isFinite()) {
+            if (effectiveCap != "round") {
+                val collapsed = mutableListOf<Float>()
+                var leadingGap = 0f
+                for (index in intervals.indices step 2) {
+                    val dash = intervals[index]
+                    val gap = intervals[index + 1]
+                    when {
+                        dash == 0f && collapsed.isEmpty() -> leadingGap += gap
+                        dash == 0f -> collapsed[collapsed.lastIndex] += gap
+                        collapsed.isEmpty() -> { collapsed.add(dash); collapsed.add(gap) }
+                        collapsed.last() == 0f -> {
+                            collapsed[collapsed.lastIndex - 1] += dash
+                            collapsed[collapsed.lastIndex] = gap
+                        }
+                        else -> { collapsed.add(dash); collapsed.add(gap) }
+                    }
+                }
+                if (collapsed.isEmpty()) return
+                collapsed[collapsed.lastIndex] += leadingGap
+                phase -= leadingGap
+                if (collapsed.size > 2 && collapsed.last() == 0f) {
+                    val lastDash = collapsed[collapsed.lastIndex - 1]
+                    collapsed[0] += lastDash
+                    phase += lastDash
+                    collapsed.removeAt(collapsed.lastIndex)
+                    collapsed.removeAt(collapsed.lastIndex)
+                }
+                intervals = collapsed.toFloatArray()
+            }
+            if (intervals.indices.any { it % 2 != 0 && intervals[it] > 0f }) {
+                val period = intervals.sum()
+                dashEffect = PathEffect.dashPathEffect(intervals, (phase % period + period) % period)
+            }
+        }
+    }
 
     val screenPath = Path().apply {
         addPath(path)
@@ -398,10 +455,10 @@ internal fun drawLineFeature(
                 isAntiAlias = true
                 style = PaintingStyle.Stroke
                 strokeWidth = width / screenScale
+                pathEffect = dashEffect
                 strokeCap = when {
-                    join == "none" -> StrokeCap.Butt
-                    cap == "round" -> StrokeCap.Round
-                    cap == "square" -> StrokeCap.Square
+                    effectiveCap == "round" -> StrokeCap.Round
+                    effectiveCap == "square" -> StrokeCap.Square
                     else -> StrokeCap.Butt
                 }
                 strokeJoin = when (join) {

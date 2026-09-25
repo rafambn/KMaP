@@ -16,6 +16,7 @@ import com.rafambn.kmap.style.Style
 import com.rafambn.kmap.style.StyleLayer
 import com.rafambn.kmap.style.StyleResolver
 import de.infix.testBalloon.framework.core.testSuite
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -302,5 +303,161 @@ val VectorTileCanvasTest by testSuite {
         assertTrue(pixels[24, 32].alpha > 0.9f)
         assertEquals(0f, pixels[16, 16].alpha)
         assertEquals(0f, pixels[32, 32].alpha)
+    }
+
+    test("line dasharray uses line widths and stays in screen pixels") {
+        val style = StyleResolver().resolve(
+            Style(
+                version = 8,
+                sources = emptyMap(),
+                layers = listOf(
+                    StyleLayer(
+                        id = "line",
+                        type = "line",
+                        paint = mapOf(
+                            "line-color" to JsonPrimitive("#0000ff"),
+                            "line-width" to JsonPrimitive(4),
+                            "line-dasharray" to JsonArray(listOf(JsonPrimitive(2), JsonPrimitive(1)))
+                        )
+                    )
+                )
+            )
+        )
+
+        fun render(tileScaleX: Float, tileScaleY: Float, screenScale: Float): ImageBitmap {
+            val path = Path().apply {
+                moveTo(8f / (tileScaleX * screenScale), 16f / (tileScaleY * screenScale))
+                lineTo(72f / (tileScaleX * screenScale), 16f / (tileScaleY * screenScale))
+            }
+            val bitmap = ImageBitmap(80, 32)
+            val canvas = Canvas(bitmap)
+            canvas.scale(screenScale, screenScale)
+            canvas.scale(tileScaleX, tileScaleY)
+            drawLineFeature(canvas, path, emptyMap(), style.layers.single(), 0.0, tileScaleX, tileScaleY, screenScale)
+            return bitmap
+        }
+
+        val baseline = render(1f, 1f, 1f).toPixelMap()
+        val tileScaled = render(4f, 2f, 1f).toPixelMap()
+        val mapScaled = render(4f, 2f, 2f).toPixelMap()
+        assertTrue(baseline[12, 16].alpha > 0.9f)
+        assertEquals(0f, baseline[18, 16].alpha)
+        assertTrue(baseline[24, 16].alpha > 0.9f)
+        assertEquals(0f, baseline[30, 16].alpha)
+        for (x in 8..70) {
+            assertEquals(baseline[x, 16].alpha, tileScaled[x, 16].alpha, 0.02f)
+            assertEquals(baseline[x, 16].alpha, mapScaled[x, 16].alpha, 0.02f)
+        }
+    }
+
+    test("line dasharray joins odd endpoints and is disabled by line pattern") {
+        fun render(pattern: Boolean): ImageBitmap {
+            val paint = mutableMapOf(
+                "line-color" to JsonPrimitive("#0000ff"),
+                "line-width" to JsonPrimitive(4),
+                "line-dasharray" to JsonArray(listOf(JsonPrimitive(2), JsonPrimitive(1), JsonPrimitive(3)))
+            )
+            if (pattern) paint["line-pattern"] = JsonPrimitive("road-texture")
+            val style = StyleResolver().resolve(
+                Style(
+                    version = 8,
+                    sources = emptyMap(),
+                    layers = listOf(StyleLayer(id = "line", type = "line", paint = paint))
+                )
+            )
+            val path = Path().apply {
+                moveTo(8f, 16f)
+                lineTo(72f, 16f)
+            }
+            val bitmap = ImageBitmap(80, 32)
+            drawLineFeature(Canvas(bitmap), path, emptyMap(), style.layers.single(), 0.0, 1f, 1f, 1f)
+            return bitmap
+        }
+
+        val dashed = render(false).toPixelMap()
+        val patterned = render(true).toPixelMap()
+        assertTrue(dashed[12, 16].alpha > 0.9f)
+        assertEquals(0f, dashed[18, 16].alpha)
+        assertTrue(dashed[24, 16].alpha > 0.9f)
+        assertTrue(dashed[36, 16].alpha > 0.9f)
+        assertEquals(0f, dashed[42, 16].alpha)
+        assertTrue(patterned[18, 16].alpha > 0.9f)
+    }
+
+    test("zero-length dashes render dots only with round caps") {
+        fun render(cap: String, dashArray: List<Int> = listOf(0, 2)): ImageBitmap {
+            val style = StyleResolver().resolve(
+                Style(
+                    version = 8,
+                    sources = emptyMap(),
+                    layers = listOf(
+                        StyleLayer(
+                            id = "line",
+                            type = "line",
+                            layout = mapOf("line-cap" to JsonPrimitive(cap)),
+                            paint = mapOf(
+                                "line-color" to JsonPrimitive("#0000ff"),
+                                "line-width" to JsonPrimitive(4),
+                                "line-dasharray" to JsonArray(dashArray.map(::JsonPrimitive))
+                            )
+                        )
+                    )
+                )
+            )
+            val path = Path().apply {
+                moveTo(8f, 16f)
+                lineTo(72f, 16f)
+            }
+            val bitmap = ImageBitmap(80, 32)
+            drawLineFeature(Canvas(bitmap), path, emptyMap(), style.layers.single(), 0.0, 1f, 1f, 1f)
+            return bitmap
+        }
+
+        val round = render("round").toPixelMap()
+        val square = render("square").toPixelMap()
+        val mixed = render("square", listOf(2, 1, 0, 1)).toPixelMap()
+        val leadingGap = render("square", listOf(0, 1, 2, 1)).toPixelMap()
+        assertTrue(round[8, 16].alpha > 0.9f)
+        assertEquals(0f, round[12, 16].alpha)
+        assertTrue(round[16, 16].alpha > 0.9f)
+        assertEquals(0f, square[8, 16].alpha)
+        assertEquals(0f, square[16, 16].alpha)
+        assertTrue(mixed[12, 16].alpha > 0.9f)
+        assertEquals(0f, mixed[20, 16].alpha)
+        assertTrue(mixed[28, 16].alpha > 0.9f)
+        assertEquals(0f, leadingGap[8, 16].alpha)
+        assertTrue(leadingGap[12, 16].alpha > 0.9f)
+    }
+
+    test("all-zero dashes draw nothing and zero gaps draw a solid line") {
+        fun render(intervals: List<Int>): ImageBitmap {
+            val style = StyleResolver().resolve(
+                Style(
+                    version = 8,
+                    sources = emptyMap(),
+                    layers = listOf(
+                        StyleLayer(
+                            id = "line",
+                            type = "line",
+                            paint = mapOf(
+                                "line-color" to JsonPrimitive("#0000ff"),
+                                "line-width" to JsonPrimitive(4),
+                                "line-dasharray" to JsonArray(intervals.map(::JsonPrimitive))
+                            )
+                        )
+                    )
+                )
+            )
+            val path = Path().apply {
+                moveTo(8f, 16f)
+                lineTo(72f, 16f)
+            }
+            val bitmap = ImageBitmap(80, 32)
+            drawLineFeature(Canvas(bitmap), path, emptyMap(), style.layers.single(), 0.0, 1f, 1f, 1f)
+            return bitmap
+        }
+
+        assertEquals(0f, render(listOf(0, 0)).toPixelMap()[32, 16].alpha)
+        assertTrue(render(listOf(2, 0)).toPixelMap()[32, 16].alpha > 0.9f)
     }
 }
