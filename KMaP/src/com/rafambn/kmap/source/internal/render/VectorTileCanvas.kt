@@ -63,9 +63,9 @@ fun VectorTileCanvas(
                 }) {
                     drawIntoCanvas { canvas ->
                         val backgroundLayer = style.layers.find { it.type == "background" }
-                        backgroundLayer?.let {
+                        if (backgroundLayer != null && zoom in backgroundLayer.minZoom..<backgroundLayer.maxZoom) {
                             drawBackgroundForActiveTiles(
-                                it,
+                                backgroundLayer,
                                 canvas,
                                 tileSize,
                                 positionOffset,
@@ -108,7 +108,7 @@ private fun DrawScope.drawStyleLayersWithTileClipping(
     rotationDegrees: Float,
     screenScale: Float,
 ) {
-    style.layers.filter { it.type != "background" }.forEach { styleLayer ->
+    style.layers.filter { it.type != "background" && zoom in it.minZoom..<it.maxZoom }.forEach { styleLayer ->
         tiles.forEach { tile ->
             drawVectorTileLayerWithClipping(
                 tile as OptimizedVectorTile,

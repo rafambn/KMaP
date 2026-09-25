@@ -32,10 +32,6 @@ internal fun optimizeMVTile(tile: VectorTile, optimizedStyle: OptimizedStyle): O
     optimizedStyle.layers.forEach { optimizedStyleLayer ->
         if (optimizedStyleLayer.type == "background") return@forEach
 
-        val currentZoom = tile.zoom.toDouble()
-        if (currentZoom < optimizedStyleLayer.minZoom) return@forEach
-        if (currentZoom > optimizedStyleLayer.maxZoom) return@forEach
-
         val sourceLayerName = optimizedStyleLayer.sourceLayer ?: return@forEach
         val mvtLayer = mvtData.layers.find { it.name == sourceLayerName } ?: return@forEach
 
@@ -49,7 +45,7 @@ internal fun optimizeMVTile(tile: VectorTile, optimizedStyle: OptimizedStyle): O
             }
             val featureId = feature.id
 
-            if (optimizedStyleLayer.filter?.evaluate(currentZoom, featureProperties, geometryType, featureId) == false) return@mapNotNull null
+            if (optimizedStyleLayer.filter?.evaluate(tile.zoom.toDouble(), featureProperties, geometryType, featureId) == false) return@mapNotNull null
 
             val isValidGeometry = when (optimizedStyleLayer.type) {
                 "fill" -> feature.type == RawMVTGeomType.POLYGON

@@ -39,7 +39,7 @@ val StyleResolverCoverageTest by testSuite {
 
         val empty = optimized.layers[0]
         assertEquals(0.0, empty.minZoom)
-        assertEquals(24.0, empty.maxZoom)
+        assertEquals(Double.POSITIVE_INFINITY, empty.maxZoom)
         assertNull(empty.filter)
         assertTrue(empty.layout.visibility.evaluate(0.0, emptyMap(), null) == true)
         assertTrue(empty.layout.properties.isEmpty())

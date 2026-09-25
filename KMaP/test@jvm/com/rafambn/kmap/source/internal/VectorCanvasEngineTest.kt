@@ -18,6 +18,32 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 
 val VectorCanvasEngineTest by testSuite {
+    test("tile processing preserves features outside layer zoom bounds for later drawing") {
+        val feature = MVTFeature(
+            id = null,
+            type = RawMVTGeomType.POLYGON,
+            geometry = listOf(listOf(0 to 0, 10 to 0, 10 to 10, 0 to 10)),
+            properties = emptyMap()
+        )
+        val mvtile = MVTile(listOf(MVTLayer("land", 4096, listOf(feature))))
+        val style = StyleResolver().resolve(
+            Style(
+                version = 8,
+                sources = emptyMap(),
+                layers = listOf(StyleLayer(
+                    id = "land-fill",
+                    type = "fill",
+                    sourceLayer = "land",
+                    minzoom = 5.5,
+                    maxzoom = 8.5
+                ))
+            )
+        )
+
+        assertTrue(optimizeMVTile(VectorTile(5, 0, 0, mvtile), style).optimizedTile!!.layerFeatures.getValue("land-fill").isNotEmpty())
+        assertTrue(optimizeMVTile(VectorTile(9, 0, 0, mvtile), style).optimizedTile!!.layerFeatures.getValue("land-fill").isNotEmpty())
+    }
+
     test("filter evaluates zoom from the tile being processed") {
         val feature = MVTFeature(
             id = 7,
