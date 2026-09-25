@@ -1,5 +1,11 @@
 KMaP TODO
 
+- Handle vector style changes for an existing canvas ID. `CanvasKernel.refreshCanvas`
+  keeps the engine and tiles processed with the old style while `VectorTileCanvas`
+  draws with the new style. Keep raw MVT tiles for reprocessing, or replace the
+  engine and reload visible tiles, keeping layer IDs, `source-layer`, and filters
+  in sync.
+
 - Support `fill-pattern` in vector `fill` layers. Resolve sprite images and
   repeat them across polygons without tile seams, preserving holes and
   `fill-opacity`. When a pattern is active, do not draw `fill-color` or
