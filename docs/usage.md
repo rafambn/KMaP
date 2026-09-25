@@ -212,6 +212,8 @@ interface TileSource<T : Tile> {
 
 Use `RasterCanvasParameters` or `VectorCanvasParameters` when calling `rasterCanvas` or `vectorCanvas`. Vector canvases also take an `OptimizedStyle`.
 
+See [Mapbox vector style support](vector-style-support.md) for the style layers, properties, and expressions that the vector canvas currently renders.
+
 With a tile source you can render any tiled map you want: OSM, custom servers, offline tiles, or device-generated tiles.
 
 You can pass a MapGestureWrapper to handle input; KMaP wires it into the pointer input scope:

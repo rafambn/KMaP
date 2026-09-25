@@ -180,10 +180,10 @@ private fun DrawScope.drawBackgroundForActiveTiles(
     val backgroundColor =
         backgroundLayer.paint.properties["background-color"]?.evaluate(zoom, emptyMap(), "") as? Color ?: Color.Magenta
     val backgroundOpacity =
-        backgroundLayer.paint.properties["background-opacity"]?.evaluate(zoom, emptyMap(), "") as? Float ?: 1F
+        (backgroundLayer.paint.properties["background-opacity"]?.evaluate(zoom, emptyMap(), "") as? Number)?.toFloat() ?: 1F
 
     val paint = Paint().apply {
-        color = backgroundColor.copy(alpha = backgroundOpacity)
+        color = backgroundColor.copy(alpha = backgroundColor.alpha * backgroundOpacity)
         style = PaintingStyle.Fill
         isAntiAlias = false
     }
@@ -254,32 +254,30 @@ private fun DrawScope.drawFillFeature(
     optimizedStyleLayer: OptimizedStyleLayer,
     zoom: Double
 ) {
-    geometry.paths.forEach { path ->
-        val fillColor =
-            optimizedStyleLayer.paint.properties["fill-color"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? Color ?: Color.Magenta
-        val opacity =
-            optimizedStyleLayer.paint.properties["fill-opacity"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? Double ?: 1.0
-        val outlineColor =
-            optimizedStyleLayer.paint.properties["fill-outline-color"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? Color
+    val fillColor =
+        optimizedStyleLayer.paint.properties["fill-color"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? Color ?: Color.Magenta
+    val opacity =
+        optimizedStyleLayer.paint.properties["fill-opacity"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? Double ?: 1.0
+    val outlineColor =
+        optimizedStyleLayer.paint.properties["fill-outline-color"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? Color
+    canvas.drawPath(
+        geometry.path,
+        Paint().apply {
+            color = fillColor.copy(alpha = opacity.toFloat())
+            isAntiAlias = true
+            style = PaintingStyle.Fill
+        }
+    )
+    outlineColor?.let {
         canvas.drawPath(
-            path,
+            geometry.path,
             Paint().apply {
-                color = fillColor.copy(alpha = opacity.toFloat())
+                color = it
                 isAntiAlias = true
-                style = PaintingStyle.Fill
+                style = PaintingStyle.Stroke
+                strokeWidth = 1f
             }
         )
-        outlineColor?.let {
-            canvas.drawPath(
-                path,
-                Paint().apply {
-                    color = it
-                    isAntiAlias = true
-                    style = PaintingStyle.Stroke
-                    strokeWidth = 1f
-                }
-            )
-        }
     }
 }
 

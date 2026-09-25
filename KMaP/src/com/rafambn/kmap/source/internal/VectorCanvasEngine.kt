@@ -1,6 +1,7 @@
 package com.rafambn.kmap.source.internal
 
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathFillType
 import com.rafambn.kmap.mvttile.*
 import com.rafambn.kmap.source.TileResult
 import com.rafambn.kmap.source.VectorTile
@@ -22,7 +23,7 @@ class VectorCanvasEngine(
     )
 )
 
-private fun optimizeMVTile(tile: VectorTile, optimizedStyle: OptimizedStyle): OptimizedVectorTile {
+internal fun optimizeMVTile(tile: VectorTile, optimizedStyle: OptimizedStyle): OptimizedVectorTile {
     val mvtData = tile.mvtile ?: return OptimizedVectorTile(tile.zoom, tile.row, tile.col, null)
 
     val layerFeatures = mutableMapOf<String, MutableList<OptimizedRenderFeature>>()
@@ -81,8 +82,10 @@ private fun optimizeMVTile(tile: VectorTile, optimizedStyle: OptimizedStyle): Op
 private fun buildOptimizedGeometry(feature: MVTFeature): OptimizedGeometry? {
     return when (feature.type) {
         RawMVTGeomType.POLYGON -> {
-            val paths = feature.geometry.map { ring -> buildPathFromGeometry(listOf(ring), true) }
-            OptimizedGeometry.Polygon(paths)
+            val path = buildPathFromGeometry(feature.geometry, true).apply {
+                fillType = PathFillType.NonZero
+            }
+            OptimizedGeometry.Polygon(path)
         }
 
         RawMVTGeomType.LINESTRING -> {
