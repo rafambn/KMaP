@@ -227,7 +227,7 @@ if [ -n "$required_source_file" ]; then
 fi
 
 if [ -n "$required_coverage_package" ]; then
-    style_package_coverage=$(
+    package_coverage=$(
         awk \
             -v target_package="$required_coverage_package" '
             function counter_value(line, attribute, value) {
@@ -243,6 +243,7 @@ if [ -n "$required_coverage_package" ]; then
                 sub(/".*$/, "", package)
                 in_package = package == target_package || index(package, target_package "/") == 1
                 if (in_package) package_found = 1
+                if (in_package && package == "com/rafambn/kmap/style") style_included = 1
                 in_sourcefile = 0
             }
 
@@ -262,8 +263,8 @@ if [ -n "$required_coverage_package" ]; then
                 sub(/^.*<class name="/, "", class_name)
                 sub(/".*$/, "", class_name)
                 in_class = 1
-                if (in_package && class_name == target_package "/Light") light_found = 1
-                if (in_package && class_name == target_package "/Transition") transition_found = 1
+                if (in_package && class_name == "com/rafambn/kmap/style/Light") light_found = 1
+                if (in_package && class_name == "com/rafambn/kmap/style/Transition") transition_found = 1
             }
 
             /<counter type="LINE"/ {
@@ -285,7 +286,7 @@ if [ -n "$required_coverage_package" ]; then
             }
 
             /<line nr="/ {
-                if (in_package && in_sourcefile && sourcefile_name == "Style.kt") {
+                if (in_package && package == "com/rafambn/kmap/style" && in_sourcefile && sourcefile_name == "Style.kt") {
                     line_number = counter_value($0, "nr")
                     missed = counter_value($0, "mb")
                     if (line_number == 29) {
@@ -311,18 +312,18 @@ if [ -n "$required_coverage_package" ]; then
                 if (!package_found) {
                     print "missing"
                 } else {
-                    print package_missed_lines, package_covered_lines, package_missed_branches, package_covered_branches, light_found, transition_found, light_exception_found, light_exception_missed, transition_exception_found, transition_exception_missed
+                    print package_missed_lines + 0, package_covered_lines + 0, package_missed_branches + 0, package_covered_branches + 0, light_found + 0, transition_found + 0, light_exception_found + 0, light_exception_missed + 0, transition_exception_found + 0, transition_exception_missed + 0, style_included + 0
                 }
             }
         ' "$xml_file"
     )
 
-    if [ -z "$style_package_coverage" ] || [ "$style_package_coverage" = "missing" ]; then
+    if [ -z "$package_coverage" ] || [ "$package_coverage" = "missing" ]; then
         echo "Kover package was not found in the XML report: $required_coverage_package" >&2
         exit 1
     fi
 
-    set -- $style_package_coverage
+    set -- $package_coverage
     missed_lines="$1"
     covered_lines="$2"
     missed_branches="$3"
@@ -334,22 +335,30 @@ if [ -n "$required_coverage_package" ]; then
     transition_exception_found="$9"
     shift 9
     transition_exception_missed="$1"
+    style_included="$2"
 
-    if [ "$light_found" -ne 1 ] || [ "$transition_found" -ne 1 ] \
+    generated_branches=0
+    if [ "$style_included" -eq 1 ]; then
+        if [ "$light_found" -ne 1 ] || [ "$transition_found" -ne 1 ] \
         || [ "$light_exception_found" -ne 1 ] || [ "$transition_exception_found" -ne 1 ] \
-        || [ "$light_exception_missed" -ne 1 ] || [ "$transition_exception_missed" -ne 1 ] \
-        || [ "$missed_branches" -ne 2 ]; then
-        echo "Kover generated-branch exceptions changed; inspect the raw report" >&2
-        exit 1
+        || [ "$light_exception_missed" -ne 1 ] || [ "$transition_exception_missed" -ne 1 ]; then
+            echo "Kover generated-branch exceptions changed; inspect the raw report" >&2
+            exit 1
+        fi
+        # Kotlin serialization's all-optional model check is constant false. Kover maps its two
+        # unreachable branches to the @Serializable annotation lines in Style.kt, 29 and 37.
+        generated_branches=2
     fi
 
     total_lines=$((missed_lines + covered_lines))
     total_branches=$((missed_branches + covered_branches))
-    # Kotlin serialization's all-optional model check is constant false. Kover maps its two
-    # unreachable branches to the @Serializable annotation lines in Style.kt, 29 and 37.
-    generated_branches=2
     source_missed_branches=$((missed_branches - generated_branches))
     source_total_branches=$((total_branches - generated_branches))
+
+    if [ "$total_lines" -eq 0 ]; then
+        echo "Kover package has no executable lines: $required_coverage_package" >&2
+        exit 1
+    fi
 
     if [ "$missed_lines" -ne 0 ]; then
         actual_line_coverage=$((covered_lines * 100 / total_lines))
@@ -359,16 +368,22 @@ if [ -n "$required_coverage_package" ]; then
 
     echo "Kover line coverage passed for $required_coverage_package: 100% ($covered_lines/$total_lines)"
 
-    if [ "$source_missed_branches" -ne 0 ] || [ "$source_total_branches" -le 0 ]; then
+    if [ "$source_missed_branches" -ne 0 ]; then
         actual_branch_coverage=$(((total_branches - missed_branches) * 100 / total_branches))
         echo "Kover branch coverage failed for $required_coverage_package: $actual_branch_coverage% raw, with uncovered source branches" >&2
         exit 1
     fi
 
-    actual_raw_branch_coverage=$((covered_branches * 100 / total_branches))
-    echo "Kover raw branch coverage for $required_coverage_package: $actual_raw_branch_coverage% ($covered_branches/$total_branches)"
-    echo "Kover source branch coverage passed for $required_coverage_package: 100% ($((total_branches - generated_branches))/$((total_branches - generated_branches)))"
-    echo "The raw report includes one unreachable Kotlin serialization branch each in Light and Transition."
+    if [ "$total_branches" -eq 0 ]; then
+        echo "Kover branch coverage not applicable for $required_coverage_package: no executable branches"
+    else
+        actual_raw_branch_coverage=$((covered_branches * 100 / total_branches))
+        echo "Kover raw branch coverage for $required_coverage_package: $actual_raw_branch_coverage% ($covered_branches/$total_branches)"
+        echo "Kover source branch coverage passed for $required_coverage_package: 100% ($source_total_branches/$source_total_branches)"
+    fi
+    if [ "$generated_branches" -gt 0 ]; then
+        echo "The raw report includes one unreachable Kotlin serialization branch each in Light and Transition."
+    fi
 fi
 
 echo "KMaP Kover HTML report: $html_dir/index.html"
