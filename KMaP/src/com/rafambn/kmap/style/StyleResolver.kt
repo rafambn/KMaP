@@ -61,17 +61,27 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
 
     private fun compileLayout(layoutMap: Map<String, JsonElement>?, locale: String): CompiledLayout {
         val visibilityValue = layoutMap?.get("visibility")?.toValue()
-        val visibility = if (visibilityValue != null) {
-            compileValue(visibilityValue, locale)
-        } else {
-            CompiledValue(evaluate = { _, _, _-> true }, requiredProperties = emptySet())
-        }
+        val visibility = compileVisibility(visibilityValue, locale)
 
         val otherProperties = layoutMap?.filterKeys { it != "visibility" }?.mapValues { (_, value) ->
             compileValue<Any>(value.toValue(), locale)
         } ?: emptyMap()
 
         return CompiledLayout(visibility = visibility, properties = otherProperties)
+    }
+
+    private fun compileVisibility(expression: Any?, locale: String): CompiledValue<Boolean> {
+        if (expression == null) {
+            return CompiledValue(evaluate = { _, _, _ -> true }, requiredProperties = emptySet())
+        }
+
+        return CompiledValue(
+            evaluate = { zoomLevel, featureProperties, featureId ->
+                val context = EvaluationContext(featureProperties, "Point", zoomLevel, featureId, locale)
+                evaluator.evaluate(expression, context) != "none"
+            },
+            requiredProperties = evaluator.getRequiredProperties(expression)
+        )
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -93,7 +103,7 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
             is JsonArray -> this.map { it.toValue() }
             is JsonPrimitive -> {
                 if (isString) content
-                else booleanOrNull ?: content.toDoubleOrNull() ?: content.toLongOrNull() ?: content
+                else booleanOrNull ?: content.toDoubleOrNull() ?: content
             }
         }
     }

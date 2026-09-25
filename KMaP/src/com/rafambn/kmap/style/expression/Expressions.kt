@@ -109,10 +109,12 @@ internal fun evaluateSlice(expression: List<*>, context: EvaluationContext, eval
 // Conditional
 internal fun evaluateCase(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): Any? {
     if (expression.size < 4) return null
-    for (i in 1 until expression.size - 1 step 2) {
+    var i = 1
+    while (i < expression.size - 1) {
         if (evaluator.evaluate(expression[i], context) == true) {
             return evaluator.evaluate(expression[i + 1], context)
         }
+        i += 2
     }
     return evaluator.evaluate(expression.last(), context)
 }
@@ -128,13 +130,15 @@ internal fun evaluateCoalesce(expression: List<*>, context: EvaluationContext, e
 internal fun evaluateMatch(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): Any? {
     if (expression.size < 4) return null
     val input = evaluator.evaluate(expression[1], context)
-    for (i in 2 until expression.size - 1 step 2) {
+    var i = 2
+    while (i < expression.size - 1) {
         val label = expression[i]
         if (label is List<*>) {
             if (input in label) return evaluator.evaluate(expression[i + 1], context)
         } else if (input == label) {
             return evaluator.evaluate(expression[i + 1], context)
         }
+        i += 2
     }
     return evaluator.evaluate(expression.last(), context)
 }
@@ -224,13 +228,19 @@ internal fun evaluateStep(expression: List<*>, context: EvaluationContext, evalu
     if (expression.size < 4) return null
     val input = toDouble(evaluator.evaluate(expression[1], context)) ?: return null
     var output: Any? = evaluator.evaluate(expression[2], context)
-    for (i in 3 until expression.size step 2) {
-        val stop = toDouble(expression[i]) ?: continue
+    var i = 3
+    while (i < expression.size) {
+        val stop = toDouble(expression[i])
+        if (stop == null) {
+            i += 2
+            continue
+        }
         if (input >= stop) {
             output = evaluator.evaluate(expression[i + 1], context)
         } else {
             break
         }
+        i += 2
     }
     return output
 }

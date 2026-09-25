@@ -66,14 +66,14 @@ private fun parseRgbColor(rgbString: String): Color? {
     val g = parts[1].toIntOrNull()?.coerceIn(0, 255) ?: return null
     val b = parts[2].toIntOrNull()?.coerceIn(0, 255) ?: return null
     val a = if (parts.size == 4) {
-        ((parts[3].toDoubleOrNull()?.coerceIn(0.0, 1.0) ?: (1.0 * 255))).toInt()
+        ((parts[3].toDoubleOrNull()?.coerceIn(0.0, 1.0) ?: 1.0) * 255).toInt()
     } else 255
 
     return Color(r, g, b, a)
 }
 
 private fun parseHslColor(hslString: String): Color? {
-    val content = hslString.substringAfter("(").substringBefore(")") ?: return null
+    val content = hslString.substringAfter("(").substringBefore(")")
     val parts = content.split(",").map { it.trim() }
 
     if (parts.size < 3) return null

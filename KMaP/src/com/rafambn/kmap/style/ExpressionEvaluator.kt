@@ -7,9 +7,9 @@ class ExpressionEvaluator {
     private fun resolveTokens(text: String, context: EvaluationContext): String {
         val regex = "\\{name(?::(.*?))?\\}".toRegex()
         return regex.replace(text) { matchResult ->
-            val lang = matchResult.groupValues.getOrNull(1)
+            val lang = matchResult.groupValues[1]
             val propertyName = when {
-                lang != null && lang.isNotEmpty() -> "name:$lang"
+                lang.isNotEmpty() -> "name:$lang"
                 else -> "name:${context.locale}"
             }
             context.featureProperties[propertyName]?.toString() ?: context.featureProperties["name"]?.toString() ?: ""
@@ -124,8 +124,8 @@ class ExpressionEvaluator {
             val properties = mutableSetOf<String>()
             val regex = "\\{name(?::(.*?))?\\}".toRegex()
             regex.findAll(expression).forEach { matchResult ->
-                val lang = matchResult.groupValues.getOrNull(1)
-                if (lang != null && lang.isNotEmpty()) {
+                val lang = matchResult.groupValues[1]
+                if (lang.isNotEmpty()) {
                     properties.add("name:$lang") //TODO the regex must not be only name but the variable name: {number}, {ref}, road_{ref_lenght}
                 } else {
                     properties.add("name")
