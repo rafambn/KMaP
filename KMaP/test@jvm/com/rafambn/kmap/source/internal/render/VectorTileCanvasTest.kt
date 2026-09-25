@@ -227,4 +227,80 @@ val VectorTileCanvasTest by testSuite {
         assertEquals(0f, pixels[16, 16].alpha)
         assertEquals(0f, pixels[32, 32].alpha)
     }
+
+    test("line join none leaves corners unjoined and ignores line cap") {
+        val path = Path().apply {
+            moveTo(8f, 24f)
+            lineTo(24f, 24f)
+            lineTo(24f, 8f)
+        }
+
+        fun render(join: String, cap: String): ImageBitmap {
+            val style = StyleResolver().resolve(
+                Style(
+                    version = 8,
+                    sources = emptyMap(),
+                    layers = listOf(
+                        StyleLayer(
+                            id = "line",
+                            type = "line",
+                            layout = mapOf(
+                                "line-join" to JsonPrimitive(join),
+                                "line-cap" to JsonPrimitive(cap)
+                            ),
+                            paint = mapOf(
+                                "line-color" to JsonPrimitive("#0000ff"),
+                                "line-width" to JsonPrimitive(8)
+                            )
+                        )
+                    )
+                )
+            )
+            val bitmap = ImageBitmap(32, 32)
+            drawLineFeature(Canvas(bitmap), path, emptyMap(), style.layers.single(), 0.0, 1f, 1f, 1f)
+            return bitmap
+        }
+
+        val miter = render("miter", "butt").toPixelMap()
+        val none = render("none", "butt").toPixelMap()
+        val noneSquare = render("none", "square").toPixelMap()
+
+        assertTrue(miter[26, 26].alpha > 0.9f)
+        assertEquals(0f, none[26, 26].alpha)
+        assertEquals(0f, noneSquare[26, 26].alpha)
+        assertEquals(0f, noneSquare[5, 24].alpha)
+        assertTrue(none[16, 24].alpha > 0.9f)
+    }
+
+    test("line join none closes polygon rings") {
+        val style = StyleResolver().resolve(
+            Style(
+                version = 8,
+                sources = emptyMap(),
+                layers = listOf(
+                    StyleLayer(
+                        id = "line",
+                        type = "line",
+                        layout = mapOf("line-join" to JsonPrimitive("none")),
+                        paint = mapOf(
+                            "line-color" to JsonPrimitive("#0000ff"),
+                            "line-width" to JsonPrimitive(4)
+                        )
+                    )
+                )
+            )
+        )
+        val path = Path().apply {
+            addRect(Rect(8f, 8f, 56f, 56f))
+            addRect(Rect(24f, 24f, 40f, 40f))
+        }
+        val bitmap = ImageBitmap(64, 64)
+        drawLineFeature(Canvas(bitmap), path, emptyMap(), style.layers.single(), 0.0, 1f, 1f, 1f)
+        val pixels = bitmap.toPixelMap()
+
+        assertTrue(pixels[8, 32].alpha > 0.9f)
+        assertTrue(pixels[24, 32].alpha > 0.9f)
+        assertEquals(0f, pixels[16, 16].alpha)
+        assertEquals(0f, pixels[32, 32].alpha)
+    }
 }

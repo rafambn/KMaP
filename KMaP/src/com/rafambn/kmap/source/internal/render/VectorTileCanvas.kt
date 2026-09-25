@@ -343,18 +343,65 @@ internal fun drawLineFeature(
         addPath(path)
         transform(Matrix().apply { scale(tileScaleX, tileScaleY) })
     }
+    val strokePath = if (join == "none") Path().apply {
+        val points = FloatArray(8)
+        val segments = screenPath.iterator()
+        var startX = 0f
+        var startY = 0f
+        var endX = 0f
+        var endY = 0f
+
+        while (segments.hasNext()) {
+            when (segments.next(points)) {
+                PathSegment.Type.Move -> {
+                    startX = points[0]
+                    startY = points[1]
+                    endX = startX
+                    endY = startY
+                }
+                PathSegment.Type.Line -> {
+                    moveTo(points[0], points[1])
+                    lineTo(points[2], points[3])
+                    endX = points[2]
+                    endY = points[3]
+                }
+                PathSegment.Type.Quadratic -> {
+                    moveTo(points[0], points[1])
+                    quadraticTo(points[2], points[3], points[4], points[5])
+                    endX = points[4]
+                    endY = points[5]
+                }
+                PathSegment.Type.Cubic -> {
+                    moveTo(points[0], points[1])
+                    cubicTo(points[2], points[3], points[4], points[5], points[6], points[7])
+                    endX = points[6]
+                    endY = points[7]
+                }
+                PathSegment.Type.Close -> {
+                    if (endX != startX || endY != startY) {
+                        moveTo(endX, endY)
+                        lineTo(startX, startY)
+                    }
+                    endX = startX
+                    endY = startY
+                }
+                else -> Unit
+            }
+        }
+    } else screenPath
     canvas.withSave {
         canvas.scale(1f / tileScaleX, 1f / tileScaleY)
         canvas.drawPath(
-            screenPath,
+            strokePath,
             Paint().apply {
                 color = fillColor.copy(alpha = fillColor.alpha * opacity)
                 isAntiAlias = true
                 style = PaintingStyle.Stroke
                 strokeWidth = width / screenScale
-                strokeCap = when (cap) {
-                    "round" -> StrokeCap.Round
-                    "square" -> StrokeCap.Square
+                strokeCap = when {
+                    join == "none" -> StrokeCap.Butt
+                    cap == "round" -> StrokeCap.Round
+                    cap == "square" -> StrokeCap.Square
                     else -> StrokeCap.Butt
                 }
                 strokeJoin = when (join) {
