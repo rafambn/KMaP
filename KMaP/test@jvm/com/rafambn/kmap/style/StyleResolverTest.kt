@@ -43,10 +43,10 @@ val StyleResolverTest by testSuite {
 
             assertNotNull(layer.filter)
             val featureProperties = mapOf("class" to "park")
-            assertTrue(layer.filter.evaluate(featureProperties, "Polygon", null))
+            assertTrue(layer.filter.evaluate(0.0, featureProperties, "Polygon", null))
 
             val featureProperties2 = mapOf("class" to "street")
-            assertFalse(layer.filter.evaluate(featureProperties2, "Polygon", null))
+            assertFalse(layer.filter.evaluate(0.0, featureProperties2, "Polygon", null))
 
             assertNotNull(layer.paint.properties["fill-color"])
             val color = layer.paint.properties["fill-color"]!!.evaluate(0.0, emptyMap(), null) as Color
@@ -353,10 +353,10 @@ val StyleResolverTest by testSuite {
             assertNotNull(layer.filter)
 
             // Test matching filter
-            assertTrue(layer.filter.evaluate(mapOf("class" to "park"), "Polygon", null))
+            assertTrue(layer.filter.evaluate(0.0, mapOf("class" to "park"), "Polygon", null))
 
             // Test non-matching filter - different class
-            assertFalse(layer.filter.evaluate(mapOf("class" to "street"), "Polygon", null))
+            assertFalse(layer.filter.evaluate(0.0, mapOf("class" to "street"), "Polygon", null))
         }
     }
 }

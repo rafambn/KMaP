@@ -44,8 +44,8 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
     private fun compileFilter(filterExpression: List<Any?>, locale: String): CompiledFilter {
         val requiredProperties = evaluator.getRequiredProperties(filterExpression)
         return CompiledFilter(
-            evaluate = { featureProperties, geometryType, featureId ->
-                val context = EvaluationContext(featureProperties, geometryType, 0.0, featureId, locale)
+            evaluate = { zoomLevel, featureProperties, geometryType, featureId ->
+                val context = EvaluationContext(featureProperties, geometryType, zoomLevel, featureId, locale)
                 evaluator.evaluate(filterExpression, context) as? Boolean ?: false
             },
             requiredProperties = requiredProperties

@@ -48,8 +48,8 @@ val StyleResolverCoverageTest by testSuite {
         val populated = optimized.layers[1]
         assertEquals(2.0, populated.minZoom)
         assertEquals(12.0, populated.maxZoom)
-        assertTrue(populated.filter!!.evaluate(mapOf("class" to "park"), "Polygon", null))
-        assertFalse(populated.filter.evaluate(mapOf("class" to "water"), "Polygon", null))
+        assertTrue(populated.filter!!.evaluate(0.0, mapOf("class" to "park"), "Polygon", null))
+        assertFalse(populated.filter.evaluate(0.0, mapOf("class" to "water"), "Polygon", null))
         assertEquals(setOf("class"), populated.filter.requiredProperties)
         assertFalse(populated.layout.visibility.evaluate(0.0, emptyMap(), null)!!)
         assertEquals("Place", populated.layout.properties.getValue("title").evaluate(0.0, mapOf("name" to "Place"), null))
@@ -86,7 +86,7 @@ val StyleResolverCoverageTest by testSuite {
 
         val filter = StyleResolver().resolve(style).layers.single().filter
 
-        assertFalse(filter!!.evaluate(emptyMap(), "Polygon", null))
+        assertFalse(filter!!.evaluate(0.0, emptyMap(), "Polygon", null))
     }
 
     test("evaluates visibility expressions as booleans") {

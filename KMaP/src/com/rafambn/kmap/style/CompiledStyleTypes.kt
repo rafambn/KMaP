@@ -14,7 +14,7 @@ data class EvaluationContext(
 
 // Compiled types
 data class CompiledFilter(
-    val evaluate: (featureProperties: Map<String, Any>, geometryType: String, featureId: Any?) -> Boolean,
+    val evaluate: (zoomLevel: Double, featureProperties: Map<String, Any>, geometryType: String, featureId: Any?) -> Boolean,
     val requiredProperties: Set<String> = emptySet()
 )
 

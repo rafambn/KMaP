@@ -14,8 +14,42 @@ import com.rafambn.kmap.style.StyleResolver
 import de.infix.testBalloon.framework.core.testSuite
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonPrimitive
 
 val VectorCanvasEngineTest by testSuite {
+    test("filter evaluates zoom from the tile being processed") {
+        val feature = MVTFeature(
+            id = 7,
+            type = RawMVTGeomType.POLYGON,
+            geometry = listOf(listOf(0 to 0, 10 to 0, 10 to 10, 0 to 10)),
+            properties = mapOf("class" to "park")
+        )
+        val mvtile = MVTile(listOf(MVTLayer("land", 4096, listOf(feature))))
+        val style = StyleResolver().resolve(
+            Style(
+                version = 8,
+                sources = emptyMap(),
+                layers = listOf(
+                    StyleLayer(
+                        id = "parks",
+                        type = "fill",
+                        sourceLayer = "land",
+                        filter = listOf(
+                            JsonPrimitive("all"),
+                            JsonArray(listOf(JsonPrimitive(">="), JsonArray(listOf(JsonPrimitive("zoom"))), JsonPrimitive(5))),
+                            JsonArray(listOf(JsonPrimitive("=="), JsonArray(listOf(JsonPrimitive("get"), JsonPrimitive("class"))), JsonPrimitive("park"))),
+                            JsonArray(listOf(JsonPrimitive("=="), JsonArray(listOf(JsonPrimitive("geometry-type"))), JsonPrimitive("Polygon")))
+                        )
+                    )
+                )
+            )
+        )
+
+        assertTrue(optimizeMVTile(VectorTile(4, 0, 0, mvtile), style).optimizedTile!!.layerFeatures.getValue("parks").isEmpty())
+        assertTrue(optimizeMVTile(VectorTile(5, 0, 0, mvtile), style).optimizedTile!!.layerFeatures.getValue("parks").size == 1)
+    }
+
     test("polygon interior rings cut holes while separate exterior rings remain filled") {
         val exterior = listOf(0 to 0, 10 to 0, 10 to 10, 0 to 10)
         val interior = listOf(3 to 3, 3 to 7, 7 to 7, 7 to 3)

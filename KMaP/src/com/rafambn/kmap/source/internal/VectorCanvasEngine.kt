@@ -49,7 +49,7 @@ internal fun optimizeMVTile(tile: VectorTile, optimizedStyle: OptimizedStyle): O
             }
             val featureId = feature.id
 
-            if (optimizedStyleLayer.filter?.evaluate(featureProperties, geometryType, featureId) == false) return@mapNotNull null
+            if (optimizedStyleLayer.filter?.evaluate(currentZoom, featureProperties, geometryType, featureId) == false) return@mapNotNull null
 
             val isValidGeometry = when (optimizedStyleLayer.type) {
                 "fill" -> feature.type == RawMVTGeomType.POLYGON

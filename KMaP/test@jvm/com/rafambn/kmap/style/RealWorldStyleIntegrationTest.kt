@@ -90,7 +90,7 @@ val RealWorldStyleIntegrationTest by testSuite {
 
                     // Verify filters work if present
                     layer.filter?.let {
-                        val matches = it.evaluate(mapOf("class" to "test"), "Polygon", null)
+                        val matches = it.evaluate(0.0, mapOf("class" to "test"), "Polygon", null)
                         // Filter always returns Boolean from implementation
                     }
                 }
@@ -169,7 +169,7 @@ val RealWorldStyleIntegrationTest by testSuite {
 
                         // Test filter evaluation - verify it works without errors
                         layer.filter?.let { filter ->
-                            val result = filter.evaluate(properties, "Polygon", null)
+                            val result = filter.evaluate(zoom, properties, "Polygon", null)
                             // Filter returns boolean from implementation
                             expressionsEvaluated++
                         }
