@@ -9,14 +9,24 @@ data class EvaluationContext(
     val geometryType: String = "Point",
     val zoomLevel: Double = 0.0,
     val featureId: Any? = null,
-    val locale: String = "en"
+    val locale: String = "en",
+    val sprites: Map<String, ImageBitmap> = emptyMap(),
+    val featureGeometry: FeatureGeometryContext? = null
 )
 
 // Compiled types
 data class CompiledFilter(
-    val evaluate: (zoomLevel: Double, featureProperties: Map<String, Any>, geometryType: String, featureId: Any?) -> Boolean,
+    private val evaluator: (zoomLevel: Double, featureProperties: Map<String, Any>, geometryType: String, featureId: Any?, featureGeometry: FeatureGeometryContext?) -> Boolean,
     val requiredProperties: Set<String> = emptySet()
-)
+) {
+    fun evaluate(
+        zoomLevel: Double,
+        featureProperties: Map<String, Any>,
+        geometryType: String,
+        featureId: Any?,
+        featureGeometry: FeatureGeometryContext? = null
+    ): Boolean = evaluator(zoomLevel, featureProperties, geometryType, featureId, featureGeometry)
+}
 
 data class CompiledValue<T>(
     val evaluate: (zoomLevel: Double, featureProperties: Map<String, Any>, featureId: Any?) -> T?,

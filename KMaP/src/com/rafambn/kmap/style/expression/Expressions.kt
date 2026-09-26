@@ -3,6 +3,22 @@ package com.rafambn.kmap.style.expression
 import androidx.compose.ui.graphics.Color
 import com.rafambn.kmap.style.EvaluationContext
 import com.rafambn.kmap.style.ExpressionEvaluator
+import kotlin.math.acos
+import kotlin.math.asin
+import kotlin.math.atan
+import kotlin.math.abs
+import kotlin.math.ceil
+import kotlin.math.cos
+import kotlin.math.floor
+import kotlin.math.ln
+import kotlin.math.log10
+import kotlin.math.log2
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.pow
+import kotlin.math.sin
+import kotlin.math.sqrt
+import kotlin.math.tan
 
 // Logical
 internal fun evaluateAll(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): Boolean {
@@ -180,6 +196,13 @@ internal fun evaluateUpDownCase(expression: List<*>, context: EvaluationContext,
     return if (up) str.uppercase() else str.lowercase()
 }
 
+internal fun evaluateSplit(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): List<String>? {
+    if (expression.size != 3) return null
+    val value = evaluator.evaluate(expression[1], context) as? String ?: return null
+    val delimiter = evaluator.evaluate(expression[2], context) as? String ?: return null
+    return if (delimiter.isEmpty()) value.map(Char::toString) else value.split(delimiter)
+}
+
 // Color
 internal fun evaluateRgb(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): Color? {
     if (expression.size !in 4..5) return null
@@ -223,6 +246,42 @@ internal fun evaluateNumber(expression: List<*>, context: EvaluationContext, eva
     return result
 }
 
+internal fun evaluateUnaryMath(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): Double? {
+    if (expression.size != 2) return null
+    val value = (evaluator.evaluate(expression[1], context) as? Number)?.toDouble() ?: return null
+    val result = when (expression[0]) {
+        "acos" -> acos(value)
+        "asin" -> asin(value)
+        "atan" -> atan(value)
+        "cos" -> cos(value)
+        "sin" -> sin(value)
+        "tan" -> tan(value)
+        "ln" -> ln(value)
+        "log10" -> log10(value)
+        "log2" -> log2(value)
+        "abs" -> abs(value)
+        "ceil" -> ceil(value)
+        "floor" -> floor(value)
+        "round" -> if (value >= 0) floor(value + 0.5) else ceil(value - 0.5)
+        "sqrt" -> sqrt(value)
+        else -> return null
+    }
+    return result.takeIf { it.isFinite() }
+}
+
+internal fun evaluateBinaryMath(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): Double? {
+    if (expression.size < 3) return null
+    val values = expression.drop(1).map { (evaluator.evaluate(it, context) as? Number)?.toDouble() ?: return null }
+    val result = when (expression[0]) {
+        "%" -> if (values.size == 2 && values[1] != 0.0) values[0] % values[1] else return null
+        "^" -> if (values.size == 2) values[0].pow(values[1]) else return null
+        "max" -> values.reduce(::max)
+        "min" -> values.reduce(::min)
+        else -> return null
+    }
+    return result.takeIf { it.isFinite() }
+}
+
 // Interpolation
 internal fun evaluateStep(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): Any? {
     if (expression.size < 4) return null
@@ -256,7 +315,10 @@ internal fun evaluateInterpolate(expression: List<*>, context: EvaluationContext
     if (stops.size % 2 != 0) return null
 
     val stopInputs = (0 until stops.size step 2).mapNotNull { toDouble(stops[it]) }
-    val stopOutputs = (1 until stops.size step 2).map { evaluator.evaluate(stops[it], context) }
+    val stopOutputs = (1 until stops.size step 2).map {
+        val value = evaluator.evaluate(stops[it], context)
+        if (value is String) parseColor(value) ?: value else value
+    }
 
     if (input <= stopInputs.first()) return stopOutputs.first()
     if (input >= stopInputs.last()) return stopOutputs.last()
@@ -282,12 +344,16 @@ internal fun evaluateInterpolate(expression: List<*>, context: EvaluationContext
                 else -> linearInterpolate(progress, lowerOutNum, upperOutNum)
             }
         }
-        lowerOutput is Color && upperOutput is Color -> {
-            val r = linearInterpolate(progress, lowerOutput.red.toDouble(), upperOutput.red.toDouble()).toInt()
-            val g = linearInterpolate(progress, lowerOutput.green.toDouble(), upperOutput.green.toDouble()).toInt()
-            val b = linearInterpolate(progress, lowerOutput.blue.toDouble(), upperOutput.blue.toDouble()).toInt()
-            val a = linearInterpolate(progress, lowerOutput.alpha.toDouble(), upperOutput.alpha.toDouble()).toInt()
-            Color(r, g, b, a)
+        (lowerOutput is Color || lowerOutput is String && parseColor(lowerOutput) != null) &&
+            (upperOutput is Color || upperOutput is String && parseColor(upperOutput) != null) -> {
+            val lowerColor = if (lowerOutput is Color) lowerOutput else parseColor(lowerOutput as String)!!
+            val upperColor = if (upperOutput is Color) upperOutput else parseColor(upperOutput as String)!!
+            Color(
+                linearInterpolate(progress, lowerColor.red.toDouble(), upperColor.red.toDouble()).toFloat(),
+                linearInterpolate(progress, lowerColor.green.toDouble(), upperColor.green.toDouble()).toFloat(),
+                linearInterpolate(progress, lowerColor.blue.toDouble(), upperColor.blue.toDouble()).toFloat(),
+                linearInterpolate(progress, lowerColor.alpha.toDouble(), upperColor.alpha.toDouble()).toFloat()
+            )
         }
         else -> lowerOutput
     }

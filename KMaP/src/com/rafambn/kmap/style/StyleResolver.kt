@@ -2,6 +2,7 @@ package com.rafambn.kmap.style
 
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.font.FontFamily
+import com.rafambn.kmap.style.expression.parseColor
 import kotlinx.serialization.json.*
 
 class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvaluator()) {
@@ -12,7 +13,7 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
         glyphs: Map<String, FontFamily> = emptyMap(),
         locale: String = "en"
     ): OptimizedStyle {
-        val compiledLayers = rawStyle.layers.map { compileLayer(it, locale) }
+        val compiledLayers = rawStyle.layers.map { compileLayer(it, locale, sprites) }
         return OptimizedStyle(
             version = rawStyle.version,
             name = rawStyle.name,
@@ -23,10 +24,10 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
         )
     }
 
-    private fun compileLayer(layer: StyleLayer, locale: String): OptimizedStyleLayer {
+    private fun compileLayer(layer: StyleLayer, locale: String, sprites: Map<String, ImageBitmap>): OptimizedStyleLayer {
         val filter = layer.filter?.let { elements -> compileFilter(elements.map { it.toValue() }, locale) }
-        val paint = compilePaint(layer.paint, locale)
-        val layout = compileLayout(layer.layout, locale)
+        val paint = compilePaint(layer.paint, locale, sprites)
+        val layout = compileLayout(layer.layout, locale, sprites)
 
         return OptimizedStyleLayer(
             id = layer.id,
@@ -44,40 +45,40 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
     private fun compileFilter(filterExpression: List<Any?>, locale: String): CompiledFilter {
         val requiredProperties = evaluator.getRequiredProperties(filterExpression)
         return CompiledFilter(
-            evaluate = { zoomLevel, featureProperties, geometryType, featureId ->
-                val context = EvaluationContext(featureProperties, geometryType, zoomLevel, featureId, locale)
+            evaluator = { zoomLevel, featureProperties, geometryType, featureId, featureGeometry ->
+                val context = EvaluationContext(featureProperties, geometryType, zoomLevel, featureId, locale, featureGeometry = featureGeometry)
                 evaluator.evaluate(filterExpression, context) as? Boolean ?: false
             },
             requiredProperties = requiredProperties
         )
     }
 
-    private fun compilePaint(paintMap: Map<String, JsonElement>?, locale: String): CompiledPaint {
-        val compiledProperties = paintMap?.mapValues { (_, value) ->
-            compileValue<Any>(value.toValue(), locale)
+    private fun compilePaint(paintMap: Map<String, JsonElement>?, locale: String, sprites: Map<String, ImageBitmap>): CompiledPaint {
+        val compiledProperties = paintMap?.mapValues { (name, value) ->
+            compileValue<Any>(value.toValue(), locale, sprites, name.endsWith("-color"))
         } ?: emptyMap()
         return CompiledPaint(properties = compiledProperties)
     }
 
-    private fun compileLayout(layoutMap: Map<String, JsonElement>?, locale: String): CompiledLayout {
+    private fun compileLayout(layoutMap: Map<String, JsonElement>?, locale: String, sprites: Map<String, ImageBitmap>): CompiledLayout {
         val visibilityValue = layoutMap?.get("visibility")?.toValue()
-        val visibility = compileVisibility(visibilityValue, locale)
+        val visibility = compileVisibility(visibilityValue, locale, sprites)
 
         val otherProperties = layoutMap?.filterKeys { it != "visibility" }?.mapValues { (_, value) ->
-            compileValue<Any>(value.toValue(), locale)
+            compileValue<Any>(value.toValue(), locale, sprites)
         } ?: emptyMap()
 
         return CompiledLayout(visibility = visibility, properties = otherProperties)
     }
 
-    private fun compileVisibility(expression: Any?, locale: String): CompiledValue<Boolean> {
+    private fun compileVisibility(expression: Any?, locale: String, sprites: Map<String, ImageBitmap>): CompiledValue<Boolean> {
         if (expression == null) {
             return CompiledValue(evaluate = { _, _, _ -> true }, requiredProperties = emptySet())
         }
 
         return CompiledValue(
             evaluate = { zoomLevel, featureProperties, featureId ->
-                val context = EvaluationContext(featureProperties, "Point", zoomLevel, featureId, locale)
+                val context = EvaluationContext(featureProperties, "Point", zoomLevel, featureId, locale, sprites)
                 evaluator.evaluate(expression, context) != "none"
             },
             requiredProperties = evaluator.getRequiredProperties(expression)
@@ -85,12 +86,15 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun <T> compileValue(expression: Any?, locale: String): CompiledValue<T> {
+    private fun <T> compileValue(
+        expression: Any?, locale: String, sprites: Map<String, ImageBitmap>, color: Boolean = false
+    ): CompiledValue<T> {
         val requiredProperties = evaluator.getRequiredProperties(expression)
         return CompiledValue(
             evaluate = { zoomLevel, featureProperties, featureId ->
-                val context = EvaluationContext(featureProperties, "Point", zoomLevel, featureId, locale)
-                evaluator.evaluate(expression, context) as? T
+                val context = EvaluationContext(featureProperties, "Point", zoomLevel, featureId, locale, sprites)
+                val result = evaluator.evaluate(expression, context)
+                (if (color && result is String) parseColor(result) ?: result else result) as? T
             },
             requiredProperties = requiredProperties
         )

@@ -6,6 +6,7 @@ import com.rafambn.kmap.mvttile.*
 import com.rafambn.kmap.source.TileResult
 import com.rafambn.kmap.source.VectorTile
 import com.rafambn.kmap.style.OptimizedStyle
+import com.rafambn.kmap.style.FeatureGeometryContext
 import kotlinx.coroutines.CoroutineScope
 
 class VectorCanvasEngine(
@@ -45,7 +46,10 @@ internal fun optimizeMVTile(tile: VectorTile, optimizedStyle: OptimizedStyle): O
             }
             val featureId = feature.id
 
-            if (optimizedStyleLayer.filter?.evaluate(tile.zoom.toDouble(), featureProperties, geometryType, featureId) == false) return@mapNotNull null
+            val featureGeometry = FeatureGeometryContext(
+                feature.geometry, tile.zoom, tile.row, tile.col, mvtLayer.extent
+            )
+            if (optimizedStyleLayer.filter?.evaluate(tile.zoom.toDouble(), featureProperties, geometryType, featureId, featureGeometry) == false) return@mapNotNull null
 
             val isValidGeometry = when (optimizedStyleLayer.type) {
                 "fill" -> feature.type == RawMVTGeomType.POLYGON

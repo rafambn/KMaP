@@ -3,7 +3,9 @@ package com.rafambn.kmap.source.internal.render
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Canvas
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.graphics.toPixelMap
@@ -22,6 +24,37 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 val VectorTileCanvasTest by testSuite {
+    test("symbol image expression draws a supplied sprite") {
+        val sprite = ImageBitmap(4, 4)
+        Canvas(sprite).drawRect(Rect(0f, 0f, 4f, 4f), Paint().apply { color = Color.Red })
+        val style = StyleResolver().resolve(
+            Style(
+                version = 8,
+                sources = emptyMap(),
+                layers = listOf(StyleLayer(
+                    id = "icon",
+                    type = "symbol",
+                    layout = mapOf("icon-image" to JsonArray(listOf(JsonPrimitive("image"), JsonPrimitive("dot")))),
+                    paint = mapOf("icon-opacity" to JsonPrimitive(0.5))
+                ))
+            ),
+            sprites = mapOf("dot" to sprite)
+        )
+        val bitmap = ImageBitmap(32, 32)
+        val canvas = Canvas(bitmap)
+        CanvasDrawScope().draw(Density(1f), LayoutDirection.Ltr, canvas, Size(32f, 32f)) {
+            drawRenderFeature(
+                canvas,
+                OptimizedRenderFeature(OptimizedGeometry.Point(listOf(16f to 16f)), emptyMap()),
+                createFontFamilyResolver(), Density(1f), style.layers.single(),
+                0.0, 1f, 0f, 1f, 1f, 1f
+            )
+        }
+        val pixels = bitmap.toPixelMap()
+        assertEquals(0.5f, pixels[16, 16].alpha, 0.02f)
+        assertEquals(0f, pixels[10, 10].alpha)
+    }
+
     test("fill opacity multiplies color alpha and fades the outline") {
         val path = Path().apply { addRect(Rect(4f, 4f, 28f, 28f)) }
         val geometry = OptimizedGeometry.Polygon(path)

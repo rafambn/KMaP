@@ -11,6 +11,9 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -28,6 +31,7 @@ import com.rafambn.kmap.source.internal.ActiveTiles
 import com.rafambn.kmap.source.internal.OptimizedVectorTile
 import com.rafambn.kmap.style.OptimizedStyle
 import com.rafambn.kmap.style.OptimizedStyleLayer
+import com.rafambn.kmap.style.FormattedText
 import kotlin.math.pow
 
 @Composable
@@ -120,6 +124,8 @@ private fun DrawScope.drawStyleLayersWithTileClipping(
             drawVectorTileLayerWithClipping(
                 tile as OptimizedVectorTile,
                 styleLayer,
+                style.sprites,
+                style.glyphs,
                 tileSize,
                 positionOffset,
                 2F.pow(zoomLevel - tile.zoom),
@@ -137,6 +143,8 @@ private fun DrawScope.drawStyleLayersWithTileClipping(
 private fun DrawScope.drawVectorTileLayerWithClipping(
     tile: OptimizedVectorTile,
     optimizedLayer: OptimizedStyleLayer,
+    sprites: Map<String, ImageBitmap>,
+    glyphs: Map<String, FontFamily>,
     tileSize: TileDimension,
     positionOffset: CanvasDrawReference,
     scaleAdjustment: Float = 1F,
@@ -177,6 +185,8 @@ private fun DrawScope.drawVectorTileLayerWithClipping(
                     scaleX,
                     scaleY,
                     screenScale,
+                    sprites,
+                    glyphs,
                 )
             }
         }
@@ -237,6 +247,8 @@ internal fun DrawScope.drawRenderFeature(
     tileScaleX: Float,
     tileScaleY: Float,
     screenScale: Float,
+    sprites: Map<String, ImageBitmap> = emptyMap(),
+    glyphs: Map<String, FontFamily> = emptyMap(),
 ) {
     val geometry = renderFeature.geometry
     when (optimizedStyleLayer.type) {
@@ -256,7 +268,7 @@ internal fun DrawScope.drawRenderFeature(
         }
 
         "symbol" -> if (geometry is OptimizedGeometry.Point) {
-            drawSymbolFeature(canvas, geometry, renderFeature.properties, fontResolver, density, optimizedStyleLayer, zoom, textScale, rotationDegrees)
+            drawSymbolFeature(canvas, geometry, renderFeature.properties, fontResolver, density, optimizedStyleLayer, sprites, glyphs, zoom, textScale, rotationDegrees, screenScale)
         }
     }
 }
@@ -485,13 +497,74 @@ private fun DrawScope.drawSymbolFeature(
     fontResolver: FontFamily.Resolver,
     density: Density,
     optimizedStyleLayer: OptimizedStyleLayer,
+    sprites: Map<String, ImageBitmap>,
+    glyphs: Map<String, FontFamily>,
     zoom: Double,
     textScale: Float,
     rotationDegrees: Float,
+    screenScale: Float,
 ) {
-    val text = optimizedStyleLayer.layout.properties["text-field"]?.evaluate(zoom, properties, optimizedStyleLayer.id) as? String
+    drawIconSymbol(canvas, geometry, properties, optimizedStyleLayer, sprites, zoom, textScale, rotationDegrees, screenScale)
+    val text = when (val value = optimizedStyleLayer.layout.properties["text-field"]?.evaluate(zoom, properties, optimizedStyleLayer.id)) {
+        is String -> FormattedText(listOf(FormattedText.Section.Text(value)))
+        is FormattedText -> value
+        else -> null
+    }
     text?.let {
-        drawTextSymbol(canvas, geometry, properties, fontResolver, density, optimizedStyleLayer, 1.0, it, textScale, rotationDegrees)
+        drawTextSymbol(canvas, geometry, properties, fontResolver, density, optimizedStyleLayer, glyphs, 1.0, it, textScale, rotationDegrees)
+    }
+}
+
+private fun drawIconSymbol(
+    canvas: Canvas,
+    geometry: OptimizedGeometry.Point,
+    properties: Map<String, Any>,
+    layer: OptimizedStyleLayer,
+    sprites: Map<String, ImageBitmap>,
+    zoom: Double,
+    textScale: Float,
+    rotationDegrees: Float,
+    screenScale: Float,
+) {
+    val layout = layer.layout.properties
+    val iconValue = layout["icon-image"]?.evaluate(zoom.toInt().toDouble(), properties, layer.id)
+    val image = when (iconValue) {
+        is ImageBitmap -> iconValue
+        is String -> sprites[iconValue]
+        else -> null
+    } ?: return
+    val size = (layout["icon-size"]?.evaluate(zoom.toInt().toDouble(), properties, layer.id) as? Number)?.toFloat() ?: 1f
+    if (size <= 0f) return
+    val opacity = (layer.paint.properties["icon-opacity"]?.evaluate(zoom, properties, layer.id) as? Number)?.toFloat() ?: 1f
+    if (opacity <= 0f) return
+    val rotate = (layout["icon-rotate"]?.evaluate(zoom.toInt().toDouble(), properties, layer.id) as? Number)?.toFloat() ?: 0f
+    val anchor = layout["icon-anchor"]?.evaluate(zoom.toInt().toDouble(), properties, layer.id) as? String ?: "center"
+    val offset = layout["icon-offset"]?.evaluate(zoom.toInt().toDouble(), properties, layer.id) as? List<*>
+    val scale = size * textScale / screenScale
+    val width = image.width * scale
+    val height = image.height * scale
+    val left = when {
+        anchor.contains("left") -> 0f
+        anchor.contains("right") -> -width
+        else -> -width / 2f
+    } + ((offset?.getOrNull(0) as? Number)?.toFloat() ?: 0f) * scale
+    val top = when {
+        anchor.contains("top") -> 0f
+        anchor.contains("bottom") -> -height
+        else -> -height / 2f
+    } + ((offset?.getOrNull(1) as? Number)?.toFloat() ?: 0f) * scale
+    val paint = Paint().apply { alpha = opacity.coerceIn(0f, 1f); filterQuality = FilterQuality.High }
+    geometry.coordinates.forEach { (x, y) ->
+        canvas.withSave {
+            canvas.translate(x, y)
+            canvas.rotate(-rotationDegrees + rotate)
+            canvas.drawImageRect(
+                image = image,
+                dstOffset = IntOffset(left.toInt(), top.toInt()),
+                dstSize = IntSize(width.toInt().coerceAtLeast(1), height.toInt().coerceAtLeast(1)),
+                paint = paint
+            )
+        }
     }
 }
 
@@ -502,8 +575,9 @@ private fun DrawScope.drawTextSymbol(
     fontResolver: FontFamily.Resolver,
     density: Density,
     optimizedStyleLayer: OptimizedStyleLayer,
+    glyphs: Map<String, FontFamily>,
     zoomLevel: Double,
-    text: String,
+    text: FormattedText,
     textScale: Float,
     rotationDegrees: Float,
 ) {
@@ -511,12 +585,6 @@ private fun DrawScope.drawTextSymbol(
     val paint = optimizedStyleLayer.paint.properties
 
     val transform = layout["text-transform"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? String ?: "none"
-    val transformedText = when (transform) {
-        "uppercase" -> text.uppercase()
-        "lowercase" -> text.lowercase()
-        else -> text
-    }
-
     val size = layout["text-size"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Double ?: 16.0
     val textColor = paint["text-color"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Color ?: Color.Black
     val opacity = paint["text-opacity"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? Double ?: 1.0
@@ -537,9 +605,48 @@ private fun DrawScope.drawTextSymbol(
 
     val finalSize = (size * textScale).sp
     val emSize = size.toFloat() * textScale
+    val fontNames = layout["text-font"]?.evaluate(zoomLevel, properties, optimizedStyleLayer.id) as? List<*>
+    val fontFamily = fontNames?.firstNotNullOfOrNull { glyphs[it as? String] }
+
+    val annotated = AnnotatedString.Builder()
+    val inlineImages = mutableListOf<ImageBitmap>()
+    val placeholders = mutableListOf<AnnotatedString.Range<Placeholder>>()
+    text.sections.forEach { section ->
+        val start = annotated.length
+        when (section) {
+            is FormattedText.Section.Text -> {
+                val value = when (transform) {
+                    "uppercase" -> section.value.uppercase()
+                    "lowercase" -> section.value.lowercase()
+                    else -> section.value
+                }
+                annotated.append(value)
+                if (value.isNotEmpty()) {
+                    annotated.addStyle(
+                        SpanStyle(
+                            color = section.color?.copy(alpha = section.color.alpha * opacity.toFloat()) ?: Color.Unspecified,
+                            fontSize = section.fontScale?.let { (size * it * textScale).sp } ?: TextUnit.Unspecified,
+                            fontFamily = section.fonts?.firstNotNullOfOrNull { glyphs[it] }
+                        ),
+                        start,
+                        annotated.length
+                    )
+                }
+            }
+            is FormattedText.Section.Image -> {
+                annotated.append('\uFFFC')
+                val imageWidth = (section.bitmap.width * textScale).sp
+                val imageHeight = (section.bitmap.height * textScale).sp
+                placeholders.add(AnnotatedString.Range(Placeholder(imageWidth, imageHeight, PlaceholderVerticalAlign.Center), start, annotated.length))
+                inlineImages.add(section.bitmap)
+            }
+        }
+    }
 
     val textStyle = TextStyle(
         fontSize = finalSize,
+        fontFamily = fontFamily,
+        color = textColor.copy(alpha = textColor.alpha * opacity.toFloat()),
         lineHeight = lineHeight?.let { (it * emSize).sp } ?: TextUnit.Unspecified,
         textAlign = when (justify) {
             "left" -> TextAlign.Left
@@ -557,11 +664,12 @@ private fun DrawScope.drawTextSymbol(
         maxWidth = maxWidth?.let { (it * emSize).toInt() } ?: Constraints.Infinity
     )
     val textLayoutResult = textMeasurer.measure(
-        text = AnnotatedString(transformedText),
+        text = annotated.toAnnotatedString(),
         style = textStyle,
+        placeholders = placeholders,
         overflow = TextOverflow.Visible,
         softWrap = maxWidth != null,
-        maxLines = if (maxWidth != null) Int.MAX_VALUE else 1,
+        maxLines = Int.MAX_VALUE,
         constraints = constraints,
         layoutDirection = layoutDirection,
         density = this,
@@ -619,10 +727,18 @@ private fun DrawScope.drawTextSymbol(
 
             textLayoutResult.multiParagraph.paint(
                 canvas = drawContext.canvas,
-                color = textColor.copy(alpha = opacity.toFloat()),
                 drawStyle = Fill,
                 blendMode = DrawScope.DefaultBlendMode
             )
+            inlineImages.forEachIndexed { index, image ->
+                val rect = textLayoutResult.placeholderRects.getOrNull(index) ?: return@forEachIndexed
+                drawContext.canvas.drawImageRect(
+                    image = image,
+                    dstOffset = IntOffset(rect.left.toInt(), rect.top.toInt()),
+                    dstSize = IntSize(rect.width.toInt().coerceAtLeast(1), rect.height.toInt().coerceAtLeast(1)),
+                    paint = Paint().apply { alpha = opacity.toFloat().coerceIn(0f, 1f); filterQuality = FilterQuality.High }
+                )
+            }
         }
     }
 }
