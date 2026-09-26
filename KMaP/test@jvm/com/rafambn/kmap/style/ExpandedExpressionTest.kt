@@ -83,20 +83,7 @@ val ExpandedExpressionTest by testSuite {
         assertSame(fallback, evaluator.evaluate(listOf("coalesce", listOf("image", "missing"), listOf("image", "dot")), spriteContext))
     }
 
-    test("format preserves text sections and number-format applies decimal options") {
-        val formatted = evaluator.evaluate(
-            listOf("format", "A", mapOf("font-scale" to 1.5, "text-color" to "#ff0000"), "B", emptyMap<String, Any>()),
-            context
-        ) as FormattedText
-        assertEquals(2, formatted.sections.size)
-        assertEquals(FormattedText.Section.Text("A", 1.5, Color.Red), formatted.sections[0])
-        assertEquals(FormattedText.Section.Text("B"), formatted.sections[1])
-        assertEquals(FormattedText.Section.Text("#ff0000"), (evaluator.evaluate(
-            listOf("format", "#ff0000", emptyMap<String, Any>()), context
-        ) as FormattedText).sections.single())
-        assertEquals(setOf("label", "scale"), evaluator.getRequiredProperties(listOf(
-            "format", listOf("get", "label"), mapOf("font-scale" to listOf("get", "scale"))
-        )))
+    test("number-format applies decimal options") {
         assertEquals("1,234.5", evaluator.evaluate(listOf("number-format", 1234.5, emptyMap<String, Any>()), context))
         assertEquals("R$\u00a01.234,50", evaluator.evaluate(
             listOf("number-format", 1234.5, mapOf("locale" to "pt-BR", "currency" to "BRL")), context

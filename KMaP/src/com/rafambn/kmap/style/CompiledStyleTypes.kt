@@ -42,7 +42,7 @@ data class CompiledLayout(
     val properties: Map<String, CompiledValue<*>>
 )
 
-data class OptimizedStyleLayer(
+data class CompiledStyleLayer(
     val id: String,
     val type: String,
     val source: String?,
@@ -54,10 +54,10 @@ data class OptimizedStyleLayer(
     val paint: CompiledPaint
 )
 
-data class OptimizedStyle(
+data class CompiledStyle(
     val version: Int,
     val name: String?,
-    val layers: List<OptimizedStyleLayer>,
+    val layers: List<CompiledStyleLayer>,
     val sources: Map<String, Source>,
     val sprites: Map<String, ImageBitmap> = emptyMap(),
     val glyphs: Map<String, FontFamily> = emptyMap()

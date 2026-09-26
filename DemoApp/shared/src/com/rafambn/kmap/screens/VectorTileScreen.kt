@@ -10,7 +10,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.components.parameters.VectorCanvasParameters
 import com.rafambn.kmap.KMaP
@@ -23,13 +22,12 @@ import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.mapProperties.border.BoundMapBorder
 import com.rafambn.kmap.mapProperties.border.MapBorderType
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
-import com.rafambn.kmap.style.OptimizedStyle
+import com.rafambn.kmap.style.CompiledStyle
 import com.rafambn.kmap.style.Style
 import com.rafambn.kmap.style.StyleResolver
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import kotlinx.serialization.json.Json
-import org.jetbrains.compose.resources.InternalResourceApi
 import org.jetbrains.compose.resources.vectorResource
 
 @Composable
@@ -49,7 +47,7 @@ fun VectorTileScreen(
         isLenient = true
         useArrayPolymorphism = false
     }
-    val styleState = remember { mutableStateOf<OptimizedStyle?>(null) }
+    val styleState = remember { mutableStateOf<CompiledStyle?>(null) }
 
     LaunchedEffect(Unit) {
         val styleJson = Res.readBytes("files/map-tiler-streets.json").decodeToString()

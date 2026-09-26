@@ -63,7 +63,6 @@ class ExpressionEvaluator {
             // Type
             "literal" -> evaluateLiteral(expression)
             "image" -> evaluateImage(expression, context, this)
-            "format" -> evaluateFormat(expression, context, this)
             "number-format" -> evaluateNumberFormat(expression, context, this)
             "array", "boolean", "number", "object", "string" -> evaluateTypeAssertion(expression, context, this)
             "to-boolean", "to-color", "to-number" -> evaluateConversion(expression, context, this)

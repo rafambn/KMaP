@@ -12,9 +12,9 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
         sprites: Map<String, ImageBitmap> = emptyMap(),
         glyphs: Map<String, FontFamily> = emptyMap(),
         locale: String = "en"
-    ): OptimizedStyle {
+    ): CompiledStyle {
         val compiledLayers = rawStyle.layers.map { compileLayer(it, locale, sprites) }
-        return OptimizedStyle(
+        return CompiledStyle(
             version = rawStyle.version,
             name = rawStyle.name,
             layers = compiledLayers,
@@ -24,12 +24,12 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
         )
     }
 
-    private fun compileLayer(layer: StyleLayer, locale: String, sprites: Map<String, ImageBitmap>): OptimizedStyleLayer {
+    private fun compileLayer(layer: StyleLayer, locale: String, sprites: Map<String, ImageBitmap>): CompiledStyleLayer {
         val filter = layer.filter?.let { elements -> compileFilter(elements.map { it.toValue() }, locale) }
         val paint = compilePaint(layer.paint, locale, sprites)
         val layout = compileLayout(layer.layout, locale, sprites)
 
-        return OptimizedStyleLayer(
+        return CompiledStyleLayer(
             id = layer.id,
             type = layer.type,
             source = layer.source,

@@ -210,7 +210,7 @@ interface TileSource<T : Tile> {
 }
 ```
 
-Use `RasterCanvasParameters` or `VectorCanvasParameters` when calling `rasterCanvas` or `vectorCanvas`. Vector canvases also take an `OptimizedStyle`.
+Use `RasterCanvasParameters` or `VectorCanvasParameters` when calling `rasterCanvas` or `vectorCanvas`. Vector canvases also take an `CompiledStyle`.
 
 See [Mapbox vector style support](vector-style-support.md) for the style layers, properties, and expressions that the vector canvas currently renders.
 

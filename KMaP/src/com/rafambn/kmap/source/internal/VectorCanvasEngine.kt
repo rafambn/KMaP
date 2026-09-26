@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.PathFillType
 import com.rafambn.kmap.mvttile.*
 import com.rafambn.kmap.source.TileResult
 import com.rafambn.kmap.source.VectorTile
-import com.rafambn.kmap.style.OptimizedStyle
+import com.rafambn.kmap.style.CompiledStyle
 import com.rafambn.kmap.style.FeatureGeometryContext
 import kotlinx.coroutines.CoroutineScope
 
@@ -13,7 +13,7 @@ class VectorCanvasEngine(
     maxCacheTiles: Int,
     getTile: suspend (zoom: Int, row: Int, column: Int) -> TileResult<VectorTile>,
     coroutineScope: CoroutineScope,
-    style: OptimizedStyle
+    style: CompiledStyle
 ) : CanvasEngine<OptimizedVectorTile>(
     maxCacheTiles,
     coroutineScope,
@@ -24,13 +24,13 @@ class VectorCanvasEngine(
     )
 )
 
-internal fun optimizeMVTile(tile: VectorTile, optimizedStyle: OptimizedStyle): OptimizedVectorTile {
+internal fun optimizeMVTile(tile: VectorTile, compiledStyle: CompiledStyle): OptimizedVectorTile {
     val mvtData = tile.mvtile ?: return OptimizedVectorTile(tile.zoom, tile.row, tile.col, null)
 
     val layerFeatures = mutableMapOf<String, MutableList<OptimizedRenderFeature>>()
     val extent = mvtData.layers.firstOrNull()?.extent ?: 4096
 
-    optimizedStyle.layers.forEach { optimizedStyleLayer ->
+    compiledStyle.layers.forEach { optimizedStyleLayer ->
         if (optimizedStyleLayer.type == "background") return@forEach
 
         val sourceLayerName = optimizedStyleLayer.sourceLayer ?: return@forEach

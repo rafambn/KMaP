@@ -24,6 +24,38 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 val VectorTileCanvasTest by testSuite {
+    test("plain symbol text uses text-color without format") {
+        val style = StyleResolver().resolve(
+            Style(
+                version = 8,
+                sources = emptyMap(),
+                layers = listOf(StyleLayer(
+                    id = "label",
+                    type = "symbol",
+                    layout = mapOf(
+                        "text-field" to JsonPrimitive("A"),
+                        "text-size" to JsonPrimitive(24)
+                    ),
+                    paint = mapOf("text-color" to JsonPrimitive("#0000ff"))
+                ))
+            )
+        )
+        val bitmap = ImageBitmap(128, 64)
+        val canvas = Canvas(bitmap)
+        CanvasDrawScope().draw(Density(1f), LayoutDirection.Ltr, canvas, Size(128f, 64f)) {
+            drawRenderFeature(
+                canvas,
+                OptimizedRenderFeature(OptimizedGeometry.Point(listOf(64f to 32f)), emptyMap()),
+                createFontFamilyResolver(), Density(1f), style.layers.single(),
+                0.0, 1f, 0f, 1f, 1f, 1f
+            )
+        }
+        val pixels = bitmap.toPixelMap()
+        assertTrue((0 until 128).any { x -> (0 until 64).any { y ->
+            pixels[x, y].let { it.alpha > 0.5f && it.blue > 0.9f && it.red < 0.1f }
+        } })
+    }
+
     test("symbol image expression draws a supplied sprite") {
         val sprite = ImageBitmap(4, 4)
         Canvas(sprite).drawRect(Rect(0f, 0f, 4f, 4f), Paint().apply { color = Color.Red })

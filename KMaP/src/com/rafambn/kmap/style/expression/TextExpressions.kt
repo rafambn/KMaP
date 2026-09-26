@@ -1,38 +1,10 @@
 package com.rafambn.kmap.style.expression
 
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import com.rafambn.kmap.style.EvaluationContext
 import com.rafambn.kmap.style.ExpressionEvaluator
-import com.rafambn.kmap.style.FormattedText
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.pow
-
-internal fun evaluateFormat(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): FormattedText? {
-    if (expression.size < 3 || expression.size % 2 == 0) return null
-    val sections = mutableListOf<FormattedText.Section>()
-    for (index in 1 until expression.size step 2) {
-        val value = evaluator.evaluate(expression[index], context)
-        val options = expression[index + 1] as? Map<*, *> ?: return null
-        when (value) {
-            is String -> {
-                val fontScale = options["font-scale"]?.let { evaluator.evaluate(it, context) as? Number }?.toDouble()
-                val colorValue = options["text-color"]?.let { evaluator.evaluate(it, context) }
-                val color = when (colorValue) {
-                    is Color -> colorValue
-                    is String -> parseColor(colorValue)
-                    else -> null
-                }
-                val fonts = (options["text-font"]?.let { evaluator.evaluate(it, context) } as? List<*>)?.mapNotNull { it as? String }
-                sections.add(FormattedText.Section.Text(value, fontScale, color, fonts))
-            }
-            is ImageBitmap -> sections.add(FormattedText.Section.Image(value))
-            else -> return null
-        }
-    }
-    return FormattedText(sections)
-}
 
 internal fun evaluateNumberFormat(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): String? {
     if (expression.size != 3) return null
