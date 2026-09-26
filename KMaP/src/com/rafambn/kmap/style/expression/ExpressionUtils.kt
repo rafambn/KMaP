@@ -11,6 +11,9 @@ internal fun toDouble(value: Any?): Double? {
     }
 }
 
+internal fun equalValues(a: Any?, b: Any?): Boolean =
+    if (a is Number && b is Number) a.toDouble() == b.toDouble() else a == b
+
 internal fun compare(a: Any?, b: Any?): Int? {
     if (a == null || b == null) return null
     if (a is String && b is String) return a.compareTo(b)

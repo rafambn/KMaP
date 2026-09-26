@@ -281,7 +281,7 @@ internal fun drawFillFeature(
     val fillColor =
         compiledStyleLayer.paint.properties["fill-color"]?.evaluate(zoom, properties, compiledStyleLayer.id) as? Color ?: Color.Magenta
     val opacity =
-        compiledStyleLayer.paint.properties["fill-opacity"]?.evaluate(zoom, properties, compiledStyleLayer.id) as? Double ?: 1.0
+        (compiledStyleLayer.paint.properties["fill-opacity"]?.evaluate(zoom, properties, compiledStyleLayer.id) as? Number)?.toDouble() ?: 1.0
     val outlineColor =
         compiledStyleLayer.paint.properties["fill-outline-color"]?.evaluate(zoom, properties, compiledStyleLayer.id) as? Color
     val antialias =
@@ -576,23 +576,23 @@ private fun DrawScope.drawTextSymbol(
     val paint = compiledStyleLayer.paint.properties
 
     val transform = layout["text-transform"]?.evaluate(zoomLevel, properties, compiledStyleLayer.id) as? String ?: "none"
-    val size = layout["text-size"]?.evaluate(zoomLevel, properties, compiledStyleLayer.id) as? Double ?: 16.0
+    val size = (layout["text-size"]?.evaluate(zoomLevel, properties, compiledStyleLayer.id) as? Number)?.toDouble() ?: 16.0
     val textColor = paint["text-color"]?.evaluate(zoomLevel, properties, compiledStyleLayer.id) as? Color ?: Color.Black
-    val opacity = paint["text-opacity"]?.evaluate(zoomLevel, properties, compiledStyleLayer.id) as? Double ?: 1.0
+    val opacity = (paint["text-opacity"]?.evaluate(zoomLevel, properties, compiledStyleLayer.id) as? Number)?.toDouble() ?: 1.0
 
     val haloColor = paint["text-halo-color"]?.evaluate(zoomLevel, properties, compiledStyleLayer.id) as? Color
-    val haloWidth = paint["text-halo-width"]?.evaluate(zoomLevel, properties, compiledStyleLayer.id) as? Double ?: 0.0
-    val haloBlur = paint["text-halo-blur"]?.evaluate(zoomLevel, properties, compiledStyleLayer.id) as? Double ?: 0.0
+    val haloWidth = (paint["text-halo-width"]?.evaluate(zoomLevel, properties, compiledStyleLayer.id) as? Number)?.toDouble() ?: 0.0
+    val haloBlur = (paint["text-halo-blur"]?.evaluate(zoomLevel, properties, compiledStyleLayer.id) as? Number)?.toDouble() ?: 0.0
 
-    val maxWidth = layout["text-max-width"]?.evaluate(zoomLevel, properties, compiledStyleLayer.id) as? Double
-    val lineHeight = layout["text-line-height"]?.evaluate(zoomLevel, properties, compiledStyleLayer.id) as? Double
+    val maxWidth = (layout["text-max-width"]?.evaluate(zoomLevel, properties, compiledStyleLayer.id) as? Number)?.toDouble()
+    val lineHeight = (layout["text-line-height"]?.evaluate(zoomLevel, properties, compiledStyleLayer.id) as? Number)?.toDouble()
     val justify = layout["text-justify"]?.evaluate(zoomLevel, properties, compiledStyleLayer.id) as? String ?: "center"
 
     val anchor = layout["text-anchor"]?.evaluate(zoomLevel, properties, compiledStyleLayer.id) as? String ?: "center"
     val offset = layout["text-offset"]?.evaluate(zoomLevel, properties, compiledStyleLayer.id) as? List<*> ?: listOf(0.0, 0.0)
-    val radialOffset = layout["text-radial-offset"]?.evaluate(zoomLevel, properties, compiledStyleLayer.id) as? Double
+    val radialOffset = (layout["text-radial-offset"]?.evaluate(zoomLevel, properties, compiledStyleLayer.id) as? Number)?.toDouble()
     val translate = paint["text-translate"]?.evaluate(zoomLevel, properties, compiledStyleLayer.id) as? List<*> ?: listOf(0.0, 0.0)
-    val rotate = layout["text-rotate"]?.evaluate(zoomLevel, properties, compiledStyleLayer.id) as? Double
+    val rotate = (layout["text-rotate"]?.evaluate(zoomLevel, properties, compiledStyleLayer.id) as? Number)?.toDouble()
 
     val finalSize = (size * textScale).sp
     val emSize = size.toFloat() * textScale

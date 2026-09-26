@@ -64,7 +64,7 @@ val StyleInspectionTest by testSuite {
         assertEquals(setOf("/layers/0/paint/fill-pattern", "/layers/0/layout/visibility"), result.issues.map { it.path }.toSet())
     }
 
-    test("finds unsupported expressions in arrays, stop outputs, and dynamic property names") {
+    test("finds unsupported expressions in arrays and stop outputs while accepting calculated property names") {
         val result = StyleResolver().resolve("""{
             "version": 8, "sources": {}, "layers": [
                 {"id": "roads", "type": "line", "source-layer": "roads",
@@ -81,7 +81,7 @@ val StyleInspectionTest by testSuite {
 
         assertNotNull(result.style)
         assertEquals(
-            setOf("/layers/0/filter", "/layers/0/paint/line-dasharray", "/layers/0/paint/line-width/stops/0/1", "/layers/1/filter", "/layers/1/layout/text-field"),
+            setOf("/layers/0/filter", "/layers/0/paint/line-dasharray", "/layers/0/paint/line-width/stops/0/1"),
             result.issues.map { it.path }.toSet()
         )
     }

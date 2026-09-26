@@ -97,7 +97,7 @@ val StyleExpressionCoverageTest by testSuite {
             assertNull(evaluator.evaluate(listOf("slice", 2, 0), context))
             assertEquals("bcd", evaluator.evaluate(listOf("slice", "abcd", 1), context))
             assertEquals(listOf(2, 3), evaluator.evaluate(listOf("slice", listOf(1, 2, 3), 1), context))
-            assertEquals("bcd", evaluator.evaluate(listOf("slice", "abcd", 1, "bad"), context))
+            assertNull(evaluator.evaluate(listOf("slice", "abcd", 1, "bad"), context))
         }
 
         test("covers conditional and type expression fallbacks") { evaluator ->

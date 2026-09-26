@@ -121,6 +121,21 @@ val VectorTileCanvasTest by testSuite {
         assertTrue((0 until 32).all { y -> (0 until 32).all { x -> transparent[x, y].alpha == 0f } })
     }
 
+    test("fill opacity accepts Float feature values") {
+        val style = StyleResolver().resolve("""{
+            "version": 8, "sources": {}, "layers": [
+                {"id": "fill", "type": "fill", "source-layer": "land",
+                 "paint": {"fill-color": "#ff0000", "fill-opacity": ["get", "opacity"]}}
+            ]
+        }""").style!!
+        val path = Path().apply { addRect(Rect(4f, 4f, 28f, 28f)) }
+        val bitmap = ImageBitmap(32, 32)
+
+        drawFillFeature(Canvas(bitmap), OptimizedGeometry.Polygon(path), mapOf("opacity" to 0.25f), style.layers.single(), 0.0, 1f, 1f, 1f)
+
+        assertEquals(0.25f, bitmap.toPixelMap()[16, 16].alpha, 0.02f)
+    }
+
     test("default outline only covers the outer edge") {
         val path = Path().apply { addRect(Rect(8.25f, 8.25f, 24.25f, 24.25f)) }
         val geometry = OptimizedGeometry.Polygon(path)

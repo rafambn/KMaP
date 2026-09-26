@@ -48,8 +48,8 @@ internal fun evaluateComparison(expression: List<*>, context: EvaluationContext,
     val right = evaluator.evaluate(expression[2], context)
 
     return when (op) {
-        "==" -> left == right
-        "!=" -> left != right
+        "==" -> equalValues(left, right)
+        "!=" -> !equalValues(left, right)
         ">" -> compare(left, right)?.let { it > 0 }
         "<" -> compare(left, right)?.let { it < 0 }
         ">=" -> compare(left, right)?.let { it >= 0 }
@@ -59,16 +59,20 @@ internal fun evaluateComparison(expression: List<*>, context: EvaluationContext,
 }
 
 // Feature data
-internal fun evaluateGet(expression: List<*>, context: EvaluationContext): Any? {
-    if (expression.size != 2) return null
-    val key = expression[1] as? String ?: return null
-    return context.featureProperties[key]
+internal fun evaluateGet(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): Any? {
+    if (expression.size !in 2..3) return null
+    val key = (expression[1] as? String ?: evaluator.evaluate(expression[1], context) as? String) ?: return null
+    val properties = if (expression.size == 3) evaluator.evaluate(expression[2], context) as? Map<*, *> ?: return null
+    else context.featureProperties
+    return properties[key]
 }
 
-internal fun evaluateHas(expression: List<*>, context: EvaluationContext): Boolean {
-    if (expression.size != 2) return false
-    val key = expression[1] as? String ?: return false
-    return context.featureProperties.containsKey(key)
+internal fun evaluateHas(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): Boolean {
+    if (expression.size !in 2..3) return false
+    val key = (expression[1] as? String ?: evaluator.evaluate(expression[1], context) as? String) ?: return false
+    val properties = if (expression.size == 3) evaluator.evaluate(expression[2], context) as? Map<*, *> ?: return false
+    else context.featureProperties
+    return properties.containsKey(key)
 }
 
 // Lookup
@@ -85,18 +89,22 @@ internal fun evaluateIn(expression: List<*>, context: EvaluationContext, evaluat
     val collection = evaluator.evaluate(expression[2], context)
     return when (collection) {
         is String -> (item as? String)?.let { collection.contains(it) } ?: false
-        is List<*> -> collection.contains(item)
+        is List<*> -> collection.any { equalValues(item, it) }
         else -> false
     }
 }
 
 internal fun evaluateIndexOf(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): Int? {
-    if (expression.size < 3) return null
+    if (expression.size !in 3..4) return null
     val item = evaluator.evaluate(expression[1], context)
     val collection = evaluator.evaluate(expression[2], context)
+    val start = if (expression.size == 4) toDouble(evaluator.evaluate(expression[3], context))?.toInt() ?: return null else 0
     return when (collection) {
-        is String -> (item as? String)?.let { collection.indexOf(it) }
-        is List<*> -> collection.indexOf(item)
+        is String -> (item as? String)?.let { collection.indexOf(it, start.coerceIn(0, collection.length)) }
+        is List<*> -> {
+            val from = if (start < 0) (collection.size.toLong() + start).coerceAtLeast(0).toInt() else start
+            (from until collection.size).firstOrNull { equalValues(item, collection[it]) } ?: -1
+        }
         else -> null
     }
 }
@@ -111,13 +119,21 @@ internal fun evaluateLength(expression: List<*>, context: EvaluationContext, eva
 }
 
 internal fun evaluateSlice(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): Any? {
-    if (expression.size < 3) return null
+    if (expression.size !in 3..4) return null
     val value = evaluator.evaluate(expression[1], context)
     val from = toDouble(evaluator.evaluate(expression[2], context))?.toInt() ?: return null
-    val to = if (expression.size > 3) toDouble(evaluator.evaluate(expression[3], context))?.toInt() else null
+    val size = when (value) {
+        is String -> value.length
+        is List<*> -> value.size
+        else -> return null
+    }
+    val to = if (expression.size == 4) toDouble(evaluator.evaluate(expression[3], context))?.toInt() ?: return null else size
+    fun bounded(index: Int): Int = if (index < 0) (size.toLong() + index).coerceAtLeast(0).toInt() else index.coerceAtMost(size)
+    val start = bounded(from)
+    val end = bounded(to).coerceAtLeast(start)
     return when (value) {
-        is String -> value.substring(from, to ?: value.length)
-        is List<*> -> value.subList(from, to ?: value.size)
+        is String -> value.substring(start, end)
+        is List<*> -> value.subList(start, end)
         else -> null
     }
 }
@@ -150,8 +166,8 @@ internal fun evaluateMatch(expression: List<*>, context: EvaluationContext, eval
     while (i < expression.size - 1) {
         val label = expression[i]
         if (label is List<*>) {
-            if (input in label) return evaluator.evaluate(expression[i + 1], context)
-        } else if (input == label) {
+            if (label.any { equalValues(input, it) }) return evaluator.evaluate(expression[i + 1], context)
+        } else if (equalValues(input, label)) {
             return evaluator.evaluate(expression[i + 1], context)
         }
         i += 2
@@ -230,8 +246,9 @@ internal fun evaluateHsl(expression: List<*>, context: EvaluationContext, evalua
 
 // Math
 internal fun evaluateNumber(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): Double? {
-    if (expression.size < 3) return null
     val op = expression[0] as String
+    if (expression.size == 2 && op == "-") return toDouble(evaluator.evaluate(expression[1], context))?.let { -it }
+    if (expression.size < 3) return null
     var result = toDouble(evaluator.evaluate(expression[1], context)) ?: return null
     for (i in 2 until expression.size) {
         val num = toDouble(evaluator.evaluate(expression[i], context)) ?: return null
@@ -342,6 +359,15 @@ internal fun evaluateInterpolate(expression: List<*>, context: EvaluationContext
                 "exponential" -> exponentialInterpolate(progress, base, lowerOutNum, upperOutNum)
                 // "cubic-bezier" is more complex, linear for now
                 else -> linearInterpolate(progress, lowerOutNum, upperOutNum)
+            }
+        }
+        lowerOutput is List<*> && upperOutput is List<*> && lowerOutput.size == upperOutput.size &&
+            lowerOutput.all { it is Number } && upperOutput.all { it is Number } -> {
+            lowerOutput.indices.map { itemIndex ->
+                val from = (lowerOutput[itemIndex] as Number).toDouble()
+                val to = (upperOutput[itemIndex] as Number).toDouble()
+                if (type == "exponential") exponentialInterpolate(progress, base, from, to)
+                else linearInterpolate(progress, from, to)
             }
         }
         (lowerOutput is Color || lowerOutput is String && parseColor(lowerOutput) != null) &&

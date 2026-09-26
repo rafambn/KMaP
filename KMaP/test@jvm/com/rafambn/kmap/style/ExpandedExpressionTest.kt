@@ -63,6 +63,8 @@ val ExpandedExpressionTest by testSuite {
     }
 
     test("additional math operators handle sign and invalid domains") {
+        assertEquals(-5.0, evaluator.evaluate(listOf("-", 5), context))
+        assertEquals(-3.0, evaluator.evaluate(listOf("-", 5, 8), context))
         assertEquals(-1.0, evaluator.evaluate(listOf("%", -5, 2), context))
         assertEquals(8.0, evaluator.evaluate(listOf("^", 2, 3), context))
         assertEquals(3.0, evaluator.evaluate(listOf("abs", -3), context))
@@ -74,6 +76,43 @@ val ExpandedExpressionTest by testSuite {
         assertEquals(3.0, evaluator.evaluate(listOf("sqrt", 9), context))
         assertNull(evaluator.evaluate(listOf("%", 5, 0), context))
         assertNull(evaluator.evaluate(listOf("sqrt", -1), context))
+    }
+
+    test("numeric feature values compare across MVT and JSON number types") {
+        val feature = context.copy(featureProperties = mapOf("rank" to 2L, "opacity" to 0.5f))
+        assertEquals(true, evaluator.evaluate(listOf("==", listOf("get", "rank"), 2.0), feature))
+        assertEquals(false, evaluator.evaluate(listOf("!=", listOf("get", "opacity"), 0.5), feature))
+        assertEquals("selected", evaluator.evaluate(listOf("match", listOf("get", "rank"), 2.0, "selected", "other"), feature))
+        assertEquals(true, evaluator.evaluate(listOf("in", listOf("get", "rank"), listOf("literal", listOf(1.0, 2.0))), feature))
+        assertEquals(1, evaluator.evaluate(listOf("index-of", 2.0, listOf("literal", listOf(1L, 2L))), feature))
+    }
+
+    test("get and has evaluate calculated keys and nested objects") {
+        val feature = context.copy(featureProperties = mapOf("key" to "rank", "rank" to 2L, "nested" to mapOf("rank" to 3), "{name}" to "literal"))
+        assertEquals(2L, evaluator.evaluate(listOf("get", listOf("get", "key")), feature))
+        assertEquals(3, evaluator.evaluate(listOf("get", "rank", listOf("get", "nested")), feature))
+        assertEquals(true, evaluator.evaluate(listOf("has", listOf("get", "key"), listOf("get", "nested")), feature))
+        assertEquals(false, evaluator.evaluate(listOf("has", "missing", listOf("get", "nested")), feature))
+        assertEquals("literal", evaluator.evaluate(listOf("get", "{name}"), feature))
+        assertEquals(setOf("nested"), evaluator.getRequiredProperties(listOf("get", "rank", listOf("get", "nested"))))
+        assertEquals(setOf("key"), evaluator.getRequiredProperties(listOf("has", listOf("get", "key"))))
+    }
+
+    test("index-of honors the start index and slice stays within bounds") {
+        assertEquals(3, evaluator.evaluate(listOf("index-of", "a", "banana", 3), context))
+        assertEquals(1, evaluator.evaluate(listOf("index-of", "a", "banana", -2), context))
+        assertEquals(2, evaluator.evaluate(listOf("index-of", 3, listOf("literal", listOf(1, 2, 3)), -1), context))
+        assertEquals("bc", evaluator.evaluate(listOf("slice", "abc", 1, 10), context))
+        assertEquals("bc", evaluator.evaluate(listOf("slice", "abc", -2), context))
+        assertEquals("", evaluator.evaluate(listOf("slice", "abc", 3, 1), context))
+        assertEquals(listOf(2, 3), evaluator.evaluate(listOf("slice", listOf("literal", listOf(1, 2, 3)), -2, 10), context))
+    }
+
+    test("interpolate blends every numeric array component") {
+        val expression = listOf("interpolate", listOf("linear"), listOf("zoom"),
+            0, listOf("literal", listOf(0, 0)), 10, listOf("literal", listOf(10, 20)))
+        assertEquals(listOf(5.0, 10.0), evaluator.evaluate(expression, context.copy(zoomLevel = 5.0)))
+        assertEquals(listOf(0, 0), evaluator.evaluate(expression, context.copy(zoomLevel = 0.0)))
     }
 
     test("image resolves an available sprite and coalesce skips missing names") {

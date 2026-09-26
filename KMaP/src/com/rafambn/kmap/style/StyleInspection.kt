@@ -142,20 +142,8 @@ private fun inspectExpression(value: JsonElement, path: String, layerId: String?
             if (operator == "image" && value.size > 2) {
                 issues += StyleIssue(path, StyleIssue.Kind.UNSUPPORTED, "Image expression options are not implemented", layerId)
             }
-            if (operator in setOf("get", "has") && value.size != 2) {
-                issues += StyleIssue(path, StyleIssue.Kind.UNSUPPORTED, "'$operator' only accepts one property name", layerId)
-            }
-            if (operator in setOf("get", "has") && value.size == 2 && (value[1] as? JsonPrimitive)?.takeIf { it.isString } == null) {
-                issues += StyleIssue(path, StyleIssue.Kind.UNSUPPORTED, "'$operator' requires a literal property name", layerId)
-            }
             if (operator == "in" && value.size != 3) {
                 issues += StyleIssue(path, StyleIssue.Kind.UNSUPPORTED, "'in' requires one item and one collection; legacy filters are not implemented", layerId)
-            }
-            if (operator == "index-of" && value.size > 3) {
-                issues += StyleIssue(path, StyleIssue.Kind.UNSUPPORTED, "The 'index-of' start index is ignored", layerId)
-            }
-            if (operator == "-" && value.size == 2) {
-                issues += StyleIssue(path, StyleIssue.Kind.UNSUPPORTED, "Unary '-' is not implemented", layerId)
             }
             val indexes = when (operator) {
                 "match" -> value.indices.filter { it == 1 || it == value.lastIndex || it >= 3 && it % 2 == 1 }

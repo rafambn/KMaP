@@ -41,8 +41,8 @@ class ExpressionEvaluator {
             "==", "!=", ">", ">=", "<", "<=" -> evaluateComparison(expression, context, this)
 
             // Feature data
-            "get" -> evaluateGet(expression, context)
-            "has" -> evaluateHas(expression, context)
+            "get" -> evaluateGet(expression, context, this)
+            "has" -> evaluateHas(expression, context, this)
             "geometry-type" -> context.geometryType
             "id" -> context.featureId
             "zoom" -> context.zoomLevel
@@ -153,8 +153,9 @@ class ExpressionEvaluator {
 
         if (operator == "literal") return emptySet()
 
-        if (operator == "get") {
-            (expression.getOrNull(1) as? String)?.let { requiredProperties.add(it) }
+        if (operator == "get" || operator == "has") {
+            if (expression.size == 2 && expression[1] is String) requiredProperties.add(expression[1] as String)
+            else expression.drop(1).forEach { requiredProperties.addAll(getRequiredProperties(it)) }
             return requiredProperties
         }
 
