@@ -15,23 +15,23 @@ import kotlin.test.assertTrue
 
 val StyleExpressionCoverageTest by testSuite {
     testFixture { ExpressionEvaluator() } asParameterForEach {
-        test("resolves name tokens and collects their feature properties") { evaluator ->
+        test("keeps tokens literal inside expressions") { evaluator ->
             val context = EvaluationContext(
                 featureProperties = mapOf("name" to "Default", "name:pt" to "Nome"),
                 locale = "pt"
             )
 
-            assertEquals("Nome", evaluator.evaluate("{name}", context))
-            assertEquals("Default", evaluator.evaluate("{name:fr}", context))
-            assertEquals("Nome", evaluator.evaluate("{name:pt}", context))
-            assertEquals("", evaluator.evaluate("{name}", EvaluationContext()))
+            assertEquals("{name}", evaluator.evaluate("{name}", context))
+            assertEquals("{name:fr}", evaluator.evaluate("{name:fr}", context))
+            assertEquals("{name:pt}", evaluator.evaluate("{name:pt}", context))
+            assertEquals("{name}", evaluator.evaluate("{name}", EvaluationContext()))
             assertEquals("{", evaluator.evaluate("{", context))
             assertEquals("}", evaluator.evaluate("}", context))
             assertEquals("{ref}", evaluator.evaluate("{ref}", context))
-            assertEquals("Nome Default", evaluator.evaluate(listOf("concat", "{name}", " ", listOf("get", "name")), context))
+            assertEquals("{name} Default", evaluator.evaluate(listOf("concat", "{name}", " ", listOf("get", "name")), context))
 
-            assertEquals(setOf("name", "name:pt"), evaluator.getRequiredProperties("{name} {name:pt} {ref}"))
-            assertEquals(setOf("name"), evaluator.getRequiredProperties("{name:}"))
+            assertEquals(emptySet(), evaluator.getRequiredProperties("{name} {name:pt} {ref}"))
+            assertEquals(emptySet(), evaluator.getRequiredProperties("{name:}"))
             assertEquals(emptySet(), evaluator.getRequiredProperties("{name"))
             assertEquals(emptySet(), evaluator.getRequiredProperties("plain text"))
             assertEquals(setOf("class"), evaluator.getRequiredProperties(listOf("all", listOf("get", "class"), listOf("get", 1))))
@@ -201,7 +201,6 @@ val StyleExpressionCoverageTest by testSuite {
         ) { _, method, _ -> if (method.name == "toString") null else Unit }
 
         // Java proxies can violate the nonnull toString contract, so keep this fallback covered.
-        assertEquals("", evaluator.evaluate("{name}", EvaluationContext(featureProperties = mapOf("name:en" to javaNullString))))
         assertEquals("", evaluator.evaluate(listOf("concat", listOf("get", "name:en")), EvaluationContext(featureProperties = mapOf("name:en" to javaNullString))))
 
         assertEquals(2.0, toDouble(2))

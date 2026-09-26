@@ -5,6 +5,65 @@ import de.infix.testBalloon.framework.core.testSuite
 import kotlin.test.*
 
 val StyleResolverTest by testSuite {
+    test("expands exact feature tokens in text and icon names") {
+        val rawStyleJson = """
+            {
+                "version": 8,
+                "sources": {"tiles": {"type": "vector"}},
+                "layers": [
+                    {
+                        "id": "tokens",
+                        "type": "symbol",
+                        "source": "tiles",
+                        "source-layer": "places",
+                        "layout": {
+                            "text-field": "{name}/{name:pt}/{ref}/{missing}",
+                            "icon-image": "road_{ref_length}"
+                        }
+                    },
+                    {
+                        "id": "expression",
+                        "type": "symbol",
+                        "source": "tiles",
+                        "source-layer": "places",
+                        "layout": {"text-field": ["concat", "{ref}", " ", ["get", "ref"]]}
+                    },
+                    {
+                        "id": "zoom-stops",
+                        "type": "symbol",
+                        "source": "tiles",
+                        "source-layer": "places",
+                        "layout": {
+                            "text-field": {"stops": [[0, "{name}"], [10, "{ref}"]]},
+                            "icon-image": {"stops": [[0, "road_{ref_length}"], [10, "road_{ref_length}"]]}
+                        }
+                    }
+                ]
+            }
+        """.trimIndent()
+
+        val layers = StyleResolver().resolve(rawStyleJson, locale = "pt").style!!.layers
+        val properties = mapOf("name" to "Avenida", "name:pt" to "Nome", "ref" to "A12", "ref_length" to 3.0)
+        val text = layers[0].layout.properties.getValue("text-field")
+        val icon = layers[0].layout.properties.getValue("icon-image")
+
+        assertEquals(setOf("name", "name:pt", "ref", "missing"), text.requiredProperties)
+        assertEquals(setOf("ref_length"), icon.requiredProperties)
+        assertEquals("Avenida/Nome/A12/", text.evaluate(16.0, properties, null))
+        assertEquals("Avenida//A12/", text.evaluate(16.0, properties - "name:pt", null))
+        assertEquals("road_3", icon.evaluate(16.0, properties, null))
+        assertEquals("road_3", icon.evaluate(16.0, properties + ("ref_length" to 3f), null))
+        assertEquals("road_2.5", icon.evaluate(16.0, properties + ("ref_length" to 2.5), null))
+        assertEquals("{ref} A12", layers[1].layout.properties.getValue("text-field").evaluate(16.0, properties, null))
+        val zoomText = layers[2].layout.properties.getValue("text-field")
+        val zoomIcon = layers[2].layout.properties.getValue("icon-image")
+        assertEquals(setOf("name", "ref"), zoomText.requiredProperties)
+        assertEquals(setOf("ref_length"), zoomIcon.requiredProperties)
+        assertEquals("Avenida", zoomText.evaluate(0.0, properties, null))
+        assertEquals("A12", zoomText.evaluate(10.0, properties, null))
+        assertEquals("road_3", zoomIcon.evaluate(0.0, properties, null))
+    }
+
     test("testResolveSimpleStyle") {
         val rawStyleJson = """
             {

@@ -9,6 +9,7 @@ import kotlinx.serialization.json.*
 class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvaluator()) {
 
     private val json = Json { ignoreUnknownKeys = true }
+    private val tokenPattern = Regex("\\{([^{}]+)\\}")
 
     fun resolve(
         rawJson: String,
@@ -88,8 +89,8 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
         val visibilityValue = layoutMap?.get("visibility")?.toValue()
         val visibility = compileVisibility(visibilityValue, locale, sprites)
 
-        val otherProperties = layoutMap?.filterKeys { it != "visibility" }?.mapValues { (_, value) ->
-            compileValue<Any>(value.toValue(), locale, sprites)
+        val otherProperties = layoutMap?.filterKeys { it != "visibility" }?.mapValues { (name, value) ->
+            compileValue<Any>(value.toValue(), locale, sprites, expandTokens = name == "text-field" || name == "icon-image")
         } ?: emptyMap()
 
         return CompiledLayout(visibility = visibility, properties = otherProperties)
@@ -111,8 +112,31 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
 
     @Suppress("UNCHECKED_CAST")
     private fun <T> compileValue(
-        expression: Any?, locale: String, sprites: Map<String, ImageBitmap>, color: Boolean = false
+        expression: Any?, locale: String, sprites: Map<String, ImageBitmap>, color: Boolean = false, expandTokens: Boolean = false
     ): CompiledValue<T> {
+        val tokenizedStrings = when {
+            !expandTokens -> emptyList()
+            expression is String -> listOf(expression)
+            expression is Map<*, *> && expression["property"] == null ->
+                (expression["stops"] as? List<*>)?.mapNotNull { (it as? List<*>)?.getOrNull(1) as? String } ?: emptyList()
+            else -> emptyList()
+        }
+        val tokenProperties = tokenizedStrings.flatMap { value ->
+            tokenPattern.findAll(value).map { it.groupValues[1] }.toList()
+        }.toSet()
+        if (tokenProperties.isNotEmpty()) {
+            return CompiledValue(
+                evaluate = { zoomLevel, featureProperties, featureId ->
+                    val context = EvaluationContext(featureProperties, "Point", zoomLevel, featureId, locale, sprites)
+                    val value = evaluator.evaluate(expression, context)
+                    (if (value is String) tokenPattern.replace(value) { match ->
+                        stringifyTokenValue(featureProperties[match.groupValues[1]])
+                    } else value) as? T
+                },
+                requiredProperties = evaluator.getRequiredProperties(expression) + tokenProperties
+            )
+        }
+
         val requiredProperties = evaluator.getRequiredProperties(expression)
         return CompiledValue(
             evaluate = { zoomLevel, featureProperties, featureId ->
@@ -122,6 +146,18 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
             },
             requiredProperties = requiredProperties
         )
+    }
+
+    private fun stringifyTokenValue(value: Any?): String {
+        if (value == null) return ""
+        if (value is Float || value is Double) {
+            val number = (value as Number).toDouble()
+            if (number == 0.0) return "0"
+            if (number % 1.0 == 0.0 && number >= Long.MIN_VALUE.toDouble() && number < Long.MAX_VALUE.toDouble()) {
+                return number.toLong().toString()
+            }
+        }
+        return value.toString()
     }
 
     private fun JsonElement.toValue(): Any? {

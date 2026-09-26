@@ -14,9 +14,6 @@ KMaP TODO
 - Load sprite images from style URLs and support collision handling, line
   placement, crossfade, and remaining icon properties in vector `symbol` layers.
 
-- Make `ExpressionEvaluator.getRequiredProperties` recognize arbitrary text
-  tokens such as `{number}`, `{ref}`, and `road_{ref_length}`, not only `{name}`.
-
 - Expand component measurement and visibility tests for rotated and clustered
   markers.
 

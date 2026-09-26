@@ -7,25 +7,6 @@ import kotlin.math.ln
 
 class ExpressionEvaluator {
 
-    private fun resolveTokens(text: String, context: EvaluationContext): String {
-        val regex = "\\{name(?::(.*?))?\\}".toRegex()
-        return regex.replace(text) { matchResult ->
-            val lang = matchResult.groupValues[1]
-            val propertyName = when {
-                lang.isNotEmpty() -> "name:$lang"
-                else -> "name:${context.locale}"
-            }
-            context.featureProperties[propertyName]?.toString() ?: context.featureProperties["name"]?.toString() ?: ""
-        }
-    }
-
-    private fun evaluateStringExpression(expression: String, context: EvaluationContext): Any {
-        if (expression.contains("{") && expression.contains("}")) {
-            return resolveTokens(expression, context)
-        }
-        return expression
-    }
-
     private fun evaluateListExpression(expression: List<*>, context: EvaluationContext): Any? {
         if (expression.isEmpty()) {
             return expression
@@ -102,7 +83,7 @@ class ExpressionEvaluator {
 
     fun evaluate(expression: Any?, context: EvaluationContext): Any? {
         return when (expression) {
-            is String -> evaluateStringExpression(expression, context)
+            is String -> expression
             is List<*> -> evaluateListExpression(expression, context)
             is Map<*, *> -> {
                 val stops = expression["stops"] as? List<*>
@@ -130,20 +111,6 @@ class ExpressionEvaluator {
         if (expression is Map<*, *>) {
             return expression.values.flatMap { getRequiredProperties(it) }.toSet()
         }
-        if (expression is String && expression.contains("{") && expression.contains("}")) {
-            val properties = mutableSetOf<String>()
-            val regex = "\\{name(?::(.*?))?\\}".toRegex()
-            regex.findAll(expression).forEach { matchResult ->
-                val lang = matchResult.groupValues[1]
-                if (lang.isNotEmpty()) {
-                    properties.add("name:$lang")
-                } else {
-                    properties.add("name")
-                }
-            }
-            return properties
-        }
-
         if (expression !is List<*> || expression.isEmpty()) {
             return emptySet()
         }
