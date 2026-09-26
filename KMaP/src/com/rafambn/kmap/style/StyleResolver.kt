@@ -3,15 +3,39 @@ package com.rafambn.kmap.style
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.font.FontFamily
 import com.rafambn.kmap.style.expression.parseColor
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.*
 
 class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvaluator()) {
 
+    private val json = Json { ignoreUnknownKeys = true }
+
     fun resolve(
-        rawStyle: Style,
+        rawJson: String,
         sprites: Map<String, ImageBitmap> = emptyMap(),
         glyphs: Map<String, FontFamily> = emptyMap(),
         locale: String = "en"
+    ): StyleResolution {
+        val root = try {
+            json.parseToJsonElement(rawJson) as? JsonObject
+        } catch (error: SerializationException) {
+            return StyleResolution(null, listOf(StyleIssue("$", StyleIssue.Kind.INVALID, error.message ?: "Invalid JSON")))
+        } ?: return StyleResolution(null, listOf(StyleIssue("$", StyleIssue.Kind.INVALID, "Style must be a JSON object")))
+
+        val issues = inspectStyle(root)
+        val style = try {
+            json.decodeFromJsonElement<Style>(root)
+        } catch (error: SerializationException) {
+            return StyleResolution(null, issues + StyleIssue("$", StyleIssue.Kind.INVALID, error.message ?: "Invalid style"))
+        }
+        return StyleResolution(compile(style, sprites, glyphs, locale), issues)
+    }
+
+    private fun compile(
+        rawStyle: Style,
+        sprites: Map<String, ImageBitmap>,
+        glyphs: Map<String, FontFamily>,
+        locale: String
     ): CompiledStyle {
         val compiledLayers = rawStyle.layers.map { compileLayer(it, locale, sprites) }
         return CompiledStyle(

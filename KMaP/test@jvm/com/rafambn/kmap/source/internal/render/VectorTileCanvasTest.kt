@@ -18,6 +18,7 @@ import com.rafambn.kmap.style.Style
 import com.rafambn.kmap.style.StyleLayer
 import com.rafambn.kmap.style.StyleResolver
 import de.infix.testBalloon.framework.core.testSuite
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 import kotlin.test.assertEquals
@@ -26,7 +27,7 @@ import kotlin.test.assertTrue
 val VectorTileCanvasTest by testSuite {
     test("plain symbol text uses text-color without format") {
         val style = StyleResolver().resolve(
-            Style(
+            Json.encodeToString(Style.serializer(), Style(
                 version = 8,
                 sources = emptyMap(),
                 layers = listOf(StyleLayer(
@@ -38,8 +39,8 @@ val VectorTileCanvasTest by testSuite {
                     ),
                     paint = mapOf("text-color" to JsonPrimitive("#0000ff"))
                 ))
-            )
-        )
+            ))
+        ).style!!
         val bitmap = ImageBitmap(128, 64)
         val canvas = Canvas(bitmap)
         CanvasDrawScope().draw(Density(1f), LayoutDirection.Ltr, canvas, Size(128f, 64f)) {
@@ -60,7 +61,7 @@ val VectorTileCanvasTest by testSuite {
         val sprite = ImageBitmap(4, 4)
         Canvas(sprite).drawRect(Rect(0f, 0f, 4f, 4f), Paint().apply { color = Color.Red })
         val style = StyleResolver().resolve(
-            Style(
+            Json.encodeToString(Style.serializer(), Style(
                 version = 8,
                 sources = emptyMap(),
                 layers = listOf(StyleLayer(
@@ -69,9 +70,9 @@ val VectorTileCanvasTest by testSuite {
                     layout = mapOf("icon-image" to JsonArray(listOf(JsonPrimitive("image"), JsonPrimitive("dot")))),
                     paint = mapOf("icon-opacity" to JsonPrimitive(0.5))
                 ))
-            ),
+            )),
             sprites = mapOf("dot" to sprite)
-        )
+        ).style!!
         val bitmap = ImageBitmap(32, 32)
         val canvas = Canvas(bitmap)
         CanvasDrawScope().draw(Density(1f), LayoutDirection.Ltr, canvas, Size(32f, 32f)) {
@@ -93,7 +94,7 @@ val VectorTileCanvasTest by testSuite {
 
         fun render(opacity: Double): ImageBitmap {
             val style = StyleResolver().resolve(
-                Style(
+                Json.encodeToString(Style.serializer(), Style(
                     version = 8,
                     sources = emptyMap(),
                     layers = listOf(
@@ -107,8 +108,8 @@ val VectorTileCanvasTest by testSuite {
                             )
                         )
                     )
-                )
-            )
+                ))
+            ).style!!
             val bitmap = ImageBitmap(32, 32)
             drawFillFeature(Canvas(bitmap), geometry, emptyMap(), style.layers.single(), 0.0, 1f, 1f, 1f)
             return bitmap
@@ -131,12 +132,12 @@ val VectorTileCanvasTest by testSuite {
             )
             if (explicitOutline) paint["fill-outline-color"] = JsonPrimitive("rgba(255, 0, 0, 0.5)")
             val style = StyleResolver().resolve(
-                Style(
+                Json.encodeToString(Style.serializer(), Style(
                     version = 8,
                     sources = emptyMap(),
                     layers = listOf(StyleLayer(id = "fill", type = "fill", paint = paint))
-                )
-            )
+                ))
+            ).style!!
             val bitmap = ImageBitmap(32, 32)
             drawFillFeature(Canvas(bitmap), geometry, emptyMap(), style.layers.single(), 0.0, 1f, 1f, 1f)
             return bitmap
@@ -154,7 +155,7 @@ val VectorTileCanvasTest by testSuite {
 
     test("fill outline stays one screen pixel across tile and map scales") {
         val style = StyleResolver().resolve(
-            Style(
+            Json.encodeToString(Style.serializer(), Style(
                 version = 8,
                 sources = emptyMap(),
                 layers = listOf(
@@ -167,8 +168,8 @@ val VectorTileCanvasTest by testSuite {
                         )
                     )
                 )
-            )
-        )
+            ))
+        ).style!!
         fun render(tileScaleX: Float, tileScaleY: Float, screenScale: Float): ImageBitmap {
             val path = Path().apply {
                 addRect(Rect(32f / (tileScaleX * screenScale), 32f / (tileScaleY * screenScale),
@@ -200,7 +201,7 @@ val VectorTileCanvasTest by testSuite {
 
     test("line width uses screen pixels across tile and map scales") {
         val style = StyleResolver().resolve(
-            Style(
+            Json.encodeToString(Style.serializer(), Style(
                 version = 8,
                 sources = emptyMap(),
                 layers = listOf(
@@ -213,8 +214,8 @@ val VectorTileCanvasTest by testSuite {
                         )
                     )
                 )
-            )
-        )
+            ))
+        ).style!!
 
         fun render(tileScaleX: Float, tileScaleY: Float, screenScale: Float): ImageBitmap {
             val path = Path().apply {
@@ -249,7 +250,7 @@ val VectorTileCanvasTest by testSuite {
 
     test("polygon line outlines outer and inner rings without filling them") {
         val style = StyleResolver().resolve(
-            Style(
+            Json.encodeToString(Style.serializer(), Style(
                 version = 8,
                 sources = emptyMap(),
                 layers = listOf(
@@ -263,8 +264,8 @@ val VectorTileCanvasTest by testSuite {
                         )
                     )
                 )
-            )
-        )
+            ))
+        ).style!!
         val path = Path().apply {
             addRect(Rect(8f, 8f, 56f, 56f))
             addRect(Rect(24f, 24f, 40f, 40f))
@@ -303,7 +304,7 @@ val VectorTileCanvasTest by testSuite {
 
         fun render(join: String, cap: String): ImageBitmap {
             val style = StyleResolver().resolve(
-                Style(
+                Json.encodeToString(Style.serializer(), Style(
                     version = 8,
                     sources = emptyMap(),
                     layers = listOf(
@@ -320,8 +321,8 @@ val VectorTileCanvasTest by testSuite {
                             )
                         )
                     )
-                )
-            )
+                ))
+            ).style!!
             val bitmap = ImageBitmap(32, 32)
             drawLineFeature(Canvas(bitmap), path, emptyMap(), style.layers.single(), 0.0, 1f, 1f, 1f)
             return bitmap
@@ -340,7 +341,7 @@ val VectorTileCanvasTest by testSuite {
 
     test("line join none closes polygon rings") {
         val style = StyleResolver().resolve(
-            Style(
+            Json.encodeToString(Style.serializer(), Style(
                 version = 8,
                 sources = emptyMap(),
                 layers = listOf(
@@ -354,8 +355,8 @@ val VectorTileCanvasTest by testSuite {
                         )
                     )
                 )
-            )
-        )
+            ))
+        ).style!!
         val path = Path().apply {
             addRect(Rect(8f, 8f, 56f, 56f))
             addRect(Rect(24f, 24f, 40f, 40f))
@@ -372,7 +373,7 @@ val VectorTileCanvasTest by testSuite {
 
     test("line dasharray uses line widths and stays in screen pixels") {
         val style = StyleResolver().resolve(
-            Style(
+            Json.encodeToString(Style.serializer(), Style(
                 version = 8,
                 sources = emptyMap(),
                 layers = listOf(
@@ -386,8 +387,8 @@ val VectorTileCanvasTest by testSuite {
                         )
                     )
                 )
-            )
-        )
+            ))
+        ).style!!
 
         fun render(tileScaleX: Float, tileScaleY: Float, screenScale: Float): ImageBitmap {
             val path = Path().apply {
@@ -424,12 +425,12 @@ val VectorTileCanvasTest by testSuite {
             )
             if (pattern) paint["line-pattern"] = JsonPrimitive("road-texture")
             val style = StyleResolver().resolve(
-                Style(
+                Json.encodeToString(Style.serializer(), Style(
                     version = 8,
                     sources = emptyMap(),
                     layers = listOf(StyleLayer(id = "line", type = "line", paint = paint))
-                )
-            )
+                ))
+            ).style!!
             val path = Path().apply {
                 moveTo(8f, 16f)
                 lineTo(72f, 16f)
@@ -452,7 +453,7 @@ val VectorTileCanvasTest by testSuite {
     test("zero-length dashes render dots only with round caps") {
         fun render(cap: String, dashArray: List<Int> = listOf(0, 2)): ImageBitmap {
             val style = StyleResolver().resolve(
-                Style(
+                Json.encodeToString(Style.serializer(), Style(
                     version = 8,
                     sources = emptyMap(),
                     layers = listOf(
@@ -467,8 +468,8 @@ val VectorTileCanvasTest by testSuite {
                             )
                         )
                     )
-                )
-            )
+                ))
+            ).style!!
             val path = Path().apply {
                 moveTo(8f, 16f)
                 lineTo(72f, 16f)
@@ -497,7 +498,7 @@ val VectorTileCanvasTest by testSuite {
     test("all-zero dashes draw nothing and zero gaps draw a solid line") {
         fun render(intervals: List<Int>): ImageBitmap {
             val style = StyleResolver().resolve(
-                Style(
+                Json.encodeToString(Style.serializer(), Style(
                     version = 8,
                     sources = emptyMap(),
                     layers = listOf(
@@ -511,8 +512,8 @@ val VectorTileCanvasTest by testSuite {
                             )
                         )
                     )
-                )
-            )
+                ))
+            ).style!!
             val path = Path().apply {
                 moveTo(8f, 16f)
                 lineTo(72f, 16f)

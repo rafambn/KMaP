@@ -14,6 +14,7 @@ import com.rafambn.kmap.style.StyleResolver
 import de.infix.testBalloon.framework.core.testSuite
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 
@@ -27,7 +28,7 @@ val VectorCanvasEngineTest by testSuite {
         )
         val mvtile = MVTile(listOf(MVTLayer("land", 4096, listOf(feature))))
         val style = StyleResolver().resolve(
-            Style(
+            Json.encodeToString(Style.serializer(), Style(
                 version = 8,
                 sources = emptyMap(),
                 layers = listOf(StyleLayer(
@@ -37,8 +38,8 @@ val VectorCanvasEngineTest by testSuite {
                     minzoom = 5.5,
                     maxzoom = 8.5
                 ))
-            )
-        )
+            ))
+        ).style!!
 
         assertTrue(optimizeMVTile(VectorTile(5, 0, 0, mvtile), style).optimizedTile!!.layerFeatures.getValue("land-fill").isNotEmpty())
         assertTrue(optimizeMVTile(VectorTile(9, 0, 0, mvtile), style).optimizedTile!!.layerFeatures.getValue("land-fill").isNotEmpty())
@@ -53,7 +54,7 @@ val VectorCanvasEngineTest by testSuite {
         )
         val mvtile = MVTile(listOf(MVTLayer("land", 4096, listOf(feature))))
         val style = StyleResolver().resolve(
-            Style(
+            Json.encodeToString(Style.serializer(), Style(
                 version = 8,
                 sources = emptyMap(),
                 layers = listOf(
@@ -69,8 +70,8 @@ val VectorCanvasEngineTest by testSuite {
                         )
                     )
                 )
-            )
-        )
+            ))
+        ).style!!
 
         assertTrue(optimizeMVTile(VectorTile(4, 0, 0, mvtile), style).optimizedTile!!.layerFeatures.getValue("parks").isEmpty())
         assertTrue(optimizeMVTile(VectorTile(5, 0, 0, mvtile), style).optimizedTile!!.layerFeatures.getValue("parks").size == 1)
@@ -93,12 +94,12 @@ val VectorCanvasEngineTest by testSuite {
             mvtile = MVTile(listOf(MVTLayer("land", 4096, listOf(feature))))
         )
         val style = StyleResolver().resolve(
-            Style(
+            Json.encodeToString(Style.serializer(), Style(
                 version = 8,
                 sources = emptyMap(),
                 layers = listOf(StyleLayer(id = "land-fill", type = "fill", sourceLayer = "land"))
-            )
-        )
+            ))
+        ).style!!
 
         val geometry = optimizeMVTile(tile, style).optimizedTile!!
             .layerFeatures.getValue("land-fill").single().geometry as OptimizedGeometry.Polygon
@@ -122,12 +123,12 @@ val VectorCanvasEngineTest by testSuite {
         )
         val tile = VectorTile(0, 0, 0, MVTile(listOf(MVTLayer("land", 4096, listOf(feature)))))
         val style = StyleResolver().resolve(
-            Style(
+            Json.encodeToString(Style.serializer(), Style(
                 version = 8,
                 sources = emptyMap(),
                 layers = listOf(StyleLayer(id = "land-outline", type = "line", sourceLayer = "land"))
-            )
-        )
+            ))
+        ).style!!
 
         val geometry = optimizeMVTile(tile, style).optimizedTile!!
             .layerFeatures.getValue("land-outline").single().geometry

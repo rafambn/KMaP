@@ -23,11 +23,9 @@ import com.rafambn.kmap.mapProperties.border.BoundMapBorder
 import com.rafambn.kmap.mapProperties.border.MapBorderType
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
 import com.rafambn.kmap.style.CompiledStyle
-import com.rafambn.kmap.style.Style
 import com.rafambn.kmap.style.StyleResolver
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
-import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.vectorResource
 
 @Composable
@@ -42,16 +40,11 @@ fun VectorTileScreen(
             tileSize = TileDimension(512.dp, 512.dp)
         )
     )
-    val json = Json {
-        ignoreUnknownKeys = true
-        isLenient = true
-        useArrayPolymorphism = false
-    }
     val styleState = remember { mutableStateOf<CompiledStyle?>(null) }
 
     LaunchedEffect(Unit) {
         val styleJson = Res.readBytes("files/map-tiler-streets.json").decodeToString()
-        styleState.value = StyleResolver().resolve(json.decodeFromString<Style>(styleJson), locale = "pt")
+        styleState.value = StyleResolver().resolve(styleJson, locale = "pt").style
     }
 
     styleState.value?.let { style ->

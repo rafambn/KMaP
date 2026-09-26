@@ -5,7 +5,6 @@ import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import kotlinx.serialization.json.Json
 
 /**
  * Integration tests using 12 real-world Mapbox/MapLibre style files from test resources.
@@ -16,19 +15,12 @@ val RealWorldStyleIntegrationTest by testSuite {
     testFixture {
         object {
             val styleResourceDir = "testResources@jvm/style"
-            val json = Json { ignoreUnknownKeys = true }
             val resolver = StyleResolver()
 
-            fun loadStyleFile(filename: String): Style? {
+            fun loadStyleFile(filename: String): String? {
                 val file = File(styleResourceDir, filename)
                 return if (file.exists()) {
-                    try {
-                        val content = file.readText()
-                        json.decodeFromString(Style.serializer(), content)
-                    } catch (e: Exception) {
-                        println("Failed to load style $filename: ${e.message}")
-                        null
-                    }
+                    file.readText()
                 } else {
                     println("Style file not found: ${file.absolutePath}")
                     null
@@ -42,7 +34,7 @@ val RealWorldStyleIntegrationTest by testSuite {
                 return@test
             }
 
-            val optimized = resolver.resolve(style)
+            val optimized = resolver.resolve(style).style!!
             assertNotNull(optimized)
             assertTrue(optimized.layers.isNotEmpty(), "Style should have at least one layer")
 
@@ -74,7 +66,7 @@ val RealWorldStyleIntegrationTest by testSuite {
             // Test that styles 2-12 can be loaded and evaluated without errors
             for (styleNum in 2..12) {
                 val style = loadStyleFile("style$styleNum.json") ?: continue
-                val optimized = resolver.resolve(style)
+                val optimized = resolver.resolve(style).style!!
 
                 // All layers should have compiled paint and layout properties
                 for (layer in optimized.layers) {
@@ -101,7 +93,7 @@ val RealWorldStyleIntegrationTest by testSuite {
             // Test styles 13-16 which should have complex interpolation expressions
             for (styleNum in 13..16) {
                 val style = loadStyleFile("style$styleNum.json") ?: continue
-                val optimized = resolver.resolve(style)
+                val optimized = resolver.resolve(style).style!!
 
                 // Find layers with interpolation (numeric properties at different zooms)
                 for (layer in optimized.layers) {
@@ -135,7 +127,7 @@ val RealWorldStyleIntegrationTest by testSuite {
                 return@test
             }
 
-            val optimized = resolver.resolve(style)
+            val optimized = resolver.resolve(style).style!!
 
             // Collect layer types
             val layerTypes = optimized.layers.map { it.type }.toSet()
@@ -151,7 +143,7 @@ val RealWorldStyleIntegrationTest by testSuite {
                 return@test
             }
 
-            val optimized = resolver.resolve(style)
+            val optimized = resolver.resolve(style).style!!
             var expressionsEvaluated = 0
             var expressionErrors = 0
 
@@ -214,7 +206,7 @@ val RealWorldStyleIntegrationTest by testSuite {
                 val style = loadStyleFile(file)
                 if (style != null) {
                     try {
-                        val optimized = resolver.resolve(style)
+                        val optimized = resolver.resolve(style).style!!
                         successCount++
                         println("✓ Successfully loaded and resolved $file (${optimized.layers.size} layers)")
                     } catch (e: Exception) {

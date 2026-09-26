@@ -4,7 +4,7 @@ KMaP's vector canvas implements part of the [Mapbox Style Specification](https:/
 
 A style is a JSON document containing sources and style layers. The table covers layer types, layer properties, expressions, and root properties from that document.
 
-Supply decoded Mapbox Vector Tiles through `VectorCanvasParameters.tileSource` and pass an `CompiledStyle` from `StyleResolver`. Each vector canvas has one caller-provided tile source. KMaP does not fetch tiles, sprites, or glyphs from the style document.
+Supply decoded Mapbox Vector Tiles through `VectorCanvasParameters.tileSource` and pass a `CompiledStyle` from `StyleResolver`. Each vector canvas has one caller-provided tile source. KMaP does not fetch tiles, sprites, or glyphs from the style document.
 
 | Specification item | Status | Current behavior |
 | --- | --- | --- |
@@ -30,6 +30,18 @@ Supply decoded Mapbox Vector Tiles through `VectorCanvasParameters.tileSource` a
 
 Unlisted paint and layout properties are ignored. Missing background, fill, and line colors use KMaP's magenta fallback instead of the Mapbox defaults. Loading a style JSON successfully is not a guarantee that it will look like the same style in Mapbox.
 
-## Loading a style file
+## Loading and checking a style file
 
-`Style` models some root, source, and layer fields. Use `Json { ignoreUnknownKeys = true }` to skip unknown fields. Known fields with unsupported shapes still fail to deserialize. For example, Mapbox allows inline GeoJSON in `sources.*.data`, but KMaP models `data` as a string. Deserialization does not validate Mapbox compatibility.
+Pass the original JSON to `StyleResolver` to get a `StyleResolution` with the compiled `style` and a list of `issues`:
+
+```kotlin
+val result = StyleResolver().resolve(styleJson)
+result.issues.forEach { issue ->
+    println("${issue.kind}: ${issue.path}: ${issue.message}")
+}
+val style = result.style ?: error("Style JSON could not be loaded")
+```
+
+Each issue includes a JSON path and, for layer issues, a layer ID. `UNSUPPORTED` means KMaP recognizes a construct it does not render or evaluate; `UNKNOWN` means a root, source, or layer field is not recognized; `INVALID` means the JSON or its modeled fields could not be decoded. The resolver does not log automatically. A style can compile while some fields are unsupported. An empty issue list means this inspection found no unsupported constructs; it does not promise the same appearance as Mapbox. The table above describes rendering differences that need visual review.
+
+Pass the original JSON string to the resolver. Fields discarded by a separate deserializer cannot be reported. Known fields with unsupported shapes still fail to decode; for example, inline GeoJSON in `sources.*.data` is allowed by Mapbox but modeled as a string by KMaP.

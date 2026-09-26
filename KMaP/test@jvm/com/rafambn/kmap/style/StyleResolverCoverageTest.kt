@@ -5,6 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
@@ -35,7 +36,7 @@ val StyleResolverCoverageTest by testSuite {
         )
         val rawStyle = Style(version = 8, sources = emptyMap(), layers = listOf(emptyLayer, populatedLayer))
 
-        val optimized = StyleResolver().resolve(rawStyle)
+        val optimized = StyleResolver().resolve(Json.encodeToString(Style.serializer(), rawStyle)).style!!
 
         val empty = optimized.layers[0]
         assertEquals(0.0, empty.minZoom)
@@ -73,7 +74,7 @@ val StyleResolverCoverageTest by testSuite {
                 )
             )
         )
-        val visible = StyleResolver().resolve(visibleStyle).layers.single()
+        val visible = StyleResolver().resolve(Json.encodeToString(Style.serializer(), visibleStyle)).style!!.layers.single()
         assertTrue(visible.layout.visibility.evaluate(0.0, emptyMap(), null)!!)
     }
 
@@ -84,7 +85,7 @@ val StyleResolverCoverageTest by testSuite {
             layers = listOf(StyleLayer(id = "filter", type = "fill", filter = listOf(JsonPrimitive("unknown"))))
         )
 
-        val filter = StyleResolver().resolve(style).layers.single().filter
+        val filter = StyleResolver().resolve(Json.encodeToString(Style.serializer(), style)).style!!.layers.single().filter
 
         assertFalse(filter!!.evaluate(0.0, emptyMap(), "Polygon", null))
     }
@@ -120,7 +121,7 @@ val StyleResolverCoverageTest by testSuite {
             )
         )
 
-        val layers = StyleResolver().resolve(style).layers
+        val layers = StyleResolver().resolve(Json.encodeToString(Style.serializer(), style)).style!!.layers
 
         assertFalse(layers[0].layout.visibility.evaluate(0.0, emptyMap(), null)!!)
         assertFalse(layers[1].layout.visibility.evaluate(0.0, emptyMap(), null)!!)
