@@ -57,6 +57,39 @@ val VectorTileCanvasTest by testSuite {
         } })
     }
 
+    test("text opacity fades the halo") {
+        val style = StyleResolver().resolve(
+            Json.encodeToString(Style.serializer(), Style(
+                version = 8,
+                sources = emptyMap(),
+                layers = listOf(StyleLayer(
+                    id = "label",
+                    type = "symbol",
+                    layout = mapOf("text-field" to JsonPrimitive("A"), "text-size" to JsonPrimitive(24)),
+                    paint = mapOf(
+                        "text-color" to JsonPrimitive("transparent"),
+                        "text-opacity" to JsonPrimitive(0.25),
+                        "text-halo-color" to JsonPrimitive("#ffffff"),
+                        "text-halo-width" to JsonPrimitive(2)
+                    )
+                ))
+            ))
+        ).style!!
+        val bitmap = ImageBitmap(128, 64)
+        val canvas = Canvas(bitmap)
+        CanvasDrawScope().draw(Density(1f), LayoutDirection.Ltr, canvas, Size(128f, 64f)) {
+            drawRenderFeature(
+                canvas,
+                OptimizedRenderFeature(OptimizedGeometry.Point(listOf(64f to 32f)), emptyMap()),
+                createFontFamilyResolver(), Density(1f), style.layers.single(),
+                0.0, 1f, 0f, 1f, 1f, 1f
+            )
+        }
+        val pixels = bitmap.toPixelMap()
+        val haloAlpha = (0 until 128).maxOf { x -> (0 until 64).maxOf { y -> pixels[x, y].alpha } }
+        assertTrue(haloAlpha in 0.2f..0.55f, "halo alpha was $haloAlpha")
+    }
+
     test("symbol image expression draws a supplied sprite") {
         val sprite = ImageBitmap(4, 4)
         Canvas(sprite).drawRect(Rect(0f, 0f, 4f, 4f), Paint().apply { color = Color.Red })

@@ -106,7 +106,8 @@ val StyleResolverTest by testSuite {
 
         assertNotNull(layer.paint.properties["fill-color"])
         val color = layer.paint.properties["fill-color"]!!.evaluate(0.0, emptyMap(), null) as Color
-        assertEquals(Color(0, 128, 0, 127), color)
+        assertEquals(0.5f, color.alpha, 0.003f)
+        assertEquals(128 / 255f, color.green, 0.001f)
     }
 
     test("testResolveColorString") {

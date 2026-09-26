@@ -221,27 +221,25 @@ internal fun evaluateSplit(expression: List<*>, context: EvaluationContext, eval
 
 // Color
 internal fun evaluateRgb(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): Color? {
-    if (expression.size !in 4..5) return null
-    val r = toDouble(evaluator.evaluate(expression[1], context))?.toInt()?.coerceIn(0, 255) ?: return null
-    val g = toDouble(evaluator.evaluate(expression[2], context))?.toInt()?.coerceIn(0, 255) ?: return null
-    val b = toDouble(evaluator.evaluate(expression[3], context))?.toInt()?.coerceIn(0, 255) ?: return null
-    val a = if (expression.size == 5) toDouble(evaluator.evaluate(expression[4], context))?.coerceIn(0.0, 1.0) ?: 1.0 else 1.0
-    return Color(r, g, b, (a * 255).toInt())
+    if (expression.size != if (expression[0] == "rgba") 5 else 4) return null
+    val r = toDouble(evaluator.evaluate(expression[1], context))?.takeIf { it.isFinite() && it in 0.0..255.0 } ?: return null
+    val g = toDouble(evaluator.evaluate(expression[2], context))?.takeIf { it.isFinite() && it in 0.0..255.0 } ?: return null
+    val b = toDouble(evaluator.evaluate(expression[3], context))?.takeIf { it.isFinite() && it in 0.0..255.0 } ?: return null
+    val a = if (expression.size == 5) {
+        toDouble(evaluator.evaluate(expression[4], context))?.takeIf { it.isFinite() && it in 0.0..1.0 } ?: return null
+    } else 1.0
+    return Color((r / 255).toFloat(), (g / 255).toFloat(), (b / 255).toFloat(), a.toFloat())
 }
 
 internal fun evaluateHsl(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): Color? {
-    if (expression.size !in 4..5) return null
-    val h = toDouble(evaluator.evaluate(expression[1], context)) ?: return null
-    val s = toDouble(evaluator.evaluate(expression[2], context))?.coerceIn(0.0, 100.0) ?: return null
-    val l = toDouble(evaluator.evaluate(expression[3], context))?.coerceIn(0.0, 100.0) ?: return null
-    val a = if (expression.size == 5) toDouble(evaluator.evaluate(expression[4], context))?.coerceIn(0.0, 1.0) ?: 1.0 else 1.0
-
-    val hNorm = (h % 360 + 360) % 360 / 360.0
-    val sNorm = s / 100.0
-    val lNorm = l / 100.0
-    val alpha = (a * 255).toInt().coerceIn(0, 255)
-
-    return Color.hsl(hNorm.toFloat(), sNorm.toFloat(), lNorm.toFloat(), alpha.toFloat())
+    if (expression.size != if (expression[0] == "hsla") 5 else 4) return null
+    val h = toDouble(evaluator.evaluate(expression[1], context))?.takeIf { it.isFinite() && it in 0.0..360.0 } ?: return null
+    val s = toDouble(evaluator.evaluate(expression[2], context))?.takeIf { it.isFinite() && it in 0.0..100.0 } ?: return null
+    val l = toDouble(evaluator.evaluate(expression[3], context))?.takeIf { it.isFinite() && it in 0.0..100.0 } ?: return null
+    val a = if (expression.size == 5) {
+        toDouble(evaluator.evaluate(expression[4], context))?.takeIf { it.isFinite() && it in 0.0..1.0 } ?: return null
+    } else 1.0
+    return Color.hsl(h.toFloat(), (s / 100).toFloat(), (l / 100).toFloat(), a.toFloat())
 }
 
 // Math
@@ -324,14 +322,13 @@ internal fun evaluateStep(expression: List<*>, context: EvaluationContext, evalu
 internal fun evaluateInterpolate(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): Any? {
     if (expression.size < 5) return null
     val interpolation = expression[1] as? List<*> ?: return null
-    val type = interpolation[0] as? String
-    val base = if (type == "exponential") toDouble(interpolation.getOrNull(1)) ?: 1.0 else 1.0
     val input = toDouble(evaluator.evaluate(expression[2], context)) ?: return null
 
     val stops = expression.subList(3, expression.size)
     if (stops.size % 2 != 0) return null
 
-    val stopInputs = (0 until stops.size step 2).mapNotNull { toDouble(stops[it]) }
+    val stopInputs = (0 until stops.size step 2).map { toDouble(stops[it]) ?: return null }
+    if (stopInputs.zipWithNext().any { (lower, upper) -> lower >= upper }) return null
     val stopOutputs = (1 until stops.size step 2).map {
         val value = evaluator.evaluate(stops[it], context)
         if (value is String) parseColor(value) ?: value else value
@@ -348,26 +345,19 @@ internal fun evaluateInterpolate(expression: List<*>, context: EvaluationContext
     val lowerOutput = stopOutputs[index]
     val upperOutput = stopOutputs[index + 1]
 
-    val progress = (input - lowerBound) / (upperBound - lowerBound)
+    val fraction = interpolationFraction(interpolation, input, lowerBound, upperBound) ?: return null
 
     val lowerOutNum = toDouble(lowerOutput)
     val upperOutNum = toDouble(upperOutput)
 
     return when {
-        lowerOutNum != null && upperOutNum != null -> {
-            when (type) {
-                "exponential" -> exponentialInterpolate(progress, base, lowerOutNum, upperOutNum)
-                // "cubic-bezier" is more complex, linear for now
-                else -> linearInterpolate(progress, lowerOutNum, upperOutNum)
-            }
-        }
+        lowerOutNum != null && upperOutNum != null -> linearInterpolate(fraction, lowerOutNum, upperOutNum)
         lowerOutput is List<*> && upperOutput is List<*> && lowerOutput.size == upperOutput.size &&
             lowerOutput.all { it is Number } && upperOutput.all { it is Number } -> {
             lowerOutput.indices.map { itemIndex ->
                 val from = (lowerOutput[itemIndex] as Number).toDouble()
                 val to = (upperOutput[itemIndex] as Number).toDouble()
-                if (type == "exponential") exponentialInterpolate(progress, base, from, to)
-                else linearInterpolate(progress, from, to)
+                linearInterpolate(fraction, from, to)
             }
         }
         (lowerOutput is Color || lowerOutput is String && parseColor(lowerOutput) != null) &&
@@ -375,10 +365,10 @@ internal fun evaluateInterpolate(expression: List<*>, context: EvaluationContext
             val lowerColor = if (lowerOutput is Color) lowerOutput else parseColor(lowerOutput as String)!!
             val upperColor = if (upperOutput is Color) upperOutput else parseColor(upperOutput as String)!!
             Color(
-                linearInterpolate(progress, lowerColor.red.toDouble(), upperColor.red.toDouble()).toFloat(),
-                linearInterpolate(progress, lowerColor.green.toDouble(), upperColor.green.toDouble()).toFloat(),
-                linearInterpolate(progress, lowerColor.blue.toDouble(), upperColor.blue.toDouble()).toFloat(),
-                linearInterpolate(progress, lowerColor.alpha.toDouble(), upperColor.alpha.toDouble()).toFloat()
+                linearInterpolate(fraction, lowerColor.red.toDouble(), upperColor.red.toDouble()).toFloat(),
+                linearInterpolate(fraction, lowerColor.green.toDouble(), upperColor.green.toDouble()).toFloat(),
+                linearInterpolate(fraction, lowerColor.blue.toDouble(), upperColor.blue.toDouble()).toFloat(),
+                linearInterpolate(fraction, lowerColor.alpha.toDouble(), upperColor.alpha.toDouble()).toFloat()
             )
         }
         else -> lowerOutput

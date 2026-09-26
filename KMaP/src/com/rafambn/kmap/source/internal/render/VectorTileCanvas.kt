@@ -671,11 +671,12 @@ private fun DrawScope.drawTextSymbol(
             rotate(-rotationDegrees + (rotate?.toFloat() ?: 0F), Offset(-anchorOffsetX, -anchorOffsetY))
         }) {
             if (haloColor != null && haloWidth > 0) {
+                val fadedHaloColor = haloColor.copy(alpha = haloColor.alpha * opacity.toFloat())
                 textLayoutResult.multiParagraph.paint(
                     canvas = drawContext.canvas,
-                    color = haloColor,
+                    color = fadedHaloColor,
                     shadow = if (haloBlur > 0) Shadow(
-                        color = haloColor,
+                        color = fadedHaloColor,
                         blurRadius = haloBlur.toFloat()
                     ) else null,
                     drawStyle = Stroke(

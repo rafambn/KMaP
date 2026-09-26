@@ -10,7 +10,6 @@ import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -82,36 +81,4 @@ internal fun evaluatePerceptualInterpolate(expression: List<*>, context: Evaluat
             linearInterpolate(fraction, a.blue.toDouble(), b.blue.toDouble()).toFloat()
     }
     return Color(lightness, labA, labB, alpha, ColorSpaces.CieLab).convert(ColorSpaces.Srgb)
-}
-
-private fun interpolationFraction(interpolation: List<*>, input: Double, lower: Double, upper: Double): Double? {
-    val progress = (input - lower) / (upper - lower)
-    return when (interpolation.firstOrNull()) {
-        "linear" -> progress
-        "exponential" -> {
-            val base = (interpolation.getOrNull(1) as? Number)?.toDouble() ?: return null
-            if (base == 1.0) progress else (base.pow(input - lower) - 1.0) / (base.pow(upper - lower) - 1.0)
-        }
-        "cubic-bezier" -> {
-            if (interpolation.size != 5) return null
-            val x1 = (interpolation[1] as? Number)?.toDouble() ?: return null
-            val y1 = (interpolation[2] as? Number)?.toDouble() ?: return null
-            val x2 = (interpolation[3] as? Number)?.toDouble() ?: return null
-            val y2 = (interpolation[4] as? Number)?.toDouble() ?: return null
-            var left = 0.0
-            var right = 1.0
-            repeat(24) {
-                val middle = (left + right) / 2.0
-                val x = cubicBezier(middle, x1, x2)
-                if (x < progress) left = middle else right = middle
-            }
-            cubicBezier((left + right) / 2.0, y1, y2)
-        }
-        else -> null
-    }
-}
-
-private fun cubicBezier(t: Double, control1: Double, control2: Double): Double {
-    val inverse = 1.0 - t
-    return 3.0 * inverse * inverse * t * control1 + 3.0 * inverse * t * t * control2 + t * t * t
 }

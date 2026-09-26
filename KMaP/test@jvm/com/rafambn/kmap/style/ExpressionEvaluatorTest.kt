@@ -153,7 +153,8 @@ val ExpressionEvaluatorTest by testSuite {
         test("testRgba") { evaluator ->
             val context = EvaluationContext()
             val color = evaluator.evaluate(listOf("rgba", 0, 255, 0, 0.5), context) as Color
-            assertEquals(Color(0, 255, 0, 127), color)
+            assertEquals(0.5f, color.alpha, 0.003f)
+            assertEquals(1f, color.green, 0.001f)
         }
 
         test("testHsl") { evaluator ->
