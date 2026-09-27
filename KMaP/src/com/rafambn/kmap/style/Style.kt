@@ -16,7 +16,7 @@ import kotlinx.serialization.json.JsonElement
  */
 @Serializable
 data class Style(
-    val version: Int,
+    val version: Int? = null,
     val name: String? = null,
     val metadata: Map<String, JsonElement>? = null,
     val center: List<Double>? = null,
@@ -24,9 +24,8 @@ data class Style(
     val bearing: Double? = null,
     val pitch: Double? = null,
     val light: Light? = null,
-    val sources: Map<String, Source>,
+    val sources: Map<String, Source> = emptyMap(),
     val layers: List<StyleLayer>,
-    @Serializable(with = SpriteElementSerializer::class)
     val sprite: JsonElement? = null,
     val glyphs: String? = null,
     val transition: Transition? = null

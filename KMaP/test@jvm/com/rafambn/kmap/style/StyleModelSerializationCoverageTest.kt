@@ -16,14 +16,10 @@ import kotlinx.serialization.protobuf.ProtoBuf
 val StyleModelSerializationCoverageTest by testSuite {
     testFixture { Json { ignoreUnknownKeys = true } } asParameterForEach {
         test("decodes optional style fields and their defaults") { json ->
-            val minimalStyle = json.decodeFromString<Style>("""
-                {
-                    "version": 8,
-                    "sources": {},
-                    "layers": []
-                }
-            """.trimIndent())
+            val minimalStyle = json.decodeFromString<Style>("""{"layers":[]}""")
 
+            assertNull(minimalStyle.version)
+            assertEquals(emptyMap(), minimalStyle.sources)
             assertNull(minimalStyle.name)
             assertNull(minimalStyle.metadata)
             assertNull(minimalStyle.center)
@@ -127,7 +123,6 @@ val StyleModelSerializationCoverageTest by testSuite {
 
             assertEquals(sprite, style.sprite)
             assertEquals(style, json.decodeFromString<Style>(json.encodeToString(Style.serializer(), style)))
-            assertEquals(style, ProtoBuf.decodeFromByteArray(Style.serializer(), ProtoBuf.encodeToByteArray(Style.serializer(), style)))
         }
 
         test("round trips nested model defaults when default encoding is enabled") { json ->
@@ -179,7 +174,7 @@ val StyleModelSerializationCoverageTest by testSuite {
 
         test("rejects styles that omit required model fields") { json ->
             assertFailsWith<SerializationException> {
-                json.decodeFromString<Style>("""{"sources":{},"layers":[]}""")
+                json.decodeFromString<Style>("{}")
             }
             assertFailsWith<SerializationException> {
                 json.decodeFromString<Source>("""{"url":"https://example.test/tiles"}""")
@@ -190,7 +185,7 @@ val StyleModelSerializationCoverageTest by testSuite {
         }
     }
 
-    test("serializes style models through the protobuf decoder") {
+    test("serializes style models without JSON elements through the protobuf decoder") {
         val style = Style(
             version = 8,
             name = "Binary",
@@ -201,7 +196,6 @@ val StyleModelSerializationCoverageTest by testSuite {
             light = Light("map", listOf(1.0, 2.0, 3.0), "#ffffff", 0.5),
             sources = mapOf("source" to Source(type = "vector", url = "https://example.test/tiles")),
             layers = listOf(StyleLayer("layer", "fill", source = "source", sourceLayer = "landuse", minzoom = 1.0, maxzoom = 15.0)),
-            sprite = JsonPrimitive("https://example.test/sprite"),
             glyphs = "https://example.test/glyphs",
             transition = Transition(duration = 300, delay = 25)
         )

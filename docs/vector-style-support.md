@@ -2,8 +2,8 @@
 
 KMaP's vector style model is based on the [Mapbox Style Specification](https://docs.mapbox.com/style-spec/) and the [MapLibre Style Specification](https://maplibre.org/maplibre-style-spec/). It supports many constructs shared by both, while the vector canvas renders a subset with the differences listed below. Vector tile work is paused pending Compose support for asynchronous measurement and drawing. This table describes the current rendering path. A field being accepted by the JSON model or evaluated by `StyleResolver` does not mean the canvas draws it correctly.
 
-A style is a JSON document containing sources and style layers. The table covers layer types, layer properties, expressions, and root properties from that document.
-`Style` decodes the required `version` and optional `name`, but `CompiledStyle` does not retain either field.
+A style is a JSON document with style layers and, in Mapbox and MapLibre styles, source definitions. The table covers layer types, layer properties, expressions, and root properties from that document.
+KMaP accepts a subset with only `layers` at the root. In `Style`, an omitted `version` is `null` and omitted `sources` is an empty map. `CompiledStyle` retains neither field.
 
 Supply decoded Mapbox Vector Tiles through `VectorCanvasParameters.tileSource` and pass a `CompiledStyle` from `StyleResolver`. Each vector canvas has one caller-provided tile source. KMaP does not fetch tiles, sprites, or glyphs from the style document.
 
