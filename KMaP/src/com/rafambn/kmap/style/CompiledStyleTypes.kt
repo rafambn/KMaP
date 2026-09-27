@@ -44,7 +44,7 @@ data class CompiledLayout(
 
 data class CompiledStyleLayer(
     val id: String,
-    val type: String,
+    val type: CompiledLayerType,
     val sourceLayer: String?,
     val minZoom: Double,
     val maxZoom: Double,

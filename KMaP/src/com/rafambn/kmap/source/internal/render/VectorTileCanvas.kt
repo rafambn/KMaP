@@ -27,6 +27,7 @@ import com.rafambn.kmap.source.internal.ActiveTiles
 import com.rafambn.kmap.source.internal.OptimizedVectorTile
 import com.rafambn.kmap.style.CompiledStyle
 import com.rafambn.kmap.style.CompiledStyleLayer
+import com.rafambn.kmap.style.CompiledLayerType
 import kotlin.math.pow
 
 @Composable
@@ -61,7 +62,7 @@ fun VectorTileCanvas(
                     scale(screenScale, Offset.Zero)
                 }) {
                     drawIntoCanvas { canvas ->
-                        val backgroundLayer = style.layers.find { it.type == "background" }
+                        val backgroundLayer = style.layers.find { it.type == CompiledLayerType.BACKGROUND }
                         if (backgroundLayer != null &&
                             zoom in backgroundLayer.minZoom..<backgroundLayer.maxZoom &&
                             backgroundLayer.layout.visibility.evaluate(zoom.toInt().toDouble(), emptyMap(), null) == true
@@ -111,7 +112,7 @@ private fun DrawScope.drawStyleLayersWithTileClipping(
     screenScale: Float,
 ) {
     style.layers.filter {
-        it.type != "background" &&
+        it.type != CompiledLayerType.BACKGROUND &&
             zoom in it.minZoom..<it.maxZoom &&
             it.layout.visibility.evaluate(zoom.toInt().toDouble(), emptyMap(), null) == true
     }.forEach { styleLayer ->
@@ -247,11 +248,11 @@ internal fun DrawScope.drawRenderFeature(
 ) {
     val geometry = renderFeature.geometry
     when (compiledStyleLayer.type) {
-        "fill" -> if (geometry is OptimizedGeometry.Polygon) {
+        CompiledLayerType.FILL -> if (geometry is OptimizedGeometry.Polygon) {
             drawFillFeature(canvas, geometry, renderFeature.properties, compiledStyleLayer, zoom, tileScaleX, tileScaleY, screenScale)
         }
 
-        "line" -> {
+        CompiledLayerType.LINE -> {
             val path = when (geometry) {
                 is OptimizedGeometry.LineString -> geometry.path
                 is OptimizedGeometry.Polygon -> geometry.path
@@ -262,9 +263,10 @@ internal fun DrawScope.drawRenderFeature(
             }
         }
 
-        "symbol" -> if (geometry is OptimizedGeometry.Point) {
+        CompiledLayerType.SYMBOL -> if (geometry is OptimizedGeometry.Point) {
             drawSymbolFeature(canvas, geometry, renderFeature.properties, fontResolver, density, compiledStyleLayer, sprites, glyphs, zoom, textScale, rotationDegrees, screenScale)
         }
+        CompiledLayerType.BACKGROUND -> Unit
     }
 }
 

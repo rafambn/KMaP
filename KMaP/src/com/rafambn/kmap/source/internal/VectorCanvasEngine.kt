@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.PathFillType
 import com.rafambn.kmap.mvttile.*
 import com.rafambn.kmap.source.TileResult
 import com.rafambn.kmap.source.VectorTile
+import com.rafambn.kmap.style.CompiledLayerType
 import com.rafambn.kmap.style.CompiledStyle
 import com.rafambn.kmap.style.FeatureGeometryContext
 import kotlinx.coroutines.CoroutineScope
@@ -31,7 +32,7 @@ internal fun optimizeMVTile(tile: VectorTile, compiledStyle: CompiledStyle): Opt
     val extent = mvtData.layers.firstOrNull()?.extent ?: 4096
 
     compiledStyle.layers.forEach { optimizedStyleLayer ->
-        if (optimizedStyleLayer.type == "background") return@forEach
+        if (optimizedStyleLayer.type == CompiledLayerType.BACKGROUND) return@forEach
 
         val sourceLayerName = optimizedStyleLayer.sourceLayer ?: return@forEach
         val mvtLayer = mvtData.layers.find { it.name == sourceLayerName } ?: return@forEach
@@ -52,10 +53,10 @@ internal fun optimizeMVTile(tile: VectorTile, compiledStyle: CompiledStyle): Opt
             if (optimizedStyleLayer.filter?.evaluate(tile.zoom.toDouble(), featureProperties, geometryType, featureId, featureGeometry) == false) return@mapNotNull null
 
             val isValidGeometry = when (optimizedStyleLayer.type) {
-                "fill" -> feature.type == RawMVTGeomType.POLYGON
-                "line" -> feature.type == RawMVTGeomType.LINESTRING || feature.type == RawMVTGeomType.POLYGON
-                "symbol" -> feature.type == RawMVTGeomType.POINT
-                else -> false
+                CompiledLayerType.FILL -> feature.type == RawMVTGeomType.POLYGON
+                CompiledLayerType.LINE -> feature.type == RawMVTGeomType.LINESTRING || feature.type == RawMVTGeomType.POLYGON
+                CompiledLayerType.SYMBOL -> feature.type == RawMVTGeomType.POINT
+                CompiledLayerType.BACKGROUND -> false
             }
 
             if (!isValidGeometry) return@mapNotNull null

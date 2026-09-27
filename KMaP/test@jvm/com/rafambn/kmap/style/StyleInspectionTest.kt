@@ -23,6 +23,7 @@ val StyleInspectionTest by testSuite {
         }""")
 
         assertNotNull(result.style)
+        assertEquals(listOf("land"), result.style.layers.map { it.id })
         assertEquals(
             setOf("/imports", "/sources/tiles/url", "/sources/tiles/extra", "/layers/0/paint/fill-pattern", "/layers/0/paint/fill-color/2", "/layers/1/type"),
             result.issues.map { it.path }.toSet()

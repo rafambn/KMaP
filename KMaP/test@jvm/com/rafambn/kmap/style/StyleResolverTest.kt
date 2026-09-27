@@ -181,7 +181,7 @@ val StyleResolverTest by testSuite {
         assertEquals(1, optimizedStyle.layers.size)
         val layer = optimizedStyle.layers[0]
         assertEquals("line-layer", layer.id)
-        assertEquals("line", layer.type)
+        assertEquals(CompiledLayerType.LINE, layer.type)
 
         // Test line-color expression
         val motorwayProps = mapOf("class" to "motorway")
@@ -238,7 +238,7 @@ val StyleResolverTest by testSuite {
         assertEquals(1, optimizedStyle.layers.size)
         val layer = optimizedStyle.layers[0]
         assertEquals("background-layer", layer.id)
-        assertEquals("background", layer.type)
+        assertEquals(CompiledLayerType.BACKGROUND, layer.type)
 
         // Test background-color - HSL should parse to Color
         val color = layer.paint.properties["background-color"]!!.evaluate(0.0, emptyMap(), null) as? Color
@@ -297,7 +297,7 @@ val StyleResolverTest by testSuite {
         assertEquals(1, optimizedStyle.layers.size)
         val layer = optimizedStyle.layers[0]
         assertEquals("symbol-layer", layer.id)
-        assertEquals("symbol", layer.type)
+        assertEquals(CompiledLayerType.SYMBOL, layer.type)
 
         // Test text-field
         val textField = layer.layout.properties["text-field"]?.evaluate(10.0, mapOf("name" to "Pizza Place"), null)

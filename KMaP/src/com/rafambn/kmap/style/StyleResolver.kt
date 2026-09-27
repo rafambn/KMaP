@@ -38,7 +38,7 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
         glyphs: Map<String, FontFamily>,
         locale: String
     ): CompiledStyle {
-        val compiledLayers = rawStyle.layers.map { compileLayer(it, locale, sprites) }
+        val compiledLayers = rawStyle.layers.mapNotNull { compileLayer(it, locale, sprites) }
         return CompiledStyle(
             layers = compiledLayers,
             sprites = sprites,
@@ -46,14 +46,21 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
         )
     }
 
-    private fun compileLayer(layer: StyleLayer, locale: String, sprites: Map<String, ImageBitmap>): CompiledStyleLayer {
+    private fun compileLayer(layer: StyleLayer, locale: String, sprites: Map<String, ImageBitmap>): CompiledStyleLayer? {
+        val type = when (layer.type) {
+            "background" -> CompiledLayerType.BACKGROUND
+            "fill" -> CompiledLayerType.FILL
+            "line" -> CompiledLayerType.LINE
+            "symbol" -> CompiledLayerType.SYMBOL
+            else -> return null
+        }
         val filter = layer.filter?.let { elements -> compileFilter(elements.map { it.toValue() }, locale) }
         val paint = compilePaint(layer.paint, locale, sprites)
         val layout = compileLayout(layer.layout, locale, sprites)
 
         return CompiledStyleLayer(
             id = layer.id,
-            type = layer.type,
+            type = type,
             sourceLayer = layer.sourceLayer,
             minZoom = layer.minzoom ?: 0.0,
             maxZoom = layer.maxzoom ?: Double.POSITIVE_INFINITY,

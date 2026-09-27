@@ -41,7 +41,7 @@ val RealWorldStyleIntegrationTest by testSuite {
             // Verify background layer exists and evaluate its properties
             val backgroundLayer = optimized.layers.find { it.id == "Background" }
             assertNotNull(backgroundLayer, "Should have Background layer")
-            assertEquals("background", backgroundLayer.type)
+            assertEquals(CompiledLayerType.BACKGROUND, backgroundLayer.type)
 
             // Test that background color evaluates to a non-null value
             val bgColor = backgroundLayer.paint.properties["background-color"]?.evaluate(10.0, emptyMap(), null)
@@ -49,7 +49,7 @@ val RealWorldStyleIntegrationTest by testSuite {
 
             // Verify fill layers have interpolation expressions that work
             val fillLayer = optimized.layers.find { it.id == "Land" }
-            if (fillLayer != null && fillLayer.type == "fill") {
+            if (fillLayer != null && fillLayer.type == CompiledLayerType.FILL) {
                 val opacity0 = fillLayer.paint.properties["fill-opacity"]?.evaluate(0.0, emptyMap(), null) as? Double
                 val opacity7 = fillLayer.paint.properties["fill-opacity"]?.evaluate(7.0, emptyMap(), null) as? Double
 
@@ -149,44 +149,42 @@ val RealWorldStyleIntegrationTest by testSuite {
 
             // Test that we can evaluate expressions for various zoom levels and verify results
             for (layer in optimized.layers) {
-                if (layer.type in listOf("fill", "line", "symbol", "background")) {
-                    // Try evaluating at different zoom levels
-                    for (zoom in listOf(5.0, 10.0, 15.0)) {
-                        val properties = mapOf(
-                            "class" to "park",
-                            "type" to "Polygon",
-                            "name" to "Central Park",
-                            "area" to 840
-                        )
+                // Try evaluating at different zoom levels
+                for (zoom in listOf(5.0, 10.0, 15.0)) {
+                    val properties = mapOf(
+                        "class" to "park",
+                        "type" to "Polygon",
+                        "name" to "Central Park",
+                        "area" to 840
+                    )
 
-                        // Test filter evaluation - verify it works without errors
-                        layer.filter?.let { filter ->
-                            val result = filter.evaluate(zoom, properties, "Polygon", null)
-                            // Filter returns boolean from implementation
+                    // Test filter evaluation - verify it works without errors
+                    layer.filter?.let { filter ->
+                        val result = filter.evaluate(zoom, properties, "Polygon", null)
+                        // Filter returns boolean from implementation
+                        expressionsEvaluated++
+                    }
+
+                    // Test paint properties - verify they evaluate without errors
+                    for ((propName, compiledValue) in layer.paint.properties) {
+                        try {
+                            val result = compiledValue.evaluate(zoom, properties, null)
+                            assertNotNull(result, "Property $propName should evaluate to non-null at zoom $zoom")
                             expressionsEvaluated++
+                        } catch (e: Exception) {
+                            expressionErrors++
+                            println("Error evaluating $propName at zoom $zoom: ${e.message}")
                         }
+                    }
 
-                        // Test paint properties - verify they evaluate without errors
-                        for ((propName, compiledValue) in layer.paint.properties) {
-                            try {
-                                val result = compiledValue.evaluate(zoom, properties, null)
-                                assertNotNull(result, "Property $propName should evaluate to non-null at zoom $zoom")
-                                expressionsEvaluated++
-                            } catch (e: Exception) {
-                                expressionErrors++
-                                println("Error evaluating $propName at zoom $zoom: ${e.message}")
-                            }
-                        }
-
-                        // Test layout properties
-                        for ((propName, compiledValue) in layer.layout.properties) {
-                            try {
-                                val result = compiledValue.evaluate(zoom, properties, null)
-                                expressionsEvaluated++
-                            } catch (e: Exception) {
-                                expressionErrors++
-                                println("Error evaluating layout.$propName at zoom $zoom: ${e.message}")
-                            }
+                    // Test layout properties
+                    for ((propName, compiledValue) in layer.layout.properties) {
+                        try {
+                            val result = compiledValue.evaluate(zoom, properties, null)
+                            expressionsEvaluated++
+                        } catch (e: Exception) {
+                            expressionErrors++
+                            println("Error evaluating layout.$propName at zoom $zoom: ${e.message}")
                         }
                     }
                 }
