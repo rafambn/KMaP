@@ -54,7 +54,6 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
         return CompiledStyleLayer(
             id = layer.id,
             type = layer.type,
-            source = layer.source,
             sourceLayer = layer.sourceLayer,
             minZoom = layer.minzoom ?: 0.0,
             maxZoom = layer.maxzoom ?: Double.POSITIVE_INFINITY,
