@@ -55,8 +55,6 @@ data class CompiledStyleLayer(
 )
 
 data class CompiledStyle(
-    val version: Int,
-    val name: String?,
     val layers: List<CompiledStyleLayer>,
     val sources: Map<String, Source>,
     val sprites: Map<String, ImageBitmap> = emptyMap(),

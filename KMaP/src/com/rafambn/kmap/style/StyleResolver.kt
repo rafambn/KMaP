@@ -40,8 +40,6 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
     ): CompiledStyle {
         val compiledLayers = rawStyle.layers.map { compileLayer(it, locale, sprites) }
         return CompiledStyle(
-            version = rawStyle.version,
-            name = rawStyle.name,
             layers = compiledLayers,
             sources = rawStyle.sources,
             sprites = sprites,

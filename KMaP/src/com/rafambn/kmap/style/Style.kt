@@ -6,9 +6,13 @@ import kotlinx.serialization.json.JsonElement
 
 
 /**
- * Represents a MapBox/MapLibre style specification.
- * Based on the MapBox Style Specification: https://docs.mapbox.com/mapbox-gl-js/style-spec/
- * And MapLibre Style Specification: https://maplibre.org/maplibre-style-spec/
+ * JSON style model based on the Mapbox and MapLibre Style Specifications.
+ *
+ * KMaP supports many constructs shared by these specifications, but rendering
+ * covers a subset. See docs/vector-style-support.md for the current behavior.
+ *
+ * Mapbox: https://docs.mapbox.com/style-spec/
+ * MapLibre: https://maplibre.org/maplibre-style-spec/
  */
 @Serializable
 data class Style(
