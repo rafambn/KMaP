@@ -179,7 +179,10 @@ val VectorTileCanvasTest by testSuite {
                     type = "symbol",
                     sourceLayer = "places",
                     layout = mapOf("icon-image" to JsonArray(listOf(JsonPrimitive("image"), JsonPrimitive("dot")))),
-                    paint = mapOf("icon-opacity" to JsonPrimitive(0.5))
+                    paint = mapOf(
+                        "icon-opacity" to JsonPrimitive(0.5),
+                        "icon-color" to JsonPrimitive("#0000ff")
+                    )
                 ))
             )),
             sprites = mapOf("dot" to SpriteImage(sprite))
@@ -196,6 +199,7 @@ val VectorTileCanvasTest by testSuite {
         }
         val pixels = bitmap.toPixelMap()
         assertEquals(0.5f, pixels[16, 16].alpha, 0.02f)
+        assertTrue(pixels[16, 16].red > 0.9f && pixels[16, 16].blue < 0.1f)
         assertEquals(0f, pixels[10, 10].alpha)
     }
 
@@ -235,6 +239,35 @@ val VectorTileCanvasTest by testSuite {
         val pixel = pixels[3, 4]
         assertTrue(pixel.alpha > 0.9f && pixel.red < 0.1f && pixel.green < 0.1f && pixel.blue < 0.1f)
         assertEquals(0f, pixels[4, 4].alpha, 0.02f)
+    }
+
+    test("SDF icon color evaluates per feature and multiplies icon opacity") {
+        val sprite = ImageBitmap(2, 2)
+        Canvas(sprite).drawRect(Rect(0f, 0f, 2f, 2f), Paint().apply { color = Color.White })
+        val resolution = StyleResolver().resolve("""{
+            "layers": [{"id": "icons", "type": "symbol", "source-layer": "places",
+                "layout": {"icon-image": "dot"},
+                "paint": {
+                    "icon-color": ["case", ["==", ["get", "kind"], "blue"], "rgba(0, 0, 255, 0.5)", "#00ff00"],
+                    "icon-opacity": 0.5
+                }}]
+        }""", sprites = mapOf("dot" to SpriteImage(sprite, sdf = true)))
+        assertTrue(resolution.issues.isEmpty(), resolution.issues.toString())
+        val bitmap = ImageBitmap(32, 16)
+        val canvas = Canvas(bitmap)
+        CanvasDrawScope().draw(Density(1f), LayoutDirection.Ltr, canvas, Size(32f, 16f)) {
+            listOf(8f to "blue", 24f to "green").forEach { (x, kind) ->
+                drawRenderFeature(canvas, OptimizedRenderFeature(
+                    OptimizedGeometry.Point(listOf(x to 8f)), mapOf("kind" to kind)
+                ), createFontFamilyResolver(), Density(1f), resolution.style!!.layers.single(),
+                    0.0, 1f, 0f, 1f, 1f, 1f)
+            }
+        }
+        val pixels = bitmap.toPixelMap()
+        assertTrue(pixels[8, 8].blue > 0.9f && pixels[8, 8].green < 0.1f, "blue icon: ${pixels[8, 8]}")
+        assertEquals(0.25f, pixels[8, 8].alpha, 0.02f)
+        assertTrue(pixels[24, 8].green > 0.9f && pixels[24, 8].blue < 0.1f)
+        assertEquals(0.5f, pixels[24, 8].alpha, 0.02f)
     }
 
     test("fill pattern repeats inside polygon and applies opacity") {

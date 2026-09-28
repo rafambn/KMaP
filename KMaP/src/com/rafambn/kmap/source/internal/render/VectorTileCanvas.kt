@@ -42,6 +42,14 @@ private val sdfIconColorFilter = ColorFilter.colorMatrix(ColorMatrix(floatArrayO
     0f, 0f, 0f, 5f, -828.75f
 )))
 
+private fun sdfIconColorFilter(color: Color): ColorFilter = if (color == Color.Black) sdfIconColorFilter else
+    ColorFilter.colorMatrix(ColorMatrix(floatArrayOf(
+        0f, 0f, 0f, 0f, color.red * 255f,
+        0f, 0f, 0f, 0f, color.green * 255f,
+        0f, 0f, 0f, 0f, color.blue * 255f,
+        0f, 0f, 0f, 5f, -828.75f
+    )))
+
 @Composable
 fun VectorTileCanvas(
     gestureWrapper: MapGestureWrapper?,
@@ -602,6 +610,9 @@ private fun drawIconSymbol(
     val rotate = layer.iconRotate?.evaluate(zoom.toInt().toDouble(), properties, featureId)?.toFloat() ?: 0f
     val anchor = layer.iconAnchor?.evaluate(zoom.toInt().toDouble(), properties, featureId) ?: "center"
     val offset = layer.iconOffset?.evaluate(zoom.toInt().toDouble(), properties, featureId)
+    val iconColor = if (image.sdf) layer.iconColor?.evaluate(zoom, properties, featureId) ?: Color.Black else null
+    val iconAlpha = (opacity * (iconColor?.alpha ?: 1f)).coerceIn(0f, 1f)
+    if (iconAlpha <= 0f) return
     val scale = size * textScale / screenScale
     val width = (image.bitmap.width / image.pixelRatio * scale).toFloat()
     val height = (image.bitmap.height / image.pixelRatio * scale).toFloat()
@@ -616,20 +627,25 @@ private fun drawIconSymbol(
         else -> -height / 2f
     } + (offset?.getOrNull(1)?.toFloat() ?: 0f) * scale
     val paint = Paint().apply {
-        alpha = opacity.coerceIn(0f, 1f)
+        alpha = if (image.sdf) 1f else iconAlpha
         filterQuality = FilterQuality.High
-        if (image.sdf) colorFilter = sdfIconColorFilter
+        if (iconColor != null) colorFilter = sdfIconColorFilter(iconColor)
     }
+    val dstOffset = IntOffset(left.toInt(), top.toInt())
+    val dstSize = IntSize(width.toInt().coerceAtLeast(1), height.toInt().coerceAtLeast(1))
     geometry.coordinates.forEach { (x, y) ->
         canvas.withSave {
             canvas.translate(x, y)
             canvas.rotate(-rotationDegrees + rotate)
-            canvas.drawImageRect(
-                image = image.bitmap,
-                dstOffset = IntOffset(left.toInt(), top.toInt()),
-                dstSize = IntSize(width.toInt().coerceAtLeast(1), height.toInt().coerceAtLeast(1)),
-                paint = paint
-            )
+            if (image.sdf && iconAlpha < 1f) {
+                // Apply opacity after decoding the SDF alpha; otherwise the threshold hides the icon.
+                canvas.withSaveLayer(Rect(dstOffset.x.toFloat(), dstOffset.y.toFloat(),
+                    (dstOffset.x + dstSize.width).toFloat(), (dstOffset.y + dstSize.height).toFloat()),
+                    Paint().apply { alpha = iconAlpha }
+                ) { canvas.drawImageRect(image = image.bitmap, dstOffset = dstOffset, dstSize = dstSize, paint = paint) }
+            } else {
+                canvas.drawImageRect(image = image.bitmap, dstOffset = dstOffset, dstSize = dstSize, paint = paint)
+            }
         }
     }
 }

@@ -141,6 +141,7 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
                 textHaloWidth = paintValue("text-halo-width", ::asNumber),
                 textHaloBlur = paintValue("text-halo-blur", ::asNumber),
                 textTranslate = paintValue("text-translate", ::asNumberList),
+                iconColor = paintValue("icon-color", ::asColor),
                 iconOpacity = paintValue("icon-opacity", ::asNumber)
             )
             else -> return null
