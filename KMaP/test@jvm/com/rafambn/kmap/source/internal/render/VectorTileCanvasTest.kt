@@ -12,8 +12,14 @@ import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.text.font.createFontFamilyResolver
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
+import com.rafambn.kmap.mvttile.MVTFeature
+import com.rafambn.kmap.mvttile.MVTLayer
+import com.rafambn.kmap.mvttile.MVTile
 import com.rafambn.kmap.mvttile.OptimizedGeometry
 import com.rafambn.kmap.mvttile.OptimizedRenderFeature
+import com.rafambn.kmap.mvttile.RawMVTGeomType
+import com.rafambn.kmap.source.VectorTile
+import com.rafambn.kmap.source.internal.optimizeMVTile
 import com.rafambn.kmap.style.StyleResolver
 import com.rafambn.kmap.style.compiled.CompiledFillLayer
 import com.rafambn.kmap.style.compiled.CompiledLineLayer
@@ -27,6 +33,37 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 
 val VectorTileCanvasTest by testSuite {
+    test("fill paint reads each MVT feature ID and polygon geometry type") {
+        val style = StyleResolver().resolve("""{
+            "layers": [{"id": "parks", "type": "fill", "source-layer": "landuse",
+                "paint": {"fill-color": ["case",
+                    ["all", ["==", ["id"], 17], ["==", ["geometry-type"], "Polygon"]],
+                    "#ff0000", "#00ff00"]}}
+            ]
+        }""").style!!
+        val features = listOf(
+            MVTFeature(17L, RawMVTGeomType.POLYGON, listOf(listOf(2 to 2, 14 to 2, 14 to 14, 2 to 14)), emptyMap()),
+            MVTFeature(18L, RawMVTGeomType.POLYGON, listOf(listOf(18 to 2, 30 to 2, 30 to 14, 18 to 14)), emptyMap())
+        )
+        val tile = VectorTile(0, 0, 0, MVTile(listOf(MVTLayer("landuse", 32, features))))
+        val renderFeatures = optimizeMVTile(tile, style).optimizedTile!!.layerFeatures.getValue("parks")
+        val bitmap = ImageBitmap(32, 16)
+        val canvas = Canvas(bitmap)
+
+        CanvasDrawScope().draw(Density(1f), LayoutDirection.Ltr, canvas, Size(32f, 16f)) {
+            renderFeatures.forEach { feature ->
+                drawRenderFeature(
+                    canvas, feature, createFontFamilyResolver(), Density(1f), style.layers.single(),
+                    0.0, 1f, 0f, 1f, 1f, 1f
+                )
+            }
+        }
+
+        val pixels = bitmap.toPixelMap()
+        assertTrue(pixels[8, 8].red > 0.9f && pixels[8, 8].green < 0.1f)
+        assertTrue(pixels[24, 8].green > 0.9f && pixels[24, 8].red < 0.1f)
+    }
+
     test("plain symbol text uses text-color without format") {
         val style = StyleResolver().resolve(
             Json.encodeToString(Style.serializer(), Style(

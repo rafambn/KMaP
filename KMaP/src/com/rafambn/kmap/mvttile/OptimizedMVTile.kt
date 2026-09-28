@@ -10,6 +10,7 @@ data class OptimizedMVTile(
 data class OptimizedRenderFeature(
     val geometry: OptimizedGeometry,
     val properties: Map<String, Any>,
+    val id: Long? = null,
 )
 
 sealed class OptimizedGeometry {

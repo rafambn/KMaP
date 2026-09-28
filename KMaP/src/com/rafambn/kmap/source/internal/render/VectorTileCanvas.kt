@@ -197,8 +197,8 @@ private fun DrawScope.drawBackgroundForActiveTiles(
     activeTiles: ActiveTiles,
     zoom: Double,
 ) {
-    val backgroundColor = backgroundLayer.color?.evaluate(zoom, emptyMap(), "") ?: Color.Magenta
-    val backgroundOpacity = backgroundLayer.opacity?.evaluate(zoom, emptyMap(), "")?.toFloat() ?: 1F
+    val backgroundColor = backgroundLayer.color?.evaluate(zoom, emptyMap(), null) ?: Color.Magenta
+    val backgroundOpacity = backgroundLayer.opacity?.evaluate(zoom, emptyMap(), null)?.toFloat() ?: 1F
 
     val paint = Paint().apply {
         color = backgroundColor.copy(alpha = backgroundColor.alpha * backgroundOpacity)
@@ -246,7 +246,7 @@ internal fun DrawScope.drawRenderFeature(
     val geometry = renderFeature.geometry
     when (compiledStyleLayer) {
         is CompiledFillLayer -> if (geometry is OptimizedGeometry.Polygon) {
-            drawFillFeature(canvas, geometry, renderFeature.properties, compiledStyleLayer, zoom, tileScaleX, tileScaleY, screenScale)
+            drawFillFeature(canvas, geometry, renderFeature.properties, compiledStyleLayer, zoom, tileScaleX, tileScaleY, screenScale, renderFeature.id)
         }
 
         is CompiledLineLayer -> {
@@ -256,12 +256,15 @@ internal fun DrawScope.drawRenderFeature(
                 is OptimizedGeometry.Point -> null
             }
             if (path != null) {
-                drawLineFeature(canvas, path, renderFeature.properties, compiledStyleLayer, zoom, tileScaleX, tileScaleY, screenScale)
+                drawLineFeature(
+                    canvas, path, renderFeature.properties, compiledStyleLayer, zoom, tileScaleX, tileScaleY, screenScale,
+                    renderFeature.id, if (geometry is OptimizedGeometry.Polygon) "Polygon" else "LineString"
+                )
             }
         }
 
         is CompiledSymbolLayer -> if (geometry is OptimizedGeometry.Point) {
-            drawSymbolFeature(canvas, geometry, renderFeature.properties, fontResolver, density, compiledStyleLayer, glyphs, zoom, textScale, rotationDegrees, screenScale)
+            drawSymbolFeature(canvas, geometry, renderFeature.properties, fontResolver, density, compiledStyleLayer, glyphs, zoom, textScale, rotationDegrees, screenScale, renderFeature.id)
         }
         is CompiledBackgroundLayer -> Unit
     }
@@ -276,11 +279,12 @@ internal fun drawFillFeature(
     tileScaleX: Float,
     tileScaleY: Float,
     screenScale: Float,
+    featureId: Long? = null,
 ) {
-    val fillColor = compiledStyleLayer.color?.evaluate(zoom, properties, compiledStyleLayer.id) ?: Color.Magenta
-    val opacity = compiledStyleLayer.opacity?.evaluate(zoom, properties, compiledStyleLayer.id) ?: 1.0
-    val outlineColor = compiledStyleLayer.outlineColor?.evaluate(zoom, properties, compiledStyleLayer.id)
-    val antialias = compiledStyleLayer.antialias?.evaluate(zoom, properties, compiledStyleLayer.id) ?: true
+    val fillColor = compiledStyleLayer.color?.evaluate(zoom, properties, featureId, "Polygon") ?: Color.Magenta
+    val opacity = compiledStyleLayer.opacity?.evaluate(zoom, properties, featureId, "Polygon") ?: 1.0
+    val outlineColor = compiledStyleLayer.outlineColor?.evaluate(zoom, properties, featureId, "Polygon")
+    val antialias = compiledStyleLayer.antialias?.evaluate(zoom, properties, featureId, "Polygon") ?: true
     val fillAlpha = fillColor.alpha * opacity.toFloat()
     val groupDefaultOutline = antialias && outlineColor == null && fillAlpha < 1f
 
@@ -339,16 +343,18 @@ internal fun drawLineFeature(
     tileScaleX: Float,
     tileScaleY: Float,
     screenScale: Float,
+    featureId: Long? = null,
+    geometryType: String = "LineString",
 ) {
-    val fillColor = compiledStyleLayer.color?.evaluate(zoom, properties, compiledStyleLayer.id) ?: Color.Magenta
-    val width = compiledStyleLayer.width?.evaluate(zoom, properties, compiledStyleLayer.id)?.toFloat() ?: 1f
+    val fillColor = compiledStyleLayer.color?.evaluate(zoom, properties, featureId, geometryType) ?: Color.Magenta
+    val width = compiledStyleLayer.width?.evaluate(zoom, properties, featureId, geometryType)?.toFloat() ?: 1f
     if (width <= 0f) return
-    val opacity = compiledStyleLayer.opacity?.evaluate(zoom, properties, compiledStyleLayer.id)?.toFloat() ?: 1f
-    val cap = compiledStyleLayer.cap?.evaluate(zoom, properties, compiledStyleLayer.id) ?: "butt"
-    val join = compiledStyleLayer.join?.evaluate(zoom, properties, compiledStyleLayer.id) ?: "miter"
+    val opacity = compiledStyleLayer.opacity?.evaluate(zoom, properties, featureId, geometryType)?.toFloat() ?: 1f
+    val cap = compiledStyleLayer.cap?.evaluate(zoom, properties, featureId, geometryType) ?: "butt"
+    val join = compiledStyleLayer.join?.evaluate(zoom, properties, featureId, geometryType) ?: "miter"
     val effectiveCap = if (join == "none") "butt" else cap
-    val dashArray = if (compiledStyleLayer.patternPresent?.evaluate(zoom, properties, compiledStyleLayer.id) != true) {
-        compiledStyleLayer.dashArray?.evaluate(zoom.toInt().toDouble(), properties, compiledStyleLayer.id)
+    val dashArray = if (compiledStyleLayer.patternPresent?.evaluate(zoom, properties, featureId, geometryType) != true) {
+        compiledStyleLayer.dashArray?.evaluate(zoom.toInt().toDouble(), properties, featureId, geometryType)
     } else null
     val validDashArray = dashArray?.takeIf { values ->
         values.isNotEmpty() && values.all { it.toFloat().isFinite() && it.toFloat() >= 0f }
@@ -491,11 +497,12 @@ private fun DrawScope.drawSymbolFeature(
     textScale: Float,
     rotationDegrees: Float,
     screenScale: Float,
+    featureId: Long?,
 ) {
-    drawIconSymbol(canvas, geometry, properties, compiledStyleLayer, zoom, textScale, rotationDegrees, screenScale)
-    val text = compiledStyleLayer.textField?.evaluate(zoom, properties, compiledStyleLayer.id)
+    drawIconSymbol(canvas, geometry, properties, compiledStyleLayer, zoom, textScale, rotationDegrees, screenScale, featureId)
+    val text = compiledStyleLayer.textField?.evaluate(zoom, properties, featureId)
     text?.let {
-        drawTextSymbol(canvas, geometry, properties, fontResolver, density, compiledStyleLayer, glyphs, 1.0, it, textScale, rotationDegrees)
+        drawTextSymbol(canvas, geometry, properties, fontResolver, density, compiledStyleLayer, glyphs, 1.0, it, textScale, rotationDegrees, featureId)
     }
 }
 
@@ -508,15 +515,16 @@ private fun drawIconSymbol(
     textScale: Float,
     rotationDegrees: Float,
     screenScale: Float,
+    featureId: Long?,
 ) {
-    val image = layer.iconImage?.evaluate(zoom.toInt().toDouble(), properties, layer.id) ?: return
-    val size = layer.iconSize?.evaluate(zoom.toInt().toDouble(), properties, layer.id)?.toFloat() ?: 1f
+    val image = layer.iconImage?.evaluate(zoom.toInt().toDouble(), properties, featureId) ?: return
+    val size = layer.iconSize?.evaluate(zoom.toInt().toDouble(), properties, featureId)?.toFloat() ?: 1f
     if (size <= 0f) return
-    val opacity = layer.iconOpacity?.evaluate(zoom, properties, layer.id)?.toFloat() ?: 1f
+    val opacity = layer.iconOpacity?.evaluate(zoom, properties, featureId)?.toFloat() ?: 1f
     if (opacity <= 0f) return
-    val rotate = layer.iconRotate?.evaluate(zoom.toInt().toDouble(), properties, layer.id)?.toFloat() ?: 0f
-    val anchor = layer.iconAnchor?.evaluate(zoom.toInt().toDouble(), properties, layer.id) ?: "center"
-    val offset = layer.iconOffset?.evaluate(zoom.toInt().toDouble(), properties, layer.id)
+    val rotate = layer.iconRotate?.evaluate(zoom.toInt().toDouble(), properties, featureId)?.toFloat() ?: 0f
+    val anchor = layer.iconAnchor?.evaluate(zoom.toInt().toDouble(), properties, featureId) ?: "center"
+    val offset = layer.iconOffset?.evaluate(zoom.toInt().toDouble(), properties, featureId)
     val scale = size * textScale / screenScale
     val width = image.width * scale
     val height = image.height * scale
@@ -557,29 +565,30 @@ private fun DrawScope.drawTextSymbol(
     text: String,
     textScale: Float,
     rotationDegrees: Float,
+    featureId: Long?,
 ) {
-    val transform = compiledStyleLayer.textTransform?.evaluate(zoomLevel, properties, compiledStyleLayer.id) ?: "none"
-    val size = compiledStyleLayer.textSize?.evaluate(zoomLevel, properties, compiledStyleLayer.id) ?: 16.0
-    val textColor = compiledStyleLayer.textColor?.evaluate(zoomLevel, properties, compiledStyleLayer.id) ?: Color.Black
-    val opacity = compiledStyleLayer.textOpacity?.evaluate(zoomLevel, properties, compiledStyleLayer.id) ?: 1.0
+    val transform = compiledStyleLayer.textTransform?.evaluate(zoomLevel, properties, featureId) ?: "none"
+    val size = compiledStyleLayer.textSize?.evaluate(zoomLevel, properties, featureId) ?: 16.0
+    val textColor = compiledStyleLayer.textColor?.evaluate(zoomLevel, properties, featureId) ?: Color.Black
+    val opacity = compiledStyleLayer.textOpacity?.evaluate(zoomLevel, properties, featureId) ?: 1.0
 
-    val haloColor = compiledStyleLayer.textHaloColor?.evaluate(zoomLevel, properties, compiledStyleLayer.id)
-    val haloWidth = compiledStyleLayer.textHaloWidth?.evaluate(zoomLevel, properties, compiledStyleLayer.id) ?: 0.0
-    val haloBlur = compiledStyleLayer.textHaloBlur?.evaluate(zoomLevel, properties, compiledStyleLayer.id) ?: 0.0
+    val haloColor = compiledStyleLayer.textHaloColor?.evaluate(zoomLevel, properties, featureId)
+    val haloWidth = compiledStyleLayer.textHaloWidth?.evaluate(zoomLevel, properties, featureId) ?: 0.0
+    val haloBlur = compiledStyleLayer.textHaloBlur?.evaluate(zoomLevel, properties, featureId) ?: 0.0
 
-    val maxWidth = compiledStyleLayer.textMaxWidth?.evaluate(zoomLevel, properties, compiledStyleLayer.id)
-    val lineHeight = compiledStyleLayer.textLineHeight?.evaluate(zoomLevel, properties, compiledStyleLayer.id)
-    val justify = compiledStyleLayer.textJustify?.evaluate(zoomLevel, properties, compiledStyleLayer.id) ?: "center"
+    val maxWidth = compiledStyleLayer.textMaxWidth?.evaluate(zoomLevel, properties, featureId)
+    val lineHeight = compiledStyleLayer.textLineHeight?.evaluate(zoomLevel, properties, featureId)
+    val justify = compiledStyleLayer.textJustify?.evaluate(zoomLevel, properties, featureId) ?: "center"
 
-    val anchor = compiledStyleLayer.textAnchor?.evaluate(zoomLevel, properties, compiledStyleLayer.id) ?: "center"
-    val offset = compiledStyleLayer.textOffset?.evaluate(zoomLevel, properties, compiledStyleLayer.id) ?: listOf(0.0, 0.0)
-    val radialOffset = compiledStyleLayer.textRadialOffset?.evaluate(zoomLevel, properties, compiledStyleLayer.id)
-    val translate = compiledStyleLayer.textTranslate?.evaluate(zoomLevel, properties, compiledStyleLayer.id) ?: listOf(0.0, 0.0)
-    val rotate = compiledStyleLayer.textRotate?.evaluate(zoomLevel, properties, compiledStyleLayer.id)
+    val anchor = compiledStyleLayer.textAnchor?.evaluate(zoomLevel, properties, featureId) ?: "center"
+    val offset = compiledStyleLayer.textOffset?.evaluate(zoomLevel, properties, featureId) ?: listOf(0.0, 0.0)
+    val radialOffset = compiledStyleLayer.textRadialOffset?.evaluate(zoomLevel, properties, featureId)
+    val translate = compiledStyleLayer.textTranslate?.evaluate(zoomLevel, properties, featureId) ?: listOf(0.0, 0.0)
+    val rotate = compiledStyleLayer.textRotate?.evaluate(zoomLevel, properties, featureId)
 
     val finalSize = (size * textScale).sp
     val emSize = size.toFloat() * textScale
-    val fontNames = compiledStyleLayer.textFont?.evaluate(zoomLevel, properties, compiledStyleLayer.id)
+    val fontNames = compiledStyleLayer.textFont?.evaluate(zoomLevel, properties, featureId)
     val fontFamily = fontNames?.firstNotNullOfOrNull { glyphs[it] }
 
     val displayText = when (transform) {

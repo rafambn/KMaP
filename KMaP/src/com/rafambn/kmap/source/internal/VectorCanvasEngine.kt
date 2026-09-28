@@ -65,7 +65,8 @@ internal fun optimizeMVTile(tile: VectorTile, compiledStyle: CompiledStyle): Opt
 
             OptimizedRenderFeature(
                 geometry = geometry,
-                properties = featureProperties
+                properties = featureProperties,
+                id = featureId
             )
         }
 

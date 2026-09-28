@@ -132,12 +132,12 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
 
     private fun compileVisibility(expression: Any?, locale: String, sprites: Map<String, ImageBitmap>): CompiledValue<Boolean> {
         if (expression == null) {
-            return CompiledValue(evaluate = { _, _, _ -> true })
+            return CompiledValue(evaluator = { _, _, _, _ -> true })
         }
 
         return CompiledValue(
-            evaluate = { zoomLevel, featureProperties, featureId ->
-                val context = EvaluationContext(featureProperties, "Point", zoomLevel, featureId, locale, sprites)
+            evaluator = { zoomLevel, featureProperties, featureId, geometryType ->
+                val context = EvaluationContext(featureProperties, geometryType, zoomLevel, featureId, locale, sprites)
                 evaluator.evaluate(expression, context) != "none"
             }
         )
@@ -159,8 +159,8 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
         }
         val replaceTokens = tokenizedStrings.any { tokenPattern.containsMatchIn(it) }
         return CompiledValue(
-            evaluate = { zoomLevel, featureProperties, featureId ->
-                val context = EvaluationContext(featureProperties, "Point", zoomLevel, featureId, locale, sprites)
+            evaluator = { zoomLevel, featureProperties, featureId, geometryType ->
+                val context = EvaluationContext(featureProperties, geometryType, zoomLevel, featureId, locale, sprites)
                 val result = evaluator.evaluate(expression, context)
                 val value = if (replaceTokens && result is String) tokenPattern.replace(result) { match ->
                     stringifyTokenValue(featureProperties[match.groupValues[1]])

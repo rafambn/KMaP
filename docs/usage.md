@@ -210,7 +210,7 @@ interface TileSource<T : Tile> {
 }
 ```
 
-Use `RasterCanvasParameters` or `VectorCanvasParameters` when calling `rasterCanvas` or `vectorCanvas`. Vector canvases also take a `CompiledStyle`. Load style JSON with `StyleResolver().resolve(styleJson)`: its `style` is the compiled value, and its `issues` describe unsupported or unknown style constructs. See [Mapbox vector style support](vector-style-support.md#loading-and-checking-a-style-file).
+Use `RasterCanvasParameters` or `VectorCanvasParameters` when calling `rasterCanvas` or `vectorCanvas`. Vector canvases also take a `CompiledStyle`. Load style JSON with `StyleResolver().resolve(styleJson)`: its `style` is the compiled value, and its `issues` describe unsupported, unknown, or invalid style values. See [Mapbox vector style support](vector-style-support.md#loading-and-checking-a-style-file).
 
 See [Mapbox vector style support](vector-style-support.md) for the style layers, properties, and expressions that the vector canvas currently renders.
 

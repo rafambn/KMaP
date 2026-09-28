@@ -1,5 +1,6 @@
 package com.rafambn.kmap.style
 
+import com.rafambn.kmap.style.compiled.CompiledFillLayer
 import com.rafambn.kmap.style.model.Style
 import com.rafambn.kmap.style.model.StyleLayer
 import de.infix.testBalloon.framework.core.testSuite
@@ -66,6 +67,32 @@ val StyleInspectionTest by testSuite {
 
         assertNotNull(result.style)
         assertTrue(result.issues.isEmpty(), result.issues.toString())
+    }
+
+    test("reports invalid literal property values without coercing strings to numbers") {
+        val result = StyleResolver().resolve("""{
+            "layers": [
+                {"id": "land", "type": "fill", "source-layer": "land",
+                 "paint": {"fill-opacity": "half", "fill-color": "not-a-color"}},
+                {"id": "roads", "type": "line", "source-layer": "roads",
+                 "paint": {"line-width": {"stops": [[0, "half"], [10, 2]]}, "line-dasharray": [2, "1"]}},
+                {"id": "places", "type": "symbol", "source-layer": "places",
+                 "layout": {"text-font": ["Noto Sans", 42], "icon-size": ["get", "size"]}}
+            ]
+        }""")
+
+        assertNotNull(result.style)
+        assertEquals(
+            setOf(
+                "/layers/0/paint/fill-opacity", "/layers/0/paint/fill-color",
+                "/layers/1/paint/line-width/stops/0/1", "/layers/1/paint/line-dasharray",
+                "/layers/2/layout/text-font"
+            ),
+            result.issues.map { it.path }.toSet()
+        )
+        assertTrue(result.issues.all { it.kind == StyleIssue.Kind.INVALID })
+        val land = result.style.layers.first() as CompiledFillLayer
+        assertNull(land.opacity?.evaluate(0.0, emptyMap(), null))
     }
 
     test("serialized styles retain inspectable paint and layout") {
