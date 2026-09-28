@@ -33,6 +33,7 @@ val VectorTileCanvasTest by testSuite {
                 layers = listOf(StyleLayer(
                     id = "label",
                     type = "symbol",
+                    sourceLayer = "places",
                     layout = mapOf(
                         "text-field" to JsonPrimitive("A"),
                         "text-size" to JsonPrimitive(24)
@@ -65,6 +66,7 @@ val VectorTileCanvasTest by testSuite {
                 layers = listOf(StyleLayer(
                     id = "label",
                     type = "symbol",
+                    sourceLayer = "places",
                     layout = mapOf("text-field" to JsonPrimitive("A"), "text-size" to JsonPrimitive(24)),
                     paint = mapOf(
                         "text-color" to JsonPrimitive("transparent"),
@@ -100,6 +102,7 @@ val VectorTileCanvasTest by testSuite {
                 layers = listOf(StyleLayer(
                     id = "icon",
                     type = "symbol",
+                    sourceLayer = "places",
                     layout = mapOf("icon-image" to JsonArray(listOf(JsonPrimitive("image"), JsonPrimitive("dot")))),
                     paint = mapOf("icon-opacity" to JsonPrimitive(0.5))
                 ))
@@ -134,6 +137,7 @@ val VectorTileCanvasTest by testSuite {
                         StyleLayer(
                             id = "fill",
                             type = "fill",
+                            sourceLayer = "landuse",
                             paint = mapOf(
                                 "fill-color" to JsonPrimitive("rgba(255, 0, 0, 0.5)"),
                                 "fill-opacity" to JsonPrimitive(opacity),
@@ -183,7 +187,7 @@ val VectorTileCanvasTest by testSuite {
                 Json.encodeToString(Style.serializer(), Style(
                     version = 8,
                     sources = emptyMap(),
-                    layers = listOf(StyleLayer(id = "fill", type = "fill", paint = paint))
+                    layers = listOf(StyleLayer(id = "fill", type = "fill", sourceLayer = "landuse", paint = paint))
                 ))
             ).style!!
             val bitmap = ImageBitmap(32, 32)
@@ -210,6 +214,7 @@ val VectorTileCanvasTest by testSuite {
                     StyleLayer(
                         id = "fill",
                         type = "fill",
+                        sourceLayer = "landuse",
                         paint = mapOf(
                             "fill-color" to JsonPrimitive("rgba(255, 0, 0, 0)"),
                             "fill-outline-color" to JsonPrimitive("#0000ff")
@@ -256,6 +261,7 @@ val VectorTileCanvasTest by testSuite {
                     StyleLayer(
                         id = "outline",
                         type = "line",
+                        sourceLayer = "roads",
                         paint = mapOf(
                             "line-color" to JsonPrimitive("#0000ff"),
                             "line-width" to JsonPrimitive(6)
@@ -305,6 +311,7 @@ val VectorTileCanvasTest by testSuite {
                     StyleLayer(
                         id = "outline",
                         type = "line",
+                        sourceLayer = "roads",
                         paint = mapOf(
                             "line-color" to JsonPrimitive("rgba(255, 0, 0, 0.5)"),
                             "line-opacity" to JsonPrimitive(0.5),
@@ -359,6 +366,7 @@ val VectorTileCanvasTest by testSuite {
                         StyleLayer(
                             id = "line",
                             type = "line",
+                            sourceLayer = "roads",
                             layout = mapOf(
                                 "line-join" to JsonPrimitive(join),
                                 "line-cap" to JsonPrimitive(cap)
@@ -396,6 +404,7 @@ val VectorTileCanvasTest by testSuite {
                     StyleLayer(
                         id = "line",
                         type = "line",
+                        sourceLayer = "roads",
                         layout = mapOf("line-join" to JsonPrimitive("none")),
                         paint = mapOf(
                             "line-color" to JsonPrimitive("#0000ff"),
@@ -428,6 +437,7 @@ val VectorTileCanvasTest by testSuite {
                     StyleLayer(
                         id = "line",
                         type = "line",
+                        sourceLayer = "roads",
                         paint = mapOf(
                             "line-color" to JsonPrimitive("#0000ff"),
                             "line-width" to JsonPrimitive(4),
@@ -476,7 +486,7 @@ val VectorTileCanvasTest by testSuite {
                 Json.encodeToString(Style.serializer(), Style(
                     version = 8,
                     sources = emptyMap(),
-                    layers = listOf(StyleLayer(id = "line", type = "line", paint = paint))
+                    layers = listOf(StyleLayer(id = "line", type = "line", sourceLayer = "roads", paint = paint))
                 ))
             ).style!!
             val path = Path().apply {
@@ -508,6 +518,7 @@ val VectorTileCanvasTest by testSuite {
                         StyleLayer(
                             id = "line",
                             type = "line",
+                            sourceLayer = "roads",
                             layout = mapOf("line-cap" to JsonPrimitive(cap)),
                             paint = mapOf(
                                 "line-color" to JsonPrimitive("#0000ff"),
@@ -553,6 +564,7 @@ val VectorTileCanvasTest by testSuite {
                         StyleLayer(
                             id = "line",
                             type = "line",
+                            sourceLayer = "roads",
                             paint = mapOf(
                                 "line-color" to JsonPrimitive("#0000ff"),
                                 "line-width" to JsonPrimitive(4),

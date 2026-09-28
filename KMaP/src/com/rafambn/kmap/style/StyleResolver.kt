@@ -54,6 +54,8 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
             "symbol" -> CompiledLayerType.SYMBOL
             else -> return null
         }
+        if (type != CompiledLayerType.BACKGROUND && layer.sourceLayer == null) return null
+
         val filter = layer.filter?.let { elements -> compileFilter(elements.map { it.toValue() }, locale) }
         val paint = compilePaint(layer.paint, locale, sprites)
         val layout = compileLayout(layer.layout, locale, sprites)

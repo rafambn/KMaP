@@ -80,7 +80,9 @@ internal fun inspectStyle(root: JsonObject): List<StyleIssue> {
             if (backgroundSeen) issue(path, StyleIssue.Kind.UNSUPPORTED, "Only the first background layer is drawn", id)
             backgroundSeen = true
         } else {
-            if (layer["source-layer"] == null) issue("$path/source-layer", StyleIssue.Kind.UNSUPPORTED, "Vector layers need a source-layer to select tile features", id)
+            if ((layer["source-layer"] as? JsonPrimitive)?.contentOrNull == null) {
+                issue("$path/source-layer", StyleIssue.Kind.UNSUPPORTED, "Vector layers need a source-layer to select tile features", id)
+            }
             val source = (layer["source"] as? JsonPrimitive)?.contentOrNull
             if (source != null) usedSources += source
             val sourceType = ((root["sources"] as? JsonObject)?.get(source) as? JsonObject)?.get("type") as? JsonPrimitive

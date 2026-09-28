@@ -10,6 +10,24 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 
 val StyleInspectionTest by testSuite {
+    test("omits vector layers without a source-layer and keeps background") {
+        val result = StyleResolver().resolve("""{
+            "layers": [
+                {"id": "background", "type": "background"},
+                {"id": "fill", "type": "fill"},
+                {"id": "line", "type": "line", "source-layer": null},
+                {"id": "symbol", "type": "symbol"},
+                {"id": "valid", "type": "fill", "source-layer": "landuse"}
+            ]
+        }""")
+
+        assertEquals(listOf("background", "valid"), result.style?.layers?.map { it.id })
+        assertEquals(
+            setOf("/layers/1/source-layer", "/layers/2/source-layer", "/layers/3/source-layer"),
+            result.issues.map { it.path }.toSet()
+        )
+    }
+
     test("reports unsupported fields before JSON decoding drops them") {
         val result = StyleResolver().resolve("""{
             "version": 8,

@@ -17,6 +17,7 @@ val StyleResolverCoverageTest by testSuite {
         val populatedLayer = StyleLayer(
             id = "populated",
             type = "fill",
+            sourceLayer = "landuse",
             minzoom = 2.0,
             maxzoom = 12.0,
             filter = listOf(JsonPrimitive("=="), JsonArray(listOf(JsonPrimitive("get"), JsonPrimitive("class"))), JsonPrimitive("park")),
@@ -70,6 +71,7 @@ val StyleResolverCoverageTest by testSuite {
                 StyleLayer(
                     id = "visible",
                     type = "fill",
+                    sourceLayer = "landuse",
                     layout = mapOf("visibility" to JsonPrimitive("visible"))
                 )
             )
@@ -82,7 +84,7 @@ val StyleResolverCoverageTest by testSuite {
         val style = Style(
             version = 8,
             sources = emptyMap(),
-            layers = listOf(StyleLayer(id = "filter", type = "fill", filter = listOf(JsonPrimitive("unknown"))))
+            layers = listOf(StyleLayer(id = "filter", type = "fill", sourceLayer = "landuse", filter = listOf(JsonPrimitive("unknown"))))
         )
 
         val filter = StyleResolver().resolve(Json.encodeToString(Style.serializer(), style)).style!!.layers.single().filter
@@ -98,6 +100,7 @@ val StyleResolverCoverageTest by testSuite {
                 StyleLayer(
                     id = "literal-none",
                     type = "fill",
+                    sourceLayer = "landuse",
                     layout = mapOf(
                         "visibility" to JsonArray(listOf(JsonPrimitive("literal"), JsonPrimitive("none")))
                     )
@@ -105,6 +108,7 @@ val StyleResolverCoverageTest by testSuite {
                 StyleLayer(
                     id = "case-none",
                     type = "fill",
+                    sourceLayer = "landuse",
                     layout = mapOf(
                         "visibility" to JsonArray(
                             listOf(JsonPrimitive("case"), JsonPrimitive(true), JsonPrimitive("none"), JsonPrimitive("visible"))
@@ -114,6 +118,7 @@ val StyleResolverCoverageTest by testSuite {
                 StyleLayer(
                     id = "property-visibility",
                     type = "fill",
+                    sourceLayer = "landuse",
                     layout = mapOf(
                         "visibility" to JsonArray(listOf(JsonPrimitive("get"), JsonPrimitive("visibility")))
                     )
