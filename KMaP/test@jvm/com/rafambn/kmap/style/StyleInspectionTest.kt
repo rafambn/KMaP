@@ -115,6 +115,33 @@ val StyleInspectionTest by testSuite {
         assertNull(land.opacity?.evaluate(0.0, emptyMap(), null))
     }
 
+    test("reports malformed expression arguments with their JSON paths") {
+        val result = StyleResolver().resolve("""{
+            "layers": [
+                {"id": "roads", "type": "line", "source-layer": "roads",
+                 "filter": ["all", ["get", 42]],
+                 "paint": {
+                    "line-width": ["/", 8, 2, 2],
+                    "line-opacity": ["+", "3", 2],
+                    "line-color": ["case", 1, "red", "blue"]
+                 }},
+                {"id": "valid", "type": "line", "source-layer": "roads",
+                 "paint": {"line-width": ["+", ["to-number", ["get", "width"]], 1]}}
+            ]
+        }""")
+
+        assertNotNull(result.style)
+        assertEquals(
+            setOf(
+                "/layers/0/filter/1/1", "/layers/0/paint/line-width",
+                "/layers/0/paint/line-opacity/1", "/layers/0/paint/line-color/1"
+            ),
+            result.issues.map { it.path }.toSet()
+        )
+        assertTrue(result.issues.all { it.kind == StyleIssue.Kind.INVALID })
+        assertTrue(result.issues.all { it.layerId == "roads" })
+    }
+
     test("serialized styles retain inspectable paint and layout") {
         val style = Style(
             version = 8,

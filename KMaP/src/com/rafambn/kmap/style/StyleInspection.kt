@@ -4,7 +4,9 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.doubleOrNull
 
 private val rootKeys = setOf("version", "name", "metadata", "sources", "layers", "sprite", "glyphs")
 private val ignoredRootKeys = setOf("center", "zoom", "bearing", "pitch", "light", "transition", "imports", "terrain", "fog", "rain", "snow", "projection", "schema", "lights", "models", "iconsets", "featuresets", "fragment", "color-theme", "state", "sky", "camera")
@@ -150,6 +152,76 @@ private fun expressionValueIndexes(expression: JsonArray): List<Int> = when (
     else -> (1 until expression.size).toList()
 }
 
+private fun inspectExpressionArguments(
+    expression: JsonArray, operator: String, path: String, layerId: String?, issues: MutableList<StyleIssue>
+) {
+    val count = expression.size - 1
+    val validCount = when (operator) {
+        "id", "geometry-type", "zoom", "e", "ln2", "pi" -> count == 0
+        "-", "get", "has" -> count in 1..2
+        "+", "*", "max", "min", "coalesce" -> count >= 2
+        "index-of", "slice" -> count in 2..3
+        "array" -> count in 1..3
+        "image" -> count >= 1
+        "boolean", "number", "object", "string", "to-color", "to-number" -> count >= 1
+        "case" -> count >= 3 && count % 2 == 1
+        "match", "step" -> count >= 4 && count % 2 == 0
+        "interpolate", "interpolate-hcl", "interpolate-lab" -> count >= 6 && count % 2 == 0
+        "rgba", "hsla" -> count == 4
+        "rgb", "hsl" -> count == 3
+        "/", "%", "^", "at", "split", "number-format", "==", "!=", ">", ">=", "<", "<=" -> count == 2
+        "!", "length", "literal", "within", "to-boolean", "to-string", "typeof", "downcase", "upcase",
+        "to-hsla", "to-rgba", "acos", "asin", "atan", "cos", "sin", "tan", "ln", "log10", "log2",
+        "abs", "ceil", "floor", "round", "sqrt" -> count == 1
+        else -> true
+    }
+    if (!validCount) {
+        issues += StyleIssue(path, StyleIssue.Kind.INVALID, "Invalid number of arguments for '$operator'", layerId)
+    }
+
+    val numericIndexes = when (operator) {
+        "+", "-", "*", "/", "%", "^", "max", "min", "rgb", "rgba", "hsl", "hsla",
+        "acos", "asin", "atan", "cos", "sin", "tan", "ln", "log10", "log2", "abs", "ceil", "floor",
+        "round", "sqrt" -> 1 until expression.size
+        "at", "number-format" -> 1..1
+        "index-of" -> 3..3
+        "slice" -> 2..3
+        "step" -> listOf(1) + (3 until expression.size step 2).toList()
+        "interpolate", "interpolate-hcl", "interpolate-lab" -> listOf(2) + (3 until expression.size step 2).toList()
+        else -> emptyList()
+    }
+    numericIndexes.forEach { index ->
+        val literal = expression.getOrNull(index) as? JsonPrimitive ?: return@forEach
+        if (literal.isString || literal.doubleOrNull == null) {
+            issues += StyleIssue("$path/$index", StyleIssue.Kind.INVALID, "'$operator' requires a number here", layerId)
+        }
+    }
+
+    val stringIndexes = when (operator) {
+        "get", "has", "image", "downcase", "upcase" -> listOf(1)
+        "split" -> listOf(1, 2)
+        else -> emptyList()
+    }
+    stringIndexes.forEach { index ->
+        val literal = expression.getOrNull(index) as? JsonPrimitive ?: return@forEach
+        if (!literal.isString) {
+            issues += StyleIssue("$path/$index", StyleIssue.Kind.INVALID, "'$operator' requires a string here", layerId)
+        }
+    }
+
+    val booleanIndexes = when (operator) {
+        "!", "all", "any" -> (1 until expression.size).toList()
+        "case" -> (1 until expression.lastIndex step 2).toList()
+        else -> emptyList()
+    }
+    booleanIndexes.forEach { index ->
+        val literal = expression.getOrNull(index) as? JsonPrimitive ?: return@forEach
+        if (literal.isString || literal.booleanOrNull == null) {
+            issues += StyleIssue("$path/$index", StyleIssue.Kind.INVALID, "'$operator' requires a boolean here", layerId)
+        }
+    }
+}
+
 private fun inspectExpression(
     value: JsonElement, path: String, layerId: String?, issues: MutableList<StyleIssue>,
     literalArrayProperty: String? = null, filter: Boolean = false
@@ -183,6 +255,7 @@ private fun inspectExpression(
                 issues += StyleIssue(path, StyleIssue.Kind.UNSUPPORTED, "Expression operator '$operator' is not implemented", layerId)
                 return
             }
+            inspectExpressionArguments(value, operator, path, layerId, issues)
             if (operator == "literal") return
             if (operator == "image" && value.size > 2) {
                 issues += StyleIssue(path, StyleIssue.Kind.UNSUPPORTED, "Image expression options are not implemented", layerId)
