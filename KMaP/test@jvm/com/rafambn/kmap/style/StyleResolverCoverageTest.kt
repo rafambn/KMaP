@@ -1,14 +1,17 @@
 package com.rafambn.kmap.style
 
+import com.rafambn.kmap.style.compiled.CompiledBackgroundLayer
+import com.rafambn.kmap.style.compiled.CompiledFillLayer
+import com.rafambn.kmap.style.model.Style
+import com.rafambn.kmap.style.model.StyleLayer
 import de.infix.testBalloon.framework.core.testSuite
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonNull
-import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 
 val StyleResolverCoverageTest by testSuite {
@@ -23,44 +26,39 @@ val StyleResolverCoverageTest by testSuite {
             filter = listOf(JsonPrimitive("=="), JsonArray(listOf(JsonPrimitive("get"), JsonPrimitive("class"))), JsonPrimitive("park")),
             layout = mapOf(
                 "visibility" to JsonPrimitive("none"),
-                "title" to JsonArray(listOf(JsonPrimitive("get"), JsonPrimitive("name"))),
-                "nested" to JsonObject(mapOf("enabled" to JsonPrimitive(true)))
+                "title" to JsonPrimitive("ignored")
             ),
             paint = mapOf(
-                "null" to JsonNull,
-                "boolean" to JsonPrimitive(true),
-                "number" to JsonPrimitive(7),
-                "string" to JsonPrimitive("value"),
-                "array" to JsonArray(listOf(JsonPrimitive(1), JsonNull, JsonPrimitive(false))),
-                "object" to JsonObject(mapOf("count" to JsonPrimitive(2)))
+                "fill-color" to JsonPrimitive("#00ff00"),
+                "fill-opacity" to JsonPrimitive(0.5),
+                "unused" to JsonPrimitive(true)
             )
         )
         val rawStyle = Style(version = 8, sources = emptyMap(), layers = listOf(emptyLayer, populatedLayer))
 
-        val optimized = StyleResolver().resolve(Json.encodeToString(Style.serializer(), rawStyle)).style!!
+        val resolution = StyleResolver().resolve(Json.encodeToString(Style.serializer(), rawStyle))
+        val optimized = resolution.style!!
+        assertTrue(resolution.issues.any { it.path == "/layers/1/paint/unused" && it.kind == StyleIssue.Kind.UNSUPPORTED })
+        assertTrue(resolution.issues.any { it.path == "/layers/1/layout/title" && it.kind == StyleIssue.Kind.UNSUPPORTED })
 
-        val empty = optimized.layers[0]
+        val empty = optimized.layers[0] as CompiledBackgroundLayer
         assertEquals(0.0, empty.minZoom)
         assertEquals(Double.POSITIVE_INFINITY, empty.maxZoom)
         assertNull(empty.filter)
-        assertTrue(empty.layout.visibility.evaluate(0.0, emptyMap(), null) == true)
-        assertTrue(empty.layout.properties.isEmpty())
-        assertTrue(empty.paint.properties.isEmpty())
+        assertTrue(empty.visibility.evaluate(0.0, emptyMap(), null) == true)
+        assertNull(empty.color)
+        assertNull(empty.opacity)
 
-        val populated = optimized.layers[1]
+        val populated = optimized.layers[1] as CompiledFillLayer
         assertEquals(2.0, populated.minZoom)
         assertEquals(12.0, populated.maxZoom)
         assertTrue(populated.filter!!.evaluate(0.0, mapOf("class" to "park"), "Polygon", null))
         assertFalse(populated.filter.evaluate(0.0, mapOf("class" to "water"), "Polygon", null))
-        assertFalse(populated.layout.visibility.evaluate(0.0, emptyMap(), null)!!)
-        assertEquals("Place", populated.layout.properties.getValue("title").evaluate(0.0, mapOf("name" to "Place"), null))
-        assertEquals(mapOf("enabled" to true), populated.layout.properties.getValue("nested").evaluate(0.0, emptyMap(), null))
-        assertNull(populated.paint.properties.getValue("null").evaluate(0.0, emptyMap(), null))
-        assertEquals(true, populated.paint.properties.getValue("boolean").evaluate(0.0, emptyMap(), null))
-        assertEquals(7.0, populated.paint.properties.getValue("number").evaluate(0.0, emptyMap(), null))
-        assertEquals("value", populated.paint.properties.getValue("string").evaluate(0.0, emptyMap(), null))
-        assertEquals(listOf(1.0, null, false), populated.paint.properties.getValue("array").evaluate(0.0, emptyMap(), null))
-        assertEquals(mapOf("count" to 2.0), populated.paint.properties.getValue("object").evaluate(0.0, emptyMap(), null))
+        assertFalse(populated.visibility.evaluate(0.0, emptyMap(), null)!!)
+        assertEquals(0.5, populated.opacity?.evaluate(0.0, emptyMap(), null))
+        assertNotNull(populated.color?.evaluate(0.0, emptyMap(), null))
+        assertNull(populated.outlineColor)
+        assertNull(populated.antialias)
 
         val visibleStyle = Style(
             version = 8,
@@ -75,7 +73,7 @@ val StyleResolverCoverageTest by testSuite {
             )
         )
         val visible = StyleResolver().resolve(Json.encodeToString(Style.serializer(), visibleStyle)).style!!.layers.single()
-        assertTrue(visible.layout.visibility.evaluate(0.0, emptyMap(), null)!!)
+        assertTrue(visible.visibility.evaluate(0.0, emptyMap(), null)!!)
     }
 
     test("uses false for filters whose expression result is not boolean") {
@@ -88,6 +86,18 @@ val StyleResolverCoverageTest by testSuite {
         val filter = StyleResolver().resolve(Json.encodeToString(Style.serializer(), style)).style!!.layers.single().filter
 
         assertFalse(filter!!.evaluate(0.0, emptyMap(), "Polygon", null))
+    }
+
+    test("converts expression results to the property type") {
+        val rawJson = """{"layers":[{"id":"dynamic","type":"fill","source-layer":"landuse","paint":{"fill-color":["get","color"],"fill-opacity":["get","opacity"],"fill-antialias":["get","antialias"]}}]}"""
+        val layer = StyleResolver().resolve(rawJson).style!!.layers.single() as CompiledFillLayer
+
+        assertNull(layer.color?.evaluate(0.0, mapOf("color" to 42), null))
+        assertNull(layer.opacity?.evaluate(0.0, mapOf("opacity" to "half"), null))
+        assertNull(layer.antialias?.evaluate(0.0, mapOf("antialias" to "false"), null))
+        assertEquals(0.5, layer.opacity?.evaluate(0.0, mapOf("opacity" to 0.5f), null))
+        assertEquals(false, layer.antialias?.evaluate(0.0, mapOf("antialias" to false), null))
+        assertNotNull(layer.color?.evaluate(0.0, mapOf("color" to "#123456"), null))
     }
 
     test("evaluates visibility expressions as booleans") {
@@ -126,9 +136,9 @@ val StyleResolverCoverageTest by testSuite {
 
         val layers = StyleResolver().resolve(Json.encodeToString(Style.serializer(), style)).style!!.layers
 
-        assertFalse(layers[0].layout.visibility.evaluate(0.0, emptyMap(), null)!!)
-        assertFalse(layers[1].layout.visibility.evaluate(0.0, emptyMap(), null)!!)
-        assertFalse(layers[2].layout.visibility.evaluate(0.0, mapOf("visibility" to "none"), null)!!)
-        assertTrue(layers[2].layout.visibility.evaluate(0.0, mapOf("visibility" to "visible"), null)!!)
+        assertFalse(layers[0].visibility.evaluate(0.0, emptyMap(), null)!!)
+        assertFalse(layers[1].visibility.evaluate(0.0, emptyMap(), null)!!)
+        assertFalse(layers[2].visibility.evaluate(0.0, mapOf("visibility" to "none"), null)!!)
+        assertTrue(layers[2].visibility.evaluate(0.0, mapOf("visibility" to "visible"), null)!!)
     }
 }

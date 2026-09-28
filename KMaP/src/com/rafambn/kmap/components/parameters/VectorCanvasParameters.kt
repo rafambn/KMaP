@@ -2,7 +2,7 @@ package com.rafambn.kmap.components.parameters
 
 import com.rafambn.kmap.source.TileResult
 import com.rafambn.kmap.source.VectorTile
-import com.rafambn.kmap.style.CompiledStyle
+import com.rafambn.kmap.style.compiled.CompiledStyle
 
 open class VectorCanvasParameters(
     override val id: Int,

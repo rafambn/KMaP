@@ -2,8 +2,8 @@ package com.rafambn.kmap.style.expression
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
-import com.rafambn.kmap.style.EvaluationContext
-import com.rafambn.kmap.style.ExpressionEvaluator
+import com.rafambn.kmap.style.evaluation.EvaluationContext
+import com.rafambn.kmap.style.evaluation.ExpressionEvaluator
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.atan2

@@ -1,4 +1,4 @@
-package com.rafambn.kmap.style
+package com.rafambn.kmap.style.evaluation
 
 import com.rafambn.kmap.style.expression.*
 import kotlin.math.E

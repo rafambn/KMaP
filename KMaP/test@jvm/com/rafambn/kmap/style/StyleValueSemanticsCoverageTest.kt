@@ -1,5 +1,10 @@
 package com.rafambn.kmap.style
 
+import com.rafambn.kmap.style.model.Light
+import com.rafambn.kmap.style.model.Source
+import com.rafambn.kmap.style.model.Style
+import com.rafambn.kmap.style.model.StyleLayer
+import com.rafambn.kmap.style.model.Transition
 import de.infix.testBalloon.framework.core.testSuite
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals

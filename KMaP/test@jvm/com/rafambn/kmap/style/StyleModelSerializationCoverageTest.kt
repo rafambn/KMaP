@@ -1,11 +1,16 @@
 package com.rafambn.kmap.style
 
+import com.rafambn.kmap.style.model.Light
+import com.rafambn.kmap.style.model.Source
+import com.rafambn.kmap.style.model.Style
+import com.rafambn.kmap.style.model.StyleLayer
+import com.rafambn.kmap.style.model.Transition
 import de.infix.testBalloon.framework.core.testSuite
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
-import kotlinx.serialization.SerializationException
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromByteArray
 import kotlinx.serialization.encodeToByteArray
 import kotlinx.serialization.json.Json

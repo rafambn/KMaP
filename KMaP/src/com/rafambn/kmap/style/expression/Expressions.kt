@@ -1,12 +1,12 @@
 package com.rafambn.kmap.style.expression
 
 import androidx.compose.ui.graphics.Color
-import com.rafambn.kmap.style.EvaluationContext
-import com.rafambn.kmap.style.ExpressionEvaluator
+import com.rafambn.kmap.style.evaluation.EvaluationContext
+import com.rafambn.kmap.style.evaluation.ExpressionEvaluator
+import kotlin.math.abs
 import kotlin.math.acos
 import kotlin.math.asin
 import kotlin.math.atan
-import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.floor

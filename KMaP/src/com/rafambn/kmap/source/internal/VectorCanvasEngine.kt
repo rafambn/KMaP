@@ -5,9 +5,9 @@ import androidx.compose.ui.graphics.PathFillType
 import com.rafambn.kmap.mvttile.*
 import com.rafambn.kmap.source.TileResult
 import com.rafambn.kmap.source.VectorTile
-import com.rafambn.kmap.style.CompiledLayerType
-import com.rafambn.kmap.style.CompiledStyle
-import com.rafambn.kmap.style.FeatureGeometryContext
+import com.rafambn.kmap.style.compiled.CompiledLayerType
+import com.rafambn.kmap.style.compiled.CompiledStyle
+import com.rafambn.kmap.style.evaluation.FeatureGeometryContext
 import kotlinx.coroutines.CoroutineScope
 
 class VectorCanvasEngine(

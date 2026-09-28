@@ -2,6 +2,9 @@ package com.rafambn.kmap.style
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import com.rafambn.kmap.style.evaluation.EvaluationContext
+import com.rafambn.kmap.style.evaluation.ExpressionEvaluator
+import com.rafambn.kmap.style.evaluation.FeatureGeometryContext
 import de.infix.testBalloon.framework.core.testSuite
 import kotlin.math.E
 import kotlin.math.PI

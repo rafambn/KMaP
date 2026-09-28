@@ -14,15 +14,17 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import com.rafambn.kmap.mvttile.OptimizedGeometry
 import com.rafambn.kmap.mvttile.OptimizedRenderFeature
-import com.rafambn.kmap.style.Style
-import com.rafambn.kmap.style.StyleLayer
 import com.rafambn.kmap.style.StyleResolver
+import com.rafambn.kmap.style.compiled.CompiledFillLayer
+import com.rafambn.kmap.style.compiled.CompiledLineLayer
+import com.rafambn.kmap.style.model.Style
+import com.rafambn.kmap.style.model.StyleLayer
 import de.infix.testBalloon.framework.core.testSuite
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 val VectorTileCanvasTest by testSuite {
     test("plain symbol text uses text-color without format") {
@@ -148,7 +150,7 @@ val VectorTileCanvasTest by testSuite {
                 ))
             ).style!!
             val bitmap = ImageBitmap(32, 32)
-            drawFillFeature(Canvas(bitmap), geometry, emptyMap(), style.layers.single(), 0.0, 1f, 1f, 1f)
+            drawFillFeature(Canvas(bitmap), geometry, emptyMap(), style.layers.single() as CompiledFillLayer, 0.0, 1f, 1f, 1f)
             return bitmap
         }
 
@@ -168,7 +170,7 @@ val VectorTileCanvasTest by testSuite {
         val path = Path().apply { addRect(Rect(4f, 4f, 28f, 28f)) }
         val bitmap = ImageBitmap(32, 32)
 
-        drawFillFeature(Canvas(bitmap), OptimizedGeometry.Polygon(path), mapOf("opacity" to 0.25f), style.layers.single(), 0.0, 1f, 1f, 1f)
+        drawFillFeature(Canvas(bitmap), OptimizedGeometry.Polygon(path), mapOf("opacity" to 0.25f), style.layers.single() as CompiledFillLayer, 0.0, 1f, 1f, 1f)
 
         assertEquals(0.25f, bitmap.toPixelMap()[16, 16].alpha, 0.02f)
     }
@@ -191,7 +193,7 @@ val VectorTileCanvasTest by testSuite {
                 ))
             ).style!!
             val bitmap = ImageBitmap(32, 32)
-            drawFillFeature(Canvas(bitmap), geometry, emptyMap(), style.layers.single(), 0.0, 1f, 1f, 1f)
+            drawFillFeature(Canvas(bitmap), geometry, emptyMap(), style.layers.single() as CompiledFillLayer, 0.0, 1f, 1f, 1f)
             return bitmap
         }
 
@@ -233,7 +235,7 @@ val VectorTileCanvasTest by testSuite {
             canvas.scale(screenScale, screenScale)
             canvas.scale(tileScaleX, tileScaleY)
             drawFillFeature(
-                canvas, OptimizedGeometry.Polygon(path), emptyMap(), style.layers.single(),
+                canvas, OptimizedGeometry.Polygon(path), emptyMap(), style.layers.single() as CompiledFillLayer,
                 0.0, tileScaleX, tileScaleY, screenScale
             )
             return bitmap
@@ -282,7 +284,7 @@ val VectorTileCanvasTest by testSuite {
             val canvas = Canvas(bitmap)
             canvas.scale(screenScale, screenScale)
             canvas.scale(tileScaleX, tileScaleY)
-            drawLineFeature(canvas, path, emptyMap(), style.layers.single(), 0.0, tileScaleX, tileScaleY, screenScale)
+            drawLineFeature(canvas, path, emptyMap(), style.layers.single() as CompiledLineLayer, 0.0, tileScaleX, tileScaleY, screenScale)
             return bitmap
         }
 
@@ -380,7 +382,7 @@ val VectorTileCanvasTest by testSuite {
                 ))
             ).style!!
             val bitmap = ImageBitmap(32, 32)
-            drawLineFeature(Canvas(bitmap), path, emptyMap(), style.layers.single(), 0.0, 1f, 1f, 1f)
+            drawLineFeature(Canvas(bitmap), path, emptyMap(), style.layers.single() as CompiledLineLayer, 0.0, 1f, 1f, 1f)
             return bitmap
         }
 
@@ -419,7 +421,7 @@ val VectorTileCanvasTest by testSuite {
             addRect(Rect(24f, 24f, 40f, 40f))
         }
         val bitmap = ImageBitmap(64, 64)
-        drawLineFeature(Canvas(bitmap), path, emptyMap(), style.layers.single(), 0.0, 1f, 1f, 1f)
+        drawLineFeature(Canvas(bitmap), path, emptyMap(), style.layers.single() as CompiledLineLayer, 0.0, 1f, 1f, 1f)
         val pixels = bitmap.toPixelMap()
 
         assertTrue(pixels[8, 32].alpha > 0.9f)
@@ -457,7 +459,7 @@ val VectorTileCanvasTest by testSuite {
             val canvas = Canvas(bitmap)
             canvas.scale(screenScale, screenScale)
             canvas.scale(tileScaleX, tileScaleY)
-            drawLineFeature(canvas, path, emptyMap(), style.layers.single(), 0.0, tileScaleX, tileScaleY, screenScale)
+            drawLineFeature(canvas, path, emptyMap(), style.layers.single() as CompiledLineLayer, 0.0, tileScaleX, tileScaleY, screenScale)
             return bitmap
         }
 
@@ -494,7 +496,7 @@ val VectorTileCanvasTest by testSuite {
                 lineTo(72f, 16f)
             }
             val bitmap = ImageBitmap(80, 32)
-            drawLineFeature(Canvas(bitmap), path, emptyMap(), style.layers.single(), 0.0, 1f, 1f, 1f)
+            drawLineFeature(Canvas(bitmap), path, emptyMap(), style.layers.single() as CompiledLineLayer, 0.0, 1f, 1f, 1f)
             return bitmap
         }
 
@@ -534,7 +536,7 @@ val VectorTileCanvasTest by testSuite {
                 lineTo(72f, 16f)
             }
             val bitmap = ImageBitmap(80, 32)
-            drawLineFeature(Canvas(bitmap), path, emptyMap(), style.layers.single(), 0.0, 1f, 1f, 1f)
+            drawLineFeature(Canvas(bitmap), path, emptyMap(), style.layers.single() as CompiledLineLayer, 0.0, 1f, 1f, 1f)
             return bitmap
         }
 
@@ -579,7 +581,7 @@ val VectorTileCanvasTest by testSuite {
                 lineTo(72f, 16f)
             }
             val bitmap = ImageBitmap(80, 32)
-            drawLineFeature(Canvas(bitmap), path, emptyMap(), style.layers.single(), 0.0, 1f, 1f, 1f)
+            drawLineFeature(Canvas(bitmap), path, emptyMap(), style.layers.single() as CompiledLineLayer, 0.0, 1f, 1f, 1f)
             return bitmap
         }
 

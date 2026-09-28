@@ -1,8 +1,8 @@
 package com.rafambn.kmap.style.expression
 
-import com.rafambn.kmap.style.EvaluationContext
-import com.rafambn.kmap.style.ExpressionEvaluator
-import com.rafambn.kmap.style.FeatureGeometryContext
+import com.rafambn.kmap.style.evaluation.EvaluationContext
+import com.rafambn.kmap.style.evaluation.ExpressionEvaluator
+import com.rafambn.kmap.style.evaluation.FeatureGeometryContext
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos

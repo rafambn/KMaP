@@ -1,5 +1,12 @@
 package com.rafambn.kmap.style
 
+import com.rafambn.kmap.style.compiled.CompiledBackgroundLayer
+import com.rafambn.kmap.style.compiled.CompiledFillLayer
+import com.rafambn.kmap.style.compiled.CompiledLineLayer
+import com.rafambn.kmap.style.compiled.CompiledSymbolLayer
+import com.rafambn.kmap.style.evaluation.EvaluationContext
+import com.rafambn.kmap.style.evaluation.ExpressionEvaluator
+import com.rafambn.kmap.style.model.Style
 import de.infix.testBalloon.framework.core.testSuite
 import java.io.File
 import kotlin.test.assertTrue
@@ -155,7 +162,7 @@ val StylePerformanceTest by testSuite {
             """.trimIndent()
 
             val optimizedStyle = resolver.resolve(rawStyleJson).style!!
-            val layer = optimizedStyle.layers[0]
+            val layer = optimizedStyle.layers[0] as CompiledFillLayer
 
             // Simulate rendering 1000 features at zoom 10
             val startTime = System.nanoTime()
@@ -165,8 +172,8 @@ val StylePerformanceTest by testSuite {
                     "id" to i
                 )
 
-                layer.paint.properties["fill-color"]?.evaluate(10.0, properties, null)
-                layer.paint.properties["fill-opacity"]?.evaluate(10.0, properties, null)
+                layer.color?.evaluate(10.0, properties, null)
+                layer.opacity?.evaluate(10.0, properties, null)
             }
             val endTime = System.nanoTime()
 
@@ -193,16 +200,13 @@ val StylePerformanceTest by testSuite {
 
             // Measure evaluation time for all properties
             val evaluationStart = System.nanoTime()
-            val context = EvaluationContext(
-                zoomLevel = 10.0,
-                featureProperties = mapOf("test" to "value"),
-                geometryType = "Polygon"
-            )
-
             repeat(1000) {
                 for (layer in optimizedStyle.layers) {
-                    for ((_, compiledValue) in layer.paint.properties) {
-                        compiledValue.evaluate(10.0, emptyMap(), null)
+                    when (layer) {
+                        is CompiledBackgroundLayer -> layer.color?.evaluate(10.0, emptyMap(), null)
+                        is CompiledFillLayer -> layer.color?.evaluate(10.0, emptyMap(), null)
+                        is CompiledLineLayer -> layer.color?.evaluate(10.0, emptyMap(), null)
+                        is CompiledSymbolLayer -> layer.textColor?.evaluate(10.0, emptyMap(), null)
                     }
                 }
             }

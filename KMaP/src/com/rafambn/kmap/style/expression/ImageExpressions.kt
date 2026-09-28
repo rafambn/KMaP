@@ -1,8 +1,8 @@
 package com.rafambn.kmap.style.expression
 
 import androidx.compose.ui.graphics.ImageBitmap
-import com.rafambn.kmap.style.EvaluationContext
-import com.rafambn.kmap.style.ExpressionEvaluator
+import com.rafambn.kmap.style.evaluation.EvaluationContext
+import com.rafambn.kmap.style.evaluation.ExpressionEvaluator
 
 internal fun evaluateImage(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): ImageBitmap? {
     if (expression.size != 2) return null

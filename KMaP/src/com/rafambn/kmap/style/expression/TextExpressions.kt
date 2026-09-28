@@ -1,7 +1,7 @@
 package com.rafambn.kmap.style.expression
 
-import com.rafambn.kmap.style.EvaluationContext
-import com.rafambn.kmap.style.ExpressionEvaluator
+import com.rafambn.kmap.style.evaluation.EvaluationContext
+import com.rafambn.kmap.style.evaluation.ExpressionEvaluator
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.pow

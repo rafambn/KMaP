@@ -1,4 +1,4 @@
-package com.rafambn.kmap.style
+package com.rafambn.kmap.style.evaluation
 
 data class FeatureGeometryContext(
     val paths: List<List<Pair<Int, Int>>>,

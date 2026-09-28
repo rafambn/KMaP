@@ -1,4 +1,4 @@
-package com.rafambn.kmap.style
+package com.rafambn.kmap.style.compiled
 
 enum class CompiledLayerType {
     BACKGROUND,

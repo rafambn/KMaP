@@ -1,8 +1,8 @@
 package com.rafambn.kmap.style.expression
 
 import androidx.compose.ui.graphics.Color
-import com.rafambn.kmap.style.EvaluationContext
-import com.rafambn.kmap.style.ExpressionEvaluator
+import com.rafambn.kmap.style.evaluation.EvaluationContext
+import com.rafambn.kmap.style.evaluation.ExpressionEvaluator
 
 internal fun evaluateTypeAssertion(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): Any? {
     val type = expression.firstOrNull() as? String ?: return null

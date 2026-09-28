@@ -8,9 +8,9 @@ import com.rafambn.kmap.mvttile.MVTile
 import com.rafambn.kmap.mvttile.OptimizedGeometry
 import com.rafambn.kmap.mvttile.RawMVTGeomType
 import com.rafambn.kmap.source.VectorTile
-import com.rafambn.kmap.style.Style
-import com.rafambn.kmap.style.StyleLayer
 import com.rafambn.kmap.style.StyleResolver
+import com.rafambn.kmap.style.model.Style
+import com.rafambn.kmap.style.model.StyleLayer
 import de.infix.testBalloon.framework.core.testSuite
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
