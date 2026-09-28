@@ -11,30 +11,18 @@ private val ignoredRootKeys = setOf("center", "zoom", "bearing", "pitch", "light
 private val layerKeys = setOf("id", "type", "source", "source-layer", "minzoom", "maxzoom", "filter", "layout", "paint", "metadata")
 private val sourceKeys = setOf("type", "url", "tiles", "minzoom", "maxzoom", "attribution", "tileSize", "data", "buffer", "tolerance", "cluster", "clusterRadius", "clusterMaxZoom")
 private val paintProperties = mapOf(
-    "background" to mapOf("background-color" to StylePropertyType.COLOR, "background-opacity" to StylePropertyType.NUMBER),
-    "fill" to mapOf("fill-color" to StylePropertyType.COLOR, "fill-opacity" to StylePropertyType.NUMBER,
-        "fill-outline-color" to StylePropertyType.COLOR, "fill-antialias" to StylePropertyType.BOOLEAN),
-    "line" to mapOf("line-color" to StylePropertyType.COLOR, "line-width" to StylePropertyType.NUMBER,
-        "line-opacity" to StylePropertyType.NUMBER, "line-dasharray" to StylePropertyType.NUMBER_ARRAY),
-    "symbol" to mapOf("text-color" to StylePropertyType.COLOR, "text-opacity" to StylePropertyType.NUMBER,
-        "text-halo-color" to StylePropertyType.COLOR, "text-halo-width" to StylePropertyType.NUMBER,
-        "text-halo-blur" to StylePropertyType.NUMBER, "text-translate" to StylePropertyType.NUMBER_ARRAY,
-        "icon-opacity" to StylePropertyType.NUMBER)
+    "background" to setOf("background-color", "background-opacity"),
+    "fill" to setOf("fill-color", "fill-opacity", "fill-outline-color", "fill-antialias"),
+    "line" to setOf("line-color", "line-width", "line-opacity", "line-dasharray"),
+    "symbol" to setOf("text-color", "text-opacity", "text-halo-color", "text-halo-width", "text-halo-blur", "text-translate", "icon-opacity")
 )
 private val layoutProperties = mapOf(
-    "background" to mapOf("visibility" to StylePropertyType.STRING),
-    "fill" to mapOf("visibility" to StylePropertyType.STRING),
-    "line" to mapOf("visibility" to StylePropertyType.STRING, "line-cap" to StylePropertyType.STRING,
-        "line-join" to StylePropertyType.STRING),
-    "symbol" to mapOf("visibility" to StylePropertyType.STRING, "text-field" to StylePropertyType.STRING,
-        "text-transform" to StylePropertyType.STRING, "text-size" to StylePropertyType.NUMBER,
-        "text-max-width" to StylePropertyType.NUMBER, "text-line-height" to StylePropertyType.NUMBER,
-        "text-justify" to StylePropertyType.STRING, "text-anchor" to StylePropertyType.STRING,
-        "text-offset" to StylePropertyType.NUMBER_ARRAY, "text-radial-offset" to StylePropertyType.NUMBER,
-        "text-rotate" to StylePropertyType.NUMBER, "text-font" to StylePropertyType.STRING_ARRAY,
-        "icon-image" to StylePropertyType.STRING, "icon-size" to StylePropertyType.NUMBER,
-        "icon-rotate" to StylePropertyType.NUMBER, "icon-offset" to StylePropertyType.NUMBER_ARRAY,
-        "icon-anchor" to StylePropertyType.STRING)
+    "background" to setOf("visibility"),
+    "fill" to setOf("visibility"),
+    "line" to setOf("visibility", "line-cap", "line-join"),
+    "symbol" to setOf("visibility", "text-field", "text-transform", "text-size", "text-max-width", "text-line-height",
+        "text-justify", "text-anchor", "text-offset", "text-radial-offset", "text-rotate", "text-font", "icon-image",
+        "icon-size", "icon-rotate", "icon-offset", "icon-anchor")
 )
 private val expressionOperators = setOf(
     "all", "any", "!", "==", "!=", ">", ">=", "<", "<=", "get", "has", "geometry-type", "id", "zoom",
@@ -108,11 +96,9 @@ internal fun inspectStyle(root: JsonObject): List<StyleIssue> {
             val properties = layer[section] as? JsonObject ?: continue
             properties.forEach { (name, value) ->
                 val propertyPath = "$path/$section/${name.pointerToken()}"
-                val propertyType = supported[name]
-                if (propertyType == null) {
+                if (name !in supported) {
                     issue(propertyPath, StyleIssue.Kind.UNSUPPORTED, "'$name' is not rendered by $type layers", id)
                 } else {
-                    inspectLiteralValue(value, propertyType, propertyPath, id, issues)
                     inspectExpression(value, propertyPath, id, issues, name.takeIf { it in literalArrayProperties })
                 }
             }
@@ -123,29 +109,8 @@ internal fun inspectStyle(root: JsonObject): List<StyleIssue> {
     return issues
 }
 
-private fun inspectLiteralValue(value: JsonElement, type: StylePropertyType, path: String, layerId: String?, issues: MutableList<StyleIssue>) {
-    if (value is JsonObject) {
-        val stops = value["stops"] as? JsonArray
-        if (stops != null) {
-            stops.forEachIndexed { index, stop ->
-                val pair = stop as? JsonArray
-                if (pair?.size == 2) inspectLiteralValue(pair[1], type, "$path/stops/$index/1", layerId, issues)
-            }
-            return
-        }
-    }
-    if (value is JsonArray) {
-        val operator = (value.firstOrNull() as? JsonPrimitive)?.takeIf { it.isString }?.contentOrNull
-        val literalFontList = type == StylePropertyType.STRING_ARRAY && operator !in expressionOperators && operator !in unsupportedArrayOperators
-        if (!literalFontList && operator != null) {
-            if (operator == "literal" && value.size == 2) inspectLiteralValue(value[1], type, "$path/1", layerId, issues)
-            return
-        }
-    }
-    if (!type.acceptsLiteral(value)) {
-        issues += StyleIssue(path, StyleIssue.Kind.INVALID, "Expected ${type.description}", layerId)
-    }
-}
+internal fun isStyleExpressionOperator(operator: String): Boolean =
+    operator in expressionOperators || operator in unsupportedArrayOperators
 
 private fun inspectExpression(value: JsonElement, path: String, layerId: String?, issues: MutableList<StyleIssue>, literalArrayProperty: String? = null) {
     when (value) {

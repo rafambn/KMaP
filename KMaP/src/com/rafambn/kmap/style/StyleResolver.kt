@@ -36,22 +36,23 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
             return StyleResolution(null, listOf(StyleIssue("$", StyleIssue.Kind.INVALID, error.message ?: "Invalid JSON")))
         } ?: return StyleResolution(null, listOf(StyleIssue("$", StyleIssue.Kind.INVALID, "Style must be a JSON object")))
 
-        val issues = inspectStyle(root)
+        val issues = inspectStyle(root).toMutableList()
         val style = try {
             json.decodeFromJsonElement<Style>(root)
         } catch (error: SerializationException) {
             return StyleResolution(null, issues + StyleIssue("$", StyleIssue.Kind.INVALID, error.message ?: "Invalid style"))
         }
-        return StyleResolution(compile(style, sprites, glyphs, locale), issues)
+        return StyleResolution(compile(style, sprites, glyphs, locale, issues), issues)
     }
 
     private fun compile(
         rawStyle: Style,
         sprites: Map<String, ImageBitmap>,
         glyphs: Map<String, FontFamily>,
-        locale: String
+        locale: String,
+        issues: MutableList<StyleIssue>
     ): CompiledStyle {
-        val compiledLayers = rawStyle.layers.mapNotNull { compileLayer(it, locale, sprites) }
+        val compiledLayers = rawStyle.layers.mapIndexedNotNull { index, layer -> compileLayer(layer, index, locale, sprites, issues) }
         return CompiledStyle(
             layers = compiledLayers,
             sprites = sprites,
@@ -59,63 +60,77 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
         )
     }
 
-    private fun compileLayer(layer: StyleLayer, locale: String, sprites: Map<String, ImageBitmap>): CompiledStyleLayer? {
+    private fun compileLayer(
+        layer: StyleLayer, index: Int, locale: String, sprites: Map<String, ImageBitmap>, issues: MutableList<StyleIssue>
+    ): CompiledStyleLayer? {
         if (layer.type !in setOf("background", "fill", "line", "symbol")) return null
+        fun <T> paintValue(name: String, convert: (Any?) -> T?): CompiledValue<T>? =
+            compileProperty(layer.paint?.get(name), "/layers/$index/paint/$name", layer.id, issues, locale, sprites, convert)
+
+        fun <T> layoutValue(
+            name: String, convert: (Any?) -> T?, expandTokens: Boolean = false,
+            validate: (Any?) -> Boolean = { convert(it) != null }
+        ): CompiledValue<T>? = compileProperty(
+            layer.layout?.get(name), "/layers/$index/layout/$name", layer.id, issues, locale, sprites, convert, expandTokens, validate
+        )
+
         val filter = layer.filter?.let { elements -> compileFilter(elements.map { it.toValue() }, locale) }
+        layer.layout?.get("visibility")?.let {
+            inspectLiteral(it, "/layers/$index/layout/visibility", layer.id, issues, { value -> asString(value) != null })
+        }
         val visibility = compileVisibility(layer.layout?.get("visibility")?.toValue(), locale, sprites)
         val paint = layer.paint
-        val layout = layer.layout
         val minZoom = layer.minzoom ?: 0.0
         val maxZoom = layer.maxzoom ?: Double.POSITIVE_INFINITY
 
         return when (layer.type) {
             "background" -> CompiledBackgroundLayer(
                 layer.id, minZoom, maxZoom, filter, visibility,
-                color = compileProperty(paint?.get("background-color"), locale, sprites, ::asColor),
-                opacity = compileProperty(paint?.get("background-opacity"), locale, sprites, ::asNumber)
+                color = paintValue("background-color", ::asColor),
+                opacity = paintValue("background-opacity", ::asNumber)
             )
             "fill" -> CompiledFillLayer(
                 layer.id, layer.sourceLayer ?: return null, minZoom, maxZoom, filter, visibility,
-                color = compileProperty(paint?.get("fill-color"), locale, sprites, ::asColor),
-                opacity = compileProperty(paint?.get("fill-opacity"), locale, sprites, ::asNumber),
-                outlineColor = compileProperty(paint?.get("fill-outline-color"), locale, sprites, ::asColor),
-                antialias = compileProperty(paint?.get("fill-antialias"), locale, sprites, ::asBoolean)
+                color = paintValue("fill-color", ::asColor),
+                opacity = paintValue("fill-opacity", ::asNumber),
+                outlineColor = paintValue("fill-outline-color", ::asColor),
+                antialias = paintValue("fill-antialias", ::asBoolean)
             )
             "line" -> CompiledLineLayer(
                 layer.id, layer.sourceLayer ?: return null, minZoom, maxZoom, filter, visibility,
-                color = compileProperty(paint?.get("line-color"), locale, sprites, ::asColor),
-                width = compileProperty(paint?.get("line-width"), locale, sprites, ::asNumber),
-                opacity = compileProperty(paint?.get("line-opacity"), locale, sprites, ::asNumber),
-                dashArray = compileProperty(paint?.get("line-dasharray"), locale, sprites, ::asNumberList),
+                color = paintValue("line-color", ::asColor),
+                width = paintValue("line-width", ::asNumber),
+                opacity = paintValue("line-opacity", ::asNumber),
+                dashArray = paintValue("line-dasharray", ::asNumberList),
                 patternPresent = compileProperty(paint?.get("line-pattern"), locale, sprites, convert = { it != null }),
-                cap = compileProperty(layout?.get("line-cap"), locale, sprites, ::asString),
-                join = compileProperty(layout?.get("line-join"), locale, sprites, ::asString)
+                cap = layoutValue("line-cap", ::asString),
+                join = layoutValue("line-join", ::asString)
             )
             "symbol" -> CompiledSymbolLayer(
                 layer.id, layer.sourceLayer ?: return null, minZoom, maxZoom, filter, visibility,
-                textField = compileProperty(layout?.get("text-field"), locale, sprites, ::asString, expandTokens = true),
-                textTransform = compileProperty(layout?.get("text-transform"), locale, sprites, ::asString),
-                textSize = compileProperty(layout?.get("text-size"), locale, sprites, ::asNumber),
-                textMaxWidth = compileProperty(layout?.get("text-max-width"), locale, sprites, ::asNumber),
-                textLineHeight = compileProperty(layout?.get("text-line-height"), locale, sprites, ::asNumber),
-                textJustify = compileProperty(layout?.get("text-justify"), locale, sprites, ::asString),
-                textAnchor = compileProperty(layout?.get("text-anchor"), locale, sprites, ::asString),
-                textOffset = compileProperty(layout?.get("text-offset"), locale, sprites, ::asNumberList),
-                textRadialOffset = compileProperty(layout?.get("text-radial-offset"), locale, sprites, ::asNumber),
-                textRotate = compileProperty(layout?.get("text-rotate"), locale, sprites, ::asNumber),
-                textFont = compileProperty(layout?.get("text-font"), locale, sprites, ::asStringList),
-                iconImage = compileProperty(layout?.get("icon-image"), locale, sprites, { asIconImage(it, sprites) }, expandTokens = true),
-                iconSize = compileProperty(layout?.get("icon-size"), locale, sprites, ::asNumber),
-                iconRotate = compileProperty(layout?.get("icon-rotate"), locale, sprites, ::asNumber),
-                iconOffset = compileProperty(layout?.get("icon-offset"), locale, sprites, ::asNumberList),
-                iconAnchor = compileProperty(layout?.get("icon-anchor"), locale, sprites, ::asString),
-                textColor = compileProperty(paint?.get("text-color"), locale, sprites, ::asColor),
-                textOpacity = compileProperty(paint?.get("text-opacity"), locale, sprites, ::asNumber),
-                textHaloColor = compileProperty(paint?.get("text-halo-color"), locale, sprites, ::asColor),
-                textHaloWidth = compileProperty(paint?.get("text-halo-width"), locale, sprites, ::asNumber),
-                textHaloBlur = compileProperty(paint?.get("text-halo-blur"), locale, sprites, ::asNumber),
-                textTranslate = compileProperty(paint?.get("text-translate"), locale, sprites, ::asNumberList),
-                iconOpacity = compileProperty(paint?.get("icon-opacity"), locale, sprites, ::asNumber)
+                textField = layoutValue("text-field", ::asString, expandTokens = true),
+                textTransform = layoutValue("text-transform", ::asString),
+                textSize = layoutValue("text-size", ::asNumber),
+                textMaxWidth = layoutValue("text-max-width", ::asNumber),
+                textLineHeight = layoutValue("text-line-height", ::asNumber),
+                textJustify = layoutValue("text-justify", ::asString),
+                textAnchor = layoutValue("text-anchor", ::asString),
+                textOffset = layoutValue("text-offset", ::asNumberList),
+                textRadialOffset = layoutValue("text-radial-offset", ::asNumber),
+                textRotate = layoutValue("text-rotate", ::asNumber),
+                textFont = layoutValue("text-font", ::asStringList),
+                iconImage = layoutValue("icon-image", { asIconImage(it, sprites) }, expandTokens = true, validate = { it is String }),
+                iconSize = layoutValue("icon-size", ::asNumber),
+                iconRotate = layoutValue("icon-rotate", ::asNumber),
+                iconOffset = layoutValue("icon-offset", ::asNumberList),
+                iconAnchor = layoutValue("icon-anchor", ::asString),
+                textColor = paintValue("text-color", ::asColor),
+                textOpacity = paintValue("text-opacity", ::asNumber),
+                textHaloColor = paintValue("text-halo-color", ::asColor),
+                textHaloWidth = paintValue("text-halo-width", ::asNumber),
+                textHaloBlur = paintValue("text-halo-blur", ::asNumber),
+                textTranslate = paintValue("text-translate", ::asNumberList),
+                iconOpacity = paintValue("icon-opacity", ::asNumber)
             )
             else -> null
         }
@@ -147,6 +162,41 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
         value: JsonElement?, locale: String, sprites: Map<String, ImageBitmap>, convert: (Any?) -> T?, expandTokens: Boolean = false
     ): CompiledValue<T>? = value?.let { compileValue(it.toValue(), locale, sprites, convert, expandTokens) }
 
+    private fun <T> compileProperty(
+        value: JsonElement?, path: String, layerId: String, issues: MutableList<StyleIssue>,
+        locale: String, sprites: Map<String, ImageBitmap>, convert: (Any?) -> T?, expandTokens: Boolean = false,
+        validate: (Any?) -> Boolean = { convert(it) != null }
+    ): CompiledValue<T>? {
+        value?.let { inspectLiteral(it, path, layerId, issues, validate, path.endsWith("/text-font")) }
+        return compileProperty(value, locale, sprites, convert, expandTokens)
+    }
+
+    private fun inspectLiteral(
+        value: JsonElement, path: String, layerId: String, issues: MutableList<StyleIssue>,
+        validate: (Any?) -> Boolean, allowStringArray: Boolean = false
+    ) {
+        val stops = (value as? JsonObject)?.get("stops") as? JsonArray
+        if (stops != null) {
+            stops.forEachIndexed { index, stop ->
+                val pair = stop as? JsonArray
+                if (pair?.size == 2) inspectLiteral(pair[1], "$path/stops/$index/1", layerId, issues, validate, allowStringArray)
+            }
+            return
+        }
+        if (value is JsonArray) {
+            val operator = (value.firstOrNull() as? JsonPrimitive)?.takeIf { it.isString }?.content
+            if (operator == "literal" && value.size == 2) {
+                inspectLiteral(value[1], "$path/1", layerId, issues, validate, allowStringArray)
+                return
+            }
+            if (operator != null && isStyleExpressionOperator(operator)) return
+            if (operator != null && !allowStringArray) return
+        }
+        if (!validate(value.toValue())) {
+            issues += StyleIssue(path, StyleIssue.Kind.INVALID, "Literal value is incompatible with this property", layerId)
+        }
+    }
+
     private fun <T> compileValue(
         expression: Any?, locale: String, sprites: Map<String, ImageBitmap>, convert: (Any?) -> T?, expandTokens: Boolean
     ): CompiledValue<T> {
@@ -176,17 +226,21 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
         else -> null
     }
 
-    private fun asNumber(value: Any?): Double? = (value as? Number)?.toDouble()
+    private fun asNumber(value: Any?): Double? = (value as? Number)?.toDouble()?.takeIf { it.isFinite() }
     private fun asBoolean(value: Any?): Boolean? = value as? Boolean
     private fun asString(value: Any?): String? = value as? String
 
     private fun asNumberList(value: Any?): List<Double>? {
         val values = value as? List<*> ?: return null
         if (values.any { it !is Number }) return null
-        return values.map { (it as Number).toDouble() }
+        return values.map { (it as Number).toDouble() }.takeIf { numbers -> numbers.all { it.isFinite() } }
     }
 
-    private fun asStringList(value: Any?): List<String>? = (value as? List<*>)?.filterIsInstance<String>()
+    private fun asStringList(value: Any?): List<String>? {
+        val values = value as? List<*> ?: return null
+        if (values.any { it !is String }) return null
+        return values.map { it as String }
+    }
 
     private fun asIconImage(value: Any?, sprites: Map<String, ImageBitmap>): ImageBitmap? = when (value) {
         is ImageBitmap -> value
