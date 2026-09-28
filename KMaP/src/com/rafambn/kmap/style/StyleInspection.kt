@@ -34,6 +34,10 @@ private val expressionOperators = setOf(
 )
 private val literalArrayProperties = setOf("line-dasharray", "text-offset", "text-translate", "icon-offset", "text-font")
 private val unsupportedArrayOperators = setOf("feature-state", "format", "is-supported-script", "let", "var", "properties", "line-progress")
+private val styleTokenPattern = Regex("\\{[^{}]+\\}")
+
+internal fun hasStyleTokens(value: JsonElement?): Boolean =
+    value is JsonPrimitive && value.isString && styleTokenPattern.containsMatchIn(value.content)
 
 internal fun inspectStyle(root: JsonObject): List<StyleIssue> {
     val issues = mutableListOf<StyleIssue>()
@@ -98,6 +102,10 @@ internal fun inspectStyle(root: JsonObject): List<StyleIssue> {
                 val propertyPath = "$path/$section/${name.pointerToken()}"
                 if (name !in supported) {
                     issue(propertyPath, StyleIssue.Kind.UNSUPPORTED, "'$name' is not rendered by $type layers", id)
+                } else if (type == "symbol" && section == "layout" &&
+                    (name == "text-field" || name == "icon-image") && hasStyleTokens(value)
+                ) {
+                    issue(propertyPath, StyleIssue.Kind.UNSUPPORTED, "Tokenized strings are not supported; use expressions", id)
                 } else {
                     inspectExpression(value, propertyPath, id, issues, name.takeIf { it in literalArrayProperties })
                 }

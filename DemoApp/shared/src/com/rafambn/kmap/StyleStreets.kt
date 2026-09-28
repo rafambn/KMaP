@@ -3668,7 +3668,7 @@ val styleStreets = """
       "minzoom": 0,
       "layout": {
         "symbol-placement": "point",
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Roboto Italic",
           "Noto Sans Italic"
@@ -3881,7 +3881,7 @@ val styleStreets = """
       "source-layer": "housenumber",
       "minzoom": 18,
       "layout": {
-        "text-field": "{housenumber}",
+        "text-field": ["to-string", ["get", "housenumber"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -4177,14 +4177,14 @@ val styleStreets = """
       "source-layer": "transportation_name",
       "minzoom": 16,
       "layout": {
-        "icon-image": "exit_{ref_length}",
+        "icon-image": ["image", ["concat", "exit_", ["to-string", ["get", "ref_length"]]]],
         "icon-rotation-alignment": "viewport",
         "icon-size": 1,
         "symbol-avoid-edges": true,
         "symbol-placement": "point",
         "symbol-spacing": 200,
         "symbol-z-order": "auto",
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -4228,7 +4228,7 @@ val styleStreets = """
       "source-layer": "transportation_name",
       "minzoom": 8,
       "layout": {
-        "icon-image": "road_{ref_length}",
+        "icon-image": ["image", ["concat", "road_", ["to-string", ["get", "ref_length"]]]],
         "icon-rotation-alignment": "viewport",
         "icon-size": 1,
         "symbol-avoid-edges": true,
@@ -4245,7 +4245,7 @@ val styleStreets = """
             ]
           ]
         },
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "match",
           [
@@ -4318,7 +4318,7 @@ val styleStreets = """
       "source-layer": "transportation_name",
       "minzoom": 7,
       "layout": {
-        "icon-image": "{network}_{ref_length}",
+        "icon-image": ["image", ["concat", ["to-string", ["get", "network"]], "_", ["to-string", ["get", "ref_length"]]]],
         "icon-rotation-alignment": "viewport",
         "icon-size": 1.1,
         "symbol-avoid-edges": true,
@@ -4340,7 +4340,7 @@ val styleStreets = """
           ]
         },
         "symbol-spacing": 200,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "match",
           [
@@ -4411,7 +4411,7 @@ val styleStreets = """
       "source-layer": "transportation_name",
       "minzoom": 7,
       "layout": {
-        "icon-image": "{network}_{ref_length}",
+        "icon-image": ["image", ["concat", ["to-string", ["get", "network"]], "_", ["to-string", ["get", "ref_length"]]]],
         "icon-rotation-alignment": "viewport",
         "icon-size": 1,
         "symbol-placement": {
@@ -4432,7 +4432,7 @@ val styleStreets = """
           ]
         },
         "symbol-spacing": 200,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "match",
           [
@@ -4507,7 +4507,7 @@ val styleStreets = """
       "source-layer": "transportation_name",
       "minzoom": 7,
       "layout": {
-        "icon-image": "{network}_{ref_length}",
+        "icon-image": ["image", ["concat", ["to-string", ["get", "network"]], "_", ["to-string", ["get", "ref_length"]]]],
         "icon-rotation-alignment": "viewport",
         "icon-size": 1,
         "symbol-placement": {
@@ -4528,7 +4528,7 @@ val styleStreets = """
           ]
         },
         "symbol-spacing": 200,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "match",
           [
@@ -4651,7 +4651,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -4885,7 +4885,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -5095,7 +5095,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -5316,7 +5316,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -5541,7 +5541,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -5797,7 +5797,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -6056,7 +6056,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -6306,7 +6306,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -6570,7 +6570,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -6744,7 +6744,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -6924,7 +6924,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "center",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -7134,7 +7134,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Medium",
           "Noto Sans Regular"
@@ -7331,7 +7331,7 @@ val styleStreets = """
       "source-layer": "aeroway",
       "minzoom": 15,
       "layout": {
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Roboto Medium",
           "Noto Sans Regular"
@@ -7413,22 +7413,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": {
-          "stops": [
-            [
-              8,
-              " "
-            ],
-            [
-              9,
-              "{iata}"
-            ],
-            [
-              12,
-              "{name:en}"
-            ]
-          ]
-        },
+        "text-field": ["step", ["zoom"], " ", 9, ["to-string", ["get", "iata"]], 12, ["to-string", ["get", "name:en"]]],
         "text-font": [
           "Roboto Medium",
           "Noto Sans Regular"
@@ -7834,7 +7819,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "bottom",
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Roboto Medium",
           "Noto Sans Regular"
@@ -7980,7 +7965,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "bottom",
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Roboto Medium",
           "Noto Sans Regular"
@@ -8051,7 +8036,7 @@ val styleStreets = """
           ]
         ],
         "text-allow-overlap": false,
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Roboto Medium",
           "Noto Sans Regular"
@@ -8199,7 +8184,7 @@ val styleStreets = """
       "source-layer": "place",
       "maxzoom": 1,
       "layout": {
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Roboto Medium",
           "Noto Sans Regular"

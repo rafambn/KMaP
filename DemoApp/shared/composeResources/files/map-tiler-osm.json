@@ -12906,7 +12906,7 @@
       "layout": {
         "symbol-avoid-edges": false,
         "text-allow-overlap": false,
-        "text-field": "{housenumber}",
+        "text-field": ["to-string", ["get", "housenumber"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -13136,7 +13136,7 @@
       "minzoom": 18,
       "layout": {
         "icon-allow-overlap": false,
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "symbol-sort-key": [
           "to-number",
           [
@@ -13377,7 +13377,7 @@
       "minzoom": 16,
       "layout": {
         "icon-allow-overlap": false,
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "symbol-sort-key": [
           "to-number",
           [
@@ -13459,7 +13459,7 @@
       "minzoom": 16,
       "layout": {
         "icon-allow-overlap": false,
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "symbol-sort-key": [
           "to-number",
           [
@@ -13626,7 +13626,7 @@
       "minzoom": 16,
       "layout": {
         "icon-allow-overlap": false,
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "symbol-sort-key": [
           "to-number",
           [
@@ -13712,7 +13712,7 @@
       "minzoom": 16,
       "layout": {
         "icon-allow-overlap": false,
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "symbol-sort-key": [
           "to-number",
           [
@@ -13809,7 +13809,7 @@
       "minzoom": 15,
       "layout": {
         "icon-allow-overlap": false,
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "symbol-sort-key": [
           "to-number",
           [
@@ -13985,7 +13985,7 @@
       "layout": {
         "icon-allow-overlap": false,
         "icon-ignore-placement": false,
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "symbol-sort-key": [
           "to-number",
           [
@@ -14126,7 +14126,7 @@
       "minzoom": 16,
       "layout": {
         "icon-allow-overlap": false,
-        "icon-image": "{class}",
+        "icon-image": ["image", ["to-string", ["get", "class"]]],
         "symbol-sort-key": [
           "to-number",
           [
@@ -14360,7 +14360,7 @@
       "minzoom": 17,
       "layout": {
         "icon-allow-overlap": false,
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "symbol-sort-key": [
           "to-number",
           [
@@ -14437,7 +14437,7 @@
       "minzoom": 16,
       "layout": {
         "icon-allow-overlap": false,
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "icon-size": 1,
         "symbol-sort-key": [
           "to-number",
@@ -14608,7 +14608,7 @@
       "layout": {
         "icon-allow-overlap": false,
         "icon-anchor": "bottom",
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "icon-keep-upright": true,
         "icon-offset": [
           0,
@@ -15325,7 +15325,7 @@
           "line"
         ],
         "symbol-spacing": 560,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -15403,7 +15403,7 @@
           "line"
         ],
         "symbol-spacing": 560,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -15481,7 +15481,7 @@
           "line"
         ],
         "symbol-spacing": 560,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -15559,7 +15559,7 @@
           "line"
         ],
         "symbol-spacing": 560,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -15637,7 +15637,7 @@
           "line"
         ],
         "symbol-spacing": 760,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -15843,7 +15843,7 @@
       "source-layer": "aeroway",
       "minzoom": 16.5,
       "layout": {
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Open Sans Semi Bold",
           "Noto Sans Regular"
@@ -16164,7 +16164,7 @@
       "minzoom": 12,
       "layout": {
         "icon-allow-overlap": false,
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "symbol-sort-key": [
           "to-number",
           [
@@ -16771,7 +16771,7 @@
           ]
         ],
         "text-anchor": "bottom",
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Open Sans Semi Bold",
           "Noto Sans Regular"
@@ -16856,7 +16856,7 @@
             "rank"
           ]
         ],
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Open Sans Semi Bold",
           "Noto Sans Bold"

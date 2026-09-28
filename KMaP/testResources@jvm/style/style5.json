@@ -3352,7 +3352,7 @@
       "layout": {
         "symbol-placement": "point",
         "symbol-spacing": 350,
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Noto Sans Italic"
         ],
@@ -3775,7 +3775,7 @@
           "line"
         ],
         "symbol-spacing": 200,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -3860,7 +3860,7 @@
           "line"
         ],
         "symbol-spacing": 200,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -4011,7 +4011,7 @@
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -4316,7 +4316,7 @@
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -4542,7 +4542,7 @@
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -4766,7 +4766,7 @@
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -4982,7 +4982,7 @@
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -5205,7 +5205,7 @@
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -5427,7 +5427,7 @@
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -5655,7 +5655,7 @@
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -5891,7 +5891,7 @@
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -6110,7 +6110,7 @@
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -6335,7 +6335,7 @@
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -6553,7 +6553,7 @@
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -6608,7 +6608,7 @@
           ]
         ],
         "text-anchor": "center",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Open Sans Regular",
           "Noto Sans Regular"
@@ -6708,7 +6708,7 @@
           ]
         ],
         "text-anchor": "center",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Open Sans Regular",
           "Noto Sans Regular"
@@ -6918,7 +6918,7 @@
           ]
         ],
         "text-anchor": "left",
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Open Sans Semi Bold",
           "Noto Sans Regular"
@@ -7121,7 +7121,7 @@
           ]
         ],
         "text-anchor": "left",
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Open Sans Semi Bold",
           "Noto Sans Regular"
@@ -7193,7 +7193,7 @@
           ]
         ],
         "text-allow-overlap": false,
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Open Sans Semi Bold",
           "Noto Sans Regular"
@@ -7348,7 +7348,7 @@
       "source-layer": "place",
       "maxzoom": 1,
       "layout": {
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Open Sans Semi Bold",
           "Noto Sans Regular"

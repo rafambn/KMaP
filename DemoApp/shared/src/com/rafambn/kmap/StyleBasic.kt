@@ -1357,7 +1357,7 @@ val styleBasic = """
             "rank"
           ]
         ],
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -1459,7 +1459,7 @@ val styleBasic = """
             "rank"
           ]
         ],
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -1511,7 +1511,7 @@ val styleBasic = """
             "rank"
           ]
         ],
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Noto Sans Bold"
         ],
@@ -1599,7 +1599,7 @@ val styleBasic = """
       "source-layer": "place",
       "maxzoom": 1,
       "layout": {
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Noto Sans Bold"
         ],

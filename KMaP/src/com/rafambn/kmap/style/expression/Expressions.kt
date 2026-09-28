@@ -183,7 +183,7 @@ internal fun evaluateLiteral(expression: List<*>): Any? {
 
 internal fun evaluateString(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): String? {
     if (expression.size != 2) return null
-    return evaluator.evaluate(expression[1], context)?.let(::styleValueToString)
+    return styleValueToString(evaluator.evaluate(expression[1], context))
 }
 
 internal fun evaluateTypeOf(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): String {

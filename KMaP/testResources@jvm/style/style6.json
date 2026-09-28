@@ -2532,7 +2532,7 @@
       "layout": {
         "symbol-placement": "point",
         "text-allow-overlap": false,
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Metropolis Semi Bold Italic",
           "Noto Sans Bold"
@@ -2938,7 +2938,7 @@
           ]
         ],
         "text-anchor": "center",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Metropolis Semi Bold",
           "Noto Sans Bold"
@@ -3078,7 +3078,7 @@
           ]
         ],
         "text-anchor": "center",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Metropolis Semi Bold",
           "Noto Sans Bold"
@@ -3307,7 +3307,7 @@
           ]
         ],
         "text-anchor": "center",
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Metropolis Semi Bold",
           "Noto Sans Bold"
@@ -3424,7 +3424,7 @@
             "rank"
           ]
         ],
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Metropolis Semi Bold",
           "Noto Sans Bold"
@@ -3587,7 +3587,7 @@
       "minzoom": 0,
       "maxzoom": 2,
       "layout": {
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Metropolis Semi Bold",
           "Noto Sans Bold"

@@ -169,6 +169,22 @@ val StyleInspectionTest by testSuite {
         assertFalse(result.style.layers.single().filter!!.evaluate(0.0, mapOf("class" to "rail"), "LineString", null))
     }
 
+    test("reports tokenized text and icon names without drawing placeholders") {
+        val result = StyleResolver().resolve("""{
+            "layers": [{"id": "places", "type": "symbol", "source-layer": "places",
+                "layout": {"text-field": "{name}", "icon-image": "road_{ref_length}"}}]
+        }""")
+
+        assertEquals(
+            setOf("/layers/0/layout/text-field", "/layers/0/layout/icon-image"),
+            result.issues.map { it.path }.toSet()
+        )
+        assertTrue(result.issues.all { it.kind == StyleIssue.Kind.UNSUPPORTED })
+        val layer = result.style!!.layers.single() as com.rafambn.kmap.style.compiled.CompiledSymbolLayer
+        assertNull(layer.textField)
+        assertNull(layer.iconImage)
+    }
+
     test("accepts modern filters with a literal left operand") {
         val result = StyleResolver().resolve("""{
             "layers": [{"id": "land", "type": "fill", "source-layer": "land",

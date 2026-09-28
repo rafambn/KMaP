@@ -138,7 +138,7 @@ val StyleExpressionCoverageTest by testSuite {
             assertEquals("42", evaluator.evaluate(listOf("to-string", 42), context))
             assertEquals("42", evaluator.evaluate(listOf("to-string", 42.0), context))
             assertNull(evaluator.evaluate(listOf("to-string"), context))
-            assertNull(evaluator.evaluate(listOf("to-string", null), context))
+            assertEquals("", evaluator.evaluate(listOf("to-string", null), context))
             assertEquals("object", evaluator.evaluate(listOf("typeof", Any()), context))
             assertEquals("4", evaluator.evaluate(listOf("concat", null, listOf("get", "absent"), 4), context))
             assertEquals("", evaluator.evaluate(listOf("concat"), context))

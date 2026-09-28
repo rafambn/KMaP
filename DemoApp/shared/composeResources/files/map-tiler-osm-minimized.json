@@ -12635,7 +12635,7 @@
       "source-layer": "housenumber",
       "minzoom": 17,
       "layout": {
-        "text-field": "{housenumber}",
+        "text-field": ["to-string", ["get", "housenumber"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -12848,7 +12848,7 @@
       "source-layer": "poi",
       "minzoom": 18,
       "layout": {
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "text-anchor": "top",
         "text-field": [
           "coalesce",
@@ -13044,7 +13044,7 @@
       "source-layer": "poi",
       "minzoom": 16,
       "layout": {
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "text-anchor": "top",
         "text-field": [
           "coalesce",
@@ -13116,7 +13116,7 @@
       "source-layer": "poi",
       "minzoom": 16,
       "layout": {
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "text-anchor": "top",
         "text-field": [
           "coalesce",
@@ -13259,7 +13259,7 @@
       "source-layer": "poi",
       "minzoom": 16,
       "layout": {
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "text-anchor": "top",
         "text-field": [
           "coalesce",
@@ -13332,7 +13332,7 @@
       "source-layer": "poi",
       "minzoom": 16,
       "layout": {
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "text-anchor": "top",
         "text-field": [
           "coalesce",
@@ -13416,7 +13416,7 @@
       "source-layer": "poi",
       "minzoom": 15,
       "layout": {
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "text-anchor": "top",
         "text-field": [
           "coalesce",
@@ -13568,7 +13568,7 @@
       "source-layer": "poi",
       "minzoom": 17,
       "layout": {
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "text-anchor": "top",
         "text-field": [
           "coalesce",
@@ -13696,7 +13696,7 @@
       "source-layer": "poi",
       "minzoom": 16,
       "layout": {
-        "icon-image": "{class}",
+        "icon-image": ["image", ["to-string", ["get", "class"]]],
         "text-anchor": "top",
         "text-field": [
           "coalesce",
@@ -13903,7 +13903,7 @@
       "source-layer": "poi",
       "minzoom": 17,
       "layout": {
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "text-anchor": "top",
         "text-field": [
           "coalesce",
@@ -13966,7 +13966,7 @@
       "source-layer": "poi",
       "minzoom": 16,
       "layout": {
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "icon-size": 1,
         "text-anchor": "top",
         "text-field": [
@@ -14111,7 +14111,7 @@
       "minzoom": 17,
       "layout": {
         "icon-anchor": "bottom",
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "icon-offset": [
           0,
           0
@@ -14720,7 +14720,7 @@
         "icon-anchor": "center",
         "icon-image": "road_tertiary",
         "icon-size": 1,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -14777,7 +14777,7 @@
         "icon-anchor": "center",
         "icon-image": "road_secondary",
         "icon-size": 1,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -14834,7 +14834,7 @@
         "icon-anchor": "center",
         "icon-image": "road_primary",
         "icon-size": 1,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -14891,7 +14891,7 @@
         "icon-anchor": "center",
         "icon-image": "road_trunk",
         "icon-size": 1,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -14948,7 +14948,7 @@
         "icon-anchor": "center",
         "icon-image": "road_motorway",
         "icon-size": 1,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -15131,7 +15131,7 @@
       "source-layer": "aeroway",
       "minzoom": 16.5,
       "layout": {
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Open Sans Semi Bold",
           "Noto Sans Regular"
@@ -15424,7 +15424,7 @@
       "source-layer": "poi",
       "minzoom": 12,
       "layout": {
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "text-anchor": "top",
         "text-field": [
           "coalesce",
@@ -15960,7 +15960,7 @@
         ],
         "icon-size": 1,
         "text-anchor": "bottom",
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Open Sans Semi Bold",
           "Noto Sans Regular"
@@ -16037,7 +16037,7 @@
       "minzoom": 2,
       "maxzoom": 12,
       "layout": {
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Open Sans Semi Bold",
           "Noto Sans Bold"

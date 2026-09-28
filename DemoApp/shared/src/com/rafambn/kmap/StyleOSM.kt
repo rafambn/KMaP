@@ -10492,7 +10492,7 @@ val styleOSM = """
       "layout": {
         "symbol-avoid-edges": false,
         "text-allow-overlap": false,
-        "text-field": "{housenumber}",
+        "text-field": ["to-string", ["get", "housenumber"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -10703,7 +10703,7 @@ val styleOSM = """
       "minzoom": 18,
       "layout": {
         "icon-allow-overlap": false,
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "symbol-sort-key": [
           "to-number",
           [
@@ -10919,7 +10919,7 @@ val styleOSM = """
       "minzoom": 16,
       "layout": {
         "icon-allow-overlap": false,
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "symbol-sort-key": [
           "to-number",
           [
@@ -10992,7 +10992,7 @@ val styleOSM = """
       "minzoom": 16,
       "layout": {
         "icon-allow-overlap": false,
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "symbol-sort-key": [
           "to-number",
           [
@@ -11143,7 +11143,7 @@ val styleOSM = """
       "minzoom": 16,
       "layout": {
         "icon-allow-overlap": false,
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "symbol-sort-key": [
           "to-number",
           [
@@ -11220,7 +11220,7 @@ val styleOSM = """
       "minzoom": 16,
       "layout": {
         "icon-allow-overlap": false,
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "symbol-sort-key": [
           "to-number",
           [
@@ -11305,7 +11305,7 @@ val styleOSM = """
       "minzoom": 15,
       "layout": {
         "icon-allow-overlap": false,
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "symbol-sort-key": [
           "to-number",
           [
@@ -11457,7 +11457,7 @@ val styleOSM = """
       "layout": {
         "icon-allow-overlap": false,
         "icon-ignore-placement": false,
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "symbol-sort-key": [
           "to-number",
           [
@@ -11571,7 +11571,7 @@ val styleOSM = """
       "minzoom": 16,
       "layout": {
         "icon-allow-overlap": false,
-        "icon-image": "{class}",
+        "icon-image": ["image", ["to-string", ["get", "class"]]],
         "symbol-sort-key": [
           "to-number",
           [
@@ -11792,7 +11792,7 @@ val styleOSM = """
       "minzoom": 17,
       "layout": {
         "icon-allow-overlap": false,
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "symbol-sort-key": [
           "to-number",
           [
@@ -11865,7 +11865,7 @@ val styleOSM = """
       "minzoom": 16,
       "layout": {
         "icon-allow-overlap": false,
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "icon-size": 1,
         "symbol-sort-key": [
           "to-number",
@@ -12010,7 +12010,7 @@ val styleOSM = """
       "layout": {
         "icon-allow-overlap": false,
         "icon-anchor": "bottom",
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "icon-keep-upright": true,
         "icon-offset": [
           0,
@@ -12647,7 +12647,7 @@ val styleOSM = """
           ]
         },
         "symbol-spacing": 560,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -12725,7 +12725,7 @@ val styleOSM = """
           ]
         },
         "symbol-spacing": 560,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -12803,7 +12803,7 @@ val styleOSM = """
           ]
         },
         "symbol-spacing": 560,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -12881,7 +12881,7 @@ val styleOSM = """
           ]
         },
         "symbol-spacing": 760,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -12949,18 +12949,7 @@ val styleOSM = """
         "symbol-z-order": "auto",
         "text-allow-overlap": false,
         "text-anchor": "top",
-        "text-field": {
-          "stops": [
-            [
-              8,
-              " "
-            ],
-            [
-              11,
-              "{name}"
-            ]
-          ]
-        },
+        "text-field": ["step", ["zoom"], " ", 11, ["to-string", ["get", "name"]]],
         "text-font": [
           "Open Sans Italic",
           "Noto Sans Italic"
@@ -13066,7 +13055,7 @@ val styleOSM = """
       "source-layer": "aeroway",
       "minzoom": 16.5,
       "layout": {
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Open Sans Semi Bold",
           "Noto Sans Regular"
@@ -13360,7 +13349,7 @@ val styleOSM = """
       "minzoom": 12,
       "layout": {
         "icon-allow-overlap": false,
-        "icon-image": "{subclass}",
+        "icon-image": ["image", ["to-string", ["get", "subclass"]]],
         "symbol-sort-key": [
           "to-number",
           [
@@ -13445,18 +13434,7 @@ val styleOSM = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": {
-          "stops": [
-            [
-              6,
-              " "
-            ],
-            [
-              12,
-              "{name} {ele}m"
-            ]
-          ]
-        },
+        "text-field": ["step", ["zoom"], " ", 12, ["concat", ["to-string", ["get", "name"]], " ", ["to-string", ["get", "ele"]], "m"]],
         "text-font": [
           "Open Sans Regular",
           "Noto Sans Regular"
@@ -13503,18 +13481,7 @@ val styleOSM = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": {
-          "stops": [
-            [
-              6,
-              " "
-            ],
-            [
-              12,
-              "{name} {ele}m"
-            ]
-          ]
-        },
+        "text-field": ["step", ["zoom"], " ", 12, ["concat", ["to-string", ["get", "name"]], " ", ["to-string", ["get", "ele"]], "m"]],
         "text-font": [
           "Open Sans Regular",
           "Noto Sans Regular"
@@ -13875,7 +13842,7 @@ val styleOSM = """
           ]
         ],
         "text-anchor": "bottom",
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Open Sans Semi Bold",
           "Noto Sans Regular"
@@ -13947,7 +13914,7 @@ val styleOSM = """
             "rank"
           ]
         ],
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Open Sans Semi Bold",
           "Noto Sans Bold"

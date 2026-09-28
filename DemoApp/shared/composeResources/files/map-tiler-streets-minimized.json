@@ -14057,7 +14057,7 @@
       "maxzoom": 12,
       "layout": {
         "text-anchor": "center",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Italic",
           "Noto Sans Italic"
@@ -14141,7 +14141,7 @@
       "source-layer": "building_number",
       "minzoom": 18,
       "layout": {
-        "text-field": "{number}",
+        "text-field": ["to-string", ["get", "number"]],
         "text-font": [
           "Roboto Mono Medium",
           "Noto Sans Medium"
@@ -14492,7 +14492,7 @@
           1.6
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -14533,7 +14533,7 @@
       "source-layer": "road_exit",
       "minzoom": 14,
       "layout": {
-        "icon-image": "road_{ref_length}",
+        "icon-image": ["image", ["concat", "road_", ["to-string", ["get", "ref_length"]]]],
         "icon-size": [
           "interpolate",
           [
@@ -14547,7 +14547,7 @@
           22,
           1.2
         ],
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Roboto Mono Medium",
           "Noto Sans Medium"
@@ -14686,7 +14686,7 @@
           16,
           1.2
         ],
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "match",
           [
@@ -16361,7 +16361,7 @@
           ]
         ],
         "icon-size": 1,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "match",
           [
@@ -16580,7 +16580,7 @@
           ]
         ],
         "icon-size": 1,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "match",
           [
@@ -16979,7 +16979,7 @@
         "icon-image": "park",
         "icon-size": 1,
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Italic",
           "Noto Sans Italic"
@@ -17094,7 +17094,7 @@
         ],
         "icon-size": 1,
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -17313,7 +17313,7 @@
           1.2
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -17579,7 +17579,7 @@
         ],
         "icon-size": 1,
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -17811,7 +17811,7 @@
           1.4
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -18430,7 +18430,7 @@
           1.2
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Medium",
           "Noto Sans Medium"
@@ -18585,7 +18585,7 @@
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -18853,7 +18853,7 @@
         ],
         "icon-size": 1,
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -19028,7 +19028,7 @@
         ],
         "icon-size": 1,
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -19270,7 +19270,7 @@
         ],
         "icon-size": 1,
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -19488,7 +19488,7 @@
           1
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "case",
           [
@@ -19824,7 +19824,7 @@
         "icon-anchor": "center",
         "icon-image": "park",
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -19930,7 +19930,7 @@
         ],
         "icon-size": 1,
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -20154,7 +20154,7 @@
           1
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "case",
           [
@@ -20503,7 +20503,7 @@
           1.4
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -20588,7 +20588,7 @@
       "minzoom": 10,
       "layout": {
         "text-anchor": "center",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -20666,7 +20666,7 @@
       "minzoom": 9,
       "layout": {
         "text-anchor": "center",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "match",
           [
@@ -21172,7 +21172,7 @@
           1.4
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -21290,7 +21290,7 @@
         ],
         "icon-size": 1,
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -22024,7 +22024,7 @@
           0.4
         ],
         "text-anchor": "center",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -24160,7 +24160,7 @@
       "source-layer": "continent_label",
       "maxzoom": 2,
       "layout": {
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Roboto Bold",
           "Noto Sans Bold"

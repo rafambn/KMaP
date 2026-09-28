@@ -20,6 +20,7 @@ val RealWorldStyleIntegrationTest by testSuite {
             if (!file.exists()) continue
             val result = resolver.resolve(file.readText())
             assertNotNull(result.style, "${file.name}: ${result.issues}")
+            assertTrue(result.issues.none { it.message.startsWith("Tokenized strings") }, "${file.name}: ${result.issues}")
             loaded++
         }
         assertTrue(loaded > 0)

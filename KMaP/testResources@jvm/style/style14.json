@@ -803,7 +803,7 @@
         "symbol-avoid-edges": true,
         "symbol-placement": "line",
         "text-allow-overlap": false,
-        "text-field": "{height}",
+        "text-field": ["to-string", ["get", "height"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -883,7 +883,7 @@
         "symbol-avoid-edges": true,
         "symbol-placement": "line",
         "text-allow-overlap": false,
-        "text-field": "{height}",
+        "text-field": ["to-string", ["get", "height"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -4185,7 +4185,7 @@
       "minzoom": 0,
       "layout": {
         "symbol-placement": "point",
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Roboto Italic",
           "Noto Sans Italic"
@@ -5287,7 +5287,7 @@
           ]
         ],
         "text-anchor": "center",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -5502,7 +5502,7 @@
           ]
         ],
         "text-anchor": "center",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -6256,7 +6256,7 @@
           ]
         ],
         "text-anchor": "bottom",
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Roboto Medium",
           "Noto Sans Regular"
@@ -6469,7 +6469,7 @@
           ]
         ],
         "text-allow-overlap": false,
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Roboto Medium",
           "Noto Sans Regular"
@@ -6624,7 +6624,7 @@
       "source-layer": "place",
       "maxzoom": 1,
       "layout": {
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Roboto Medium",
           "Noto Sans Regular"

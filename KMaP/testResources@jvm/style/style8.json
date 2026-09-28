@@ -1535,7 +1535,7 @@
       "layout": {
         "symbol-avoid-edges": false,
         "symbol-placement": "line",
-        "text-field": "{depth}",
+        "text-field": ["to-string", ["get", "depth"]],
         "text-font": [
           "Libre Baskerville Italic",
           "Noto Serif Italic"
@@ -2336,7 +2336,7 @@
         "symbol-avoid-edges": true,
         "symbol-placement": "line",
         "text-allow-overlap": false,
-        "text-field": "{height}",
+        "text-field": ["to-string", ["get", "height"]],
         "text-font": [
           "Roboto Medium Italic",
           "Noto Sans Italic"
@@ -2416,7 +2416,7 @@
         "symbol-avoid-edges": true,
         "symbol-placement": "line",
         "text-allow-overlap": false,
-        "text-field": "{height}",
+        "text-field": ["to-string", ["get", "height"]],
         "text-font": [
           "Roboto Medium Italic",
           "Noto Sans Italic"

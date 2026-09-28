@@ -12,20 +12,20 @@ import de.infix.testBalloon.framework.core.testSuite
 import kotlin.test.*
 
 val StyleResolverTest by testSuite {
-    test("expands exact feature tokens in text and icon names") {
+    test("resolves feature expressions in text and icon names") {
         val rawStyleJson = """
             {
                 "version": 8,
                 "sources": {"tiles": {"type": "vector"}},
                 "layers": [
                     {
-                        "id": "tokens",
+                        "id": "properties",
                         "type": "symbol",
                         "source": "tiles",
                         "source-layer": "places",
                         "layout": {
-                            "text-field": "{name}/{name:pt}/{ref}/{missing}",
-                            "icon-image": "road_{ref_length}"
+                            "text-field": ["concat", ["to-string", ["get", "name"]], "/", ["to-string", ["get", "name:pt"]], "/", ["to-string", ["get", "ref"]], "/", ["to-string", ["get", "missing"]]],
+                            "icon-image": ["image", ["concat", "road_", ["to-string", ["get", "ref_length"]]]]
                         }
                     },
                     {

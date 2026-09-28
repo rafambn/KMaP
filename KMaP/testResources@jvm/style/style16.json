@@ -292,7 +292,7 @@
       "layout": {
         "symbol-placement": "line",
         "symbol-spacing": 500,
-        "text-field": "{name:latin}\n{name:nonlatin}",
+        "text-field": ["concat", ["to-string", ["get", "name:latin"]], "\n", ["to-string", ["get", "name:nonlatin"]]],
         "text-font": [
           "Metropolis Medium Italic",
           "Noto Sans Italic"
@@ -1496,7 +1496,7 @@
       "layout": {
         "symbol-placement": "line",
         "symbol-spacing": 350,
-        "text-field": "{name:latin} {name:nonlatin}",
+        "text-field": ["concat", ["to-string", ["get", "name:latin"]], " ", ["to-string", ["get", "name:nonlatin"]]],
         "text-font": [
           "Metropolis Regular",
           "Noto Sans Regular"
@@ -1548,7 +1548,7 @@
       "layout": {
         "symbol-placement": "line",
         "symbol-spacing": 350,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Metropolis Light",
           "Noto Sans Regular"
@@ -1763,7 +1763,7 @@
       ],
       "layout": {
         "text-anchor": "center",
-        "text-field": "{name:latin}\n{name:nonlatin}",
+        "text-field": ["concat", ["to-string", ["get", "name:latin"]], "\n", ["to-string", ["get", "name:nonlatin"]]],
         "text-font": [
           "Metropolis Regular",
           "Noto Sans Regular"
@@ -1813,7 +1813,7 @@
       ],
       "layout": {
         "text-anchor": "center",
-        "text-field": "{name:latin}\n{name:nonlatin}",
+        "text-field": ["concat", ["to-string", ["get", "name:latin"]], "\n", ["to-string", ["get", "name:nonlatin"]]],
         "text-font": [
           "Metropolis Regular",
           "Noto Sans Regular"
@@ -1864,7 +1864,7 @@
       "layout": {
         "icon-size": 0.4,
         "text-anchor": "left",
-        "text-field": "{name:latin}\n{name:nonlatin}",
+        "text-field": ["concat", ["to-string", ["get", "name:latin"]], "\n", ["to-string", ["get", "name:nonlatin"]]],
         "text-font": [
           "Metropolis Regular",
           "Noto Sans Regular"
@@ -1933,7 +1933,7 @@
           8,
           "center"
         ],
-        "text-field": "{name:latin}\n{name:nonlatin}",
+        "text-field": ["concat", ["to-string", ["get", "name:latin"]], "\n", ["to-string", ["get", "name:nonlatin"]]],
         "text-font": [
           "Metropolis Regular",
           "Noto Sans Regular"
@@ -2010,7 +2010,7 @@
           8,
           "center"
         ],
-        "text-field": "{name:latin}\n{name:nonlatin}",
+        "text-field": ["concat", ["to-string", ["get", "name:latin"]], "\n", ["to-string", ["get", "name:nonlatin"]]],
         "text-font": [
           "Metropolis Regular",
           "Noto Sans Regular"
@@ -2087,7 +2087,7 @@
           8,
           "center"
         ],
-        "text-field": "{name:latin}\n{name:nonlatin}",
+        "text-field": ["concat", ["to-string", ["get", "name:latin"]], "\n", ["to-string", ["get", "name:nonlatin"]]],
         "text-font": [
           "Metropolis Regular",
           "Noto Sans Regular"
@@ -2137,7 +2137,7 @@
         ]
       ],
       "layout": {
-        "text-field": "{name:latin}\n{name:nonlatin}",
+        "text-field": ["concat", ["to-string", ["get", "name:latin"]], "\n", ["to-string", ["get", "name:nonlatin"]]],
         "text-font": [
           "Metropolis Regular",
           "Noto Sans Regular"
@@ -2188,7 +2188,7 @@
         ]
       ],
       "layout": {
-        "text-field": "{name:latin}",
+        "text-field": ["to-string", ["get", "name:latin"]],
         "text-font": [
           "Metropolis Light Italic",
           "Noto Sans Italic"
@@ -2255,7 +2255,7 @@
         ]
       ],
       "layout": {
-        "text-field": "{name:latin}",
+        "text-field": ["to-string", ["get", "name:latin"]],
         "text-font": [
           "Metropolis Regular",
           "Noto Sans Regular"
@@ -2323,7 +2323,7 @@
       ],
       "layout": {
         "text-anchor": "center",
-        "text-field": "{name:latin}",
+        "text-field": ["to-string", ["get", "name:latin"]],
         "text-font": [
           "Metropolis Regular",
           "Noto Sans Regular"

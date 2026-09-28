@@ -3365,7 +3365,7 @@
       "maxzoom": 22,
       "layout": {
         "symbol-placement": "point",
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Frutiger Neue Medium Italic",
           "Noto Sans Medium Italic"
@@ -3781,7 +3781,7 @@
           ]
         ],
         "text-anchor": "bottom",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Noto Sans Condensed Regular",
           "Noto Sans Regular"
@@ -3952,7 +3952,7 @@
           ]
         ],
         "text-anchor": "center",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Noto Sans Condensed Regular",
           "Noto Sans Regular"
@@ -4165,7 +4165,7 @@
           ]
         ],
         "text-anchor": "center",
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Noto Sans Semi Condensed Semi Bold",
           "Noto Sans Semi Bold"
@@ -4252,7 +4252,7 @@
           ]
         ],
         "text-anchor": "center",
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Noto Sans Semi Condensed Semi Bold",
           "Noto Sans Semi Bold"
@@ -4425,7 +4425,7 @@
       "maxzoom": 3,
       "layout": {
         "symbol-placement": "point",
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Frutiger Neue Medium Italic",
           "Noto Sans Medium Italic"
@@ -4517,7 +4517,7 @@
       "maxzoom": 3,
       "layout": {
         "symbol-placement": "point",
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Frutiger Neue Medium Italic",
           "Noto Sans Medium Italic"

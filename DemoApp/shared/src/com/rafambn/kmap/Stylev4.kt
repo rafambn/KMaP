@@ -9803,7 +9803,7 @@ val styleV4 = """
       "layout": {
         "symbol-z-order": "viewport-y",
         "text-anchor": "center",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Italic",
           "Noto Sans Italic"
@@ -9888,7 +9888,7 @@ val styleV4 = """
       "source-layer": "building_number",
       "minzoom": 18,
       "layout": {
-        "text-field": "{number}",
+        "text-field": ["to-string", ["get", "number"]],
         "text-font": [
           "Roboto Mono Medium",
           "Noto Sans Medium"
@@ -10214,7 +10214,7 @@ val styleV4 = """
           500
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -10268,7 +10268,7 @@ val styleV4 = """
       "source-layer": "road_exit",
       "minzoom": 14,
       "layout": {
-        "icon-image": "road_{ref_length}",
+        "icon-image": ["image", ["concat", "road_", ["to-string", ["get", "ref_length"]]]],
         "icon-size": [
           "interpolate",
           [
@@ -10282,7 +10282,7 @@ val styleV4 = """
           22,
           1.2
         ],
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Roboto Mono Medium",
           "Noto Sans Medium"
@@ -10436,7 +10436,7 @@ val styleV4 = """
           22,
           800
         ],
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "match",
           [
@@ -13569,7 +13569,7 @@ val styleV4 = """
         "icon-size": 1,
         "symbol-placement": "line",
         "symbol-spacing": 400,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "match",
           [
@@ -13857,7 +13857,7 @@ val styleV4 = """
         "icon-size": 1,
         "symbol-placement": "line",
         "symbol-spacing": 400,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "match",
           [
@@ -14137,7 +14137,7 @@ val styleV4 = """
           3.8
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -14360,7 +14360,7 @@ val styleV4 = """
           2
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -14412,7 +14412,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Italic",
           "Noto Sans Italic"
@@ -14600,7 +14600,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -14896,7 +14896,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -15146,7 +15146,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -15846,7 +15846,7 @@ val styleV4 = """
         ],
         "symbol-z-order": "auto",
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "literal",
           [
@@ -16103,7 +16103,7 @@ val styleV4 = """
           3
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -16445,7 +16445,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -16652,7 +16652,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -16942,7 +16942,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -17204,7 +17204,7 @@ val styleV4 = """
         ],
         "symbol-z-order": "auto",
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "case",
           [
@@ -17570,7 +17570,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -17684,7 +17684,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -17930,7 +17930,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "case",
           [
@@ -18311,7 +18311,7 @@ val styleV4 = """
         ],
         "text-allow-overlap": false,
         "text-anchor": "center",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -18397,7 +18397,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "center",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "match",
           [
@@ -18594,7 +18594,7 @@ val styleV4 = """
       "maxzoom": 22,
       "layout": {
         "text-anchor": "center",
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Roboto Medium",
           "Noto Sans Regular"
@@ -18723,7 +18723,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "match",
           [
@@ -18881,7 +18881,7 @@ val styleV4 = """
           1.4
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -19097,7 +19097,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "match",
           [
@@ -19398,7 +19398,7 @@ val styleV4 = """
         ],
         "symbol-z-order": "auto",
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "case",
           [
@@ -19680,7 +19680,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "center",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -21676,7 +21676,7 @@ val styleV4 = """
       "source-layer": "continent_label",
       "maxzoom": 2,
       "layout": {
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Roboto Bold",
           "Noto Sans Bold"

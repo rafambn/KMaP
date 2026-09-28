@@ -1159,7 +1159,7 @@
       "layout": {
         "symbol-placement": "point",
         "symbol-spacing": 350,
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Noto Sans Italic"
         ],
@@ -1272,7 +1272,7 @@
       "minzoom": 11,
       "layout": {
         "symbol-placement": "point",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Noto Sans Italic"
         ],
@@ -1302,7 +1302,7 @@
           ]
         ],
         "text-anchor": "center",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Nunito Semi Bold",
           "Noto Sans Regular"
@@ -1447,7 +1447,7 @@
           ]
         ],
         "text-anchor": "center",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Nunito Semi Bold",
           "Noto Sans Regular"
@@ -1674,7 +1674,7 @@
             "rank"
           ]
         ],
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Nunito Bold",
           "Noto Sans Bold"
@@ -1779,7 +1779,7 @@
           ]
         ],
         "text-allow-overlap": false,
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Nunito Bold",
           "Noto Sans Bold"
@@ -1838,7 +1838,7 @@
       "minzoom": 0,
       "maxzoom": 2,
       "layout": {
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Nunito Extra Bold",
           "Noto Sans Bold"

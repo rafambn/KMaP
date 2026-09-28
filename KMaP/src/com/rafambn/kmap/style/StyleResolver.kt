@@ -14,7 +14,6 @@ import com.rafambn.kmap.style.compiled.CompiledValue
 import com.rafambn.kmap.style.evaluation.EvaluationContext
 import com.rafambn.kmap.style.evaluation.ExpressionEvaluator
 import com.rafambn.kmap.style.expression.parseColor
-import com.rafambn.kmap.style.expression.styleValueToString
 import com.rafambn.kmap.style.model.Style
 import com.rafambn.kmap.style.model.StyleLayer
 import kotlinx.serialization.SerializationException
@@ -23,7 +22,6 @@ import kotlinx.serialization.json.*
 class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvaluator()) {
 
     private val json = Json { ignoreUnknownKeys = true }
-    private val tokenPattern = Regex("\\{([^{}]+)\\}")
 
     fun resolve(
         rawJson: String,
@@ -69,11 +67,12 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
             compileProperty(layer.paint?.get(name), "/layers/$index/paint/$name", layer.id, issues, locale, sprites, convert)
 
         fun <T> layoutValue(
-            name: String, convert: (Any?) -> T?, expandTokens: Boolean = false,
-            validate: (Any?) -> Boolean = { convert(it) != null }
-        ): CompiledValue<T>? = compileProperty(
-            layer.layout?.get(name), "/layers/$index/layout/$name", layer.id, issues, locale, sprites, convert, expandTokens, validate
-        )
+            name: String, convert: (Any?) -> T?, validate: (Any?) -> Boolean = { convert(it) != null }
+        ): CompiledValue<T>? {
+            val value = layer.layout?.get(name)
+            if ((name == "text-field" || name == "icon-image") && hasStyleTokens(value)) return null
+            return compileProperty(value, "/layers/$index/layout/$name", layer.id, issues, locale, sprites, convert, validate)
+        }
 
         val filter = layer.filter?.let { elements ->
             if (hasLegacyFilterSyntax(JsonArray(elements))) {
@@ -115,7 +114,7 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
             )
             "symbol" -> CompiledSymbolLayer(
                 layer.id, layer.sourceLayer.orEmpty(), minZoom, maxZoom, filter, visibility,
-                textField = layoutValue("text-field", ::asString, expandTokens = true),
+                textField = layoutValue("text-field", ::asString),
                 textTransform = layoutValue("text-transform", ::asString),
                 textSize = layoutValue("text-size", ::asNumber),
                 textMaxWidth = layoutValue("text-max-width", ::asNumber),
@@ -126,7 +125,7 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
                 textRadialOffset = layoutValue("text-radial-offset", ::asNumber),
                 textRotate = layoutValue("text-rotate", ::asNumber),
                 textFont = layoutValue("text-font", ::asStringList),
-                iconImage = layoutValue("icon-image", { asIconImage(it, sprites) }, expandTokens = true, validate = { it is String }),
+                iconImage = layoutValue("icon-image", { asIconImage(it, sprites) }, validate = { it is String }),
                 iconSize = layoutValue("icon-size", ::asNumber),
                 iconRotate = layoutValue("icon-rotate", ::asNumber),
                 iconOffset = layoutValue("icon-offset", ::asNumberList),
@@ -168,16 +167,16 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
     }
 
     private fun <T> compileProperty(
-        value: JsonElement?, locale: String, sprites: Map<String, ImageBitmap>, convert: (Any?) -> T?, expandTokens: Boolean = false
-    ): CompiledValue<T>? = value?.let { compileValue(it.toValue(), locale, sprites, convert, expandTokens) }
+        value: JsonElement?, locale: String, sprites: Map<String, ImageBitmap>, convert: (Any?) -> T?
+    ): CompiledValue<T>? = value?.let { compileValue(it.toValue(), locale, sprites, convert) }
 
     private fun <T> compileProperty(
         value: JsonElement?, path: String, layerId: String, issues: MutableList<StyleIssue>,
-        locale: String, sprites: Map<String, ImageBitmap>, convert: (Any?) -> T?, expandTokens: Boolean = false,
+        locale: String, sprites: Map<String, ImageBitmap>, convert: (Any?) -> T?,
         validate: (Any?) -> Boolean = { convert(it) != null }
     ): CompiledValue<T>? {
         value?.let { inspectLiteral(it, path, layerId, issues, validate, path.endsWith("/text-font")) }
-        return compileProperty(value, locale, sprites, convert, expandTokens)
+        return compileProperty(value, locale, sprites, convert)
     }
 
     private fun inspectLiteral(
@@ -200,17 +199,12 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
     }
 
     private fun <T> compileValue(
-        expression: Any?, locale: String, sprites: Map<String, ImageBitmap>, convert: (Any?) -> T?, expandTokens: Boolean
+        expression: Any?, locale: String, sprites: Map<String, ImageBitmap>, convert: (Any?) -> T?
     ): CompiledValue<T> {
-        val replaceTokens = expandTokens && expression is String && tokenPattern.containsMatchIn(expression)
         return CompiledValue(
             evaluator = { zoomLevel, featureProperties, featureId, geometryType ->
                 val context = EvaluationContext(featureProperties, geometryType, zoomLevel, featureId, locale, sprites)
-                val result = evaluator.evaluate(expression, context)
-                val value = if (replaceTokens && result is String) tokenPattern.replace(result) { match ->
-                    styleValueToString(featureProperties[match.groupValues[1]])
-                } else result
-                convert(value)
+                convert(evaluator.evaluate(expression, context))
             }
         )
     }
