@@ -97,6 +97,35 @@ val VectorTileCanvasTest by testSuite {
         } })
     }
 
+    test("symbol layout uses integer zoom and text paint uses fractional zoom") {
+        val style = StyleResolver().resolve("""{
+            "layers": [{"id": "label", "type": "symbol", "source-layer": "places",
+                "layout": {
+                    "text-field": ["step", ["zoom"], "", 4, "A", 4.3, ""],
+                    "text-size": ["step", ["zoom"], 1, 4, 30]
+                },
+                "paint": {
+                    "text-color": ["interpolate", ["linear"], ["zoom"], 4, "#ff0000", 5, "#0000ff"]
+                }}]
+        }""").style!!
+        val bitmap = ImageBitmap(128, 64)
+        val canvas = Canvas(bitmap)
+
+        CanvasDrawScope().draw(Density(1f), LayoutDirection.Ltr, canvas, Size(128f, 64f)) {
+            drawRenderFeature(
+                canvas,
+                OptimizedRenderFeature(OptimizedGeometry.Point(listOf(64f to 32f)), emptyMap()),
+                createFontFamilyResolver(), Density(1f), style.layers.single(),
+                4.5, 1f, 0f, 1f, 1f, 1f
+            )
+        }
+
+        val pixels = bitmap.toPixelMap()
+        assertTrue((0 until 128).any { x -> (0 until 64).any { y ->
+            pixels[x, y].let { it.alpha > 0.5f && it.red > 0.3f && it.blue > 0.3f && it.green < 0.1f }
+        } })
+    }
+
     test("text opacity fades the halo") {
         val style = StyleResolver().resolve(
             Json.encodeToString(Style.serializer(), Style(

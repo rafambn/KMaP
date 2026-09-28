@@ -31,6 +31,25 @@ val StyleInspectionTest by testSuite {
         )
     }
 
+    test("reports invalid values even when a missing source-layer omits the layer") {
+        val result = StyleResolver().resolve("""{
+            "layers": [
+                {"id": "land", "type": "fill", "paint": {"fill-opacity": "half"}},
+                {"id": "labels", "type": "symbol", "layout": {"text-font": ["Noto Sans", 42]}}
+            ]
+        }""")
+
+        assertTrue(result.style?.layers?.isEmpty() == true)
+        assertEquals(
+            setOf(
+                "/layers/0/source-layer", "/layers/0/paint/fill-opacity",
+                "/layers/1/source-layer", "/layers/1/layout/text-font"
+            ),
+            result.issues.map { it.path }.toSet()
+        )
+        assertEquals(2, result.issues.count { it.kind == StyleIssue.Kind.INVALID })
+    }
+
     test("reports unsupported fields before JSON decoding drops them") {
         val result = StyleResolver().resolve("""{
             "version": 8,

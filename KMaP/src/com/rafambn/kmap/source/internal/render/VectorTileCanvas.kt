@@ -500,9 +500,9 @@ private fun DrawScope.drawSymbolFeature(
     featureId: Long?,
 ) {
     drawIconSymbol(canvas, geometry, properties, compiledStyleLayer, zoom, textScale, rotationDegrees, screenScale, featureId)
-    val text = compiledStyleLayer.textField?.evaluate(zoom, properties, featureId)
+    val text = compiledStyleLayer.textField?.evaluate(zoom.toInt().toDouble(), properties, featureId)
     text?.let {
-        drawTextSymbol(canvas, geometry, properties, fontResolver, density, compiledStyleLayer, glyphs, 1.0, it, textScale, rotationDegrees, featureId)
+        drawTextSymbol(canvas, geometry, properties, fontResolver, density, compiledStyleLayer, glyphs, zoom, it, textScale, rotationDegrees, featureId)
     }
 }
 
@@ -561,34 +561,35 @@ private fun DrawScope.drawTextSymbol(
     density: Density,
     compiledStyleLayer: CompiledSymbolLayer,
     glyphs: Map<String, FontFamily>,
-    zoomLevel: Double,
+    zoom: Double,
     text: String,
     textScale: Float,
     rotationDegrees: Float,
     featureId: Long?,
 ) {
-    val transform = compiledStyleLayer.textTransform?.evaluate(zoomLevel, properties, featureId) ?: "none"
-    val size = compiledStyleLayer.textSize?.evaluate(zoomLevel, properties, featureId) ?: 16.0
-    val textColor = compiledStyleLayer.textColor?.evaluate(zoomLevel, properties, featureId) ?: Color.Black
-    val opacity = compiledStyleLayer.textOpacity?.evaluate(zoomLevel, properties, featureId) ?: 1.0
+    val layoutZoom = zoom.toInt().toDouble()
+    val transform = compiledStyleLayer.textTransform?.evaluate(layoutZoom, properties, featureId) ?: "none"
+    val size = compiledStyleLayer.textSize?.evaluate(layoutZoom, properties, featureId) ?: 16.0
+    val textColor = compiledStyleLayer.textColor?.evaluate(zoom, properties, featureId) ?: Color.Black
+    val opacity = compiledStyleLayer.textOpacity?.evaluate(zoom, properties, featureId) ?: 1.0
 
-    val haloColor = compiledStyleLayer.textHaloColor?.evaluate(zoomLevel, properties, featureId)
-    val haloWidth = compiledStyleLayer.textHaloWidth?.evaluate(zoomLevel, properties, featureId) ?: 0.0
-    val haloBlur = compiledStyleLayer.textHaloBlur?.evaluate(zoomLevel, properties, featureId) ?: 0.0
+    val haloColor = compiledStyleLayer.textHaloColor?.evaluate(zoom, properties, featureId)
+    val haloWidth = compiledStyleLayer.textHaloWidth?.evaluate(zoom, properties, featureId) ?: 0.0
+    val haloBlur = compiledStyleLayer.textHaloBlur?.evaluate(zoom, properties, featureId) ?: 0.0
 
-    val maxWidth = compiledStyleLayer.textMaxWidth?.evaluate(zoomLevel, properties, featureId)
-    val lineHeight = compiledStyleLayer.textLineHeight?.evaluate(zoomLevel, properties, featureId)
-    val justify = compiledStyleLayer.textJustify?.evaluate(zoomLevel, properties, featureId) ?: "center"
+    val maxWidth = compiledStyleLayer.textMaxWidth?.evaluate(layoutZoom, properties, featureId)
+    val lineHeight = compiledStyleLayer.textLineHeight?.evaluate(layoutZoom, properties, featureId)
+    val justify = compiledStyleLayer.textJustify?.evaluate(layoutZoom, properties, featureId) ?: "center"
 
-    val anchor = compiledStyleLayer.textAnchor?.evaluate(zoomLevel, properties, featureId) ?: "center"
-    val offset = compiledStyleLayer.textOffset?.evaluate(zoomLevel, properties, featureId) ?: listOf(0.0, 0.0)
-    val radialOffset = compiledStyleLayer.textRadialOffset?.evaluate(zoomLevel, properties, featureId)
-    val translate = compiledStyleLayer.textTranslate?.evaluate(zoomLevel, properties, featureId) ?: listOf(0.0, 0.0)
-    val rotate = compiledStyleLayer.textRotate?.evaluate(zoomLevel, properties, featureId)
+    val anchor = compiledStyleLayer.textAnchor?.evaluate(layoutZoom, properties, featureId) ?: "center"
+    val offset = compiledStyleLayer.textOffset?.evaluate(layoutZoom, properties, featureId) ?: listOf(0.0, 0.0)
+    val radialOffset = compiledStyleLayer.textRadialOffset?.evaluate(layoutZoom, properties, featureId)
+    val translate = compiledStyleLayer.textTranslate?.evaluate(zoom, properties, featureId) ?: listOf(0.0, 0.0)
+    val rotate = compiledStyleLayer.textRotate?.evaluate(layoutZoom, properties, featureId)
 
     val finalSize = (size * textScale).sp
     val emSize = size.toFloat() * textScale
-    val fontNames = compiledStyleLayer.textFont?.evaluate(zoomLevel, properties, featureId)
+    val fontNames = compiledStyleLayer.textFont?.evaluate(layoutZoom, properties, featureId)
     val fontFamily = fontNames?.firstNotNullOfOrNull { glyphs[it] }
 
     val displayText = when (transform) {

@@ -83,21 +83,21 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
         val minZoom = layer.minzoom ?: 0.0
         val maxZoom = layer.maxzoom ?: Double.POSITIVE_INFINITY
 
-        return when (layer.type) {
+        val compiledLayer = when (layer.type) {
             "background" -> CompiledBackgroundLayer(
                 layer.id, minZoom, maxZoom, filter, visibility,
                 color = paintValue("background-color", ::asColor),
                 opacity = paintValue("background-opacity", ::asNumber)
             )
             "fill" -> CompiledFillLayer(
-                layer.id, layer.sourceLayer ?: return null, minZoom, maxZoom, filter, visibility,
+                layer.id, layer.sourceLayer.orEmpty(), minZoom, maxZoom, filter, visibility,
                 color = paintValue("fill-color", ::asColor),
                 opacity = paintValue("fill-opacity", ::asNumber),
                 outlineColor = paintValue("fill-outline-color", ::asColor),
                 antialias = paintValue("fill-antialias", ::asBoolean)
             )
             "line" -> CompiledLineLayer(
-                layer.id, layer.sourceLayer ?: return null, minZoom, maxZoom, filter, visibility,
+                layer.id, layer.sourceLayer.orEmpty(), minZoom, maxZoom, filter, visibility,
                 color = paintValue("line-color", ::asColor),
                 width = paintValue("line-width", ::asNumber),
                 opacity = paintValue("line-opacity", ::asNumber),
@@ -107,7 +107,7 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
                 join = layoutValue("line-join", ::asString)
             )
             "symbol" -> CompiledSymbolLayer(
-                layer.id, layer.sourceLayer ?: return null, minZoom, maxZoom, filter, visibility,
+                layer.id, layer.sourceLayer.orEmpty(), minZoom, maxZoom, filter, visibility,
                 textField = layoutValue("text-field", ::asString, expandTokens = true),
                 textTransform = layoutValue("text-transform", ::asString),
                 textSize = layoutValue("text-size", ::asNumber),
@@ -132,8 +132,10 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
                 textTranslate = paintValue("text-translate", ::asNumberList),
                 iconOpacity = paintValue("icon-opacity", ::asNumber)
             )
-            else -> null
+            else -> return null
         }
+        // Compile first so unsupported source-less layers still report invalid property values.
+        return compiledLayer.takeIf { layer.type == "background" || layer.sourceLayer != null }
     }
 
     private fun compileFilter(filterExpression: List<Any?>, locale: String): CompiledFilter {
