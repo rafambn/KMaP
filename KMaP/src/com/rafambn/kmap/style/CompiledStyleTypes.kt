@@ -16,8 +16,7 @@ data class EvaluationContext(
 
 // Compiled types
 data class CompiledFilter(
-    private val evaluator: (zoomLevel: Double, featureProperties: Map<String, Any>, geometryType: String, featureId: Any?, featureGeometry: FeatureGeometryContext?) -> Boolean,
-    val requiredProperties: Set<String> = emptySet()
+    private val evaluator: (zoomLevel: Double, featureProperties: Map<String, Any>, geometryType: String, featureId: Any?, featureGeometry: FeatureGeometryContext?) -> Boolean
 ) {
     fun evaluate(
         zoomLevel: Double,
@@ -29,8 +28,7 @@ data class CompiledFilter(
 }
 
 data class CompiledValue<T>(
-    val evaluate: (zoomLevel: Double, featureProperties: Map<String, Any>, featureId: Any?) -> T?,
-    val requiredProperties: Set<String> = emptySet()
+    val evaluate: (zoomLevel: Double, featureProperties: Map<String, Any>, featureId: Any?) -> T?
 )
 
 data class CompiledPaint(

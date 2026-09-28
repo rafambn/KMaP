@@ -66,14 +66,6 @@ val StyleExpressionCoverageTest by testSuite {
             assertEquals("{ref}", evaluator.evaluate("{ref}", context))
             assertEquals("{name} Default", evaluator.evaluate(listOf("concat", "{name}", " ", listOf("get", "name")), context))
 
-            assertEquals(emptySet(), evaluator.getRequiredProperties("{name} {name:pt} {ref}"))
-            assertEquals(emptySet(), evaluator.getRequiredProperties("{name:}"))
-            assertEquals(emptySet(), evaluator.getRequiredProperties("{name"))
-            assertEquals(emptySet(), evaluator.getRequiredProperties("plain text"))
-            assertEquals(setOf("class"), evaluator.getRequiredProperties(listOf("all", listOf("get", "class"), listOf("get", 1))))
-            assertEquals(emptySet(), evaluator.getRequiredProperties(listOf("get", 1)))
-            assertEquals(emptySet(), evaluator.getRequiredProperties(listOf("get")))
-            assertEquals(emptySet(), evaluator.getRequiredProperties(emptyList<Any>()))
         }
 
         test("dispatches context, map, and unsupported expressions") { evaluator ->

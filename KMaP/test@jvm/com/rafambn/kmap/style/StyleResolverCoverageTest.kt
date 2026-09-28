@@ -52,10 +52,8 @@ val StyleResolverCoverageTest by testSuite {
         assertEquals(12.0, populated.maxZoom)
         assertTrue(populated.filter!!.evaluate(0.0, mapOf("class" to "park"), "Polygon", null))
         assertFalse(populated.filter.evaluate(0.0, mapOf("class" to "water"), "Polygon", null))
-        assertEquals(setOf("class"), populated.filter.requiredProperties)
         assertFalse(populated.layout.visibility.evaluate(0.0, emptyMap(), null)!!)
         assertEquals("Place", populated.layout.properties.getValue("title").evaluate(0.0, mapOf("name" to "Place"), null))
-        assertEquals(setOf("name"), populated.layout.properties.getValue("title").requiredProperties)
         assertEquals(mapOf("enabled" to true), populated.layout.properties.getValue("nested").evaluate(0.0, emptyMap(), null))
         assertNull(populated.paint.properties.getValue("null").evaluate(0.0, emptyMap(), null))
         assertEquals(true, populated.paint.properties.getValue("boolean").evaluate(0.0, emptyMap(), null))
@@ -130,7 +128,6 @@ val StyleResolverCoverageTest by testSuite {
 
         assertFalse(layers[0].layout.visibility.evaluate(0.0, emptyMap(), null)!!)
         assertFalse(layers[1].layout.visibility.evaluate(0.0, emptyMap(), null)!!)
-        assertEquals(setOf("visibility"), layers[2].layout.visibility.requiredProperties)
         assertFalse(layers[2].layout.visibility.evaluate(0.0, mapOf("visibility" to "none"), null)!!)
         assertTrue(layers[2].layout.visibility.evaluate(0.0, mapOf("visibility" to "visible"), null)!!)
     }

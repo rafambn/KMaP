@@ -47,8 +47,6 @@ val StyleResolverTest by testSuite {
         val text = layers[0].layout.properties.getValue("text-field")
         val icon = layers[0].layout.properties.getValue("icon-image")
 
-        assertEquals(setOf("name", "name:pt", "ref", "missing"), text.requiredProperties)
-        assertEquals(setOf("ref_length"), icon.requiredProperties)
         assertEquals("Avenida/Nome/A12/", text.evaluate(16.0, properties, null))
         assertEquals("Avenida//A12/", text.evaluate(16.0, properties - "name:pt", null))
         assertEquals("road_3", icon.evaluate(16.0, properties, null))
@@ -57,8 +55,6 @@ val StyleResolverTest by testSuite {
         assertEquals("{ref} A12", layers[1].layout.properties.getValue("text-field").evaluate(16.0, properties, null))
         val zoomText = layers[2].layout.properties.getValue("text-field")
         val zoomIcon = layers[2].layout.properties.getValue("icon-image")
-        assertEquals(setOf("name", "ref"), zoomText.requiredProperties)
-        assertEquals(setOf("ref_length"), zoomIcon.requiredProperties)
         assertEquals("Avenida", zoomText.evaluate(0.0, properties, null))
         assertEquals("A12", zoomText.evaluate(10.0, properties, null))
         assertEquals("road_3", zoomIcon.evaluate(0.0, properties, null))

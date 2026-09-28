@@ -106,30 +106,4 @@ class ExpressionEvaluator {
             else -> expression
         }
     }
-
-    fun getRequiredProperties(expression: Any?): Set<String> {
-        if (expression is Map<*, *>) {
-            return expression.values.flatMap { getRequiredProperties(it) }.toSet()
-        }
-        if (expression !is List<*> || expression.isEmpty()) {
-            return emptySet()
-        }
-
-        val requiredProperties = mutableSetOf<String>()
-        val operator = expression[0] as? String
-
-        if (operator == "literal") return emptySet()
-
-        if (operator == "get" || operator == "has") {
-            if (expression.size == 2 && expression[1] is String) requiredProperties.add(expression[1] as String)
-            else expression.drop(1).forEach { requiredProperties.addAll(getRequiredProperties(it)) }
-            return requiredProperties
-        }
-
-        expression.drop(1).forEach { arg ->
-            requiredProperties.addAll(getRequiredProperties(arg))
-        }
-
-        return requiredProperties
-    }
 }

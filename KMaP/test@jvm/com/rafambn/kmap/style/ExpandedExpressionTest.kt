@@ -94,8 +94,6 @@ val ExpandedExpressionTest by testSuite {
         assertEquals(true, evaluator.evaluate(listOf("has", listOf("get", "key"), listOf("get", "nested")), feature))
         assertEquals(false, evaluator.evaluate(listOf("has", "missing", listOf("get", "nested")), feature))
         assertEquals("literal", evaluator.evaluate(listOf("get", "{name}"), feature))
-        assertEquals(setOf("nested"), evaluator.getRequiredProperties(listOf("get", "rank", listOf("get", "nested"))))
-        assertEquals(setOf("key"), evaluator.getRequiredProperties(listOf("has", listOf("get", "key"))))
     }
 
     test("index-of honors the start index and slice stays within bounds") {

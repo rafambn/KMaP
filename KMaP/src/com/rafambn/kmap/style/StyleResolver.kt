@@ -73,13 +73,11 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
     }
 
     private fun compileFilter(filterExpression: List<Any?>, locale: String): CompiledFilter {
-        val requiredProperties = evaluator.getRequiredProperties(filterExpression)
         return CompiledFilter(
             evaluator = { zoomLevel, featureProperties, geometryType, featureId, featureGeometry ->
                 val context = EvaluationContext(featureProperties, geometryType, zoomLevel, featureId, locale, featureGeometry = featureGeometry)
                 evaluator.evaluate(filterExpression, context) as? Boolean ?: false
-            },
-            requiredProperties = requiredProperties
+            }
         )
     }
 
@@ -103,15 +101,14 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
 
     private fun compileVisibility(expression: Any?, locale: String, sprites: Map<String, ImageBitmap>): CompiledValue<Boolean> {
         if (expression == null) {
-            return CompiledValue(evaluate = { _, _, _ -> true }, requiredProperties = emptySet())
+            return CompiledValue(evaluate = { _, _, _ -> true })
         }
 
         return CompiledValue(
             evaluate = { zoomLevel, featureProperties, featureId ->
                 val context = EvaluationContext(featureProperties, "Point", zoomLevel, featureId, locale, sprites)
                 evaluator.evaluate(expression, context) != "none"
-            },
-            requiredProperties = evaluator.getRequiredProperties(expression)
+            }
         )
     }
 
@@ -126,10 +123,7 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
                 (expression["stops"] as? List<*>)?.mapNotNull { (it as? List<*>)?.getOrNull(1) as? String } ?: emptyList()
             else -> emptyList()
         }
-        val tokenProperties = tokenizedStrings.flatMap { value ->
-            tokenPattern.findAll(value).map { it.groupValues[1] }.toList()
-        }.toSet()
-        if (tokenProperties.isNotEmpty()) {
+        if (tokenizedStrings.any { tokenPattern.containsMatchIn(it) }) {
             return CompiledValue(
                 evaluate = { zoomLevel, featureProperties, featureId ->
                     val context = EvaluationContext(featureProperties, "Point", zoomLevel, featureId, locale, sprites)
@@ -137,19 +131,16 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
                     (if (value is String) tokenPattern.replace(value) { match ->
                         stringifyTokenValue(featureProperties[match.groupValues[1]])
                     } else value) as? T
-                },
-                requiredProperties = evaluator.getRequiredProperties(expression) + tokenProperties
+                }
             )
         }
 
-        val requiredProperties = evaluator.getRequiredProperties(expression)
         return CompiledValue(
             evaluate = { zoomLevel, featureProperties, featureId ->
                 val context = EvaluationContext(featureProperties, "Point", zoomLevel, featureId, locale, sprites)
                 val result = evaluator.evaluate(expression, context)
                 (if (color && result is String) parseColor(result) ?: result else result) as? T
-            },
-            requiredProperties = requiredProperties
+            }
         )
     }
 
