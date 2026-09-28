@@ -81,6 +81,19 @@ val ExpandedExpressionTest by testSuite {
         assertNull(evaluator.evaluate(listOf("sqrt", -1), context))
     }
 
+    test("arithmetic requires numeric operands and valid argument counts") {
+        assertEquals(5.0, evaluator.evaluate(listOf("+", 2, 3), context))
+        assertEquals(5.0, evaluator.evaluate(listOf("+", listOf("to-number", "3"), 2), context))
+        assertEquals(-3.0, evaluator.evaluate(listOf("-", 2, 5), context))
+        assertEquals(4.0, evaluator.evaluate(listOf("/", 8, 2), context))
+        assertNull(evaluator.evaluate(listOf("+", "3", 2), context))
+        assertNull(evaluator.evaluate(listOf("-", "3"), context))
+        assertNull(evaluator.evaluate(listOf("*", 2, "3"), context))
+        assertNull(evaluator.evaluate(listOf("/", 8, "2"), context))
+        assertNull(evaluator.evaluate(listOf("-", 10, 3, 2), context))
+        assertNull(evaluator.evaluate(listOf("/", 20, 2, 2), context))
+    }
+
     test("numeric feature values compare across MVT and JSON number types") {
         val feature = context.copy(featureProperties = mapOf("rank" to 2L, "opacity" to 0.5f))
         assertEquals(true, evaluator.evaluate(listOf("==", listOf("get", "rank"), 2.0), feature))

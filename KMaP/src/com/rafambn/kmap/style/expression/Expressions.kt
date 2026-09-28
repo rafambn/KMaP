@@ -245,11 +245,16 @@ internal fun evaluateHsl(expression: List<*>, context: EvaluationContext, evalua
 // Math
 internal fun evaluateNumber(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): Double? {
     val op = expression[0] as String
-    if (expression.size == 2 && op == "-") return toDouble(evaluator.evaluate(expression[1], context))?.let { -it }
-    if (expression.size < 3) return null
-    var result = toDouble(evaluator.evaluate(expression[1], context)) ?: return null
+    when (op) {
+        "-" -> if (expression.size !in 2..3) return null
+        "/" -> if (expression.size != 3) return null
+        "+", "*" -> if (expression.size < 3) return null
+        else -> return null
+    }
+    if (expression.size == 2) return (evaluator.evaluate(expression[1], context) as? Number)?.toDouble()?.let { -it }
+    var result = (evaluator.evaluate(expression[1], context) as? Number)?.toDouble() ?: return null
     for (i in 2 until expression.size) {
-        val num = toDouble(evaluator.evaluate(expression[i], context)) ?: return null
+        val num = (evaluator.evaluate(expression[i], context) as? Number)?.toDouble() ?: return null
         result = when (op) {
             "+" -> result + num
             "-" -> result - num
