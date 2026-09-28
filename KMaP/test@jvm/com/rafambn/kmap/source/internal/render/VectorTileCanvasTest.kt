@@ -7,11 +7,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.text.font.createFontFamilyResolver
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
+import com.rafambn.kmap.geometry.plane.CanvasDrawReference
+import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.mvttile.MVTFeature
 import com.rafambn.kmap.mvttile.MVTLayer
 import com.rafambn.kmap.mvttile.MVTile
@@ -19,9 +23,12 @@ import com.rafambn.kmap.mvttile.OptimizedGeometry
 import com.rafambn.kmap.mvttile.OptimizedRenderFeature
 import com.rafambn.kmap.mvttile.RawMVTGeomType
 import com.rafambn.kmap.source.VectorTile
+import com.rafambn.kmap.source.internal.ActiveTiles
 import com.rafambn.kmap.source.internal.optimizeMVTile
 import com.rafambn.kmap.style.StyleResolver
+import com.rafambn.kmap.style.SpriteImage
 import com.rafambn.kmap.style.compiled.CompiledFillLayer
+import com.rafambn.kmap.style.compiled.CompiledBackgroundLayer
 import com.rafambn.kmap.style.compiled.CompiledLineLayer
 import com.rafambn.kmap.style.model.Style
 import com.rafambn.kmap.style.model.StyleLayer
@@ -175,7 +182,7 @@ val VectorTileCanvasTest by testSuite {
                     paint = mapOf("icon-opacity" to JsonPrimitive(0.5))
                 ))
             )),
-            sprites = mapOf("dot" to sprite)
+            sprites = mapOf("dot" to SpriteImage(sprite))
         ).style!!
         val bitmap = ImageBitmap(32, 32)
         val canvas = Canvas(bitmap)
@@ -190,6 +197,117 @@ val VectorTileCanvasTest by testSuite {
         val pixels = bitmap.toPixelMap()
         assertEquals(0.5f, pixels[16, 16].alpha, 0.02f)
         assertEquals(0f, pixels[10, 10].alpha)
+    }
+
+    test("sprite pixel ratio controls icon size") {
+        val sprite = ImageBitmap(4, 4)
+        Canvas(sprite).drawRect(Rect(0f, 0f, 4f, 4f), Paint().apply { color = Color.Red })
+        val style = StyleResolver().resolve("""{
+            "layers": [{"id": "icons", "type": "symbol", "source-layer": "places",
+                "layout": {"icon-image": "dot"}}]
+        }""", sprites = mapOf("dot" to SpriteImage(sprite, pixelRatio = 2.0))).style!!
+        val bitmap = ImageBitmap(32, 32)
+        val canvas = Canvas(bitmap)
+        CanvasDrawScope().draw(Density(1f), LayoutDirection.Ltr, canvas, Size(32f, 32f)) {
+            drawRenderFeature(canvas, OptimizedRenderFeature(OptimizedGeometry.Point(listOf(16f to 16f)), emptyMap()),
+                createFontFamilyResolver(), Density(1f), style.layers.single(), 0.0, 1f, 0f, 1f, 1f, 1f)
+        }
+        val pixels = bitmap.toPixelMap()
+        assertTrue(pixels[16, 16].red > 0.9f)
+        assertEquals(0f, pixels[18, 16].alpha)
+    }
+
+    test("SDF sprite renders with its default black color") {
+        val sprite = ImageBitmap(2, 2)
+        Canvas(sprite).drawRect(Rect(0f, 0f, 2f, 2f), Paint().apply { color = Color.White.copy(alpha = 0.5f) })
+        Canvas(sprite).drawRect(Rect(0f, 0f, 1f, 2f), Paint().apply { color = Color.White })
+        val layer = StyleResolver().resolve("""{
+            "layers": [{"id": "icons", "type": "symbol", "source-layer": "places",
+                "layout": {"icon-image": "dot"}}]
+        }""", sprites = mapOf("dot" to SpriteImage(sprite, sdf = true))).style!!.layers.single()
+        val bitmap = ImageBitmap(8, 8)
+        val canvas = Canvas(bitmap)
+        CanvasDrawScope().draw(Density(1f), LayoutDirection.Ltr, canvas, Size(8f, 8f)) {
+            drawRenderFeature(canvas, OptimizedRenderFeature(OptimizedGeometry.Point(listOf(4f to 4f)), emptyMap()),
+                createFontFamilyResolver(), Density(1f), layer, 0.0, 1f, 0f, 1f, 1f, 1f)
+        }
+        val pixels = bitmap.toPixelMap()
+        val pixel = pixels[3, 4]
+        assertTrue(pixel.alpha > 0.9f && pixel.red < 0.1f && pixel.green < 0.1f && pixel.blue < 0.1f)
+        assertEquals(0f, pixels[4, 4].alpha, 0.02f)
+    }
+
+    test("fill pattern repeats inside polygon and applies opacity") {
+        val sprite = ImageBitmap(4, 2)
+        Canvas(sprite).drawRect(Rect(0f, 0f, 2f, 2f), Paint().apply { color = Color.Red })
+        Canvas(sprite).drawRect(Rect(2f, 0f, 4f, 2f), Paint().apply { color = Color.Blue })
+        val style = StyleResolver().resolve("""{
+            "layers": [{"id": "pattern", "type": "fill", "source-layer": "landuse",
+                "paint": {"fill-pattern": "stripes", "fill-color": "#00ff00", "fill-opacity": 0.5}}]
+        }""", sprites = mapOf("stripes" to SpriteImage(sprite, pixelRatio = 2.0))).style!!
+        val bitmap = ImageBitmap(8, 8)
+        val canvas = Canvas(bitmap)
+        val feature = OptimizedRenderFeature(OptimizedGeometry.Polygon(Path().apply {
+            fillType = PathFillType.EvenOdd
+            addRect(Rect(0f, 0f, 8f, 8f))
+            addRect(Rect(5f, 5f, 7f, 7f))
+        }), emptyMap())
+        CanvasDrawScope().draw(Density(1f), LayoutDirection.Ltr, canvas, Size(8f, 8f)) {
+            drawRenderFeature(canvas, feature, createFontFamilyResolver(), Density(1f), style.layers.single(),
+                0.0, 1f, 0f, 1f, 1f, 1f)
+        }
+        val pixels = bitmap.toPixelMap()
+        assertTrue(pixels[2, 3].red > 0.9f && pixels[2, 3].green < 0.1f)
+        assertTrue(pixels[3, 3].blue > 0.9f && pixels[3, 3].green < 0.1f)
+        assertEquals(0.5f, pixels[2, 3].alpha, 0.02f)
+        assertEquals(0f, pixels[6, 6].alpha)
+    }
+
+    test("fill pattern keeps its phase across tiles") {
+        val sprite = ImageBitmap(3, 1)
+        Canvas(sprite).drawRect(Rect(0f, 0f, 1f, 1f), Paint().apply { color = Color.Red })
+        Canvas(sprite).drawRect(Rect(1f, 0f, 2f, 1f), Paint().apply { color = Color.Blue })
+        Canvas(sprite).drawRect(Rect(2f, 0f, 3f, 1f), Paint().apply { color = Color.Green })
+        val layer = StyleResolver().resolve("""{
+            "layers": [{"id": "pattern", "type": "fill", "source-layer": "landuse",
+                "paint": {"fill-pattern": "stripes"}}]
+        }""", sprites = mapOf("stripes" to SpriteImage(sprite))).style!!.layers.single() as CompiledFillLayer
+        val bitmap = ImageBitmap(8, 2)
+        val canvas = Canvas(bitmap)
+        val geometry = OptimizedGeometry.Polygon(Path().apply { addRect(Rect(0f, 0f, 4f, 2f)) })
+        CanvasDrawScope().draw(Density(1f), LayoutDirection.Ltr, canvas, Size(8f, 2f)) {
+            drawFillFeature(canvas, geometry, emptyMap(), layer, 0.0, 1f, 1f, 1f, tileWorldX = 0.0)
+            canvas.save()
+            canvas.translate(4f, 0f)
+            drawFillFeature(canvas, geometry, emptyMap(), layer, 0.0, 1f, 1f, 1f, tileWorldX = 4.0)
+            canvas.restore()
+        }
+        val pixels = bitmap.toPixelMap()
+        assertTrue(pixels[3, 0].red > 0.9f)
+        assertTrue(pixels[4, 0].blue > 0.9f)
+        assertTrue(pixels[5, 0].green > 0.9f)
+    }
+
+    test("background pattern keeps its phase across active tiles") {
+        val sprite = ImageBitmap(3, 1)
+        Canvas(sprite).drawRect(Rect(0f, 0f, 1f, 1f), Paint().apply { color = Color.Red })
+        Canvas(sprite).drawRect(Rect(1f, 0f, 2f, 1f), Paint().apply { color = Color.Blue })
+        Canvas(sprite).drawRect(Rect(2f, 0f, 3f, 1f), Paint().apply { color = Color.Green })
+        val layer = StyleResolver().resolve("""{
+            "layers": [{"id": "background", "type": "background",
+                "paint": {"background-pattern": "stripes"}}]
+        }""", sprites = mapOf("stripes" to SpriteImage(sprite))).style!!.layers.single() as CompiledBackgroundLayer
+        val bitmap = ImageBitmap(8, 2)
+        val canvas = Canvas(bitmap)
+        val tiles = listOf(VectorTile(0, 0, 0, MVTile(emptyList())), VectorTile(0, 0, 1, MVTile(emptyList())))
+        CanvasDrawScope().draw(Density(1f), LayoutDirection.Ltr, canvas, Size(8f, 2f)) {
+            drawBackgroundForActiveTiles(layer, canvas, TileDimension(2.dp, 4.dp), CanvasDrawReference.Zero,
+                ActiveTiles(0, tiles), 0.0, 1f)
+        }
+        val pixels = bitmap.toPixelMap()
+        assertTrue(pixels[3, 0].red > 0.9f)
+        assertTrue(pixels[4, 0].blue > 0.9f)
+        assertTrue(pixels[5, 0].green > 0.9f)
     }
 
     test("fill opacity multiplies color alpha and fades the outline") {

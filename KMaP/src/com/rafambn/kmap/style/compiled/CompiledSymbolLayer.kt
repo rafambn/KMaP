@@ -1,7 +1,7 @@
 package com.rafambn.kmap.style.compiled
 
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
+import com.rafambn.kmap.style.SpriteImage
 
 data class CompiledSymbolLayer(
     override val id: String,
@@ -21,7 +21,7 @@ data class CompiledSymbolLayer(
     val textRadialOffset: CompiledValue<Double>?,
     val textRotate: CompiledValue<Double>?,
     val textFont: CompiledValue<List<String>>?,
-    val iconImage: CompiledValue<ImageBitmap>?,
+    val iconImage: CompiledValue<SpriteImage>?,
     val iconSize: CompiledValue<Double>?,
     val iconRotate: CompiledValue<Double>?,
     val iconOffset: CompiledValue<List<Double>>?,

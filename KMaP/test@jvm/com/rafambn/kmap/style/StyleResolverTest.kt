@@ -52,7 +52,7 @@ val StyleResolverTest by testSuite {
         val road3 = ImageBitmap(1, 1)
         val road25 = ImageBitmap(1, 1)
         val layers = StyleResolver().resolve(
-            rawStyleJson, sprites = mapOf("road_3" to road3, "road_2.5" to road25), locale = "pt"
+            rawStyleJson, sprites = mapOf("road_3" to SpriteImage(road3), "road_2.5" to SpriteImage(road25)), locale = "pt"
         ).style!!.layers
         val properties = mapOf("name" to "Avenida", "name:pt" to "Nome", "ref" to "A12", "ref_length" to 3.0)
         val text = (layers[0] as CompiledSymbolLayer).textField!!
@@ -60,14 +60,14 @@ val StyleResolverTest by testSuite {
 
         assertEquals("Avenida/Nome/A12/", text.evaluate(16.0, properties, null))
         assertEquals("Avenida//A12/", text.evaluate(16.0, properties - "name:pt", null))
-        assertSame(road3, icon.evaluate(16.0, properties, null))
-        assertSame(road3, icon.evaluate(16.0, properties + ("ref_length" to 3f), null))
-        assertSame(road25, icon.evaluate(16.0, properties + ("ref_length" to 2.5), null))
+        assertSame(road3, icon.evaluate(16.0, properties, null)?.bitmap)
+        assertSame(road3, icon.evaluate(16.0, properties + ("ref_length" to 3f), null)?.bitmap)
+        assertSame(road25, icon.evaluate(16.0, properties + ("ref_length" to 2.5), null)?.bitmap)
         assertEquals("{ref} A12", (layers[1] as CompiledSymbolLayer).textField!!.evaluate(16.0, properties, null))
         val zoomLayer = layers[2] as CompiledSymbolLayer
         assertEquals("Avenida", zoomLayer.textField!!.evaluate(0.0, properties, null))
         assertEquals("A12", zoomLayer.textField.evaluate(10.0, properties, null))
-        assertSame(road3, zoomLayer.iconImage!!.evaluate(0.0, properties, null))
+        assertSame(road3, zoomLayer.iconImage!!.evaluate(0.0, properties, null)?.bitmap)
     }
 
     test("testResolveSimpleStyle") {

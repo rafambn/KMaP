@@ -13,8 +13,8 @@ private val ignoredRootKeys = setOf("center", "zoom", "bearing", "pitch", "light
 private val layerKeys = setOf("id", "type", "source", "source-layer", "minzoom", "maxzoom", "filter", "layout", "paint", "metadata")
 private val sourceKeys = setOf("type", "url", "tiles", "minzoom", "maxzoom", "attribution", "tileSize", "data", "buffer", "tolerance", "cluster", "clusterRadius", "clusterMaxZoom")
 private val paintProperties = mapOf(
-    "background" to setOf("background-color", "background-opacity"),
-    "fill" to setOf("fill-color", "fill-opacity", "fill-outline-color", "fill-antialias"),
+    "background" to setOf("background-color", "background-opacity", "background-pattern"),
+    "fill" to setOf("fill-color", "fill-opacity", "fill-outline-color", "fill-antialias", "fill-pattern"),
     "line" to setOf("line-color", "line-width", "line-opacity", "line-dasharray"),
     "symbol" to setOf("text-color", "text-opacity", "text-halo-color", "text-halo-width", "text-halo-blur", "text-translate", "icon-opacity")
 )
@@ -49,7 +49,8 @@ internal fun inspectStyle(root: JsonObject): List<StyleIssue> {
 
     root.keys.forEach { key ->
         when (key) {
-            "sprite", "glyphs" -> issue("/$key", StyleIssue.Kind.UNSUPPORTED, "The '$key' URL is not fetched; supply assets to StyleResolver")
+            "sprite" -> issue("/$key", StyleIssue.Kind.UNSUPPORTED, "Sprite URLs are not fetched; supply decoded images to StyleResolver")
+            "glyphs" -> issue("/$key", StyleIssue.Kind.UNSUPPORTED, "The 'glyphs' URL is not fetched; supply assets to StyleResolver")
             in rootKeys -> Unit
             in ignoredRootKeys -> issue("/$key", StyleIssue.Kind.UNSUPPORTED, "Root property '$key' is not used by the vector canvas")
             else -> issue("/$key", StyleIssue.Kind.UNKNOWN, "Unknown root property '$key'")

@@ -66,7 +66,7 @@ val StyleInspectionTest by testSuite {
         assertNotNull(result.style)
         assertEquals(listOf("land"), result.style.layers.map { it.id })
         assertEquals(
-            setOf("/imports", "/sources/tiles/url", "/sources/tiles/extra", "/layers/0/paint/fill-pattern", "/layers/0/paint/fill-color/2", "/layers/1/type"),
+            setOf("/imports", "/sources/tiles/url", "/sources/tiles/extra", "/layers/0/paint/fill-color/2", "/layers/1/type"),
             result.issues.map { it.path }.toSet()
         )
         assertEquals("land", result.issues.single { it.path == "/layers/0/paint/fill-color/2" }.layerId)
@@ -156,7 +156,7 @@ val StyleInspectionTest by testSuite {
         val result = StyleResolver().resolve(Json.encodeToString(Style.serializer(), style))
 
         assertNotNull(result.style)
-        assertEquals(setOf("/layers/0/paint/fill-pattern", "/layers/0/layout/visibility"), result.issues.map { it.path }.toSet())
+        assertEquals(setOf("/layers/0/layout/visibility"), result.issues.map { it.path }.toSet())
     }
 
     test("finds unsupported expressions in arrays and step outputs while accepting calculated property names") {

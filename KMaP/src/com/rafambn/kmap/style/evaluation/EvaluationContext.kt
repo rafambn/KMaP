@@ -1,6 +1,6 @@
 package com.rafambn.kmap.style.evaluation
 
-import androidx.compose.ui.graphics.ImageBitmap
+import com.rafambn.kmap.style.SpriteImage
 
 data class EvaluationContext(
     val featureProperties: Map<String, Any> = emptyMap(),
@@ -8,6 +8,6 @@ data class EvaluationContext(
     val zoomLevel: Double = 0.0,
     val featureId: Any? = null,
     val locale: String = "en",
-    val sprites: Map<String, ImageBitmap> = emptyMap(),
+    val sprites: Map<String, SpriteImage> = emptyMap(),
     val featureGeometry: FeatureGeometryContext? = null
 )

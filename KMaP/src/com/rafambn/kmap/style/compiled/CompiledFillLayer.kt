@@ -1,6 +1,7 @@
 package com.rafambn.kmap.style.compiled
 
 import androidx.compose.ui.graphics.Color
+import com.rafambn.kmap.style.SpriteImage
 
 data class CompiledFillLayer(
     override val id: String,
@@ -12,7 +13,8 @@ data class CompiledFillLayer(
     val color: CompiledValue<Color>?,
     val opacity: CompiledValue<Double>?,
     val outlineColor: CompiledValue<Color>?,
-    val antialias: CompiledValue<Boolean>?
+    val antialias: CompiledValue<Boolean>?,
+    val pattern: CompiledValue<SpriteImage>?
 ) : CompiledStyleLayer {
     override val type: CompiledLayerType get() = CompiledLayerType.FILL
 }

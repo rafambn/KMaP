@@ -6,13 +6,6 @@ KMaP TODO
   engine and reload visible tiles, keeping layer IDs, `source-layer`, and filters
   in sync.
 
-- Support `fill-pattern` in vector `fill` layers. Resolve sprite images and
-  repeat them across polygons without tile seams, preserving holes and
-  `fill-opacity`. When a pattern is active, do not draw `fill-color` or
-  `fill-outline-color`. First resolve how sprite images are loaded and named;
-  `StyleResolver` currently receives supplied bitmaps but does not load the
-  style's sprite URL. Cover the construction pattern in the MapTiler Streets demo.
-
 - Revisit the magenta fallback for missing or invalid background, fill, and
   line colors. Choose deliberate defaults for the supported style subset.
 

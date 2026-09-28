@@ -142,9 +142,9 @@ val ExpandedExpressionTest by testSuite {
 
     test("image resolves an available sprite and coalesce skips missing names") {
         val fallback = ImageBitmap(2, 2)
-        val spriteContext = context.copy(sprites = mapOf("dot" to fallback))
+        val spriteContext = context.copy(sprites = mapOf("dot" to SpriteImage(fallback)))
         assertNull(evaluator.evaluate(listOf("image", "missing"), spriteContext))
-        assertSame(fallback, evaluator.evaluate(listOf("coalesce", listOf("image", "missing"), listOf("image", "dot")), spriteContext))
+        assertSame(fallback, (evaluator.evaluate(listOf("coalesce", listOf("image", "missing"), listOf("image", "dot")), spriteContext) as SpriteImage).bitmap)
     }
 
     test("number-format applies decimal options") {

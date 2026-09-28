@@ -1,7 +1,6 @@
 package com.rafambn.kmap.style
 
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.font.FontFamily
 import com.rafambn.kmap.style.compiled.CompiledBackgroundLayer
 import com.rafambn.kmap.style.compiled.CompiledFillLayer
@@ -25,7 +24,7 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
 
     fun resolve(
         rawJson: String,
-        sprites: Map<String, ImageBitmap> = emptyMap(),
+        sprites: Map<String, SpriteImage> = emptyMap(),
         glyphs: Map<String, FontFamily> = emptyMap(),
         locale: String = "en"
     ): StyleResolution {
@@ -46,7 +45,7 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
 
     private fun compile(
         rawStyle: Style,
-        sprites: Map<String, ImageBitmap>,
+        sprites: Map<String, SpriteImage>,
         glyphs: Map<String, FontFamily>,
         locale: String,
         issues: MutableList<StyleIssue>
@@ -60,11 +59,15 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
     }
 
     private fun compileLayer(
-        layer: StyleLayer, index: Int, locale: String, sprites: Map<String, ImageBitmap>, issues: MutableList<StyleIssue>
+        layer: StyleLayer, index: Int, locale: String, sprites: Map<String, SpriteImage>, issues: MutableList<StyleIssue>
     ): CompiledStyleLayer? {
         if (layer.type !in setOf("background", "fill", "line", "symbol")) return null
         fun <T> paintValue(name: String, convert: (Any?) -> T?): CompiledValue<T>? =
             compileProperty(layer.paint?.get(name), "/layers/$index/paint/$name", layer.id, issues, locale, sprites, convert)
+
+        fun patternValue(name: String): CompiledValue<SpriteImage>? =
+            compileProperty(layer.paint?.get(name), "/layers/$index/paint/$name", layer.id, issues,
+                locale, sprites, { asSpriteImage(it, sprites) }, validate = { it is String })
 
         fun <T> layoutValue(
             name: String, convert: (Any?) -> T?, validate: (Any?) -> Boolean = { convert(it) != null }
@@ -93,14 +96,16 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
             "background" -> CompiledBackgroundLayer(
                 layer.id, minZoom, maxZoom, filter, visibility,
                 color = paintValue("background-color", ::asColor),
-                opacity = paintValue("background-opacity", ::asNumber)
+                opacity = paintValue("background-opacity", ::asNumber),
+                pattern = patternValue("background-pattern")
             )
             "fill" -> CompiledFillLayer(
                 layer.id, layer.sourceLayer.orEmpty(), minZoom, maxZoom, filter, visibility,
                 color = paintValue("fill-color", ::asColor),
                 opacity = paintValue("fill-opacity", ::asNumber),
                 outlineColor = paintValue("fill-outline-color", ::asColor),
-                antialias = paintValue("fill-antialias", ::asBoolean)
+                antialias = paintValue("fill-antialias", ::asBoolean),
+                pattern = patternValue("fill-pattern")
             )
             "line" -> CompiledLineLayer(
                 layer.id, layer.sourceLayer.orEmpty(), minZoom, maxZoom, filter, visibility,
@@ -125,7 +130,7 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
                 textRadialOffset = layoutValue("text-radial-offset", ::asNumber),
                 textRotate = layoutValue("text-rotate", ::asNumber),
                 textFont = layoutValue("text-font", ::asStringList),
-                iconImage = layoutValue("icon-image", { asIconImage(it, sprites) }, validate = { it is String }),
+                iconImage = layoutValue("icon-image", { asSpriteImage(it, sprites) }, validate = { it is String }),
                 iconSize = layoutValue("icon-size", ::asNumber),
                 iconRotate = layoutValue("icon-rotate", ::asNumber),
                 iconOffset = layoutValue("icon-offset", ::asNumberList),
@@ -153,7 +158,7 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
         )
     }
 
-    private fun compileVisibility(expression: Any?, locale: String, sprites: Map<String, ImageBitmap>): CompiledValue<Boolean> {
+    private fun compileVisibility(expression: Any?, locale: String, sprites: Map<String, SpriteImage>): CompiledValue<Boolean> {
         if (expression == null) {
             return CompiledValue(evaluator = { _, _, _, _ -> true })
         }
@@ -167,12 +172,12 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
     }
 
     private fun <T> compileProperty(
-        value: JsonElement?, locale: String, sprites: Map<String, ImageBitmap>, convert: (Any?) -> T?
+        value: JsonElement?, locale: String, sprites: Map<String, SpriteImage>, convert: (Any?) -> T?
     ): CompiledValue<T>? = value?.let { compileValue(it.toValue(), locale, sprites, convert) }
 
     private fun <T> compileProperty(
         value: JsonElement?, path: String, layerId: String, issues: MutableList<StyleIssue>,
-        locale: String, sprites: Map<String, ImageBitmap>, convert: (Any?) -> T?,
+        locale: String, sprites: Map<String, SpriteImage>, convert: (Any?) -> T?,
         validate: (Any?) -> Boolean = { convert(it) != null }
     ): CompiledValue<T>? {
         value?.let { inspectLiteral(it, path, layerId, issues, validate, path.endsWith("/text-font")) }
@@ -199,7 +204,7 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
     }
 
     private fun <T> compileValue(
-        expression: Any?, locale: String, sprites: Map<String, ImageBitmap>, convert: (Any?) -> T?
+        expression: Any?, locale: String, sprites: Map<String, SpriteImage>, convert: (Any?) -> T?
     ): CompiledValue<T> {
         return CompiledValue(
             evaluator = { zoomLevel, featureProperties, featureId, geometryType ->
@@ -231,8 +236,8 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
         return values.map { it as String }
     }
 
-    private fun asIconImage(value: Any?, sprites: Map<String, ImageBitmap>): ImageBitmap? = when (value) {
-        is ImageBitmap -> value
+    private fun asSpriteImage(value: Any?, sprites: Map<String, SpriteImage>): SpriteImage? = when (value) {
+        is SpriteImage -> value
         is String -> sprites[value]
         else -> null
     }

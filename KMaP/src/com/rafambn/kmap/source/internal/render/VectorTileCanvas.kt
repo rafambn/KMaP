@@ -31,7 +31,16 @@ import com.rafambn.kmap.style.compiled.CompiledLineLayer
 import com.rafambn.kmap.style.compiled.CompiledStyle
 import com.rafambn.kmap.style.compiled.CompiledStyleLayer
 import com.rafambn.kmap.style.compiled.CompiledSymbolLayer
+import com.rafambn.kmap.style.SpriteImage
 import kotlin.math.pow
+
+private val sdfIconColorFilter = ColorFilter.colorMatrix(ColorMatrix(floatArrayOf(
+    0f, 0f, 0f, 0f, 0f,
+    0f, 0f, 0f, 0f, 0f,
+    0f, 0f, 0f, 0f, 0f,
+    // SDF icon edges are encoded at 192/256 alpha; this approximates the shader's smoothing.
+    0f, 0f, 0f, 5f, -828.75f
+)))
 
 @Composable
 fun VectorTileCanvas(
@@ -76,7 +85,8 @@ fun VectorTileCanvas(
                                 tileSize,
                                 positionOffset,
                                 activeTiles,
-                                zoom
+                                zoom,
+                                screenScale
                             )
                         }
 
@@ -183,25 +193,34 @@ private fun DrawScope.drawVectorTileLayerWithClipping(
                     scaleY,
                     screenScale,
                     glyphs,
+                    tile.col.toDouble() * sizeX,
+                    tile.row.toDouble() * sizeY
                 )
             }
         }
     }
 }
 
-private fun DrawScope.drawBackgroundForActiveTiles(
+internal fun DrawScope.drawBackgroundForActiveTiles(
     backgroundLayer: CompiledBackgroundLayer,
     canvas: Canvas,
     tileSize: TileDimension,
     positionOffset: CanvasDrawReference,
     activeTiles: ActiveTiles,
     zoom: Double,
+    screenScale: Float,
 ) {
+    val pattern = backgroundLayer.pattern?.evaluate(zoom.toInt().toDouble(), emptyMap(), null)
+    if (backgroundLayer.pattern != null && pattern == null) return
     val backgroundColor = backgroundLayer.color?.evaluate(zoom, emptyMap(), null) ?: Color.Magenta
     val backgroundOpacity = backgroundLayer.opacity?.evaluate(zoom, emptyMap(), null)?.toFloat() ?: 1F
 
     val paint = Paint().apply {
-        color = backgroundColor.copy(alpha = backgroundColor.alpha * backgroundOpacity)
+        if (pattern == null) color = backgroundColor.copy(alpha = backgroundColor.alpha * backgroundOpacity)
+        else {
+            shader = pattern.repeatingShader
+            alpha = backgroundOpacity.coerceIn(0f, 1f)
+        }
         style = PaintingStyle.Fill
         isAntiAlias = false
     }
@@ -209,22 +228,27 @@ private fun DrawScope.drawBackgroundForActiveTiles(
     activeTiles.tiles.forEach { tile ->
         canvas.withSave {
             val scaleAdjustment = 2F.pow(activeTiles.currentZoom - tile.zoom)
-            val tileLeft = tileSize.width.toPx().toDouble() * tile.col * scaleAdjustment + positionOffset.x
-            val tileTop = tileSize.height.toPx().toDouble() * tile.row * scaleAdjustment + positionOffset.y
-            val tileRight = tileLeft + tileSize.width.toPx() * scaleAdjustment
-            val tileBottom = tileTop + tileSize.height.toPx() * scaleAdjustment
+            val tileWidth = tileSize.width.toPx() * scaleAdjustment
+            val tileHeight = tileSize.height.toPx() * scaleAdjustment
+            val worldLeft = tile.col.toDouble() * tileWidth
+            val worldTop = tile.row.toDouble() * tileHeight
+            val tileLeft = worldLeft + positionOffset.x
+            val tileTop = worldTop + positionOffset.y
+            val tileRight = tileLeft + tileWidth
+            val tileBottom = tileTop + tileHeight
 
-            canvas.drawRect(
-                Rect(
-                    tileLeft.toFloat(),
-                    tileTop.toFloat(),
-                    tileRight.toFloat(),
-                    tileBottom.toFloat()
-                ),
-                paint
-            )
-            val clipRect = Rect(tileLeft.toFloat(), tileTop.toFloat(), tileRight.toFloat(), tileBottom.toFloat())
-            canvas.clipRect(clipRect)
+            if (pattern == null) {
+                canvas.drawRect(Rect(tileLeft.toFloat(), tileTop.toFloat(), tileRight.toFloat(), tileBottom.toFloat()), paint)
+            } else {
+                val patternScale = (1.0 / pattern.pixelRatio / screenScale).toFloat()
+                val phaseX = worldLeft.positiveRemainder(pattern.bitmap.width * patternScale).toFloat() / patternScale
+                val phaseY = worldTop.positiveRemainder(pattern.bitmap.height * patternScale).toFloat() / patternScale
+                canvas.translate(tileLeft.toFloat(), tileTop.toFloat())
+                canvas.scale(patternScale, patternScale)
+                canvas.translate(-phaseX, -phaseY)
+                canvas.drawRect(Rect(phaseX, phaseY, phaseX + tileWidth / patternScale,
+                    phaseY + tileHeight / patternScale), paint)
+            }
         }
     }
 }
@@ -242,11 +266,13 @@ internal fun DrawScope.drawRenderFeature(
     tileScaleY: Float,
     screenScale: Float,
     glyphs: Map<String, FontFamily> = emptyMap(),
+    tileWorldX: Double = 0.0,
+    tileWorldY: Double = 0.0,
 ) {
     val geometry = renderFeature.geometry
     when (compiledStyleLayer) {
         is CompiledFillLayer -> if (geometry is OptimizedGeometry.Polygon) {
-            drawFillFeature(canvas, geometry, renderFeature.properties, compiledStyleLayer, zoom, tileScaleX, tileScaleY, screenScale, renderFeature.id)
+            drawFillFeature(canvas, geometry, renderFeature.properties, compiledStyleLayer, zoom, tileScaleX, tileScaleY, screenScale, renderFeature.id, tileWorldX, tileWorldY)
         }
 
         is CompiledLineLayer -> {
@@ -280,7 +306,17 @@ internal fun drawFillFeature(
     tileScaleY: Float,
     screenScale: Float,
     featureId: Long? = null,
+    tileWorldX: Double = 0.0,
+    tileWorldY: Double = 0.0,
 ) {
+    val pattern = compiledStyleLayer.pattern?.evaluate(zoom.toInt().toDouble(), properties, featureId, "Polygon")
+    if (compiledStyleLayer.pattern != null) {
+        if (pattern != null) canvas.drawSpritePattern(geometry.path, pattern, tileScaleX, tileScaleY,
+            screenScale, tileWorldX, tileWorldY,
+            compiledStyleLayer.opacity?.evaluate(zoom, properties, featureId, "Polygon")?.toFloat() ?: 1f,
+            compiledStyleLayer.antialias?.evaluate(zoom, properties, featureId, "Polygon") ?: true)
+        return
+    }
     val fillColor = compiledStyleLayer.color?.evaluate(zoom, properties, featureId, "Polygon") ?: Color.Magenta
     val opacity = compiledStyleLayer.opacity?.evaluate(zoom, properties, featureId, "Polygon") ?: 1.0
     val outlineColor = compiledStyleLayer.outlineColor?.evaluate(zoom, properties, featureId, "Polygon")
@@ -332,6 +368,47 @@ internal fun drawFillFeature(
     } else {
         drawPaths()
     }
+}
+
+private fun Canvas.drawSpritePattern(
+    path: Path,
+    image: SpriteImage,
+    tileScaleX: Float,
+    tileScaleY: Float,
+    screenScale: Float,
+    tileWorldX: Double,
+    tileWorldY: Double,
+    opacity: Float,
+    antialias: Boolean
+) {
+    val patternScale = (1.0 / image.pixelRatio / screenScale).toFloat()
+    val phaseX = tileWorldX.positiveRemainder(image.bitmap.width * patternScale).toFloat()
+    val phaseY = tileWorldY.positiveRemainder(image.bitmap.height * patternScale).toFloat()
+    val scaledPath = Path().apply {
+        fillType = path.fillType
+        addPath(path)
+        transform(Matrix().apply { scale(tileScaleX / patternScale, tileScaleY / patternScale) })
+    }
+    val worldPath = Path().apply {
+        fillType = path.fillType
+        addPath(scaledPath, Offset(phaseX / patternScale, phaseY / patternScale))
+    }
+    withSave {
+        scale(1f / tileScaleX, 1f / tileScaleY)
+        translate(-phaseX, -phaseY)
+        scale(patternScale, patternScale)
+        drawPath(worldPath, Paint().apply {
+            shader = image.repeatingShader
+            alpha = opacity.coerceIn(0f, 1f)
+            style = PaintingStyle.Fill
+            isAntiAlias = antialias
+        })
+    }
+}
+
+private fun Double.positiveRemainder(period: Float): Double {
+    val value = period.toDouble()
+    return (this % value + value) % value
 }
 
 internal fun drawLineFeature(
@@ -526,8 +603,8 @@ private fun drawIconSymbol(
     val anchor = layer.iconAnchor?.evaluate(zoom.toInt().toDouble(), properties, featureId) ?: "center"
     val offset = layer.iconOffset?.evaluate(zoom.toInt().toDouble(), properties, featureId)
     val scale = size * textScale / screenScale
-    val width = image.width * scale
-    val height = image.height * scale
+    val width = (image.bitmap.width / image.pixelRatio * scale).toFloat()
+    val height = (image.bitmap.height / image.pixelRatio * scale).toFloat()
     val left = when {
         anchor.contains("left") -> 0f
         anchor.contains("right") -> -width
@@ -538,13 +615,17 @@ private fun drawIconSymbol(
         anchor.contains("bottom") -> -height
         else -> -height / 2f
     } + (offset?.getOrNull(1)?.toFloat() ?: 0f) * scale
-    val paint = Paint().apply { alpha = opacity.coerceIn(0f, 1f); filterQuality = FilterQuality.High }
+    val paint = Paint().apply {
+        alpha = opacity.coerceIn(0f, 1f)
+        filterQuality = FilterQuality.High
+        if (image.sdf) colorFilter = sdfIconColorFilter
+    }
     geometry.coordinates.forEach { (x, y) ->
         canvas.withSave {
             canvas.translate(x, y)
             canvas.rotate(-rotationDegrees + rotate)
             canvas.drawImageRect(
-                image = image,
+                image = image.bitmap,
                 dstOffset = IntOffset(left.toInt(), top.toInt()),
                 dstSize = IntSize(width.toInt().coerceAtLeast(1), height.toInt().coerceAtLeast(1)),
                 paint = paint
