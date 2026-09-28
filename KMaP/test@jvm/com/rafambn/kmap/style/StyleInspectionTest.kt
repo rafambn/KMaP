@@ -5,6 +5,7 @@ import com.rafambn.kmap.style.model.Style
 import com.rafambn.kmap.style.model.StyleLayer
 import de.infix.testBalloon.framework.core.testSuite
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -94,7 +95,7 @@ val StyleInspectionTest by testSuite {
                 {"id": "land", "type": "fill", "source-layer": "land",
                  "paint": {"fill-opacity": "half", "fill-color": "not-a-color"}},
                 {"id": "roads", "type": "line", "source-layer": "roads",
-                 "paint": {"line-width": {"stops": [[0, "half"], [10, 2]]}, "line-dasharray": [2, "1"]}},
+                 "paint": {"line-width": "half", "line-dasharray": [2, "1"]}},
                 {"id": "places", "type": "symbol", "source-layer": "places",
                  "layout": {"text-font": ["Noto Sans", 42], "icon-size": ["get", "size"]}}
             ]
@@ -104,7 +105,7 @@ val StyleInspectionTest by testSuite {
         assertEquals(
             setOf(
                 "/layers/0/paint/fill-opacity", "/layers/0/paint/fill-color",
-                "/layers/1/paint/line-width/stops/0/1", "/layers/1/paint/line-dasharray",
+                "/layers/1/paint/line-width", "/layers/1/paint/line-dasharray",
                 "/layers/2/layout/text-font"
             ),
             result.issues.map { it.path }.toSet()
@@ -131,14 +132,14 @@ val StyleInspectionTest by testSuite {
         assertEquals(setOf("/layers/0/paint/fill-pattern", "/layers/0/layout/visibility"), result.issues.map { it.path }.toSet())
     }
 
-    test("finds unsupported expressions in arrays and stop outputs while accepting calculated property names") {
+    test("finds unsupported expressions in arrays and step outputs while accepting calculated property names") {
         val result = StyleResolver().resolve("""{
             "version": 8, "sources": {}, "layers": [
                 {"id": "roads", "type": "line", "source-layer": "roads",
                  "filter": ["in", "class", "park", "garden"],
                  "paint": {
                     "line-dasharray": ["feature-state", "dash"],
-                    "line-width": {"stops": [[0, ["feature-state", "width"]], [10, 4]]}
+                    "line-width": ["step", ["zoom"], ["feature-state", "width"], 10, 4]
                  }},
                 {"id": "labels", "type": "symbol", "source-layer": "places",
                  "filter": ["has", ["concat", "na", "me"]],
@@ -148,28 +149,45 @@ val StyleInspectionTest by testSuite {
 
         assertNotNull(result.style)
         assertEquals(
-            setOf("/layers/0/filter", "/layers/0/paint/line-dasharray", "/layers/0/paint/line-width/stops/0/1"),
+            setOf("/layers/0/filter", "/layers/0/paint/line-dasharray", "/layers/0/paint/line-width/2"),
             result.issues.map { it.path }.toSet()
         )
     }
 
-    test("reports legacy function options that the evaluator ignores") {
+    test("reports legacy functions and filters as unsupported") {
         val result = StyleResolver().resolve("""{
             "version": 8, "sources": {}, "layers": [
                 {"id": "roads", "type": "line", "source-layer": "roads",
-                 "paint": {"line-width": {"property": "rank", "type": "categorical", "stops": [[1, 2], [2, 8]]}}}
+                 "filter": ["all", ["!=", "class", "road"], ["has", "name"]],
+                 "paint": {"line-width": {"stops": [[1, 2], [2, 8]]}}}
             ]
         }""")
 
         assertNotNull(result.style)
-        assertEquals(setOf("/layers/0/paint/line-width/property", "/layers/0/paint/line-width/type"), result.issues.map { it.path }.toSet())
+        assertEquals(setOf("/layers/0/filter/1", "/layers/0/paint/line-width"), result.issues.map { it.path }.toSet())
+        assertTrue(result.issues.all { it.kind == StyleIssue.Kind.UNSUPPORTED })
+        assertFalse(result.style.layers.single().filter!!.evaluate(0.0, mapOf("class" to "rail"), "LineString", null))
     }
 
-    test("keeps font lists literal inside legacy stop outputs") {
+    test("accepts modern filters with a literal left operand") {
+        val result = StyleResolver().resolve("""{
+            "layers": [{"id": "land", "type": "fill", "source-layer": "land",
+                "filter": ["all", ["==", "park", ["get", "class"]], ["in", "park", ["get", "classes"]],
+                    ["match", ["get", "class"], ["none", "park"], true, false],
+                    ["has", "${'$'}id", ["literal", {"${'$'}id": 1}]]]}]
+        }""")
+
+        assertTrue(result.issues.isEmpty(), result.issues.toString())
+        assertTrue(result.style!!.layers.single().filter!!.evaluate(
+            0.0, mapOf("class" to "park", "classes" to listOf("park", "garden")), "Polygon", null
+        ))
+    }
+
+    test("keeps font lists literal inside step outputs") {
         val result = StyleResolver().resolve("""{
             "version": 8, "sources": {}, "layers": [
                 {"id": "labels", "type": "symbol", "source-layer": "places",
-                 "layout": {"text-font": {"type": "exponential", "stops": [[0, ["Noto Sans"]], [10, ["Arial"]]]}}}
+                 "layout": {"text-font": ["step", ["zoom"], ["literal", ["Noto Sans"]], 10, ["literal", ["Arial"]]]}}
             ]
         }""")
 

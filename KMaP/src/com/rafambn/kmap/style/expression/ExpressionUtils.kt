@@ -15,6 +15,18 @@ internal fun toDouble(value: Any?): Double? {
 internal fun equalValues(a: Any?, b: Any?): Boolean =
     if (a is Number && b is Number) a.toDouble() == b.toDouble() else a == b
 
+internal fun styleValueToString(value: Any?): String {
+    if (value == null) return ""
+    if (value is Float || value is Double) {
+        val number = (value as Number).toDouble()
+        if (number == 0.0) return "0"
+        if (number % 1.0 == 0.0 && number >= Long.MIN_VALUE.toDouble() && number < Long.MAX_VALUE.toDouble()) {
+            return number.toLong().toString()
+        }
+    }
+    return value.toString()
+}
+
 internal fun compare(a: Any?, b: Any?): Int? {
     if (a == null || b == null) return null
     if (a is String && b is String) return a.compareTo(b)

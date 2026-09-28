@@ -85,24 +85,7 @@ class ExpressionEvaluator {
         return when (expression) {
             is String -> expression
             is List<*> -> evaluateListExpression(expression, context)
-            is Map<*, *> -> {
-                val stops = expression["stops"] as? List<*>
-                if (stops != null) {
-                    val base = (expression["base"] as? Number)?.toDouble() ?: 1.0
-                    val interpolationType = listOf("exponential", base)
-                    val input = listOf("zoom")
-
-                    val transformedExpression = mutableListOf<Any?>("interpolate", interpolationType, input)
-                    stops.forEach { stop ->
-                        if (stop is List<*> && stop.size == 2) {
-                            transformedExpression.add(stop[0])
-                            transformedExpression.add(stop[1])
-                        }
-                    }
-                    return evaluate(transformedExpression, context)
-                }
-                expression
-            }
+            is Map<*, *> -> expression
             else -> expression
         }
     }

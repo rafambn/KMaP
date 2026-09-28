@@ -36,13 +36,13 @@ val StyleResolverTest by testSuite {
                         "layout": {"text-field": ["concat", "{ref}", " ", ["get", "ref"]]}
                     },
                     {
-                        "id": "zoom-stops",
+                        "id": "zoom-expression",
                         "type": "symbol",
                         "source": "tiles",
                         "source-layer": "places",
                         "layout": {
-                            "text-field": {"stops": [[0, "{name}"], [10, "{ref}"]]},
-                            "icon-image": {"stops": [[0, "road_{ref_length}"], [10, "road_{ref_length}"]]}
+                            "text-field": ["step", ["zoom"], ["coalesce", ["get", "name"], ""], 10, ["coalesce", ["get", "ref"], ""]],
+                            "icon-image": ["step", ["zoom"], "road_3", 10, "road_3"]
                         }
                     }
                 ]

@@ -83,14 +83,6 @@ val StyleExpressionCoverageTest by testSuite {
 
             val literalMap = mapOf("value" to 7)
             assertEquals(literalMap, evaluator.evaluate(literalMap, context))
-            assertEquals(4.0, evaluator.evaluate(
-                mapOf("base" to "invalid", "stops" to listOf("ignored", listOf(0), listOf(0, 0), listOf(10, 10))),
-                context
-            ))
-            assertEquals(10.0 * 15 / 1023, evaluator.evaluate(
-                mapOf("base" to 2.0, "stops" to listOf(listOf(0, 0), listOf(10, 10))),
-                context
-            ) as Double, 0.0001)
         }
 
         test("handles malformed feature and lookup expressions") { evaluator ->
@@ -144,6 +136,7 @@ val StyleExpressionCoverageTest by testSuite {
             assertEquals("default", evaluator.evaluate(listOf("match", 5, listOf(1, 2), "array", 1, "one", 3, "three", "default"), context))
             assertNull(evaluator.evaluate(listOf("literal"), context))
             assertEquals("42", evaluator.evaluate(listOf("to-string", 42), context))
+            assertEquals("42", evaluator.evaluate(listOf("to-string", 42.0), context))
             assertNull(evaluator.evaluate(listOf("to-string"), context))
             assertNull(evaluator.evaluate(listOf("to-string", null), context))
             assertEquals("object", evaluator.evaluate(listOf("typeof", Any()), context))

@@ -14,6 +14,7 @@ import com.rafambn.kmap.style.compiled.CompiledValue
 import com.rafambn.kmap.style.evaluation.EvaluationContext
 import com.rafambn.kmap.style.evaluation.ExpressionEvaluator
 import com.rafambn.kmap.style.expression.parseColor
+import com.rafambn.kmap.style.expression.styleValueToString
 import com.rafambn.kmap.style.model.Style
 import com.rafambn.kmap.style.model.StyleLayer
 import kotlinx.serialization.SerializationException
@@ -74,7 +75,13 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
             layer.layout?.get(name), "/layers/$index/layout/$name", layer.id, issues, locale, sprites, convert, expandTokens, validate
         )
 
-        val filter = layer.filter?.let { elements -> compileFilter(elements.map { it.toValue() }, locale) }
+        val filter = layer.filter?.let { elements ->
+            if (hasLegacyFilterSyntax(JsonArray(elements))) {
+                CompiledFilter(evaluator = { _, _, _, _, _ -> false })
+            } else {
+                compileFilter(elements.map { it.toValue() }, locale)
+            }
+        }
         layer.layout?.get("visibility")?.let {
             inspectLiteral(it, "/layers/$index/layout/visibility", layer.id, issues, { value -> asString(value) != null })
         }
@@ -177,14 +184,7 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
         value: JsonElement, path: String, layerId: String, issues: MutableList<StyleIssue>,
         validate: (Any?) -> Boolean, allowStringArray: Boolean = false
     ) {
-        val stops = (value as? JsonObject)?.get("stops") as? JsonArray
-        if (stops != null) {
-            stops.forEachIndexed { index, stop ->
-                val pair = stop as? JsonArray
-                if (pair?.size == 2) inspectLiteral(pair[1], "$path/stops/$index/1", layerId, issues, validate, allowStringArray)
-            }
-            return
-        }
+        if (value is JsonObject && ("stops" in value || "property" in value)) return
         if (value is JsonArray) {
             val operator = (value.firstOrNull() as? JsonPrimitive)?.takeIf { it.isString }?.content
             if (operator == "literal" && value.size == 2) {
@@ -202,20 +202,13 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
     private fun <T> compileValue(
         expression: Any?, locale: String, sprites: Map<String, ImageBitmap>, convert: (Any?) -> T?, expandTokens: Boolean
     ): CompiledValue<T> {
-        val tokenizedStrings = when {
-            !expandTokens -> emptyList()
-            expression is String -> listOf(expression)
-            expression is Map<*, *> && expression["property"] == null ->
-                (expression["stops"] as? List<*>)?.mapNotNull { (it as? List<*>)?.getOrNull(1) as? String } ?: emptyList()
-            else -> emptyList()
-        }
-        val replaceTokens = tokenizedStrings.any { tokenPattern.containsMatchIn(it) }
+        val replaceTokens = expandTokens && expression is String && tokenPattern.containsMatchIn(expression)
         return CompiledValue(
             evaluator = { zoomLevel, featureProperties, featureId, geometryType ->
                 val context = EvaluationContext(featureProperties, geometryType, zoomLevel, featureId, locale, sprites)
                 val result = evaluator.evaluate(expression, context)
                 val value = if (replaceTokens && result is String) tokenPattern.replace(result) { match ->
-                    stringifyTokenValue(featureProperties[match.groupValues[1]])
+                    styleValueToString(featureProperties[match.groupValues[1]])
                 } else result
                 convert(value)
             }
@@ -248,18 +241,6 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
         is ImageBitmap -> value
         is String -> sprites[value]
         else -> null
-    }
-
-    private fun stringifyTokenValue(value: Any?): String {
-        if (value == null) return ""
-        if (value is Float || value is Double) {
-            val number = (value as Number).toDouble()
-            if (number == 0.0) return "0"
-            if (number % 1.0 == 0.0 && number >= Long.MIN_VALUE.toDouble() && number < Long.MAX_VALUE.toDouble()) {
-                return number.toLong().toString()
-            }
-        }
-        return value.toString()
     }
 
     private fun JsonElement.toValue(): Any? {

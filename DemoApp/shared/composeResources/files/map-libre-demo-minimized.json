@@ -32,26 +32,23 @@
       },
       "paint": {
         "line-color": "#198EC8",
-        "line-width": {
-          "stops": [
-            [
-              0,
-              2
-            ],
-            [
-              6,
-              6
-            ],
-            [
-              14,
-              9
-            ],
-            [
-              22,
-              18
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          2,
+          6,
+          6,
+          14,
+          9,
+          22,
+          18
+        ]
       }
     },
     {
@@ -328,38 +325,36 @@
       },
       "paint": {
         "line-color": "rgba(255, 255, 255, 1)",
-        "line-width": {
-          "stops": [
-            [
-              1,
-              1
-            ],
-            [
-              6,
-              2
-            ],
-            [
-              14,
-              6
-            ],
-            [
-              22,
-              12
-            ]
-          ]
-        },
-        "line-opacity": {
-          "stops": [
-            [
-              3,
-              0.5
-            ],
-            [
-              6,
-              1
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          1,
+          1,
+          6,
+          2,
+          14,
+          6,
+          22,
+          12
+        ],
+        "line-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          3,
+          0.5,
+          6,
+          1
+        ]
       }
     },
     {
@@ -369,7 +364,10 @@
         "all",
         [
           "!=",
-          "name",
+          [
+            "get",
+            "name"
+          ],
           "International Date Line"
         ]
       ],
@@ -395,7 +393,10 @@
         "all",
         [
           "!=",
-          "name",
+          [
+            "get",
+            "name"
+          ],
           "International Date Line"
         ]
       ],
@@ -407,18 +408,19 @@
         "text-font": [
           "Open Sans Semibold"
         ],
-        "text-size": {
-          "stops": [
-            [
-              2,
-              12
-            ],
-            [
-              6,
-              16
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          2,
+          12,
+          6,
+          16
+        ],
         "text-field": "{name}",
         "visibility": "visible"
       },
@@ -443,76 +445,91 @@
         "text-font": [
           "Open Sans Semibold"
         ],
-        "text-size": {
-          "stops": [
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          2,
+          10,
+          4,
+          12,
+          6,
+          16
+        ],
+        "text-field": [
+          "step",
+          [
+            "zoom"
+          ],
+          [
+            "coalesce",
             [
-              2,
-              10
+              "to-string",
+              [
+                "get",
+                "ABBREV"
+              ]
             ],
+            ""
+          ],
+          4,
+          [
+            "coalesce",
             [
-              4,
-              12
+              "to-string",
+              [
+                "get",
+                "NAME"
+              ]
             ],
-            [
-              6,
-              16
-            ]
+            ""
           ]
-        },
-        "text-field": {
-          "stops": [
-            [
-              2,
-              "{ABBREV}"
-            ],
-            [
-              4,
-              "{NAME}"
-            ]
-          ]
-        },
+        ],
         "visibility": "visible",
         "text-max-width": 10,
-        "text-transform": {
-          "stops": [
-            [
-              0,
-              "uppercase"
-            ],
-            [
-              2,
-              "none"
-            ]
-          ]
-        }
+        "text-transform": [
+          "step",
+          [
+            "zoom"
+          ],
+          "uppercase",
+          2,
+          "none"
+        ]
       },
       "paint": {
         "text-color": "rgba(8, 37, 77, 1)",
-        "text-halo-blur": {
-          "stops": [
-            [
-              2,
-              0.2
-            ],
-            [
-              6,
-              0
-            ]
-          ]
-        },
+        "text-halo-blur": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          2,
+          0.2,
+          6,
+          0
+        ],
         "text-halo-color": "rgba(255, 255, 255, 1)",
-        "text-halo-width": {
-          "stops": [
-            [
-              2,
-              1
-            ],
-            [
-              6,
-              1.6
-            ]
-          ]
-        }
+        "text-halo-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          2,
+          1,
+          6,
+          1.6
+        ]
       }
     },
     {

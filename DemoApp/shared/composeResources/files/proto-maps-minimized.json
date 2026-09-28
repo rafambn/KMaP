@@ -12,7 +12,9 @@
       "type": "fill",
       "filter": [
         "==",
-        "$type",
+        [
+          "geometry-type"
+        ],
         "Polygon"
       ],
       "source": "protomaps",
@@ -69,23 +71,31 @@
       "source-layer": "landuse",
       "filter": [
         "in",
-        "kind",
-        "national_park",
-        "park",
-        "cemetery",
-        "protected_area",
-        "nature_reserve",
-        "forest",
-        "golf_course",
-        "wood",
-        "scrub",
-        "grassland",
-        "grass",
-        "glacier",
-        "sand",
-        "military",
-        "naval_base",
-        "airfield"
+        [
+          "get",
+          "kind"
+        ],
+        [
+          "literal",
+          [
+            "national_park",
+            "park",
+            "cemetery",
+            "protected_area",
+            "nature_reserve",
+            "forest",
+            "golf_course",
+            "wood",
+            "scrub",
+            "grassland",
+            "grass",
+            "glacier",
+            "sand",
+            "military",
+            "naval_base",
+            "airfield"
+          ]
+        ]
       ],
       "paint": {
         "fill-opacity": [
@@ -193,10 +203,18 @@
       "source-layer": "landuse",
       "filter": [
         "in",
-        "kind",
-        "allotments",
-        "village_green",
-        "playground"
+        [
+          "get",
+          "kind"
+        ],
+        [
+          "literal",
+          [
+            "allotments",
+            "village_green",
+            "playground"
+          ]
+        ]
       ],
       "paint": {
         "fill-color": "#9cd3b4",
@@ -210,7 +228,10 @@
       "source-layer": "landuse",
       "filter": [
         "==",
-        "kind",
+        [
+          "get",
+          "kind"
+        ],
         "hospital"
       ],
       "paint": {
@@ -224,7 +245,10 @@
       "source-layer": "landuse",
       "filter": [
         "==",
-        "kind",
+        [
+          "get",
+          "kind"
+        ],
         "industrial"
       ],
       "paint": {
@@ -238,10 +262,18 @@
       "source-layer": "landuse",
       "filter": [
         "in",
-        "kind",
-        "school",
-        "university",
-        "college"
+        [
+          "get",
+          "kind"
+        ],
+        [
+          "literal",
+          [
+            "school",
+            "university",
+            "college"
+          ]
+        ]
       ],
       "paint": {
         "fill-color": "#e4ded7"
@@ -254,8 +286,16 @@
       "source-layer": "landuse",
       "filter": [
         "in",
-        "kind",
-        "beach"
+        [
+          "get",
+          "kind"
+        ],
+        [
+          "literal",
+          [
+            "beach"
+          ]
+        ]
       ],
       "paint": {
         "fill-color": "#e8e4d0"
@@ -268,8 +308,16 @@
       "source-layer": "landuse",
       "filter": [
         "in",
-        "kind",
-        "zoo"
+        [
+          "get",
+          "kind"
+        ],
+        [
+          "literal",
+          [
+            "zoo"
+          ]
+        ]
       ],
       "paint": {
         "fill-color": "#c6dcdc"
@@ -282,8 +330,16 @@
       "source-layer": "landuse",
       "filter": [
         "in",
-        "kind",
-        "aerodrome"
+        [
+          "get",
+          "kind"
+        ],
+        [
+          "literal",
+          [
+            "aerodrome"
+          ]
+        ]
       ],
       "paint": {
         "fill-color": "#dadbdf"
@@ -296,7 +352,10 @@
       "source-layer": "roads",
       "filter": [
         "==",
-        "kind_detail",
+        [
+          "get",
+          "kind_detail"
+        ],
         "runway"
       ],
       "paint": {
@@ -327,7 +386,10 @@
       "minzoom": 13,
       "filter": [
         "==",
-        "kind_detail",
+        [
+          "get",
+          "kind_detail"
+        ],
         "taxiway"
       ],
       "paint": {
@@ -359,9 +421,17 @@
         "any",
         [
           "in",
-          "kind",
-          "runway",
-          "taxiway"
+          [
+            "get",
+            "kind"
+          ],
+          [
+            "literal",
+            [
+              "runway",
+              "taxiway"
+            ]
+          ]
         ]
       ],
       "paint": {
@@ -373,7 +443,9 @@
       "type": "fill",
       "filter": [
         "==",
-        "$type",
+        [
+          "geometry-type"
+        ],
         "Polygon"
       ],
       "source": "protomaps",
@@ -390,8 +462,16 @@
       "minzoom": 14,
       "filter": [
         "in",
-        "kind",
-        "stream"
+        [
+          "get",
+          "kind"
+        ],
+        [
+          "literal",
+          [
+            "stream"
+          ]
+        ]
       ],
       "paint": {
         "line-color": "#80deea",
@@ -406,8 +486,16 @@
       "minzoom": 9,
       "filter": [
         "in",
-        "kind",
-        "river"
+        [
+          "get",
+          "kind"
+        ],
+        [
+          "literal",
+          [
+            "river"
+          ]
+        ]
       ],
       "paint": {
         "line-color": "#80deea",
@@ -436,9 +524,17 @@
       "source-layer": "landuse",
       "filter": [
         "in",
-        "kind",
-        "pedestrian",
-        "dam"
+        [
+          "get",
+          "kind"
+        ],
+        [
+          "literal",
+          [
+            "pedestrian",
+            "dam"
+          ]
+        ]
       ],
       "paint": {
         "fill-color": "#e3e0d4"
@@ -451,7 +547,10 @@
       "source-layer": "landuse",
       "filter": [
         "==",
-        "kind",
+        [
+          "get",
+          "kind"
+        ],
         "pier"
       ],
       "paint": {
@@ -471,9 +570,17 @@
         ],
         [
           "in",
-          "kind",
-          "other",
-          "path"
+          [
+            "get",
+            "kind"
+          ],
+          [
+            "literal",
+            [
+              "other",
+              "path"
+            ]
+          ]
         ]
       ],
       "paint": {
@@ -493,7 +600,10 @@
         ],
         [
           "==",
-          "kind",
+          [
+            "get",
+            "kind"
+          ],
           "minor_road"
         ]
       ],
@@ -569,12 +679,18 @@
           "is_tunnel"
         ],
         [
-          "!has",
-          "is_bridge"
+          "!",
+          [
+            "has",
+            "is_bridge"
+          ]
         ],
         [
           "==",
-          "kind",
+          [
+            "get",
+            "kind"
+          ],
           "major_road"
         ]
       ],
@@ -612,17 +728,26 @@
           "is_tunnel"
         ],
         [
-          "!has",
-          "is_bridge"
+          "!",
+          [
+            "has",
+            "is_bridge"
+          ]
         ],
         [
           "==",
-          "kind",
+          [
+            "get",
+            "kind"
+          ],
           "highway"
         ],
         [
-          "!has",
-          "is_link"
+          "!",
+          [
+            "has",
+            "is_link"
+          ]
         ]
       ],
       "paint": {
@@ -662,9 +787,17 @@
         ],
         [
           "in",
-          "kind",
-          "other",
-          "path"
+          [
+            "get",
+            "kind"
+          ],
+          [
+            "literal",
+            [
+              "other",
+              "path"
+            ]
+          ]
         ]
       ],
       "paint": {
@@ -702,7 +835,10 @@
         ],
         [
           "==",
-          "kind",
+          [
+            "get",
+            "kind"
+          ],
           "minor_road"
         ]
       ],
@@ -777,7 +913,10 @@
         ],
         [
           "==",
-          "kind",
+          [
+            "get",
+            "kind"
+          ],
           "major_road"
         ]
       ],
@@ -861,9 +1000,17 @@
       "source-layer": "buildings",
       "filter": [
         "in",
-        "kind",
-        "building",
-        "building_part"
+        [
+          "get",
+          "kind"
+        ],
+        [
+          "literal",
+          [
+            "building",
+            "building_part"
+          ]
+        ]
       ],
       "paint": {
         "fill-color": "#cccccc",
@@ -877,7 +1024,10 @@
       "source-layer": "roads",
       "filter": [
         "==",
-        "kind_detail",
+        [
+          "get",
+          "kind_detail"
+        ],
         "pier"
       ],
       "paint": {
@@ -909,21 +1059,33 @@
       "filter": [
         "all",
         [
-          "!has",
-          "is_tunnel"
+          "!",
+          [
+            "has",
+            "is_tunnel"
+          ]
         ],
         [
-          "!has",
-          "is_bridge"
+          "!",
+          [
+            "has",
+            "is_bridge"
+          ]
         ],
         [
           "==",
-          "kind",
+          [
+            "get",
+            "kind"
+          ],
           "minor_road"
         ],
         [
           "==",
-          "kind_detail",
+          [
+            "get",
+            "kind_detail"
+          ],
           "service"
         ]
       ],
@@ -953,21 +1115,33 @@
       "filter": [
         "all",
         [
-          "!has",
-          "is_tunnel"
+          "!",
+          [
+            "has",
+            "is_tunnel"
+          ]
         ],
         [
-          "!has",
-          "is_bridge"
+          "!",
+          [
+            "has",
+            "is_bridge"
+          ]
         ],
         [
           "==",
-          "kind",
+          [
+            "get",
+            "kind"
+          ],
           "minor_road"
         ],
         [
           "!=",
-          "kind_detail",
+          [
+            "get",
+            "kind_detail"
+          ],
           "service"
         ]
       ],
@@ -1026,16 +1200,25 @@
       "filter": [
         "all",
         [
-          "!has",
-          "is_tunnel"
+          "!",
+          [
+            "has",
+            "is_tunnel"
+          ]
         ],
         [
-          "!has",
-          "is_bridge"
+          "!",
+          [
+            "has",
+            "is_bridge"
+          ]
         ],
         [
           "==",
-          "kind",
+          [
+            "get",
+            "kind"
+          ],
           "major_road"
         ]
       ],
@@ -1066,21 +1249,33 @@
       "filter": [
         "all",
         [
-          "!has",
-          "is_tunnel"
+          "!",
+          [
+            "has",
+            "is_tunnel"
+          ]
         ],
         [
-          "!has",
-          "is_bridge"
+          "!",
+          [
+            "has",
+            "is_bridge"
+          ]
         ],
         [
           "==",
-          "kind",
+          [
+            "get",
+            "kind"
+          ],
           "highway"
         ],
         [
-          "!has",
-          "is_link"
+          "!",
+          [
+            "has",
+            "is_link"
+          ]
         ]
       ],
       "paint": {
@@ -1111,22 +1306,39 @@
       "filter": [
         "all",
         [
-          "!has",
-          "is_tunnel"
+          "!",
+          [
+            "has",
+            "is_tunnel"
+          ]
         ],
         [
-          "!has",
-          "is_bridge"
+          "!",
+          [
+            "has",
+            "is_bridge"
+          ]
         ],
         [
           "in",
-          "kind",
-          "other",
-          "path"
+          [
+            "get",
+            "kind"
+          ],
+          [
+            "literal",
+            [
+              "other",
+              "path"
+            ]
+          ]
         ],
         [
           "!=",
-          "kind_detail",
+          [
+            "get",
+            "kind_detail"
+          ],
           "pier"
         ]
       ],
@@ -1185,21 +1397,33 @@
       "filter": [
         "all",
         [
-          "!has",
-          "is_tunnel"
+          "!",
+          [
+            "has",
+            "is_tunnel"
+          ]
         ],
         [
-          "!has",
-          "is_bridge"
+          "!",
+          [
+            "has",
+            "is_bridge"
+          ]
         ],
         [
           "==",
-          "kind",
+          [
+            "get",
+            "kind"
+          ],
           "minor_road"
         ],
         [
           "==",
-          "kind_detail",
+          [
+            "get",
+            "kind_detail"
+          ],
           "service"
         ]
       ],
@@ -1229,21 +1453,33 @@
       "filter": [
         "all",
         [
-          "!has",
-          "is_tunnel"
+          "!",
+          [
+            "has",
+            "is_tunnel"
+          ]
         ],
         [
-          "!has",
-          "is_bridge"
+          "!",
+          [
+            "has",
+            "is_bridge"
+          ]
         ],
         [
           "==",
-          "kind",
+          [
+            "get",
+            "kind"
+          ],
           "minor_road"
         ],
         [
           "!=",
-          "kind_detail",
+          [
+            "get",
+            "kind_detail"
+          ],
           "service"
         ]
       ],
@@ -1291,16 +1527,25 @@
       "filter": [
         "all",
         [
-          "!has",
-          "is_tunnel"
+          "!",
+          [
+            "has",
+            "is_tunnel"
+          ]
         ],
         [
-          "!has",
-          "is_bridge"
+          "!",
+          [
+            "has",
+            "is_bridge"
+          ]
         ],
         [
           "==",
-          "kind",
+          [
+            "get",
+            "kind"
+          ],
           "major_road"
         ]
       ],
@@ -1330,16 +1575,25 @@
       "filter": [
         "all",
         [
-          "!has",
-          "is_tunnel"
+          "!",
+          [
+            "has",
+            "is_tunnel"
+          ]
         ],
         [
-          "!has",
-          "is_bridge"
+          "!",
+          [
+            "has",
+            "is_bridge"
+          ]
         ],
         [
           "==",
-          "kind",
+          [
+            "get",
+            "kind"
+          ],
           "major_road"
         ]
       ],
@@ -1374,21 +1628,33 @@
       "filter": [
         "all",
         [
-          "!has",
-          "is_tunnel"
+          "!",
+          [
+            "has",
+            "is_tunnel"
+          ]
         ],
         [
-          "!has",
-          "is_bridge"
+          "!",
+          [
+            "has",
+            "is_bridge"
+          ]
         ],
         [
           "==",
-          "kind",
+          [
+            "get",
+            "kind"
+          ],
           "highway"
         ],
         [
-          "!has",
-          "is_link"
+          "!",
+          [
+            "has",
+            "is_link"
+          ]
         ]
       ],
       "paint": {
@@ -1417,21 +1683,33 @@
       "filter": [
         "all",
         [
-          "!has",
-          "is_tunnel"
+          "!",
+          [
+            "has",
+            "is_tunnel"
+          ]
         ],
         [
-          "!has",
-          "is_bridge"
+          "!",
+          [
+            "has",
+            "is_bridge"
+          ]
         ],
         [
           "==",
-          "kind",
+          [
+            "get",
+            "kind"
+          ],
           "highway"
         ],
         [
-          "!has",
-          "is_link"
+          "!",
+          [
+            "has",
+            "is_link"
+          ]
         ]
       ],
       "paint": {
@@ -1465,7 +1743,10 @@
       "source-layer": "roads",
       "filter": [
         "==",
-        "kind",
+        [
+          "get",
+          "kind"
+        ],
         "rail"
       ],
       "paint": {
@@ -1500,7 +1781,10 @@
       "source-layer": "boundaries",
       "filter": [
         "<=",
-        "kind_detail",
+        [
+          "get",
+          "kind_detail"
+        ],
         2
       ],
       "paint": {
@@ -1536,7 +1820,10 @@
       "source-layer": "boundaries",
       "filter": [
         ">",
-        "kind_detail",
+        [
+          "get",
+          "kind_detail"
+        ],
         2
       ],
       "paint": {
@@ -1579,9 +1866,17 @@
         ],
         [
           "in",
-          "kind",
-          "other",
-          "path"
+          [
+            "get",
+            "kind"
+          ],
+          [
+            "literal",
+            [
+              "other",
+              "path"
+            ]
+          ]
         ]
       ],
       "paint": {
@@ -1637,7 +1932,10 @@
         ],
         [
           "==",
-          "kind",
+          [
+            "get",
+            "kind"
+          ],
           "minor_road"
         ]
       ],
@@ -1673,7 +1971,10 @@
         ],
         [
           "==",
-          "kind",
+          [
+            "get",
+            "kind"
+          ],
           "major_road"
         ]
       ],
@@ -1709,9 +2010,17 @@
         ],
         [
           "in",
-          "kind",
-          "other",
-          "path"
+          [
+            "get",
+            "kind"
+          ],
+          [
+            "literal",
+            [
+              "other",
+              "path"
+            ]
+          ]
         ]
       ],
       "paint": {
@@ -1750,7 +2059,10 @@
         ],
         [
           "==",
-          "kind",
+          [
+            "get",
+            "kind"
+          ],
           "minor_road"
         ]
       ],
@@ -1827,7 +2139,10 @@
         ],
         [
           "==",
-          "kind",
+          [
+            "get",
+            "kind"
+          ],
           "major_road"
         ]
       ],
@@ -1867,12 +2182,18 @@
         ],
         [
           "==",
-          "kind",
+          [
+            "get",
+            "kind"
+          ],
           "highway"
         ],
         [
-          "!has",
-          "is_link"
+          "!",
+          [
+            "has",
+            "is_link"
+          ]
         ]
       ],
       "paint": {
@@ -1908,12 +2229,18 @@
         ],
         [
           "==",
-          "kind",
+          [
+            "get",
+            "kind"
+          ],
           "highway"
         ],
         [
-          "!has",
-          "is_link"
+          "!",
+          [
+            "has",
+            "is_link"
+          ]
         ]
       ],
       "paint": {
@@ -1948,7 +2275,10 @@
       "minzoom": 18,
       "filter": [
         "==",
-        "kind",
+        [
+          "get",
+          "kind"
+        ],
         "address"
       ],
       "layout": {
@@ -1975,9 +2305,17 @@
       "minzoom": 13,
       "filter": [
         "in",
-        "kind",
-        "river",
-        "stream"
+        [
+          "get",
+          "kind"
+        ],
+        [
+          "literal",
+          [
+            "river",
+            "stream"
+          ]
+        ]
       ],
       "layout": {
         "text-font": [
@@ -2888,10 +3226,18 @@
       "minzoom": 15,
       "filter": [
         "in",
-        "kind",
-        "minor_road",
-        "other",
-        "path"
+        [
+          "get",
+          "kind"
+        ],
+        [
+          "literal",
+          [
+            "minor_road",
+            "other",
+            "path"
+          ]
+        ]
       ],
       "layout": {
         "text-font": [
@@ -3782,12 +4128,20 @@
       "source-layer": "water",
       "filter": [
         "in",
-        "kind",
-        "sea",
-        "ocean",
-        "bay",
-        "strait",
-        "fjord"
+        [
+          "get",
+          "kind"
+        ],
+        [
+          "literal",
+          [
+            "sea",
+            "ocean",
+            "bay",
+            "strait",
+            "fjord"
+          ]
+        ]
       ],
       "layout": {
         "text-font": [
@@ -4692,8 +5046,16 @@
       "source-layer": "earth",
       "filter": [
         "in",
-        "kind",
-        "island"
+        [
+          "get",
+          "kind"
+        ],
+        [
+          "literal",
+          [
+            "island"
+          ]
+        ]
       ],
       "layout": {
         "text-font": [
@@ -5585,9 +5947,17 @@
       "source-layer": "water",
       "filter": [
         "in",
-        "kind",
-        "lake",
-        "water"
+        [
+          "get",
+          "kind"
+        ],
+        [
+          "literal",
+          [
+            "lake",
+            "water"
+          ]
+        ]
       ],
       "layout": {
         "text-font": [
@@ -6591,9 +6961,17 @@
       "minzoom": 11,
       "filter": [
         "in",
-        "kind",
-        "highway",
-        "major_road"
+        [
+          "get",
+          "kind"
+        ],
+        [
+          "literal",
+          [
+            "highway",
+            "major_road"
+          ]
+        ]
       ],
       "layout": {
         "text-font": [
@@ -8584,9 +8962,17 @@
       "source-layer": "places",
       "filter": [
         "in",
-        "kind",
-        "neighbourhood",
-        "macrohood"
+        [
+          "get",
+          "kind"
+        ],
+        [
+          "literal",
+          [
+            "neighbourhood",
+            "macrohood"
+          ]
+        ]
       ],
       "layout": {
         "text-field": [
@@ -9494,7 +9880,10 @@
       "source-layer": "places",
       "filter": [
         "==",
-        "kind",
+        [
+          "get",
+          "kind"
+        ],
         "region"
       ],
       "layout": {
@@ -10419,7 +10808,10 @@
       "source-layer": "places",
       "filter": [
         "==",
-        "kind",
+        [
+          "get",
+          "kind"
+        ],
         "locality"
       ],
       "layout": {
@@ -11501,7 +11893,10 @@
       "source-layer": "places",
       "filter": [
         "==",
-        "kind",
+        [
+          "get",
+          "kind"
+        ],
         "country"
       ],
       "layout": {

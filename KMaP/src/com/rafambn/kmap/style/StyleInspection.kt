@@ -103,7 +103,7 @@ internal fun inspectStyle(root: JsonObject): List<StyleIssue> {
                 }
             }
         }
-        (layer["filter"] as? JsonArray)?.let { inspectExpression(it, "$path/filter", id, issues) }
+        (layer["filter"] as? JsonArray)?.let { inspectExpression(it, "$path/filter", id, issues, filter = true) }
     }
     if (usedSources.size > 1) issue("/sources", StyleIssue.Kind.UNSUPPORTED, "The vector canvas uses one caller supplied tile source for all layers")
     return issues
@@ -112,21 +112,47 @@ internal fun inspectStyle(root: JsonObject): List<StyleIssue> {
 internal fun isStyleExpressionOperator(operator: String): Boolean =
     operator in expressionOperators || operator in unsupportedArrayOperators
 
-private fun inspectExpression(value: JsonElement, path: String, layerId: String?, issues: MutableList<StyleIssue>, literalArrayProperty: String? = null) {
+internal fun hasLegacyFilterSyntax(value: JsonElement): Boolean {
+    val expression = value as? JsonArray ?: return false
+    if (isLegacyFilterExpression(expression)) return true
+    if ((expression.firstOrNull() as? JsonPrimitive)?.contentOrNull == "literal") return false
+    return expressionValueIndexes(expression).any { hasLegacyFilterSyntax(expression[it]) }
+}
+
+private fun isLegacyFilterExpression(expression: JsonArray): Boolean {
+    val operator = (expression.firstOrNull() as? JsonPrimitive)?.contentOrNull ?: return false
+    if (operator in setOf("none", "!in", "!has")) return true
+    if (operator == "has" && expression.size == 2 &&
+        (expression[1] as? JsonPrimitive)?.contentOrNull == "\$id") return true
+    if ((expression.getOrNull(1) as? JsonPrimitive)?.isString != true) return false
+    return when (operator) {
+        "==", "!=", ">", ">=", "<", "<=" -> expression.size == 3 && expression[2] is JsonPrimitive
+        "in" -> expression.size >= 3 && expression.drop(2).all { it is JsonPrimitive }
+        else -> false
+    }
+}
+
+private fun expressionValueIndexes(expression: JsonArray): List<Int> = when (
+    (expression.firstOrNull() as? JsonPrimitive)?.contentOrNull
+) {
+    "match" -> expression.indices.filter { it == 1 || it == expression.lastIndex || it >= 3 && it % 2 == 1 }
+    "step" -> expression.indices.filter { it == 1 || it == 2 || it >= 4 && it % 2 == 0 }
+    "interpolate", "interpolate-hcl", "interpolate-lab" ->
+        expression.indices.filter { it == 2 || it >= 4 && it % 2 == 0 }
+    else -> (1 until expression.size).toList()
+}
+
+private fun inspectExpression(
+    value: JsonElement, path: String, layerId: String?, issues: MutableList<StyleIssue>,
+    literalArrayProperty: String? = null, filter: Boolean = false
+) {
     when (value) {
         is JsonObject -> {
-            val stops = value["stops"] as? JsonArray
-            if (stops == null) {
-                value.forEach { (key, item) -> inspectExpression(item, "$path/${key.pointerToken()}", layerId, issues) }
+            if ("stops" in value || "property" in value) {
+                issues += StyleIssue(path, StyleIssue.Kind.UNSUPPORTED, "Legacy style functions are not supported", layerId)
             } else {
-                value.keys.filterNot { key ->
-                    key == "stops" || key == "base" || key == "type" && (value[key] as? JsonPrimitive)?.contentOrNull == "exponential"
-                }.forEach { key ->
-                    issues += StyleIssue("$path/${key.pointerToken()}", StyleIssue.Kind.UNSUPPORTED, "Function option '$key' is ignored; stops use zoom", layerId)
-                }
-                stops.forEachIndexed { index, stop ->
-                    val pair = stop as? JsonArray
-                    if (pair?.size == 2) inspectExpression(pair[1], "$path/stops/$index/1", layerId, issues, literalArrayProperty)
+                value.forEach { (key, item) ->
+                    inspectExpression(item, "$path/${key.pointerToken()}", layerId, issues, filter = filter)
                 }
             }
         }
@@ -141,6 +167,10 @@ private fun inspectExpression(value: JsonElement, path: String, layerId: String?
             if (literalArrayProperty == "text-font" && value.all { it is JsonPrimitive } &&
                 operator !in expressionOperators && operator !in unsupportedArrayOperators
             ) return
+            if (filter && isLegacyFilterExpression(value)) {
+                issues += StyleIssue(path, StyleIssue.Kind.UNSUPPORTED, "Legacy filter syntax is not supported", layerId)
+                return
+            }
             if (operator !in expressionOperators) {
                 issues += StyleIssue(path, StyleIssue.Kind.UNSUPPORTED, "Expression operator '$operator' is not implemented", layerId)
                 return
@@ -152,13 +182,9 @@ private fun inspectExpression(value: JsonElement, path: String, layerId: String?
             if (operator == "in" && value.size != 3) {
                 issues += StyleIssue(path, StyleIssue.Kind.UNSUPPORTED, "'in' requires one item and one collection; legacy filters are not implemented", layerId)
             }
-            val indexes = when (operator) {
-                "match" -> value.indices.filter { it == 1 || it == value.lastIndex || it >= 3 && it % 2 == 1 }
-                "step" -> value.indices.filter { it == 1 || it == 2 || it >= 4 && it % 2 == 0 }
-                "interpolate", "interpolate-hcl", "interpolate-lab" -> value.indices.filter { it == 2 || it >= 4 && it % 2 == 0 }
-                else -> 1 until value.size
+            expressionValueIndexes(value).forEach { index ->
+                inspectExpression(value[index], "$path/$index", layerId, issues, filter = filter)
             }
-            indexes.forEach { index -> inspectExpression(value[index], "$path/$index", layerId, issues) }
         }
         else -> Unit
     }
