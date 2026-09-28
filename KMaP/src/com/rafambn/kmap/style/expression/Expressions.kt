@@ -76,6 +76,29 @@ internal fun evaluateHas(expression: List<*>, context: EvaluationContext, evalua
 }
 
 // Lookup
+private fun String.hasSurrogatePairAt(index: Int): Boolean =
+    index + 1 < length && this[index] in '\uD800'..'\uDBFF' && this[index + 1] in '\uDC00'..'\uDFFF'
+
+private fun String.codePointCount(end: Int = length): Int {
+    var count = 0
+    var index = 0
+    while (index < end) {
+        index += if (hasSurrogatePairAt(index) && index + 1 < end) 2 else 1
+        count++
+    }
+    return count
+}
+
+private fun String.utf16Offset(codePointIndex: Int): Int {
+    var offset = 0
+    var count = 0
+    while (count < codePointIndex && offset < length) {
+        offset += if (hasSurrogatePairAt(offset)) 2 else 1
+        count++
+    }
+    return offset
+}
+
 internal fun evaluateAt(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): Any? {
     if (expression.size != 3) return null
     val index = toDouble(evaluator.evaluate(expression[1], context))?.toInt() ?: return null
@@ -100,7 +123,10 @@ internal fun evaluateIndexOf(expression: List<*>, context: EvaluationContext, ev
     val collection = evaluator.evaluate(expression[2], context)
     val start = if (expression.size == 4) toDouble(evaluator.evaluate(expression[3], context))?.toInt() ?: return null else 0
     return when (collection) {
-        is String -> (item as? String)?.let { collection.indexOf(it, start.coerceIn(0, collection.length)) }
+        is String -> (item as? String)?.let {
+            val offset = collection.indexOf(it, collection.utf16Offset(start.coerceAtLeast(0)))
+            if (offset < 0) -1 else collection.codePointCount(offset)
+        }
         is List<*> -> {
             val from = if (start < 0) (collection.size.toLong() + start).coerceAtLeast(0).toInt() else start
             (from until collection.size).firstOrNull { equalValues(item, collection[it]) } ?: -1
@@ -112,7 +138,7 @@ internal fun evaluateIndexOf(expression: List<*>, context: EvaluationContext, ev
 internal fun evaluateLength(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): Int? {
     if (expression.size != 2) return null
     return when (val value = evaluator.evaluate(expression[1], context)) {
-        is String -> value.length
+        is String -> value.codePointCount()
         is List<*> -> value.size
         else -> null
     }
@@ -123,7 +149,7 @@ internal fun evaluateSlice(expression: List<*>, context: EvaluationContext, eval
     val value = evaluator.evaluate(expression[1], context)
     val from = toDouble(evaluator.evaluate(expression[2], context))?.toInt() ?: return null
     val size = when (value) {
-        is String -> value.length
+        is String -> value.codePointCount()
         is List<*> -> value.size
         else -> return null
     }
@@ -132,7 +158,7 @@ internal fun evaluateSlice(expression: List<*>, context: EvaluationContext, eval
     val start = bounded(from)
     val end = bounded(to).coerceAtLeast(start)
     return when (value) {
-        is String -> value.substring(start, end)
+        is String -> value.substring(value.utf16Offset(start), value.utf16Offset(end))
         is List<*> -> value.subList(start, end)
         else -> null
     }

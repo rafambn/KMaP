@@ -122,6 +122,17 @@ val ExpandedExpressionTest by testSuite {
         assertEquals(listOf(2, 3), evaluator.evaluate(listOf("slice", listOf("literal", listOf(1, 2, 3)), -2, 10), context))
     }
 
+    test("string positions count surrogate pairs once") {
+        val value = "A😀B😀"
+        assertEquals(4, evaluator.evaluate(listOf("length", value), context))
+        assertEquals(2, evaluator.evaluate(listOf("index-of", "B", value), context))
+        assertEquals(3, evaluator.evaluate(listOf("index-of", "😀", value, 2), context))
+        assertEquals(-1, evaluator.evaluate(listOf("index-of", "A", value, 1), context))
+        assertEquals("😀B", evaluator.evaluate(listOf("slice", value, 1, 3), context))
+        assertEquals("😀", evaluator.evaluate(listOf("slice", value, -1), context))
+        assertEquals("B😀", evaluator.evaluate(listOf("slice", value, 2), context))
+    }
+
     test("interpolate blends every numeric array component") {
         val expression = listOf("interpolate", listOf("linear"), listOf("zoom"),
             0, listOf("literal", listOf(0, 0)), 10, listOf("literal", listOf(10, 20)))
