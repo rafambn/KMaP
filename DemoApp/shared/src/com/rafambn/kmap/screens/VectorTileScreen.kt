@@ -41,11 +41,12 @@ fun VectorTileScreen(
         )
     )
     val styleState = remember { mutableStateOf<CompiledStyle?>(null) }
+    val fonts = demoStyleFonts()
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(fonts) {
         val styleJson = Res.readBytes("files/map-tiler-streets.json").decodeToString()
         val sprites = loadDemoSprites(styleJson)
-        styleState.value = StyleResolver().resolve(styleJson, sprites = sprites, locale = "pt").style
+        styleState.value = StyleResolver().resolve(styleJson, sprites = sprites, glyphs = fonts, locale = "pt").style
     }
 
     styleState.value?.let { style ->
