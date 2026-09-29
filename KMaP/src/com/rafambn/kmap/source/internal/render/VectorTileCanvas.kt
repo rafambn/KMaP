@@ -32,6 +32,7 @@ import com.rafambn.kmap.style.compiled.CompiledStyle
 import com.rafambn.kmap.style.compiled.CompiledStyleLayer
 import com.rafambn.kmap.style.compiled.CompiledSymbolLayer
 import com.rafambn.kmap.style.SpriteImage
+import kotlin.math.ceil
 import kotlin.math.pow
 
 private fun sdfIconColorFilter(color: Color, threshold: Float = 0.75f, smoothing: Float = 0.105f): ColorFilter {
@@ -301,7 +302,7 @@ internal fun DrawScope.drawRenderFeature(
             if (path != null) {
                 drawLineFeature(
                     canvas, path, renderFeature.properties, compiledStyleLayer, zoom, tileScaleX, tileScaleY, screenScale,
-                    renderFeature.id, if (geometry is OptimizedGeometry.Polygon) "Polygon" else "LineString"
+                    renderFeature.id, if (geometry is OptimizedGeometry.Polygon) "Polygon" else "LineString", density.density
                 )
             }
         }
@@ -439,9 +440,10 @@ internal fun drawLineFeature(
     screenScale: Float,
     featureId: Long? = null,
     geometryType: String = "LineString",
+    displayDensity: Float = 1f,
 ) {
     val fillColor = compiledStyleLayer.color?.evaluate(zoom, properties, featureId, geometryType) ?: Color.Magenta
-    val width = compiledStyleLayer.width?.evaluate(zoom, properties, featureId, geometryType)?.toFloat() ?: 1f
+    val width = (compiledStyleLayer.width?.evaluate(zoom, properties, featureId, geometryType)?.toFloat() ?: 1f) * displayDensity
     if (width <= 0f) return
     val opacity = compiledStyleLayer.opacity?.evaluate(zoom, properties, featureId, geometryType)?.toFloat() ?: 1f
     val cap = compiledStyleLayer.cap?.evaluate(zoom, properties, featureId, geometryType) ?: "butt"
@@ -738,7 +740,9 @@ private fun DrawScope.drawTextSymbol(
         defaultLayoutDirection = LayoutDirection.Ltr,
     )
     val constraints = Constraints(
-        maxWidth = maxWidth?.let { (it * emSize).toInt() } ?: Constraints.Infinity
+        maxWidth = maxWidth?.let { maxWidthInEms ->
+            with(density) { ceil((maxWidthInEms * emSize).sp.toPx()).toInt() }
+        } ?: Constraints.Infinity
     )
     val textLayoutResult = textMeasurer.measure(
         text = displayText,

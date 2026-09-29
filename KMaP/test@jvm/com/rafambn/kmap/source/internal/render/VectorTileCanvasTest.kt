@@ -284,6 +284,52 @@ val VectorTileCanvasTest by testSuite {
         assertTrue(widths[5] - widths[4] <= 2, "text jumped at zoom 2: $widths")
     }
 
+    test("text max width uses font ems at display density") {
+        fun lineWidths(text: String, density: Float): List<Int> {
+            val style = StyleResolver().resolve("""{
+                "layers": [{"id": "ocean", "type": "symbol", "source-layer": "places",
+                    "layout": {"text-field": "$text", "text-size": 20, "text-max-width": 6},
+                    "paint": {"text-color": "#000000"}}]
+            }""").style!!
+            val bitmap = ImageBitmap(320, 320)
+            val canvas = Canvas(bitmap)
+            val tileScale = 0.125f
+            canvas.translate(160f, 160f)
+            canvas.scale(tileScale, tileScale)
+            val displayDensity = Density(density)
+            CanvasDrawScope().draw(displayDensity, LayoutDirection.Ltr, canvas, Size(320f, 320f)) {
+                drawRenderFeature(
+                    canvas,
+                    OptimizedRenderFeature(OptimizedGeometry.Point(listOf(0f to 0f)), emptyMap()),
+                    createFontFamilyResolver(), displayDensity, style.layers.single(),
+                    2.0, 1f / tileScale, 0f, tileScale, tileScale, 1f
+                )
+            }
+            val pixels = bitmap.toPixelMap()
+            val rows = (0 until 320).filter { y -> (0 until 320).any { x -> pixels[x, y].alpha > 0.5f } }
+            val lines = rows.fold(mutableListOf(mutableListOf<Int>())) { groups, row ->
+                if (groups.last().isNotEmpty() && row > groups.last().last() + 1) groups.add(mutableListOf())
+                groups.last().add(row)
+                groups
+            }
+            return lines.map { line ->
+                val columns = (0 until 320).filter { x -> line.any { y -> pixels[x, y].alpha > 0.5f } }
+                columns.last() - columns.first() + 1
+            }
+        }
+
+        for (density in listOf(1f, 2f)) {
+            val atlanticWidth = lineWidths("Atlantic", density).single()
+            val oceanWidth = lineWidths("Ocean", density).single()
+            val wrapped = lineWidths("Atlantic Ocean", density)
+            assertEquals(2, wrapped.size, "expected two lines at density $density: $wrapped")
+            assertTrue(kotlin.math.abs(wrapped[0] - atlanticWidth) <= 2,
+                "Atlantic was split at density $density: $wrapped vs $atlanticWidth")
+            assertTrue(kotlin.math.abs(wrapped[1] - oceanWidth) <= 2,
+                "Ocean was split at density $density: $wrapped vs $oceanWidth")
+        }
+    }
+
     test("symbol image expression draws a supplied sprite") {
         val sprite = ImageBitmap(4, 4)
         Canvas(sprite).drawRect(Rect(0f, 0f, 4f, 4f), Paint().apply { color = Color.Red })
@@ -931,6 +977,37 @@ val VectorTileCanvasTest by testSuite {
             assertEquals(baseline[x, 16].alpha, tileScaled[x, 16].alpha, 0.02f)
             assertEquals(baseline[x, 16].alpha, mapScaled[x, 16].alpha, 0.02f)
         }
+    }
+
+    test("line widths and dash gaps account for display density") {
+        val style = StyleResolver().resolve("""{
+            "layers": [{"id": "border", "type": "line", "source-layer": "sub_border",
+                "paint": {"line-color": "#000000", "line-width": 2, "line-dasharray": [2, 1]}}]
+        }""").style!!
+        val path = Path().apply { moveTo(16f, 32f); lineTo(112f, 32f) }
+
+        fun render(displayDensity: Float): ImageBitmap {
+            val bitmap = ImageBitmap(128, 64)
+            val canvas = Canvas(bitmap)
+            val density = Density(displayDensity)
+            CanvasDrawScope().draw(density, LayoutDirection.Ltr, canvas, Size(128f, 64f)) {
+                drawRenderFeature(
+                    canvas,
+                    OptimizedRenderFeature(OptimizedGeometry.LineString(path), emptyMap()),
+                    createFontFamilyResolver(), density, style.layers.single(),
+                    0.0, 1f, 0f, 1f, 1f, 1f
+                )
+            }
+            return bitmap
+        }
+
+        val regular = render(1f).toPixelMap()
+        val dense = render(2f).toPixelMap()
+        assertTrue(regular[18, 32].alpha > 0.9f)
+        assertTrue(regular[21, 32].alpha < 0.2f)
+        assertTrue(dense[21, 32].alpha > 0.9f)
+        assertTrue(dense[26, 32].alpha < 0.2f)
+        assertTrue(dense[21, 30].alpha > regular[18, 30].alpha)
     }
 
     test("line dasharray joins odd endpoints and is disabled by line pattern") {
