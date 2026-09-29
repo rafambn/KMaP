@@ -218,7 +218,7 @@ internal fun evaluateTypeOf(expression: List<*>, context: EvaluationContext, eva
         null -> "null"
         is Boolean -> "boolean"
         is String -> "string"
-        is Number -> "number"
+        is Number, is ULong -> "number"
         is List<*> -> "array"
         is Map<*, *> -> "object"
         else -> "object"
@@ -277,10 +277,10 @@ internal fun evaluateNumber(expression: List<*>, context: EvaluationContext, eva
         "+", "*" -> if (expression.size < 3) return null
         else -> return null
     }
-    if (expression.size == 2) return (evaluator.evaluate(expression[1], context) as? Number)?.toDouble()?.let { -it }
-    var result = (evaluator.evaluate(expression[1], context) as? Number)?.toDouble() ?: return null
+    if (expression.size == 2) return numberToDouble(evaluator.evaluate(expression[1], context))?.let { -it }
+    var result = numberToDouble(evaluator.evaluate(expression[1], context)) ?: return null
     for (i in 2 until expression.size) {
-        val num = (evaluator.evaluate(expression[i], context) as? Number)?.toDouble() ?: return null
+        val num = numberToDouble(evaluator.evaluate(expression[i], context)) ?: return null
         result = when (op) {
             "+" -> result + num
             "-" -> result - num
@@ -294,7 +294,7 @@ internal fun evaluateNumber(expression: List<*>, context: EvaluationContext, eva
 
 internal fun evaluateUnaryMath(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): Double? {
     if (expression.size != 2) return null
-    val value = (evaluator.evaluate(expression[1], context) as? Number)?.toDouble() ?: return null
+    val value = numberToDouble(evaluator.evaluate(expression[1], context)) ?: return null
     val result = when (expression[0]) {
         "acos" -> acos(value)
         "asin" -> asin(value)
@@ -317,7 +317,7 @@ internal fun evaluateUnaryMath(expression: List<*>, context: EvaluationContext, 
 
 internal fun evaluateBinaryMath(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): Double? {
     if (expression.size < 3) return null
-    val values = expression.drop(1).map { (evaluator.evaluate(it, context) as? Number)?.toDouble() ?: return null }
+    val values = expression.drop(1).map { numberToDouble(evaluator.evaluate(it, context)) ?: return null }
     val result = when (expression[0]) {
         "%" -> if (values.size == 2 && values[1] != 0.0) values[0] % values[1] else return null
         "^" -> if (values.size == 2) values[0].pow(values[1]) else return null
@@ -384,10 +384,10 @@ internal fun evaluateInterpolate(expression: List<*>, context: EvaluationContext
     return when {
         lowerOutNum != null && upperOutNum != null -> linearInterpolate(fraction, lowerOutNum, upperOutNum)
         lowerOutput is List<*> && upperOutput is List<*> && lowerOutput.size == upperOutput.size &&
-            lowerOutput.all { it is Number } && upperOutput.all { it is Number } -> {
+            lowerOutput.all { numberToDouble(it) != null } && upperOutput.all { numberToDouble(it) != null } -> {
             lowerOutput.indices.map { itemIndex ->
-                val from = (lowerOutput[itemIndex] as Number).toDouble()
-                val to = (upperOutput[itemIndex] as Number).toDouble()
+                val from = numberToDouble(lowerOutput[itemIndex]) ?: return null
+                val to = numberToDouble(upperOutput[itemIndex]) ?: return null
                 linearInterpolate(fraction, from, to)
             }
         }

@@ -88,7 +88,29 @@ val MVTSerializationTest by testSuite {
         val features = RawMVTile(listOf(RawMVTLayer(name = "test", features = listOf(absent, zero))))
             .parse().layers.single().features
         assertNull(features[0].id)
-        assertEquals(0L, features[1].id)
+        assertEquals(0UL, features[1].id)
+    }
+
+    test("unsigned IDs and values retain all 64 bits") {
+        val highIdBytes = byteArrayOf(0x08, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0x01)
+        val highValueBytes = byteArrayOf(0x28, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0x01)
+        val rawId = ProtoBuf.decodeFromByteArray(RawMVTFeature.serializer(), highIdBytes)
+        val rawValue = ProtoBuf.decodeFromByteArray(RawMVTValue.serializer(), highValueBytes)
+        assertEquals(-1L, rawId.id)
+        assertEquals(-1L, rawValue.uint_value)
+
+        val layer = RawMVTLayer(name = "high", keys = listOf("value"), values = listOf(rawValue),
+            features = listOf(rawId.copy(tags = listOf(0, 0))))
+        val parsed = RawMVTile(listOf(layer)).parse()
+        val feature = parsed.layers.single().features.single()
+        assertEquals(ULong.MAX_VALUE, feature.id)
+        assertEquals(ULong.MAX_VALUE, feature.properties["value"])
+
+        val reencoded = parsed.deparse().layers.single()
+        assertEquals(ULong.MAX_VALUE, reencoded.features.single().id?.toULong())
+        assertEquals(ULong.MAX_VALUE, reencoded.values.single().uint_value?.toULong())
+        assertContentEquals(highValueBytes, ProtoBuf.encodeToByteArray(RawMVTValue.serializer(), reencoded.values.single()))
+        assertContentEquals(highIdBytes, ProtoBuf.encodeToByteArray(RawMVTFeature.serializer(), rawId))
     }
 
     test("signed vector tile properties use ZigZag encoding") {

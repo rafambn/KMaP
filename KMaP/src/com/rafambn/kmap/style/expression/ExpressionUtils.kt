@@ -4,16 +4,61 @@ import androidx.compose.ui.graphics.Color
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
-internal fun toDouble(value: Any?): Double? {
-    return when (value) {
-        is Number -> value.toDouble()
-        is String -> value.toDoubleOrNull()
-        else -> null
+internal fun numberToDouble(value: Any?): Double? = when (value) {
+    is ULong -> value.toDouble()
+    is Number -> value.toDouble()
+    else -> null
+}
+
+internal fun toDouble(value: Any?): Double? =
+    if (value is String) value.toDoubleOrNull() else numberToDouble(value)
+
+internal fun equalValues(a: Any?, b: Any?): Boolean = when {
+    a is ULong && b is ULong -> a == b
+    a is ULong && b is Number -> compareUnsigned(a, b) == 0
+    a is Number && b is ULong -> compareUnsigned(b, a) == 0
+    a is Number && b is Number -> {
+        a.exactInteger()?.let { compareSigned(it, b) == 0 }
+            ?: b.exactInteger()?.let { compareSigned(it, a) == 0 }
+            ?: (a.toDouble() == b.toDouble())
+    }
+    else -> a == b
+}
+
+private fun Number.exactInteger(): Long? = when (this) {
+    is Byte, is Short, is Int, is Long -> toLong()
+    else -> null
+}
+
+private fun compareUnsigned(value: ULong, other: Number): Int? {
+    other.exactInteger()?.let { signed ->
+        return if (signed < 0) 1 else value.compareTo(signed.toULong())
+    }
+    val number = other.toDouble()
+    return when {
+        number.isNaN() -> null
+        number < 0 -> 1
+        number >= 18446744073709551616.0 -> -1
+        value == 0UL && number == 0.0 -> 0
+        number < 9007199254740992.0 -> value.toDouble().compareTo(number)
+        else -> value.compareTo(number.toULong())
     }
 }
 
-internal fun equalValues(a: Any?, b: Any?): Boolean =
-    if (a is Number && b is Number) a.toDouble() == b.toDouble() else a == b
+private fun compareSigned(value: Long, other: Number): Int? {
+    other.exactInteger()?.let { return value.compareTo(it) }
+    val number = other.toDouble()
+    return when {
+        number.isNaN() -> null
+        number < Long.MIN_VALUE.toDouble() -> 1
+        number >= 9223372036854775808.0 -> -1
+        value == 0L && number == 0.0 -> 0
+        else -> {
+            val integer = number.toLong()
+            value.compareTo(integer).takeIf { it != 0 } ?: integer.toDouble().compareTo(number)
+        }
+    }
+}
 
 internal fun styleValueToString(value: Any?): String {
     if (value == null) return ""
@@ -30,6 +75,13 @@ internal fun styleValueToString(value: Any?): String {
 internal fun compare(a: Any?, b: Any?): Int? {
     if (a == null || b == null) return null
     if (a is String && b is String) return a.compareTo(b)
+    if (a is ULong && b is ULong) return a.compareTo(b)
+    if (a is ULong && b is Number) return compareUnsigned(a, b)
+    if (a is Number && b is ULong) return compareUnsigned(b, a)?.let { -it }
+    if (a is Number && b is Number) {
+        a.exactInteger()?.let { return compareSigned(it, b) }
+        b.exactInteger()?.let { return compareSigned(it, a)?.let { comparison -> -comparison } }
+    }
     val aNum = toDouble(a)
     val bNum = toDouble(b)
     if (aNum != null && bNum != null) return aNum.compareTo(bNum)

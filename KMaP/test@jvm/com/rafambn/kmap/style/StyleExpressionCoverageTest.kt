@@ -16,6 +16,30 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 val StyleExpressionCoverageTest by testSuite {
+    test("unsigned feature data remains exact in expressions") {
+        val evaluator = ExpressionEvaluator()
+        val context = EvaluationContext(
+            featureProperties = mapOf("value" to ULong.MAX_VALUE),
+            featureId = ULong.MAX_VALUE
+        )
+
+        assertEquals(ULong.MAX_VALUE, evaluator.evaluate(listOf("id"), context))
+        assertEquals("18446744073709551615", evaluator.evaluate(listOf("to-string", listOf("id")), context))
+        assertEquals("number", evaluator.evaluate(listOf("typeof", listOf("get", "value")), context))
+        assertEquals(ULong.MAX_VALUE, evaluator.evaluate(listOf("number", listOf("get", "value")), context))
+        assertEquals(true, evaluator.evaluate(listOf("==", listOf("id"), listOf("get", "value")), context))
+        assertEquals(false, evaluator.evaluate(listOf("==", listOf("id"), 18446744073709551616.0), context))
+        assertEquals(true, evaluator.evaluate(listOf(">", listOf("id"), Long.MAX_VALUE), context))
+        assertEquals(false, evaluator.evaluate(listOf("==", 9007199254740993UL, 9007199254740992.0), context))
+        assertEquals(true, evaluator.evaluate(listOf("==", 0UL, -0.0), context))
+        assertEquals(false, evaluator.evaluate(listOf("==", Long.MAX_VALUE, 9223372036854775808.0), context))
+        assertEquals(true, evaluator.evaluate(listOf("<", Long.MAX_VALUE, 9223372036854775808.0), context))
+        assertEquals("found", evaluator.evaluate(listOf("match", listOf("id"), ULong.MAX_VALUE, "found", "missing"), context))
+        assertEquals("18,446,744,073,709,551,615", evaluator.evaluate(
+            listOf("number-format", listOf("get", "value"), emptyMap<String, Any>()), context
+        ))
+    }
+
     test("interpolation curves apply to numbers, arrays, and colors") {
         val evaluator = ExpressionEvaluator()
         val context = EvaluationContext(zoomLevel = 15.0)

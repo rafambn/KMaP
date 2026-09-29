@@ -323,7 +323,7 @@ internal fun drawFillFeature(
     tileScaleX: Float,
     tileScaleY: Float,
     screenScale: Float,
-    featureId: Long? = null,
+    featureId: ULong? = null,
     tileWorldX: Double = 0.0,
     tileWorldY: Double = 0.0,
 ) {
@@ -438,7 +438,7 @@ internal fun drawLineFeature(
     tileScaleX: Float,
     tileScaleY: Float,
     screenScale: Float,
-    featureId: Long? = null,
+    featureId: ULong? = null,
     geometryType: String = "LineString",
     displayDensity: Float = 1f,
 ) {
@@ -593,7 +593,7 @@ private fun DrawScope.drawSymbolFeature(
     textScale: Float,
     rotationDegrees: Float,
     screenScale: Float,
-    featureId: Long?,
+    featureId: ULong?,
 ) {
     drawIconSymbol(canvas, geometry, properties, compiledStyleLayer, zoom, textScale, rotationDegrees, screenScale, featureId)
     val text = compiledStyleLayer.textField?.evaluate(zoom.toInt().toDouble(), properties, featureId)
@@ -612,7 +612,7 @@ private fun drawIconSymbol(
     textScale: Float,
     rotationDegrees: Float,
     screenScale: Float,
-    featureId: Long?,
+    featureId: ULong?,
 ) {
     val image = layer.iconImage?.evaluate(zoom.toInt().toDouble(), properties, featureId) ?: return
     val size = layer.iconSize?.evaluate(zoom.toInt().toDouble(), properties, featureId)?.toFloat() ?: 1f
@@ -689,7 +689,7 @@ private fun DrawScope.drawTextSymbol(
     textScale: Float,
     rotationDegrees: Float,
     screenScale: Float,
-    featureId: Long?,
+    featureId: ULong?,
 ) {
     val layoutZoom = zoom.toInt().toDouble()
     val transform = compiledStyleLayer.textTransform?.evaluate(layoutZoom, properties, featureId) ?: "none"

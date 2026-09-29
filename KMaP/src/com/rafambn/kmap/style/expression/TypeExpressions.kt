@@ -32,7 +32,7 @@ internal fun evaluateTypeAssertion(expression: List<*>, context: EvaluationConte
 
 private fun matchesType(value: Any?, type: String): Boolean = when (type) {
     "boolean" -> value is Boolean
-    "number" -> value is Number
+    "number" -> value is Number || value is ULong
     "object" -> value is Map<*, *>
     "string" -> value is String
     else -> false
@@ -46,6 +46,7 @@ internal fun evaluateConversion(expression: List<*>, context: EvaluationContext,
             null, false -> false
             is String -> value.isNotEmpty()
             is Number -> value.toDouble() != 0.0 && !value.toDouble().isNaN()
+            is ULong -> value != 0UL
             else -> true
         }
     }
@@ -56,6 +57,7 @@ internal fun evaluateConversion(expression: List<*>, context: EvaluationContext,
                 null, false -> return 0.0
                 true -> return 1.0
                 is Number -> if (value.toDouble().isFinite()) return value.toDouble()
+                is ULong -> return value.toDouble()
                 is String -> {
                     val number = if (value.isBlank()) 0.0 else value.trim().toDoubleOrNull()
                     if (number != null && number.isFinite()) return number

@@ -220,7 +220,7 @@ val MVTParserTest by testSuite {
         assertEquals(1, parsedLayer.features.size)
 
         val parsedFeature = parsedLayer.features[0]
-        assertEquals(123L, parsedFeature.id)
+        assertEquals(123UL, parsedFeature.id)
         assertEquals(RawMVTGeomType.POINT, parsedFeature.type)
         assertEquals(1, parsedFeature.geometry.size)
         assertEquals(Pair(1, 2), parsedFeature.geometry[0][0])

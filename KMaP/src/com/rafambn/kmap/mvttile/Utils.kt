@@ -11,7 +11,7 @@ fun RawMVTile.parse(): MVTile {
             val properties = resolveFeatureProperties(feature, layer)
 
             MVTFeature(
-                id = feature.id,
+                id = feature.id?.toULong(),
                 type = feature.type,
                 geometry = decodedGeometry,
                 properties = properties
@@ -38,7 +38,7 @@ fun MVTile.deparse(): RawMVTile {
             val tags = encodeFeatureProperties(parsedFeature.properties, keys, values)
 
             RawMVTFeature(
-                id = parsedFeature.id,
+                id = parsedFeature.id?.toLong(),
                 tags = tags,
                 type = parsedFeature.type,
                 geometry = geometry
@@ -179,7 +179,7 @@ internal fun resolveFeatureProperties(feature: RawMVTFeature, layer: RawMVTLayer
                     rawValue.float_value != null -> rawValue.float_value
                     rawValue.double_value != null -> rawValue.double_value
                     rawValue.int_value != null -> rawValue.int_value
-                    rawValue.uint_value != null -> rawValue.uint_value
+                    rawValue.uint_value != null -> rawValue.uint_value.toULong()
                     rawValue.sint_value != null -> rawValue.sint_value
                     rawValue.bool_value != null -> rawValue.bool_value
                     else -> null
@@ -212,6 +212,7 @@ internal fun encodeFeatureProperties(properties: Map<String, Any?>, keys: Mutabl
             is Double -> RawMVTValue(double_value = value)
             is Int -> RawMVTValue(int_value = value.toLong())
             is Long -> RawMVTValue(int_value = value)
+            is ULong -> RawMVTValue(uint_value = value.toLong())
             is Boolean -> RawMVTValue(bool_value = value)
             else -> RawMVTValue(string_value = value.toString())
         }

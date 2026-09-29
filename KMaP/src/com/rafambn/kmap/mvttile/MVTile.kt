@@ -11,7 +11,7 @@ data class MVTLayer(
 )
 
 data class MVTFeature(
-    val id: Long?,
+    val id: ULong?,
     val type: RawMVTGeomType,
     val geometry: List<List<Pair<Int, Int>>>,
     val properties: Map<String, Any?>

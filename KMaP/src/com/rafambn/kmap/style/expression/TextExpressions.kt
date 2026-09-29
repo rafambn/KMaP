@@ -8,7 +8,8 @@ import kotlin.math.pow
 
 internal fun evaluateNumberFormat(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): String? {
     if (expression.size != 3) return null
-    val value = (evaluator.evaluate(expression[1], context) as? Number)?.toDouble() ?: return null
+    val rawValue = evaluator.evaluate(expression[1], context)
+    val value = numberToDouble(rawValue) ?: return null
     if (!value.isFinite()) return null
     val options = expression[2] as? Map<*, *> ?: return null
     val localeTag = options["locale"]?.let { evaluator.evaluate(it, context) } as? String ?: context.locale
@@ -23,7 +24,7 @@ internal fun evaluateNumberFormat(expression: List<*>, context: EvaluationContex
     val factor = 10.0.pow(maximum)
     val scaled = abs(value) * factor
     val rounded = if (scaled.isFinite()) floor(scaled + 0.5) / factor else abs(value)
-    val fixed = expandScientific(rounded.toString())
+    val fixed = if (rawValue is ULong) rawValue.toString() else expandScientific(rounded.toString())
     val integer = fixed.substringBefore('.')
     val fraction = fixed.substringAfter('.', "").padEnd(maximum, '0').trimEnd('0').padEnd(minimum, '0')
     val grouping = when (locale) {

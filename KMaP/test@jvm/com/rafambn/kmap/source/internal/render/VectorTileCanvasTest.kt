@@ -61,8 +61,8 @@ val VectorTileCanvasTest by testSuite {
             ]
         }""").style!!
         val features = listOf(
-            MVTFeature(17L, RawMVTGeomType.POLYGON, listOf(listOf(2 to 2, 14 to 2, 14 to 14, 2 to 14)), emptyMap()),
-            MVTFeature(18L, RawMVTGeomType.POLYGON, listOf(listOf(18 to 2, 30 to 2, 30 to 14, 18 to 14)), emptyMap())
+            MVTFeature(17UL, RawMVTGeomType.POLYGON, listOf(listOf(2 to 2, 14 to 2, 14 to 14, 2 to 14)), emptyMap()),
+            MVTFeature(18UL, RawMVTGeomType.POLYGON, listOf(listOf(18 to 2, 30 to 2, 30 to 14, 18 to 14)), emptyMap())
         )
         val tile = VectorTile(0, 0, 0, MVTile(listOf(MVTLayer("landuse", 32, features))))
         val renderFeatures = optimizeMVTile(tile, style).optimizedTile!!.layerFeatures.getValue("parks")
@@ -534,7 +534,7 @@ val VectorTileCanvasTest by testSuite {
                 "layout": {"icon-image": "dot"},
                 "paint": {"icon-color": "#ff0000", "icon-halo-color": "#00ff00", "icon-halo-width": 2}}]
         }""", sprites = mapOf("dot" to SpriteImage(sdfCircleSprite(), sdf = true))).style!!
-        val feature = MVTFeature(1L, RawMVTGeomType.POINT, listOf(listOf(16 to 16)), emptyMap())
+        val feature = MVTFeature(1UL, RawMVTGeomType.POINT, listOf(listOf(16 to 16)), emptyMap())
         val tile = optimizeMVTile(VectorTile(0, 0, 0, MVTile(listOf(MVTLayer("places", 32, listOf(feature))))), style)
 
         fun render(scaleAdjustment: Float): ImageBitmap {

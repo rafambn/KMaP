@@ -43,7 +43,7 @@ internal fun evaluateColorComponents(expression: List<*>, context: EvaluationCon
 internal fun evaluatePerceptualInterpolate(expression: List<*>, context: EvaluationContext, evaluator: ExpressionEvaluator): Color? {
     if (expression.size < 7 || expression.size % 2 == 0) return null
     val interpolation = expression[1] as? List<*> ?: return null
-    val input = (evaluator.evaluate(expression[2], context) as? Number)?.toDouble() ?: return null
+    val input = numberToDouble(evaluator.evaluate(expression[2], context)) ?: return null
     val stops = (3 until expression.size step 2).map { index ->
         val position = (expression[index] as? Number)?.toDouble() ?: return null
         val value = evaluator.evaluate(expression[index + 1], context)

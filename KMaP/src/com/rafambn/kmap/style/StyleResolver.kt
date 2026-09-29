@@ -12,6 +12,7 @@ import com.rafambn.kmap.style.compiled.CompiledSymbolLayer
 import com.rafambn.kmap.style.compiled.CompiledValue
 import com.rafambn.kmap.style.evaluation.EvaluationContext
 import com.rafambn.kmap.style.evaluation.ExpressionEvaluator
+import com.rafambn.kmap.style.expression.numberToDouble
 import com.rafambn.kmap.style.expression.parseColor
 import com.rafambn.kmap.style.model.Style
 import com.rafambn.kmap.style.model.StyleLayer
@@ -224,14 +225,13 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
         else -> null
     }
 
-    private fun asNumber(value: Any?): Double? = (value as? Number)?.toDouble()?.takeIf { it.isFinite() }
+    private fun asNumber(value: Any?): Double? = numberToDouble(value)?.takeIf { it.isFinite() }
     private fun asBoolean(value: Any?): Boolean? = value as? Boolean
     private fun asString(value: Any?): String? = value as? String
 
     private fun asNumberList(value: Any?): List<Double>? {
         val values = value as? List<*> ?: return null
-        if (values.any { it !is Number }) return null
-        return values.map { (it as Number).toDouble() }.takeIf { numbers -> numbers.all { it.isFinite() } }
+        return values.map { numberToDouble(it) ?: return null }.takeIf { numbers -> numbers.all { it.isFinite() } }
     }
 
     private fun asStringList(value: Any?): List<String>? {

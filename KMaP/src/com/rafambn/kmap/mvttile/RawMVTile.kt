@@ -24,6 +24,7 @@ data class RawMVTValue(
     @ProtoNumber(2) val float_value: Float? = null,
     @ProtoNumber(3) val double_value: Double? = null,
     @ProtoNumber(4) val int_value: Long? = null,
+    // Protobuf stores uint64 as the same 64-bit pattern in Long; parse it as ULong.
     @ProtoNumber(5) val uint_value: Long? = null,
     @ProtoNumber(6) @ProtoType(ProtoIntegerType.SIGNED) val sint_value: Long? = null,
     @ProtoNumber(7) val bool_value: Boolean? = null
@@ -31,6 +32,7 @@ data class RawMVTValue(
 
 @Serializable
 data class RawMVTFeature(
+    // Protobuf stores uint64 as the same 64-bit pattern in Long; parse it as ULong.
     @ProtoNumber(1) val id: Long? = null,
     @ProtoNumber(2) @ProtoPacked val tags: List<Int> = emptyList(),
     @ProtoNumber(3) val type: RawMVTGeomType = RawMVTGeomType.UNKNOWN,
