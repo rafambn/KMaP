@@ -178,6 +178,31 @@ val VectorTileCanvasTest by testSuite {
         assertTrue(haloAlpha in 0.2f..0.55f, "halo alpha was $haloAlpha")
     }
 
+    test("text fill keeps its color after painting a white halo") {
+        val style = StyleResolver().resolve("""{
+            "layers": [{"id": "continents", "type": "symbol", "source-layer": "places",
+                "layout": {"text-field": "A", "text-size": 48},
+                "paint": {"text-color": "hsl(0,0%,19%)", "text-halo-color": "hsl(0,0%,100%)",
+                    "text-halo-width": 1, "text-halo-blur": 1}}]
+        }""").style!!
+        val bitmap = ImageBitmap(128, 96)
+        val canvas = Canvas(bitmap)
+
+        CanvasDrawScope().draw(Density(1f), LayoutDirection.Ltr, canvas, Size(128f, 96f)) {
+            drawRenderFeature(
+                canvas,
+                OptimizedRenderFeature(OptimizedGeometry.Point(listOf(64f to 48f)), emptyMap()),
+                createFontFamilyResolver(), Density(1f), style.layers.single(),
+                0.0, 1f, 0f, 1f, 1f, 1f
+            )
+        }
+
+        val pixels = bitmap.toPixelMap()
+        assertTrue((0 until 128).any { x -> (0 until 96).any { y ->
+            pixels[x, y].let { it.alpha > 0.95f && it.red in 0.15f..0.25f && it.green in 0.15f..0.25f }
+        } })
+    }
+
     test("symbol image expression draws a supplied sprite") {
         val sprite = ImageBitmap(4, 4)
         Canvas(sprite).drawRect(Rect(0f, 0f, 4f, 4f), Paint().apply { color = Color.Red })

@@ -802,6 +802,8 @@ private fun DrawScope.drawTextSymbol(
 
             textLayoutResult.multiParagraph.paint(
                 canvas = drawContext.canvas,
+                color = textStyle.color,
+                shadow = Shadow.None,
                 drawStyle = Fill,
                 blendMode = DrawScope.DefaultBlendMode
             )
