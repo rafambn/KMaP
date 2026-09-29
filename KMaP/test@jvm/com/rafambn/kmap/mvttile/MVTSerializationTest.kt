@@ -3,8 +3,10 @@
 package com.rafambn.kmap.mvttile
 
 import de.infix.testBalloon.framework.core.testSuite
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.protobuf.ProtoBuf
 
@@ -57,8 +59,58 @@ private fun createTestMVTile(): RawMVTile {
 }
 
 val MVTSerializationTest by testSuite {
+    test("MVT arrays use packed Protobuf fields") {
+        val feature = RawMVTFeature(tags = listOf(0, 1), geometry = listOf(9, 0))
+
+        assertContentEquals(
+            byteArrayOf(0x12, 0x02, 0x00, 0x01, 0x22, 0x02, 0x09, 0x00),
+            ProtoBuf.encodeToByteArray(RawMVTFeature.serializer(), feature)
+        )
+    }
+
+    test("MVT layers include the required version field") {
+        val layer = RawMVTLayer(name = "x")
+
+        assertContentEquals(
+            byteArrayOf(0x78, 0x01, 0x0a, 0x01, 0x78),
+            ProtoBuf.encodeToByteArray(RawMVTLayer.serializer(), layer)
+        )
+    }
+
+    test("absent and zero feature IDs stay distinct") {
+        val absent = RawMVTFeature()
+        val zero = RawMVTFeature(id = 0L)
+
+        assertContentEquals(byteArrayOf(), ProtoBuf.encodeToByteArray(RawMVTFeature.serializer(), absent))
+        assertContentEquals(byteArrayOf(0x08, 0x00), ProtoBuf.encodeToByteArray(RawMVTFeature.serializer(), zero))
+        assertEquals(0L, ProtoBuf.decodeFromByteArray(RawMVTFeature.serializer(), byteArrayOf(0x08, 0x00)).id)
+
+        val features = RawMVTile(listOf(RawMVTLayer(name = "test", features = listOf(absent, zero))))
+            .parse().layers.single().features
+        assertNull(features[0].id)
+        assertEquals(0L, features[1].id)
+    }
+
+    test("signed vector tile properties use ZigZag encoding") {
+        val positiveBytes = byteArrayOf(0x30, 0x3c)
+        val negativeBytes = byteArrayOf(0x30, 0x05)
+
+        val positive = ProtoBuf.decodeFromByteArray(RawMVTValue.serializer(), positiveBytes)
+        val negative = ProtoBuf.decodeFromByteArray(RawMVTValue.serializer(), negativeBytes)
+
+        assertEquals(30L, positive.sint_value)
+        assertEquals(-3L, negative.sint_value)
+        assertContentEquals(positiveBytes, ProtoBuf.encodeToByteArray(RawMVTValue.serializer(), positive))
+        assertContentEquals(negativeBytes, ProtoBuf.encodeToByteArray(RawMVTValue.serializer(), negative))
+
+        val layer = RawMVTLayer(name = "state_label", keys = listOf("admin_level"), values = listOf(positive),
+            features = listOf(RawMVTFeature(tags = listOf(0, 0))))
+        assertEquals(30L, RawMVTile(listOf(layer)).parse().layers.single().features.single().properties["admin_level"])
+    }
+
     test("testEncodeDecodeZigZag") {
-        val testValues = listOf(0, 1, -1, 2, -2, 15, -15, 16, -16, 100, -100, 1000000, -1000000, 1073741823, -1073741824)
+        val testValues = listOf(0, 1, -1, 2, -2, 15, -15, 16, -16, 100, -100, 1000000, -1000000,
+            1073741823, -1073741824, 1073741824, -1073741825, Int.MAX_VALUE, Int.MIN_VALUE)
 
         testValues.forEach { original ->
             val encoded = encodeZigZag(original)
@@ -156,6 +208,9 @@ val MVTSerializationTest by testSuite {
             val decodedCoordinates = decodeFeatureGeometry(feature)
 
             assertEquals(coordinates, decodedCoordinates, "Coordinates mismatch for $description")
+            if (type == RawMVTGeomType.POLYGON) {
+                assertEquals(CMD_CLOSEPATH or (1 shl 3), encoded.last())
+            }
         }
     }
 

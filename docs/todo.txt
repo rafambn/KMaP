@@ -1,5 +1,9 @@
 KMaP TODO
 
+- Preserve the full unsigned 64-bit range of MVT feature IDs and `uint_value`
+  properties. They currently use `Long`, so values above `Long.MAX_VALUE` appear
+  negative. Update parsed IDs, property values, and expression evaluation together.
+
 - Handle vector style changes for an existing canvas ID. `CanvasKernel.refreshCanvas`
   keeps the engine and tiles processed with the old style while `VectorTileCanvas`
   draws with the new style. Keep raw MVT tiles for reprocessing, or replace the
