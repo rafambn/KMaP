@@ -39,6 +39,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 import kotlin.math.hypot
+import kotlin.math.pow
 
 private fun sdfCircleSprite(): ImageBitmap = ImageBitmap(32, 32).also { image ->
     val canvas = Canvas(image)
@@ -201,6 +202,86 @@ val VectorTileCanvasTest by testSuite {
         assertTrue((0 until 128).any { x -> (0 until 96).any { y ->
             pixels[x, y].let { it.alpha > 0.95f && it.red in 0.15f..0.25f && it.green in 0.15f..0.25f }
         } })
+    }
+
+    test("text halo width stays in screen pixels across tile and map scales") {
+        fun render(tileScale: Float, mapScale: Float, displayDensity: Float, haloWidth: Int): ImageBitmap {
+            val style = StyleResolver().resolve("""{
+                "layers": [{"id": "label", "type": "symbol", "source-layer": "places",
+                    "layout": {"text-field": "H", "text-size": 36},
+                    "paint": {"text-color": "#000000", "text-halo-color": "#ffffff",
+                        "text-halo-width": $haloWidth}}]
+            }""").style!!
+            val bitmap = ImageBitmap(320, 320)
+            val canvas = Canvas(bitmap)
+            canvas.translate(160f, 160f)
+            canvas.scale(mapScale, mapScale)
+            canvas.scale(tileScale, tileScale)
+            val density = Density(displayDensity)
+            CanvasDrawScope().draw(density, LayoutDirection.Ltr, canvas, Size(320f, 320f)) {
+                drawRenderFeature(
+                    canvas,
+                    OptimizedRenderFeature(OptimizedGeometry.Point(listOf(0f to 0f)), emptyMap()),
+                    createFontFamilyResolver(), density, style.layers.single(),
+                    0.0, 1f / tileScale, 0f, tileScale, tileScale, mapScale
+                )
+            }
+            return bitmap
+        }
+
+        fun leftMargin(tileScale: Float, mapScale: Float, displayDensity: Float): Int {
+            fun leftEdge(bitmap: ImageBitmap): Int {
+                val pixels = bitmap.toPixelMap()
+                return (0 until 320).first { x -> (0 until 320).any { y -> pixels[x, y].alpha > 0.5f } }
+            }
+            return leftEdge(render(tileScale, mapScale, displayDensity, 0)) -
+                leftEdge(render(tileScale, mapScale, displayDensity, 2))
+        }
+
+        val baseline = leftMargin(1f, 1f, 1f)
+        assertTrue(baseline in 1..3, "baseline halo margin was $baseline px")
+        assertTrue(kotlin.math.abs(leftMargin(0.125f, 1f, 1f) - baseline) <= 1)
+        assertTrue(kotlin.math.abs(leftMargin(0.125f, 1.5f, 1f) - baseline) <= 1)
+        assertTrue(kotlin.math.abs(leftMargin(0.125f, 1f, 2f) - baseline * 2) <= 1)
+    }
+
+    test("text size follows fractional zoom without jumping at tile zoom boundaries") {
+        fun textWidth(zoom: Double, textSize: String): Int {
+            val style = StyleResolver().resolve("""{
+                "layers": [{"id": "label", "type": "symbol", "source-layer": "places",
+                    "layout": {"text-field": "H", "text-size": $textSize},
+                    "paint": {"text-color": "#000000"}}]
+            }""").style!!
+            val bitmap = ImageBitmap(320, 320)
+            val canvas = Canvas(bitmap)
+            val tileScale = 0.125f
+            val mapScale = 2.0.pow(zoom - zoom.toInt()).toFloat()
+            canvas.translate(160f, 160f)
+            canvas.scale(mapScale, mapScale)
+            canvas.scale(tileScale, tileScale)
+            CanvasDrawScope().draw(Density(1f), LayoutDirection.Ltr, canvas, Size(320f, 320f)) {
+                drawRenderFeature(
+                    canvas,
+                    OptimizedRenderFeature(OptimizedGeometry.Point(listOf(0f to 0f)), emptyMap()),
+                    createFontFamilyResolver(), Density(1f), style.layers.single(),
+                    zoom, 1f / tileScale, 0f, tileScale, tileScale, mapScale
+                )
+            }
+            val pixels = bitmap.toPixelMap()
+            val columns = (0 until 320).filter { x -> (0 until 320).any { y -> pixels[x, y].alpha > 0.5f } }
+            return columns.last() - columns.first() + 1
+        }
+
+        val constant = listOf(0.0, 0.5, 0.99, 1.0, 1.5, 1.99, 2.0)
+            .map { textWidth(it, "30") }
+        assertTrue(constant.max() - constant.min() <= 2, "fixed text size varied: $constant")
+
+        val expression = """["interpolate", ["linear"], ["zoom"], 0, 20, 2, 40]"""
+        val widths = listOf(0.0, 0.5, 1.0, 1.5, 1.99, 2.0)
+            .map { textWidth(it, expression) }
+        assertTrue(widths.zipWithNext().all { (before, after) -> after >= before }, "text did not grow smoothly: $widths")
+        assertTrue(widths[2] > widths[0] && widths[2] < widths[5], "zoom 1 was not interpolated: $widths")
+        assertTrue(widths[5] - widths[4] <= 2, "text jumped at zoom 2: $widths")
     }
 
     test("symbol image expression draws a supplied sprite") {

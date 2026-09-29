@@ -596,7 +596,8 @@ private fun DrawScope.drawSymbolFeature(
     drawIconSymbol(canvas, geometry, properties, compiledStyleLayer, zoom, textScale, rotationDegrees, screenScale, featureId)
     val text = compiledStyleLayer.textField?.evaluate(zoom.toInt().toDouble(), properties, featureId)
     text?.let {
-        drawTextSymbol(canvas, geometry, properties, fontResolver, density, compiledStyleLayer, glyphs, zoom, it, textScale, rotationDegrees, featureId)
+        drawTextSymbol(canvas, geometry, properties, fontResolver, density, compiledStyleLayer, glyphs, zoom, it, textScale,
+            rotationDegrees, screenScale, featureId)
     }
 }
 
@@ -685,11 +686,12 @@ private fun DrawScope.drawTextSymbol(
     text: String,
     textScale: Float,
     rotationDegrees: Float,
+    screenScale: Float,
     featureId: Long?,
 ) {
     val layoutZoom = zoom.toInt().toDouble()
     val transform = compiledStyleLayer.textTransform?.evaluate(layoutZoom, properties, featureId) ?: "none"
-    val size = compiledStyleLayer.textSize?.evaluate(layoutZoom, properties, featureId) ?: 16.0
+    val size = compiledStyleLayer.textSize?.evaluate(zoom, properties, featureId) ?: 16.0
     val textColor = compiledStyleLayer.textColor?.evaluate(zoom, properties, featureId) ?: Color.Black
     val opacity = compiledStyleLayer.textOpacity?.evaluate(zoom, properties, featureId) ?: 1.0
 
@@ -707,8 +709,8 @@ private fun DrawScope.drawTextSymbol(
     val translate = compiledStyleLayer.textTranslate?.evaluate(zoom, properties, featureId) ?: listOf(0.0, 0.0)
     val rotate = compiledStyleLayer.textRotate?.evaluate(layoutZoom, properties, featureId)
 
-    val finalSize = (size * textScale).sp
-    val emSize = size.toFloat() * textScale
+    val emSize = size.toFloat() * textScale / screenScale
+    val finalSize = emSize.sp
     val fontNames = compiledStyleLayer.textFont?.evaluate(layoutZoom, properties, featureId)
     val fontFamily = fontNames?.firstNotNullOfOrNull { glyphs[it] }
 
@@ -785,15 +787,16 @@ private fun DrawScope.drawTextSymbol(
         }) {
             if (haloColor != null && haloWidth > 0) {
                 val fadedHaloColor = haloColor.copy(alpha = haloColor.alpha * opacity.toFloat())
+                val haloPixelScale = density.density * textScale / screenScale
                 textLayoutResult.multiParagraph.paint(
                     canvas = drawContext.canvas,
                     color = fadedHaloColor,
                     shadow = if (haloBlur > 0) Shadow(
                         color = fadedHaloColor,
-                        blurRadius = haloBlur.toFloat()
+                        blurRadius = haloBlur.toFloat() * haloPixelScale
                     ) else null,
                     drawStyle = Stroke(
-                        width = haloWidth.toFloat() * 2,
+                        width = haloWidth.toFloat() * 2 * haloPixelScale,
                         join = StrokeJoin.Round,
                         cap = StrokeCap.Round
                     )
