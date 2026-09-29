@@ -16,7 +16,8 @@ private val paintProperties = mapOf(
     "background" to setOf("background-color", "background-opacity", "background-pattern"),
     "fill" to setOf("fill-color", "fill-opacity", "fill-outline-color", "fill-antialias", "fill-pattern"),
     "line" to setOf("line-color", "line-width", "line-opacity", "line-dasharray"),
-    "symbol" to setOf("text-color", "text-opacity", "text-halo-color", "text-halo-width", "text-halo-blur", "text-translate", "icon-color", "icon-opacity")
+    "symbol" to setOf("text-color", "text-opacity", "text-halo-color", "text-halo-width", "text-halo-blur", "text-translate",
+        "icon-color", "icon-opacity", "icon-halo-color", "icon-halo-width", "icon-halo-blur")
 )
 private val layoutProperties = mapOf(
     "background" to setOf("visibility"),

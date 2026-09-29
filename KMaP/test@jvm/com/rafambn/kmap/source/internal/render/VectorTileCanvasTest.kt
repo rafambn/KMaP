@@ -38,6 +38,17 @@ import kotlin.test.assertTrue
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
+import kotlin.math.hypot
+
+private fun sdfCircleSprite(): ImageBitmap = ImageBitmap(32, 32).also { image ->
+    val canvas = Canvas(image)
+    val paint = Paint()
+    for (y in 0 until 32) for (x in 0 until 32) {
+        val distance = hypot(x - 15.5f, y - 15.5f)
+        paint.color = Color.White.copy(alpha = (0.75f + (8.5f - distance) / 8f).coerceIn(0f, 1f))
+        canvas.drawRect(Rect(x.toFloat(), y.toFloat(), x + 1f, y + 1f), paint)
+    }
+}
 
 val VectorTileCanvasTest by testSuite {
     test("fill paint reads each MVT feature ID and polygon geometry type") {
@@ -181,7 +192,10 @@ val VectorTileCanvasTest by testSuite {
                     layout = mapOf("icon-image" to JsonArray(listOf(JsonPrimitive("image"), JsonPrimitive("dot")))),
                     paint = mapOf(
                         "icon-opacity" to JsonPrimitive(0.5),
-                        "icon-color" to JsonPrimitive("#0000ff")
+                        "icon-color" to JsonPrimitive("#0000ff"),
+                        "icon-halo-color" to JsonPrimitive("#0000ff"),
+                        "icon-halo-width" to JsonPrimitive(4),
+                        "icon-halo-blur" to JsonPrimitive(2)
                     )
                 ))
             )),
@@ -200,6 +214,7 @@ val VectorTileCanvasTest by testSuite {
         val pixels = bitmap.toPixelMap()
         assertEquals(0.5f, pixels[16, 16].alpha, 0.02f)
         assertTrue(pixels[16, 16].red > 0.9f && pixels[16, 16].blue < 0.1f)
+        assertEquals(0f, pixels[19, 16].alpha)
         assertEquals(0f, pixels[10, 10].alpha)
     }
 
@@ -268,6 +283,125 @@ val VectorTileCanvasTest by testSuite {
         assertEquals(0.25f, pixels[8, 8].alpha, 0.02f)
         assertTrue(pixels[24, 8].green > 0.9f && pixels[24, 8].blue < 0.1f)
         assertEquals(0.5f, pixels[24, 8].alpha, 0.02f)
+    }
+
+    test("SDF icon halo follows width, blur, feature color, and icon opacity") {
+        val resolution = StyleResolver().resolve("""{
+            "layers": [{"id": "icons", "type": "symbol", "source-layer": "places",
+                "layout": {"icon-image": "dot"},
+                "paint": {
+                    "icon-color": "#ff0000",
+                    "icon-opacity": 0.5,
+                    "icon-halo-color": ["case", ["==", ["get", "kind"], "blue"], "rgba(0, 0, 255, 0.5)", "#00ff00"],
+                    "icon-halo-width": ["get", "width"],
+                    "icon-halo-blur": ["get", "blur"]
+                }}]
+        }""", sprites = mapOf("dot" to SpriteImage(sdfCircleSprite(), sdf = true)))
+        assertTrue(resolution.issues.isEmpty(), resolution.issues.toString())
+        val bitmap = ImageBitmap(144, 48)
+        val canvas = Canvas(bitmap)
+        CanvasDrawScope().draw(Density(1f), LayoutDirection.Ltr, canvas, Size(144f, 48f)) {
+            listOf(
+                Triple(24f, 0.0, 0.0),
+                Triple(72f, 2.0, 0.0),
+                Triple(120f, 2.0, 2.0)
+            ).forEachIndexed { index, (x, width, blur) ->
+                val properties = mapOf("kind" to if (index == 0) "blue" else "green", "width" to width, "blur" to blur)
+                drawRenderFeature(canvas, OptimizedRenderFeature(OptimizedGeometry.Point(listOf(x to 24f)), properties),
+                    createFontFamilyResolver(), Density(1f), resolution.style!!.layers.single(),
+                    0.0, 1f, 0f, 1f, 1f, 1f)
+            }
+        }
+        val pixels = bitmap.toPixelMap()
+        assertEquals(0f, pixels[33, 24].alpha, 0.02f)
+        assertTrue(pixels[81, 24].green > 0.9f && pixels[81, 24].red < 0.1f)
+        assertEquals(0.5f, pixels[81, 24].alpha, 0.1f)
+        assertEquals(0f, pixels[83, 24].alpha, 0.02f)
+        assertTrue(pixels[131, 24].alpha > 0.05f)
+    }
+
+    test("SDF halo remains visible when the icon color is transparent") {
+        val style = StyleResolver().resolve("""{
+            "layers": [{"id": "icons", "type": "symbol", "source-layer": "places",
+                "layout": {"icon-image": "dot"},
+                "paint": {"icon-color": "rgba(0, 0, 0, 0)", "icon-halo-color": "#0000ff", "icon-halo-width": 2}}]
+        }""", sprites = mapOf("dot" to SpriteImage(sdfCircleSprite(), sdf = true))).style!!
+        val bitmap = ImageBitmap(48, 48)
+        val canvas = Canvas(bitmap)
+        CanvasDrawScope().draw(Density(1f), LayoutDirection.Ltr, canvas, Size(48f, 48f)) {
+            drawRenderFeature(canvas, OptimizedRenderFeature(OptimizedGeometry.Point(listOf(24f to 24f)), emptyMap()),
+                createFontFamilyResolver(), Density(1f), style.layers.single(), 0.0, 1f, 0f, 1f, 1f, 1f)
+        }
+        val pixel = bitmap.toPixelMap()[24, 24]
+        assertTrue(pixel.blue > 0.9f && pixel.alpha > 0.9f)
+    }
+
+    test("SDF halo with zero or omitted width does not draw") {
+        for (haloWidth in listOf("", ", \"icon-halo-width\": 0")) {
+            val style = StyleResolver().resolve("""{
+                "layers": [{"id": "icons", "type": "symbol", "source-layer": "places",
+                    "layout": {"icon-image": "dot"},
+                    "paint": {"icon-color": "rgba(0, 0, 0, 0)", "icon-halo-color": "#0000ff"$haloWidth}}]
+            }""", sprites = mapOf("dot" to SpriteImage(sdfCircleSprite(), sdf = true))).style!!
+            val bitmap = ImageBitmap(48, 48)
+            val canvas = Canvas(bitmap)
+            CanvasDrawScope().draw(Density(1f), LayoutDirection.Ltr, canvas, Size(48f, 48f)) {
+                drawRenderFeature(canvas, OptimizedRenderFeature(OptimizedGeometry.Point(listOf(24f to 24f)), emptyMap()),
+                    createFontFamilyResolver(), Density(1f), style.layers.single(), 0.0, 1f, 0f, 1f, 1f, 1f)
+            }
+            assertEquals(0f, bitmap.toPixelMap()[24, 24].alpha)
+        }
+    }
+
+    test("SDF halo width stays in screen pixels when icon size changes") {
+        val style = StyleResolver().resolve("""{
+            "layers": [{"id": "icons", "type": "symbol", "source-layer": "places",
+                "layout": {"icon-image": "dot", "icon-size": ["get", "size"]},
+                "paint": {"icon-color": "#ff0000", "icon-halo-color": "#00ff00", "icon-halo-width": 2}}]
+        }""", sprites = mapOf("dot" to SpriteImage(sdfCircleSprite(), sdf = true))).style!!
+        val bitmap = ImageBitmap(144, 64)
+        val canvas = Canvas(bitmap)
+        CanvasDrawScope().draw(Density(1f), LayoutDirection.Ltr, canvas, Size(144f, 64f)) {
+            listOf(32f to 1.0, 96f to 2.0).forEach { (x, size) ->
+                drawRenderFeature(canvas, OptimizedRenderFeature(
+                    OptimizedGeometry.Point(listOf(x to 32f)), mapOf("size" to size)
+                ), createFontFamilyResolver(), Density(1f), style.layers.single(),
+                    0.0, 1f, 0f, 1f, 1f, 1f)
+            }
+        }
+        val pixels = bitmap.toPixelMap()
+        assertTrue(pixels[32, 32].red > 0.9f && pixels[32, 32].green < 0.1f)
+        assertTrue(pixels[41, 32].green > 0.9f)
+        assertTrue(pixels[114, 32].green > 0.9f)
+        assertEquals(0f, pixels[117, 32].alpha, 0.02f)
+    }
+
+    test("SDF halo width stays in screen pixels when a tile is overzoomed") {
+        val style = StyleResolver().resolve("""{
+            "layers": [{"id": "icons", "type": "symbol", "source-layer": "places",
+                "layout": {"icon-image": "dot"},
+                "paint": {"icon-color": "#ff0000", "icon-halo-color": "#00ff00", "icon-halo-width": 2}}]
+        }""", sprites = mapOf("dot" to SpriteImage(sdfCircleSprite(), sdf = true))).style!!
+        val feature = MVTFeature(1L, RawMVTGeomType.POINT, listOf(listOf(16 to 16)), emptyMap())
+        val tile = optimizeMVTile(VectorTile(0, 0, 0, MVTile(listOf(MVTLayer("places", 32, listOf(feature))))), style)
+
+        fun render(scaleAdjustment: Float): ImageBitmap {
+            val bitmap = ImageBitmap(64, 64)
+            val canvas = Canvas(bitmap)
+            CanvasDrawScope().draw(Density(1f), LayoutDirection.Ltr, canvas, Size(64f, 64f)) {
+                drawVectorTileLayerWithClipping(tile, style.layers.single(), emptyMap(), TileDimension(32.dp, 32.dp),
+                    CanvasDrawReference.Zero, scaleAdjustment, canvas, createFontFamilyResolver(), Density(1f),
+                    0.0, 0f, 1f)
+            }
+            return bitmap
+        }
+
+        val normal = render(1f).toPixelMap()
+        val overzoomed = render(2f).toPixelMap()
+        assertTrue(normal[25, 16].green > 0.9f)
+        assertTrue(overzoomed[41, 32].green > 0.9f)
+        assertEquals(0f, normal[27, 16].alpha, 0.02f)
+        assertEquals(0f, overzoomed[43, 32].alpha, 0.02f)
     }
 
     test("fill pattern repeats inside polygon and applies opacity") {

@@ -34,21 +34,30 @@ import com.rafambn.kmap.style.compiled.CompiledSymbolLayer
 import com.rafambn.kmap.style.SpriteImage
 import kotlin.math.pow
 
-private val sdfIconColorFilter = ColorFilter.colorMatrix(ColorMatrix(floatArrayOf(
-    0f, 0f, 0f, 0f, 0f,
-    0f, 0f, 0f, 0f, 0f,
-    0f, 0f, 0f, 0f, 0f,
-    // SDF icon edges are encoded at 192/256 alpha; this approximates the shader's smoothing.
-    0f, 0f, 0f, 5f, -828.75f
-)))
-
-private fun sdfIconColorFilter(color: Color): ColorFilter = if (color == Color.Black) sdfIconColorFilter else
-    ColorFilter.colorMatrix(ColorMatrix(floatArrayOf(
+private fun sdfIconColorFilter(color: Color, threshold: Float = 0.75f, smoothing: Float = 0.105f): ColorFilter {
+    val alphaScale = 1f / (2f * smoothing)
+    return ColorFilter.colorMatrix(ColorMatrix(floatArrayOf(
         0f, 0f, 0f, 0f, color.red * 255f,
         0f, 0f, 0f, 0f, color.green * 255f,
         0f, 0f, 0f, 0f, color.blue * 255f,
-        0f, 0f, 0f, 5f, -828.75f
+        // A linear approximation of the SDF shader's smoothstep around its distance threshold.
+        0f, 0f, 0f, alphaScale, (0.5f - threshold * alphaScale) * 255f
     )))
+}
+
+private val defaultSdfIconColorFilter = sdfIconColorFilter(Color.Black)
+
+private fun Canvas.drawSpriteImage(image: ImageBitmap, offset: IntOffset, size: IntSize, paint: Paint, alpha: Float) {
+    if (alpha < 1f) {
+        // Decode the SDF before applying opacity, which otherwise changes its distance threshold.
+        withSaveLayer(Rect(offset.x.toFloat(), offset.y.toFloat(),
+            (offset.x + size.width).toFloat(), (offset.y + size.height).toFloat()),
+            Paint().apply { this.alpha = alpha }
+        ) { drawImageRect(image = image, dstOffset = offset, dstSize = size, paint = paint) }
+    } else {
+        drawImageRect(image = image, dstOffset = offset, dstSize = size, paint = paint)
+    }
+}
 
 @Composable
 fun VectorTileCanvas(
@@ -156,7 +165,7 @@ private fun DrawScope.drawStyleLayersWithTileClipping(
     }
 }
 
-private fun DrawScope.drawVectorTileLayerWithClipping(
+internal fun DrawScope.drawVectorTileLayerWithClipping(
     tile: OptimizedVectorTile,
     optimizedLayer: CompiledStyleLayer,
     glyphs: Map<String, FontFamily>,
@@ -195,7 +204,7 @@ private fun DrawScope.drawVectorTileLayerWithClipping(
                     density,
                     optimizedLayer,
                     zoom,
-                    optimizedData.extent.toFloat() / tileSize.height.toPx(),
+                    optimizedData.extent.toFloat() / sizeY,
                     rotationDegrees,
                     scaleX,
                     scaleY,
@@ -612,7 +621,18 @@ private fun drawIconSymbol(
     val offset = layer.iconOffset?.evaluate(zoom.toInt().toDouble(), properties, featureId)
     val iconColor = if (image.sdf) layer.iconColor?.evaluate(zoom, properties, featureId) ?: Color.Black else null
     val iconAlpha = (opacity * (iconColor?.alpha ?: 1f)).coerceIn(0f, 1f)
-    if (iconAlpha <= 0f) return
+    val haloColor = if (image.sdf) {
+        layer.iconHaloColor?.evaluate(zoom, properties, featureId) ?: Color.Transparent
+    } else Color.Transparent
+    val haloAlpha = (opacity * haloColor.alpha).coerceIn(0f, 1f)
+    val haloWidth = if (haloAlpha > 0f) {
+        layer.iconHaloWidth?.evaluate(zoom, properties, featureId)?.toFloat()?.coerceAtLeast(0f) ?: 0f
+    } else 0f
+    val hasHalo = haloAlpha > 0f && haloWidth > 0f
+    if (iconAlpha <= 0f && !hasHalo) return
+    val haloBlur = if (hasHalo) {
+        layer.iconHaloBlur?.evaluate(zoom, properties, featureId)?.toFloat()?.coerceAtLeast(0f) ?: 0f
+    } else 0f
     val scale = size * textScale / screenScale
     val width = (image.bitmap.width / image.pixelRatio * scale).toFloat()
     val height = (image.bitmap.height / image.pixelRatio * scale).toFloat()
@@ -626,26 +646,29 @@ private fun drawIconSymbol(
         anchor.contains("bottom") -> -height
         else -> -height / 2f
     } + (offset?.getOrNull(1)?.toFloat() ?: 0f) * scale
-    val paint = Paint().apply {
+    val iconPaint = Paint().apply {
         alpha = if (image.sdf) 1f else iconAlpha
         filterQuality = FilterQuality.High
-        if (iconColor != null) colorFilter = sdfIconColorFilter(iconColor)
+        if (iconColor != null) colorFilter = if (iconColor == Color.Black && size == 1f) {
+            defaultSdfIconColorFilter
+        } else sdfIconColorFilter(iconColor, smoothing = 0.105f / size)
     }
+    val haloPaint = if (hasHalo) Paint().apply {
+        filterQuality = FilterQuality.High
+        // SDF distance uses an eight-pixel range; scale the halo thresholds with icon-size.
+        colorFilter = sdfIconColorFilter(haloColor,
+            threshold = (6f - haloWidth / size) / 8f,
+            smoothing = (0.105f + haloBlur * 1.19f / 8f) / size)
+    } else null
     val dstOffset = IntOffset(left.toInt(), top.toInt())
     val dstSize = IntSize(width.toInt().coerceAtLeast(1), height.toInt().coerceAtLeast(1))
     geometry.coordinates.forEach { (x, y) ->
         canvas.withSave {
             canvas.translate(x, y)
             canvas.rotate(-rotationDegrees + rotate)
-            if (image.sdf && iconAlpha < 1f) {
-                // Apply opacity after decoding the SDF alpha; otherwise the threshold hides the icon.
-                canvas.withSaveLayer(Rect(dstOffset.x.toFloat(), dstOffset.y.toFloat(),
-                    (dstOffset.x + dstSize.width).toFloat(), (dstOffset.y + dstSize.height).toFloat()),
-                    Paint().apply { alpha = iconAlpha }
-                ) { canvas.drawImageRect(image = image.bitmap, dstOffset = dstOffset, dstSize = dstSize, paint = paint) }
-            } else {
-                canvas.drawImageRect(image = image.bitmap, dstOffset = dstOffset, dstSize = dstSize, paint = paint)
-            }
+            if (haloPaint != null) canvas.drawSpriteImage(image.bitmap, dstOffset, dstSize, haloPaint, haloAlpha)
+            if (iconAlpha > 0f) canvas.drawSpriteImage(image.bitmap, dstOffset, dstSize, iconPaint,
+                if (image.sdf) iconAlpha else 1f)
         }
     }
 }

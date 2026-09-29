@@ -33,7 +33,10 @@ data class CompiledSymbolLayer(
     val textHaloBlur: CompiledValue<Double>?,
     val textTranslate: CompiledValue<List<Double>>?,
     val iconColor: CompiledValue<Color>?,
-    val iconOpacity: CompiledValue<Double>?
+    val iconOpacity: CompiledValue<Double>?,
+    val iconHaloColor: CompiledValue<Color>?,
+    val iconHaloWidth: CompiledValue<Double>?,
+    val iconHaloBlur: CompiledValue<Double>?
 ) : CompiledStyleLayer {
     override val type: CompiledLayerType get() = CompiledLayerType.SYMBOL
 }
