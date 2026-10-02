@@ -1,0 +1,43 @@
+name: Publish KMaP Documentation
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build KMaP Wasm target
+        run: | 
+          chmod +x ./gradlew 
+          ./gradlew wasmJsBrowserDistribution
+
+      - name: Build MkDocs
+        run: |
+          pip install mkdocs-material
+          cd mkdocs 
+          mkdocs build
+
+      - name: Deploy
+        if: success()
+        uses: JamesIves/github-pages-deploy-action@releases/v3
+        with:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+          BRANCH: gh-pages
+          FOLDER: mkdocs/site
+          SINGLE_COMMIT: true
