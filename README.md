@@ -7,9 +7,9 @@
 </p>
 
 <p align="center">
-  <a href="https://search.maven.org/search?q=g:com.rafambn%20AND%20a:KMaP"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/com.rafambn/KMaP?label=Maven%20Central" height="32"></a>
-  <a href="./LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" height="32"></a>
-  <img alt="Platform Targets" src="https://img.shields.io/badge/targets-android%20%7C%20jvm%20%7C%20js%20%7C%20wasm%20%7C%20ios-0A7EA4" height="32">
+  <a href="https://search.maven.org/search?q=g:com.rafambn%20AND%20a:KMaP"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/com.rafambn/KMaP?label=Maven%20Central" width="215" height="32"></a>
+  <a href="./LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" width="192" height="32"></a>
+  <img alt="Platform Targets" src="https://img.shields.io/badge/targets-android%20%7C%20jvm%20%7C%20js%20%7C%20wasm%20%7C%20ios-0A7EA4" width="368" height="32">
   <img alt="Repository views" src="https://profile.rafambn.com/badge/rafambn/KMaP.svg">
 </p>
 
