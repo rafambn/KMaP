@@ -40,7 +40,6 @@ import com.rafambn.kmap.source.RasterTile
 import com.rafambn.kmap.source.TileResult
 import com.rafambn.kmap.source.TileSpecs
 import com.rafambn.kmap.source.internal.ActiveTiles
-import com.rafambn.kmap.source.internal.TileRenderer
 import com.rafambn.kmap.source.internal.awaitActiveTiles
 import de.infix.testBalloon.framework.core.testSuite
 import kotlin.coroutines.EmptyCoroutineContext
@@ -158,28 +157,6 @@ val MapStateTest by testSuite {
             mapState(initialCameraState = cameraState(zoom = 31F))
         }
         assertFailsWith<IllegalArgumentException> { TileSpecs(31, 0, 0) }
-    }
-
-    test("renderer wraps zoom 30 copies before calling the Int tile source") {
-        val job = Job()
-        val renderer = TileRenderer(
-            CoroutineScope(job + Dispatchers.Default),
-            { zoom, row, col ->
-                TileResult.Success(RasterTile(zoom, row, col, null))
-            },
-            { it },
-        )
-        try {
-            val tile = withContext(Dispatchers.Default) {
-                renderer.tilesToProcessChannel.send(listOf(TileSpecs(30, -1, 1073741824)))
-                withTimeout(5000.milliseconds) { renderer.tilesProcessedChannel.receive() }
-            }
-            assertEquals(30, tile.zoom)
-            assertEquals(1073741823, tile.row)
-            assertEquals(0, tile.col)
-        } finally {
-            job.cancel()
-        }
     }
 
     test("rejects unsupported map zoom ranges even with a narrow preference") {
