@@ -6,6 +6,7 @@ import androidx.compose.ui.util.lerp
 import com.rafambn.kmap.MapState
 import com.rafambn.kmap.geometry.angle.Degrees
 import com.rafambn.kmap.geometry.plane.*
+import com.rafambn.kmap.mapProperties.border.BoundaryMode
 import com.rafambn.kmap.utils.lerp
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -50,7 +51,7 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
 
     override suspend fun positionBy(center: Reference, animationSpec: AnimationSpec<Float>) {
         val startPosition = mapState.cameraState.tilePoint
-        val endPosition = getTilePoint(center) + mapState.cameraState.tilePoint
+        val endPosition = offsetPosition(center)
         animatable.snapTo(0F)
         animatable.animateTo(1f, animationSpec) {
             mapState.updateCamera(tilePoint = lerp(startPosition, endPosition, value.toDouble()))
@@ -174,7 +175,7 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
     }
 
     override fun positionBy(center: Reference) {
-        mapState.updateCamera(tilePoint = getTilePoint(center) + mapState.cameraState.tilePoint)
+        mapState.updateCamera(tilePoint = offsetPosition(center))
     }
 
     override fun zoomTo(zoom: Float) {
@@ -235,6 +236,28 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
             tilePoint = previousPosition,
             centerOffset = previousOffset,
         )
+    }
+
+    private fun offsetPosition(offset: Reference): TilePoint = context(mapState) {
+        when (offset) {
+            is Coordinates -> {
+                val properties = mapState.mapProperties
+                val range = properties.coordinatesRange
+                // Coordinate ranges describe projected bounds. Convert them before limiting the destination.
+                val first = properties.toCoordinates(ProjectedCoordinates(range.longitude.west, range.latitude.north))
+                val last = properties.toCoordinates(ProjectedCoordinates(range.longitude.east, range.latitude.south))
+                val destination = mapState.coordinates + offset
+                Coordinates(
+                    if (properties.boundaryBehavior.horizontal == BoundaryMode.CLAMP)
+                        destination.x.coerceIn(minOf(first.x, last.x), maxOf(first.x, last.x))
+                    else destination.x,
+                    if (properties.boundaryBehavior.vertical == BoundaryMode.CLAMP)
+                        destination.y.coerceIn(minOf(first.y, last.y), maxOf(first.y, last.y))
+                    else destination.y,
+                ).toTilePoint()
+            }
+            else -> getTilePoint(offset) + mapState.cameraState.tilePoint
+        }
     }
 
     fun getTilePoint(center: Reference): TilePoint {
