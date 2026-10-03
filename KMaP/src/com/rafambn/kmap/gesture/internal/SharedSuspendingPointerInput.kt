@@ -76,11 +76,11 @@ class SharedPointerInputModifierNodeImpl(
         }
         if (pass == PointerEventPass.Final && !previousFinal && initialCount == mainCount) {
             previousFinal = true
-            pointerInputNode.onPointerEvent(PointerEvent(pointerList), PointerEventPass.Main, bounds)
+            pointerInputNode.onPointerEvent(PointerEvent(pointerList.toList()), PointerEventPass.Main, bounds)
         }
     }
 
     override fun onCancelPointerInput() {
-        pointerInputNode.onCancelPointerInput()
+        pointerInputNode.resetPointerInputHandler()
     }
 }

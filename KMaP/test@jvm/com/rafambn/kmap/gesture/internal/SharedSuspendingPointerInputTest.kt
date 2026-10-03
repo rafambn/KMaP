@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.PointerType
@@ -21,8 +22,50 @@ import androidx.compose.ui.unit.dp
 import de.infix.testBalloon.framework.core.testSuite
 import kotlinx.coroutines.Dispatchers
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotSame
+import kotlin.test.assertTrue
 
 val SharedSuspendingPointerInputTest by testSuite {
+    test("receiving Release preserves the changes of a saved Press event") {
+        val events = mutableListOf<PointerEvent>()
+        val recomposer = FrameRecomposer(Dispatchers.Unconfined)
+        val scene = CanvasLayersComposeScene(recomposer, density = Density(1f), size = IntSize(100, 100))
+
+        try {
+            scene.setContent(recomposer.compositionContext) {
+                Box(Modifier.size(100.dp).sharedPointerInput {
+                    awaitPointerEventScope { while (true) events += awaitPointerEvent() }
+                })
+            }
+            recomposer.performFrame(0L)
+            scene.measureAndLayout()
+            scene.sendPointerEvent(
+                PointerEventType.Press,
+                listOf(ComposeScenePointer(PointerId(0), Offset(50f, 50f), true, PointerType.Touch)),
+                timeMillis = 0L,
+            )
+            val press = events.single()
+            assertTrue(press.changes.single().pressed)
+
+            scene.sendPointerEvent(
+                PointerEventType.Release,
+                listOf(ComposeScenePointer(PointerId(0), Offset(60f, 50f), false, PointerType.Touch)),
+                timeMillis = 10L,
+            )
+
+            assertEquals(2, events.size)
+            assertFalse(events.last().changes.single().pressed)
+            assertTrue(press.changes.single().pressed)
+            assertEquals(Offset(50f, 50f), press.changes.single().position)
+            assertEquals(0L, press.changes.single().uptimeMillis)
+            assertNotSame(press.changes, events.last().changes)
+        } finally {
+            scene.close()
+            recomposer.close()
+        }
+    }
+
     test("recompositions replace the handler without retaining previous delegates") {
         var version by mutableStateOf(0)
         val started = mutableListOf<Pair<Int, Modifier.Node>>()
