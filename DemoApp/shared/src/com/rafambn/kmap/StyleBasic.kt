@@ -23,18 +23,19 @@ val styleBasic = """
         "visibility": "visible"
       },
       "paint": {
-        "background-color": {
-          "stops": [
-            [
-              6,
-              "hsl(60,20%,85%)"
-            ],
-            [
-              20,
-              "hsl(60,24%,90%)"
-            ]
-          ]
-        }
+        "background-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          "hsl(60,20%,85%)",
+          20,
+          "hsl(60,24%,90%)"
+        ]
       }
     },
     {
@@ -47,25 +48,34 @@ val styleBasic = """
         "visibility": "visible"
       },
       "paint": {
-        "fill-color": {
-          "stops": [
-            [
-              2,
-              "hsl(60,23%,81%)"
-            ],
-            [
-              14,
-              "hsl(60,21%,85%)"
-            ]
-          ]
-        }
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          2,
+          "hsl(60,23%,81%)",
+          14,
+          "hsl(60,21%,85%)"
+        ]
       },
       "filter": [
         "in",
-        "class",
-        "neighbourhood",
-        "residential",
-        "suburb"
+        [
+          "get",
+          "class"
+        ],
+        [
+          "literal",
+          [
+            "neighbourhood",
+            "residential",
+            "suburb"
+          ]
+        ]
       ]
     },
     {
@@ -82,7 +92,10 @@ val styleBasic = """
       },
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "snow"
       ]
     },
@@ -96,24 +109,33 @@ val styleBasic = """
         "visibility": "visible"
       },
       "paint": {
-        "fill-color": {
-          "stops": [
-            [
-              1,
-              "hsla(91,40%,70%,0.25)"
-            ],
-            [
-              7,
-              "hsla(91,40%,70%,0.6)"
-            ]
-          ]
-        }
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          1,
+          "hsla(91,40%,70%,0.25)",
+          7,
+          "hsla(91,40%,70%,0.6)"
+        ]
       },
       "filter": [
         "in",
-        "class",
-        "forest",
-        "tree"
+        [
+          "get",
+          "class"
+        ],
+        [
+          "literal",
+          [
+            "forest",
+            "tree"
+          ]
+        ]
       ]
     },
     {
@@ -128,22 +150,26 @@ val styleBasic = """
       "paint": {
         "fill-antialias": false,
         "fill-color": "hsla(54,81%,53%,0.3)",
-        "fill-opacity": {
-          "stops": [
-            [
-              7,
-              0.7
-            ],
-            [
-              12,
-              1
-            ]
-          ]
-        }
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          7,
+          0.7,
+          12,
+          1
+        ]
       },
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "sand"
       ]
     },
@@ -159,22 +185,26 @@ val styleBasic = """
       "paint": {
         "fill-antialias": false,
         "fill-color": "hsla(89,40%,78%,0.8)",
-        "fill-opacity": {
-          "stops": [
-            [
-              7,
-              0.7
-            ],
-            [
-              12,
-              1
-            ]
-          ]
-        }
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          7,
+          0.7,
+          12,
+          1
+        ]
       },
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "grass"
       ]
     },
@@ -190,22 +220,26 @@ val styleBasic = """
       "paint": {
         "fill-antialias": false,
         "fill-color": "hsla(91,40%,70%,0.8)",
-        "fill-opacity": {
-          "stops": [
-            [
-              7,
-              0.7
-            ],
-            [
-              12,
-              1
-            ]
-          ]
-        }
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          7,
+          0.7,
+          12,
+          1
+        ]
       },
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "wood"
       ]
     },
@@ -232,7 +266,10 @@ val styleBasic = """
       },
       "filter": [
         "!=",
-        "brunnel",
+        [
+          "get",
+          "brunnel"
+        ],
         "tunnel"
       ]
     },
@@ -256,22 +293,26 @@ val styleBasic = """
           0.7,
           1
         ],
-        "line-width": {
-          "stops": [
-            [
-              9,
-              1
-            ],
-            [
-              18,
-              3
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          1,
+          18,
+          3
+        ]
       },
       "filter": [
         "!=",
-        "intermittent",
+        [
+          "get",
+          "intermittent"
+        ],
         1
       ]
     },
@@ -290,22 +331,26 @@ val styleBasic = """
           1
         ],
         "line-opacity": 1,
-        "line-width": {
-          "stops": [
-            [
-              9,
-              1
-            ],
-            [
-              18,
-              3
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          1,
+          18,
+          3
+        ]
       },
       "filter": [
         "==",
-        "intermittent",
+        [
+          "get",
+          "intermittent"
+        ],
         1
       ]
     },
@@ -327,33 +372,38 @@ val styleBasic = """
           3
         ],
         "line-opacity": 0.5,
-        "line-width": {
-          "stops": [
-            [
-              14,
-              0.5
-            ],
-            [
-              16,
-              1.2
-            ],
-            [
-              18,
-              2
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          0.5,
+          16,
+          1.2,
+          18,
+          2
+        ]
       },
       "filter": [
         "all",
         [
           "==",
-          "brunnel",
+          [
+            "get",
+            "brunnel"
+          ],
           "tunnel"
         ],
         [
           "==",
-          "class",
+          [
+            "get",
+            "class"
+          ],
           "transit"
         ]
       ]
@@ -374,12 +424,17 @@ val styleBasic = """
         "all",
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "Polygon"
         ],
         [
           "==",
-          "brunnel",
+          [
+            "get",
+            "brunnel"
+          ],
           "bridge"
         ]
       ]
@@ -400,7 +455,10 @@ val styleBasic = """
       "metadata": {},
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "pier"
       ]
     },
@@ -629,13 +687,24 @@ val styleBasic = """
         ]
       },
       "filter": [
-        "!in",
-        "class",
-        "bridge",
-        "ferry",
-        "path",
-        "rail",
-        "transit"
+        "!",
+        [
+          "in",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "literal",
+            [
+              "bridge",
+              "ferry",
+              "path",
+              "rail",
+              "transit"
+            ]
+          ]
+        ]
       ]
     },
     {
@@ -655,35 +724,33 @@ val styleBasic = """
           1,
           1
         ],
-        "line-width": {
-          "base": 1.55,
-          "stops": [
-            [
-              15,
-              0.5
-            ],
-            [
-              16,
-              1
-            ],
-            [
-              18,
-              2
-            ],
-            [
-              20,
-              3
-            ],
-            [
-              22,
-              4
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.55
+          ],
+          [
+            "zoom"
+          ],
+          15,
+          0.5,
+          16,
+          1,
+          18,
+          2,
+          20,
+          3,
+          22,
+          4
+        ]
       },
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "path_pedestrian"
       ]
     },
@@ -704,35 +771,33 @@ val styleBasic = """
           1,
           1
         ],
-        "line-width": {
-          "base": 1.55,
-          "stops": [
-            [
-              15,
-              0.5
-            ],
-            [
-              16,
-              1
-            ],
-            [
-              18,
-              2
-            ],
-            [
-              20,
-              3
-            ],
-            [
-              22,
-              4
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.55
+          ],
+          [
+            "zoom"
+          ],
+          15,
+          0.5,
+          16,
+          1,
+          18,
+          2,
+          20,
+          3,
+          22,
+          4
+        ]
       },
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "path"
       ]
     },
@@ -746,18 +811,19 @@ val styleBasic = """
       },
       "paint": {
         "fill-antialias": true,
-        "fill-color": {
-          "stops": [
-            [
-              13,
-              "hsl(48,25%,73%)"
-            ],
-            [
-              16,
-              "hsl(47,32%,77%)"
-            ]
-          ]
-        },
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          13,
+          "hsl(48,25%,73%)",
+          16,
+          "hsl(47,32%,77%)"
+        ],
         "fill-opacity": 1
       }
     },
@@ -851,7 +917,10 @@ val styleBasic = """
       },
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "rail"
       ]
     },
@@ -866,33 +935,38 @@ val styleBasic = """
       "paint": {
         "line-color": "hsl(34, 12%, 66%)",
         "line-opacity": 0.5,
-        "line-width": {
-          "stops": [
-            [
-              14,
-              0.5
-            ],
-            [
-              16,
-              1.2
-            ],
-            [
-              18,
-              2
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          0.5,
+          16,
+          1.2,
+          18,
+          2
+        ]
       },
       "filter": [
         "all",
         [
           "==",
-          "class",
+          [
+            "get",
+            "class"
+          ],
           "transit"
         ],
         [
           "!=",
-          "brunnel",
+          [
+            "get",
+            "brunnel"
+          ],
           "tunnel"
         ]
       ]
@@ -1001,22 +1075,21 @@ val styleBasic = """
           0,
           0.5
         ],
-        "text-size": {
-          "stops": [
-            [
-              10,
-              10
-            ],
-            [
-              14,
-              12
-            ],
-            [
-              16,
-              14
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          10,
+          10,
+          14,
+          12,
+          16,
+          14
+        ],
         "visibility": "visible"
       },
       "paint": {
@@ -1057,22 +1130,21 @@ val styleBasic = """
           0,
           0.5
         ],
-        "text-size": {
-          "stops": [
-            [
-              10,
-              10
-            ],
-            [
-              14,
-              12
-            ],
-            [
-              16,
-              14
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          10,
+          10,
+          14,
+          12,
+          16,
+          14
+        ],
         "visibility": "visible"
       },
       "paint": {
@@ -1085,7 +1157,10 @@ val styleBasic = """
         "all",
         [
           "==",
-          "class",
+          [
+            "get",
+            "class"
+          ],
           "railway"
         ],
         [
@@ -1102,22 +1177,21 @@ val styleBasic = """
       "minzoom": 14,
       "layout": {
         "symbol-placement": "line",
-        "symbol-spacing": {
-          "stops": [
-            [
-              13,
-              250
-            ],
-            [
-              20,
-              350
-            ],
-            [
-              21,
-              1000
-            ]
-          ]
-        },
+        "symbol-spacing": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          13,
+          250,
+          20,
+          350,
+          21,
+          1000
+        ],
         "text-field": [
           "coalesce",
           [
@@ -1134,23 +1208,22 @@ val styleBasic = """
         ],
         "text-letter-spacing": 0.1,
         "text-rotation-alignment": "map",
-        "text-size": {
-          "base": 1.4,
-          "stops": [
-            [
-              14,
-              8
-            ],
-            [
-              17,
-              10
-            ],
-            [
-              20,
-              12
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "exponential",
+            1.4
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          8,
+          17,
+          10,
+          20,
+          12
+        ],
         "text-transform": "uppercase",
         "visibility": "visible"
       },
@@ -1163,15 +1236,28 @@ val styleBasic = """
         "all",
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "LineString"
         ],
         [
-          "!in",
-          "class",
-          "aerialway",
-          "ferry",
-          "service"
+          "!",
+          [
+            "in",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "literal",
+              [
+                "aerialway",
+                "ferry",
+                "service"
+              ]
+            ]
+          ]
         ]
       ]
     },
@@ -1190,40 +1276,50 @@ val styleBasic = """
           2,
           1
         ],
-        "line-width": {
-          "stops": [
-            [
-              4,
-              0.8
-            ],
-            [
-              11,
-              1.75
-            ],
-            [
-              18,
-              2.5
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          4,
+          0.8,
+          11,
+          1.75,
+          18,
+          2.5
+        ]
       },
       "filter": [
         "all",
         [
           "in",
-          "admin_level",
-          3,
-          4,
-          5,
-          6,
-          7,
-          8,
-          9,
-          10
+          [
+            "get",
+            "admin_level"
+          ],
+          [
+            "literal",
+            [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10
+            ]
+          ]
         ],
         [
           "==",
-          "maritime",
+          [
+            "get",
+            "maritime"
+          ],
           0
         ]
       ]
@@ -1245,38 +1341,46 @@ val styleBasic = """
           2,
           2
         ],
-        "line-width": {
-          "stops": [
-            [
-              1,
-              1
-            ],
-            [
-              5,
-              1.5
-            ],
-            [
-              10,
-              2
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          1,
+          1,
+          5,
+          1.5,
+          10,
+          2
+        ]
       },
       "filter": [
         "all",
         [
           "==",
-          "admin_level",
+          [
+            "get",
+            "admin_level"
+          ],
           2
         ],
         [
           "==",
-          "maritime",
+          [
+            "get",
+            "maritime"
+          ],
           0
         ],
         [
           "==",
-          "disputed",
+          [
+            "get",
+            "disputed"
+          ],
           1
         ]
       ]
@@ -1293,51 +1397,60 @@ val styleBasic = """
         "visibility": "visible"
       },
       "paint": {
-        "line-blur": {
-          "stops": [
-            [
-              4,
-              0.5
-            ],
-            [
-              10,
-              0
-            ]
-          ]
-        },
+        "line-blur": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          4,
+          0.5,
+          10,
+          0
+        ],
         "line-color": "hsl(0,0%,64%)",
-        "line-width": {
-          "stops": [
-            [
-              1,
-              1
-            ],
-            [
-              5,
-              1.5
-            ],
-            [
-              10,
-              2
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          1,
+          1,
+          5,
+          1.5,
+          10,
+          2
+        ]
       },
       "filter": [
         "all",
         [
           "==",
-          "admin_level",
+          [
+            "get",
+            "admin_level"
+          ],
           2
         ],
         [
           "==",
-          "disputed",
+          [
+            "get",
+            "disputed"
+          ],
           0
         ],
         [
           "==",
-          "maritime",
+          [
+            "get",
+            "maritime"
+          ],
           0
         ]
       ]
@@ -1357,7 +1470,7 @@ val styleBasic = """
             "rank"
           ]
         ],
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -1433,16 +1546,24 @@ val styleBasic = """
       },
       "filter": [
         "in",
-        "class",
-        "hamlet",
-        "isolated_dwelling",
-        "neighbourhood",
-        "province",
-        "quarter",
-        "suburb",
-        "town",
-        "village",
-        "place"
+        [
+          "get",
+          "class"
+        ],
+        [
+          "literal",
+          [
+            "hamlet",
+            "isolated_dwelling",
+            "neighbourhood",
+            "province",
+            "quarter",
+            "suburb",
+            "town",
+            "village",
+            "place"
+          ]
+        ]
       ]
     },
     {
@@ -1459,7 +1580,7 @@ val styleBasic = """
             "rank"
           ]
         ],
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -1492,7 +1613,10 @@ val styleBasic = """
       },
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "city"
       ]
     },
@@ -1511,23 +1635,24 @@ val styleBasic = """
             "rank"
           ]
         ],
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Noto Sans Bold"
         ],
         "text-max-width": 8,
-        "text-padding": {
-          "stops": [
-            [
-              1,
-              0
-            ],
-            [
-              4,
-              2
-            ]
-          ]
-        },
+        "text-padding": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          1,
+          0,
+          4,
+          2
+        ],
         "text-size": [
           "interpolate",
           [
@@ -1582,12 +1707,18 @@ val styleBasic = """
         "all",
         [
           "==",
-          "class",
+          [
+            "get",
+            "class"
+          ],
           "country"
         ],
         [
           "!=",
-          "iso_a2",
+          [
+            "get",
+            "iso_a2"
+          ],
           "VA"
         ]
       ]
@@ -1599,23 +1730,24 @@ val styleBasic = """
       "source-layer": "place",
       "maxzoom": 1,
       "layout": {
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Noto Sans Bold"
         ],
         "text-justify": "center",
-        "text-size": {
-          "stops": [
-            [
-              0,
-              12
-            ],
-            [
-              2,
-              13
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          12,
+          2,
+          13
+        ],
         "text-transform": "uppercase",
         "visibility": "visible"
       },
@@ -1628,7 +1760,10 @@ val styleBasic = """
       "metadata": {},
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "continent"
       ]
     }

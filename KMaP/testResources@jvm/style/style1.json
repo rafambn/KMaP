@@ -57,12 +57,17 @@
         "all",
         [
           "==",
-          "class",
+          [
+            "get",
+            "class"
+          ],
           "land"
         ],
         [
           "==",
-          "$type",
+          [
+            "geometry-type"
+          ],
           "Polygon"
         ]
       ]
@@ -98,10 +103,18 @@
       },
       "filter": [
         "in",
-        "class",
-        "neighbourhood",
-        "residential",
-        "suburb"
+        [
+          "get",
+          "class"
+        ],
+        [
+          "literal",
+          [
+            "neighbourhood",
+            "residential",
+            "suburb"
+          ]
+        ]
       ]
     },
     {
@@ -136,7 +149,10 @@
       },
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "ice"
       ]
     },
@@ -156,9 +172,17 @@
       },
       "filter": [
         "in",
-        "class",
-        "forest",
-        "tree"
+        [
+          "get",
+          "class"
+        ],
+        [
+          "literal",
+          [
+            "forest",
+            "tree"
+          ]
+        ]
       ]
     },
     {
@@ -178,7 +202,10 @@
       },
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "sand"
       ]
     },
@@ -199,7 +226,10 @@
       },
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "grass"
       ]
     },
@@ -220,7 +250,10 @@
       },
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "wood"
       ]
     },
@@ -248,7 +281,10 @@
       },
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "aerodrome"
       ]
     },
@@ -291,7 +327,10 @@
       },
       "filter": [
         "!=",
-        "brunnel",
+        [
+          "get",
+          "brunnel"
+        ],
         "tunnel"
       ]
     },
@@ -310,7 +349,10 @@
       },
       "filter": [
         "!=",
-        "brunnel",
+        [
+          "get",
+          "brunnel"
+        ],
         "tunnel"
       ]
     },
@@ -369,7 +411,10 @@
       },
       "filter": [
         "!=",
-        "intermittent",
+        [
+          "get",
+          "intermittent"
+        ],
         1
       ]
     },
@@ -403,7 +448,10 @@
       },
       "filter": [
         "==",
-        "intermittent",
+        [
+          "get",
+          "intermittent"
+        ],
         1
       ]
     },
@@ -424,12 +472,17 @@
         "all",
         [
           "==",
-          "$type",
+          [
+            "geometry-type"
+          ],
           "Polygon"
         ],
         [
           "==",
-          "brunnel",
+          [
+            "get",
+            "brunnel"
+          ],
           "bridge"
         ]
       ]
@@ -450,7 +503,10 @@
       "metadata": {},
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "pier"
       ]
     },
@@ -697,13 +753,24 @@
         ]
       },
       "filter": [
-        "!in",
-        "class",
-        "bridge",
-        "ferry",
-        "path",
-        "rail",
-        "transit"
+        "!",
+        [
+          "in",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "literal",
+            [
+              "bridge",
+              "ferry",
+              "path",
+              "rail",
+              "transit"
+            ]
+          ]
+        ]
       ]
     },
     {
@@ -743,7 +810,10 @@
       },
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "path_pedestrian"
       ]
     },
@@ -784,7 +854,10 @@
       },
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "path"
       ]
     },
@@ -800,18 +873,19 @@
       },
       "paint": {
         "fill-antialias": true,
-        "fill-color": {
-          "stops": [
-            [
-              13,
-              "hsl(48,25%,73%)"
-            ],
-            [
-              16,
-              "hsl(47,32%,77%)"
-            ]
-          ]
-        },
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          13,
+          "hsl(48,25%,73%)",
+          16,
+          "hsl(47,32%,77%)"
+        ],
         "fill-opacity": 1,
         "fill-pattern": "red"
       }

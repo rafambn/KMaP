@@ -1,5 +1,6 @@
 package com.rafambn.kmap.style
 
+import com.rafambn.kmap.style.model.Style
 import de.infix.testBalloon.framework.core.testSuite
 import java.io.File
 import kotlin.test.assertEquals

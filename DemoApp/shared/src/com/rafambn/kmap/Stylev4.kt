@@ -452,18 +452,19 @@ val styleV4 = """
       "paint": {
         "fill-antialias": true,
         "fill-color": "hsl(12,63%,94%)",
-        "fill-opacity": {
-          "stops": [
-            [
-              9,
-              0.25
-            ],
-            [
-              16,
-              1
-            ]
-          ]
-        }
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          0.25,
+          16,
+          1
+        ]
       },
       "filter": [
         "==",
@@ -532,18 +533,19 @@ val styleV4 = """
       "paint": {
         "fill-antialias": true,
         "fill-color": "hsl(94, 100%, 88%)",
-        "fill-opacity": {
-          "stops": [
-            [
-              9,
-              0.25
-            ],
-            [
-              16,
-              1
-            ]
-          ]
-        }
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          0.25,
+          16,
+          1
+        ]
       },
       "filter": [
         "all",
@@ -581,18 +583,19 @@ val styleV4 = """
       "paint": {
         "fill-antialias": true,
         "fill-color": "hsl(195, 45%, 96%)",
-        "fill-opacity": {
-          "stops": [
-            [
-              9,
-              0.25
-            ],
-            [
-              16,
-              1
-            ]
-          ]
-        }
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          0.25,
+          16,
+          1
+        ]
       },
       "filter": [
         "==",
@@ -614,18 +617,19 @@ val styleV4 = """
       "paint": {
         "fill-antialias": true,
         "fill-color": "hsl(215, 81%, 98%)",
-        "fill-opacity": {
-          "stops": [
-            [
-              9,
-              0.25
-            ],
-            [
-              16,
-              1
-            ]
-          ]
-        }
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          0.25,
+          16,
+          1
+        ]
       },
       "filter": [
         "all",
@@ -778,18 +782,19 @@ val styleV4 = """
         ],
         "line-gap-width": 0,
         "line-opacity": 0.7,
-        "line-width": {
-          "stops": [
-            [
-              12,
-              0.5
-            ],
-            [
-              20,
-              6
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          0.5,
+          20,
+          6
+        ]
       },
       "filter": [
         "all",
@@ -841,18 +846,19 @@ val styleV4 = """
       },
       "paint": {
         "line-color": "hsl(210,73%,78%)",
-        "line-width": {
-          "stops": [
-            [
-              12,
-              0.5
-            ],
-            [
-              20,
-              6
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          0.5,
+          20,
+          6
+        ]
       },
       "filter": [
         "all",
@@ -1252,23 +1258,22 @@ val styleV4 = """
       "paint": {
         "line-color": "hsl(0,0%,73%)",
         "line-opacity": 0.5,
-        "line-width": {
-          "base": 1.4,
-          "stops": [
-            [
-              14,
-              0.4
-            ],
-            [
-              15,
-              0.75
-            ],
-            [
-              20,
-              2
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.4
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          0.4,
+          15,
+          0.75,
+          20,
+          2
+        ]
       },
       "metadata": {},
       "filter": [
@@ -1372,23 +1377,22 @@ val styleV4 = """
           2
         ],
         "line-opacity": 0.5,
-        "line-width": {
-          "base": 1.4,
-          "stops": [
-            [
-              14.5,
-              0
-            ],
-            [
-              16,
-              4
-            ],
-            [
-              20,
-              8
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.4
+          ],
+          [
+            "zoom"
+          ],
+          14.5,
+          0,
+          16,
+          4,
+          20,
+          8
+        ]
       },
       "metadata": {},
       "filter": [
@@ -2446,19 +2450,20 @@ val styleV4 = """
       },
       "paint": {
         "line-color": "hsl(42,49%,93%)",
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              15,
-              1
-            ],
-            [
-              17,
-              4
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.2
+          ],
+          [
+            "zoom"
+          ],
+          15,
+          1,
+          17,
+          4
+        ]
       },
       "filter": [
         "==",
@@ -2515,19 +2520,19 @@ val styleV4 = """
           13,
           0.3
         ],
-        "fill-outline-color": {
-          "base": 1,
-          "stops": [
-            [
-              13,
-              "hsla(35, 6%, 79%, 0.3)"
-            ],
-            [
-              14,
-              "hsl(35, 6%, 79%)"
-            ]
-          ]
-        }
+        "fill-outline-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          13,
+          "hsla(35, 6%, 79%, 0.3)",
+          14,
+          "hsl(35, 6%, 79%)"
+        ]
       },
       "filter": [
         "all",
@@ -5716,23 +5721,22 @@ val styleV4 = """
       },
       "paint": {
         "line-color": "hsl(0,0%,73%)",
-        "line-width": {
-          "base": 1.4,
-          "stops": [
-            [
-              14,
-              0.4
-            ],
-            [
-              15,
-              0.75
-            ],
-            [
-              20,
-              2
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.4
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          0.4,
+          15,
+          0.75,
+          20,
+          2
+        ]
       },
       "filter": [
         "all",
@@ -5802,23 +5806,22 @@ val styleV4 = """
           0.2,
           4
         ],
-        "line-width": {
-          "base": 1.4,
-          "stops": [
-            [
-              14.5,
-              0
-            ],
-            [
-              15,
-              2
-            ],
-            [
-              20,
-              6
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.4
+          ],
+          [
+            "zoom"
+          ],
+          14.5,
+          0,
+          15,
+          2,
+          20,
+          6
+        ]
       },
       "filter": [
         "all",
@@ -5956,24 +5959,31 @@ val styleV4 = """
       "paint": {
         "line-blur": 3,
         "line-color": "hsl(0, 0%, 98%)",
-        "line-dasharray": {
-          "stops": [
+        "line-dasharray": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          [
+            "literal",
             [
-              14,
-              [
-                1,
-                0.5
-              ]
-            ],
+              1,
+              0.5
+            ]
+          ],
+          18,
+          [
+            "literal",
             [
-              18,
-              [
-                1,
-                0.25
-              ]
+              1,
+              0.25
             ]
           ]
-        },
+        ],
         "line-opacity": 0.5,
         "line-width": [
           "interpolate",
@@ -6292,24 +6302,31 @@ val styleV4 = """
           22,
           "hsl(0, 0%, 78%)"
         ],
-        "line-dasharray": {
-          "stops": [
+        "line-dasharray": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          [
+            "literal",
             [
-              14,
-              [
-                0.5,
-                0.5
-              ]
-            ],
+              0.5,
+              0.5
+            ]
+          ],
+          18,
+          [
+            "literal",
             [
-              18,
-              [
-                0.3,
-                0.1
-              ]
+              0.3,
+              0.1
             ]
           ]
-        },
+        ],
         "line-opacity": [
           "case",
           [
@@ -6426,24 +6443,31 @@ val styleV4 = """
       },
       "paint": {
         "line-color": "hsl(0, 0%, 70%)",
-        "line-dasharray": {
-          "stops": [
+        "line-dasharray": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          [
+            "literal",
             [
-              14,
-              [
-                1,
-                1.5
-              ]
-            ],
+              1,
+              1.5
+            ]
+          ],
+          18,
+          [
+            "literal",
             [
-              18,
-              [
-                1,
-                2.5
-              ]
+              1,
+              2.5
             ]
           ]
-        },
+        ],
         "line-opacity": [
           "case",
           [
@@ -8330,23 +8354,22 @@ val styleV4 = """
       },
       "paint": {
         "line-color": "hsl(0,0%,73%)",
-        "line-width": {
-          "base": 1.4,
-          "stops": [
-            [
-              14,
-              0.4
-            ],
-            [
-              15,
-              0.75
-            ],
-            [
-              20,
-              2
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.4
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          0.4,
+          15,
+          0.75,
+          20,
+          2
+        ]
       },
       "filter": [
         "all",
@@ -8421,23 +8444,22 @@ val styleV4 = """
           0.2,
           4
         ],
-        "line-width": {
-          "base": 1.4,
-          "stops": [
-            [
-              14.5,
-              0
-            ],
-            [
-              15,
-              2
-            ],
-            [
-              20,
-              6
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.4
+          ],
+          [
+            "zoom"
+          ],
+          14.5,
+          0,
+          15,
+          2,
+          20,
+          6
+        ]
       },
       "filter": [
         "all",
@@ -8718,15 +8740,15 @@ val styleV4 = """
         "visibility": "visible"
       },
       "paint": {
-        "fill-extrusion-base": {
-          "property": "height_min",
-          "type": "identity"
-        },
+        "fill-extrusion-base": [
+          "get",
+          "height_min"
+        ],
         "fill-extrusion-color": "hsl(44,14%,79%)",
-        "fill-extrusion-height": {
-          "property": "height",
-          "type": "identity"
-        },
+        "fill-extrusion-height": [
+          "get",
+          "height"
+        ],
         "fill-extrusion-opacity": 0.4
       },
       "filter": [
@@ -9181,26 +9203,23 @@ val styleV4 = """
       },
       "paint": {
         "line-color": "hsl(0, 0%, 54%)",
-        "line-width": {
-          "stops": [
-            [
-              1,
-              0.5
-            ],
-            [
-              5,
-              1.5
-            ],
-            [
-              10,
-              2
-            ],
-            [
-              24,
-              12
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          1,
+          0.5,
+          5,
+          1.5,
+          10,
+          2,
+          24,
+          12
+        ]
       },
       "filter": [
         "all",
@@ -9249,19 +9268,19 @@ val styleV4 = """
           0.8,
           0.8
         ],
-        "text-size": {
-          "base": 1,
-          "stops": [
-            [
-              13,
-              11
-            ],
-            [
-              15,
-              12
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          13,
+          11,
+          15,
+          12
+        ],
         "visibility": "visible"
       },
       "paint": {
@@ -9538,31 +9557,33 @@ val styleV4 = """
         "visibility": "visible"
       },
       "paint": {
-        "text-color": {
-          "stops": [
-            [
-              1,
-              "hsl(203,54%,54%)"
-            ],
-            [
-              4,
-              "hsl(203,72%,39%)"
-            ]
-          ]
-        },
+        "text-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          1,
+          "hsl(203,54%,54%)",
+          4,
+          "hsl(203,72%,39%)"
+        ],
         "text-halo-blur": 1,
-        "text-halo-color": {
-          "stops": [
-            [
-              1,
-              "hsla(196, 72%, 80%, 0.05)"
-            ],
-            [
-              3,
-              "hsla(200, 100%, 88%, 0.75)"
-            ]
-          ]
-        },
+        "text-halo-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          1,
+          "hsla(196, 72%, 80%, 0.05)",
+          3,
+          "hsla(200, 100%, 88%, 0.75)"
+        ],
         "text-halo-width": 1,
         "text-opacity": 1
       },
@@ -9803,7 +9824,7 @@ val styleV4 = """
       "layout": {
         "symbol-z-order": "viewport-y",
         "text-anchor": "center",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Italic",
           "Noto Sans Italic"
@@ -9843,18 +9864,19 @@ val styleV4 = """
           "hsl(203, 72%, 39%)"
         ],
         "text-halo-blur": 1,
-        "text-halo-color": {
-          "stops": [
-            [
-              1,
-              "hsla(196, 72%, 80%, 0.05)"
-            ],
-            [
-              3,
-              "hsla(200, 100%, 88%, 0.75)"
-            ]
-          ]
-        },
+        "text-halo-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          1,
+          "hsla(196, 72%, 80%, 0.05)",
+          3,
+          "hsla(200, 100%, 88%, 0.75)"
+        ],
         "text-halo-width": 1,
         "text-opacity": 1
       },
@@ -9888,7 +9910,7 @@ val styleV4 = """
       "source-layer": "building_number",
       "minzoom": 18,
       "layout": {
-        "text-field": "{number}",
+        "text-field": ["to-string", ["get", "number"]],
         "text-font": [
           "Roboto Mono Medium",
           "Noto Sans Medium"
@@ -10214,7 +10236,7 @@ val styleV4 = """
           500
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -10268,7 +10290,7 @@ val styleV4 = """
       "source-layer": "road_exit",
       "minzoom": 14,
       "layout": {
-        "icon-image": "road_{ref_length}",
+        "icon-image": ["image", ["concat", "road_", ["to-string", ["get", "ref_length"]]]],
         "icon-size": [
           "interpolate",
           [
@@ -10282,7 +10304,7 @@ val styleV4 = """
           22,
           1.2
         ],
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Roboto Mono Medium",
           "Noto Sans Medium"
@@ -10436,7 +10458,7 @@ val styleV4 = """
           22,
           800
         ],
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "match",
           [
@@ -13569,7 +13591,7 @@ val styleV4 = """
         "icon-size": 1,
         "symbol-placement": "line",
         "symbol-spacing": 400,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "match",
           [
@@ -13857,7 +13879,7 @@ val styleV4 = """
         "icon-size": 1,
         "symbol-placement": "line",
         "symbol-spacing": 400,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "match",
           [
@@ -14137,7 +14159,7 @@ val styleV4 = """
           3.8
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -14360,7 +14382,7 @@ val styleV4 = """
           2
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Noto Sans Regular"
         ],
@@ -14412,7 +14434,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Italic",
           "Noto Sans Italic"
@@ -14424,22 +14446,21 @@ val styleV4 = """
         ],
         "text-optional": true,
         "text-padding": 2,
-        "text-size": {
-          "stops": [
-            [
-              12,
-              8
-            ],
-            [
-              16,
-              10
-            ],
-            [
-              22,
-              14
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          8,
+          16,
+          10,
+          22,
+          14
+        ],
         "visibility": "visible"
       },
       "paint": {
@@ -14600,7 +14621,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -14609,22 +14630,21 @@ val styleV4 = """
         "text-max-width": 8,
         "text-optional": true,
         "text-padding": 2,
-        "text-size": {
-          "stops": [
-            [
-              12,
-              10
-            ],
-            [
-              16,
-              12
-            ],
-            [
-              22,
-              14
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          10,
+          16,
+          12,
+          22,
+          14
+        ],
         "visibility": "visible"
       },
       "paint": {
@@ -14896,7 +14916,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -14908,22 +14928,21 @@ val styleV4 = """
         ],
         "text-optional": true,
         "text-padding": 2,
-        "text-size": {
-          "stops": [
-            [
-              12,
-              10
-            ],
-            [
-              16,
-              12
-            ],
-            [
-              22,
-              14
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          10,
+          16,
+          12,
+          22,
+          14
+        ],
         "visibility": "visible"
       },
       "paint": {
@@ -15070,24 +15089,34 @@ val styleV4 = """
         "all",
         [
           "==",
-          "${'$'}type",
+          [
+            "geometry-type"
+          ],
           "Point"
         ],
         [
           "all",
           [
             "in",
-            "class",
-            "bar",
-            "beer",
-            "biergarten",
-            "cafe",
-            "canteen",
-            "fast_food",
-            "food_court",
-            "ice_cream",
-            "pub",
-            "restaurant"
+            [
+              "get",
+              "class"
+            ],
+            [
+              "literal",
+              [
+                "bar",
+                "beer",
+                "biergarten",
+                "cafe",
+                "canteen",
+                "fast_food",
+                "food_court",
+                "ice_cream",
+                "pub",
+                "restaurant"
+              ]
+            ]
           ],
           [
             "has",
@@ -15146,7 +15175,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -15158,22 +15187,21 @@ val styleV4 = """
         ],
         "text-optional": true,
         "text-padding": 2,
-        "text-size": {
-          "stops": [
-            [
-              12,
-              10
-            ],
-            [
-              16,
-              12
-            ],
-            [
-              22,
-              14
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          10,
+          16,
+          12,
+          22,
+          14
+        ],
         "visibility": "visible"
       },
       "paint": {
@@ -15846,7 +15874,7 @@ val styleV4 = """
         ],
         "symbol-z-order": "auto",
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "literal",
           [
@@ -16103,7 +16131,7 @@ val styleV4 = """
           3
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -16445,7 +16473,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -16458,22 +16486,21 @@ val styleV4 = """
         ],
         "text-overlap": "never",
         "text-padding": 2,
-        "text-size": {
-          "stops": [
-            [
-              12,
-              10
-            ],
-            [
-              16,
-              12
-            ],
-            [
-              22,
-              14
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          10,
+          16,
+          12,
+          22,
+          14
+        ],
         "visibility": "visible"
       },
       "paint": {
@@ -16652,7 +16679,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -16942,7 +16969,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -17204,7 +17231,7 @@ val styleV4 = """
         ],
         "symbol-z-order": "auto",
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "case",
           [
@@ -17570,7 +17597,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -17684,7 +17711,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -17696,22 +17723,21 @@ val styleV4 = """
         ],
         "text-optional": true,
         "text-padding": 2,
-        "text-size": {
-          "stops": [
-            [
-              12,
-              10
-            ],
-            [
-              16,
-              12
-            ],
-            [
-              22,
-              14
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          10,
+          16,
+          12,
+          22,
+          14
+        ],
         "visibility": "visible"
       },
       "paint": {
@@ -17930,7 +17956,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "case",
           [
@@ -18311,7 +18337,7 @@ val styleV4 = """
         ],
         "text-allow-overlap": false,
         "text-anchor": "center",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -18397,7 +18423,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "center",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "match",
           [
@@ -18594,7 +18620,7 @@ val styleV4 = """
       "maxzoom": 22,
       "layout": {
         "text-anchor": "center",
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Roboto Medium",
           "Noto Sans Regular"
@@ -18608,18 +18634,19 @@ val styleV4 = """
         "text-optional": true,
         "text-padding": 2,
         "text-radial-offset": 0,
-        "text-size": {
-          "stops": [
-            [
-              15,
-              10
-            ],
-            [
-              22,
-              18
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          15,
+          10,
+          22,
+          18
+        ],
         "visibility": "visible"
       },
       "paint": {
@@ -18723,7 +18750,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "match",
           [
@@ -18881,7 +18908,7 @@ val styleV4 = """
           1.4
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -19097,7 +19124,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "match",
           [
@@ -19398,7 +19425,7 @@ val styleV4 = """
         ],
         "symbol-z-order": "auto",
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "case",
           [
@@ -19645,18 +19672,21 @@ val styleV4 = """
       "minzoom": 10,
       "layout": {
         "icon-allow-overlap": true,
-        "icon-image": {
-          "stops": [
-            [
-              6,
-              "circle"
-            ],
-            [
-              12,
-              " "
-            ]
+        "icon-image": [
+          "step",
+          [
+            "zoom"
+          ],
+          [
+            "image",
+            "circle"
+          ],
+          12,
+          [
+            "image",
+            " "
           ]
-        },
+        ],
         "icon-optional": false,
         "icon-size": [
           "interpolate",
@@ -19680,7 +19710,7 @@ val styleV4 = """
           ]
         ],
         "text-anchor": "center",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -20018,18 +20048,21 @@ val styleV4 = """
       "maxzoom": 16,
       "layout": {
         "icon-allow-overlap": true,
-        "icon-image": {
-          "stops": [
-            [
-              6,
-              "circle"
-            ],
-            [
-              12,
-              " "
-            ]
+        "icon-image": [
+          "step",
+          [
+            "zoom"
+          ],
+          [
+            "image",
+            "circle"
+          ],
+          12,
+          [
+            "image",
+            " "
           ]
-        },
+        ],
         "icon-optional": false,
         "icon-size": [
           "interpolate",
@@ -21291,18 +21324,19 @@ val styleV4 = """
         ],
         "text-letter-spacing": 0.07,
         "text-line-height": 1,
-        "text-max-width": {
-          "stops": [
-            [
-              1,
-              5
-            ],
-            [
-              5,
-              8
-            ]
-          ]
-        },
+        "text-max-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          1,
+          5,
+          5,
+          8
+        ],
         "text-padding": 1,
         "text-size": [
           "interpolate",
@@ -21440,18 +21474,19 @@ val styleV4 = """
         ],
         "text-letter-spacing": 0.07,
         "text-line-height": 1,
-        "text-max-width": {
-          "stops": [
-            [
-              1,
-              5
-            ],
-            [
-              5,
-              8
-            ]
-          ]
-        },
+        "text-max-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          1,
+          5,
+          5,
+          8
+        ],
         "text-padding": 1,
         "text-size": [
           "interpolate",
@@ -21676,24 +21711,25 @@ val styleV4 = """
       "source-layer": "continent_label",
       "maxzoom": 2,
       "layout": {
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Roboto Bold",
           "Noto Sans Bold"
         ],
         "text-justify": "center",
-        "text-size": {
-          "stops": [
-            [
-              0,
-              12
-            ],
-            [
-              2,
-              13
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          12,
+          2,
+          13
+        ],
         "text-transform": "uppercase",
         "visibility": "visible"
       },

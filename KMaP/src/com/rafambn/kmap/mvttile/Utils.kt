@@ -11,7 +11,7 @@ fun RawMVTile.parse(): MVTile {
             val properties = resolveFeatureProperties(feature, layer)
 
             MVTFeature(
-                id = if (feature.id != 0L) feature.id else null,
+                id = feature.id?.toULong(),
                 type = feature.type,
                 geometry = decodedGeometry,
                 properties = properties
@@ -38,7 +38,7 @@ fun MVTile.deparse(): RawMVTile {
             val tags = encodeFeatureProperties(parsedFeature.properties, keys, values)
 
             RawMVTFeature(
-                id = parsedFeature.id ?: 0L,
+                id = parsedFeature.id?.toLong(),
                 tags = tags,
                 type = parsedFeature.type,
                 geometry = geometry
@@ -57,13 +57,7 @@ fun MVTile.deparse(): RawMVTile {
     return RawMVTile(layers = layers)
 }
 
-internal fun decodeZigZag(n: Int): Int {
-    return if (n and 1 == 1) {
-        -((n shr 1) + 1)
-    } else {
-        n shr 1
-    }
-}
+internal fun decodeZigZag(n: Int): Int = (n ushr 1) xor -(n and 1)
 
 internal fun encodeZigZag(n: Int): Int {
     return (n shl 1) xor (n shr 31)
@@ -80,7 +74,7 @@ internal fun decodeFeatureGeometry(feature: RawMVTFeature): List<List<Pair<Int, 
     while (cursor < geometry.size) {
         val commandInteger = geometry[cursor++]
         val command = commandInteger and 0x7
-        val count = commandInteger shr 3
+        val count = commandInteger ushr 3
 
         when (command) {
             CMD_MOVETO -> {
@@ -160,7 +154,7 @@ internal fun encodeFeatureGeometry(coordinates: List<List<Pair<Int, Int>>>, type
         }
 
         if (type == RawMVTGeomType.POLYGON) {
-            geometry.add(CMD_CLOSEPATH)
+            geometry.add(CMD_CLOSEPATH or (1 shl 3))
         }
     }
 
@@ -176,7 +170,7 @@ internal fun resolveFeatureProperties(feature: RawMVTFeature, layer: RawMVTLayer
             val keyIndex = tags[i]
             val valueIndex = tags[i + 1]
 
-            if (keyIndex < layer.keys.size && valueIndex < layer.values.size) {
+            if (keyIndex in layer.keys.indices && valueIndex in layer.values.indices) {
                 val key = layer.keys[keyIndex]
                 val rawValue = layer.values[valueIndex]
 
@@ -185,7 +179,7 @@ internal fun resolveFeatureProperties(feature: RawMVTFeature, layer: RawMVTLayer
                     rawValue.float_value != null -> rawValue.float_value
                     rawValue.double_value != null -> rawValue.double_value
                     rawValue.int_value != null -> rawValue.int_value
-                    rawValue.uint_value != null -> rawValue.uint_value
+                    rawValue.uint_value != null -> rawValue.uint_value.toULong()
                     rawValue.sint_value != null -> rawValue.sint_value
                     rawValue.bool_value != null -> rawValue.bool_value
                     else -> null
@@ -218,6 +212,7 @@ internal fun encodeFeatureProperties(properties: Map<String, Any?>, keys: Mutabl
             is Double -> RawMVTValue(double_value = value)
             is Int -> RawMVTValue(int_value = value.toLong())
             is Long -> RawMVTValue(int_value = value)
+            is ULong -> RawMVTValue(uint_value = value.toLong())
             is Boolean -> RawMVTValue(bool_value = value)
             else -> RawMVTValue(string_value = value.toString())
         }

@@ -23,18 +23,19 @@ val styleStreets = """
         "visibility": "visible"
       },
       "paint": {
-        "background-color": {
-          "stops": [
-            [
-              6,
-              "hsl(47,79%,94%)"
-            ],
-            [
-              14,
-              "hsl(42,49%,93%)"
-            ]
-          ]
-        }
+        "background-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          "hsl(47,79%,94%)",
+          14,
+          "hsl(42,49%,93%)"
+        ]
       }
     },
     {
@@ -49,22 +50,26 @@ val styleStreets = """
       "paint": {
         "fill-antialias": true,
         "fill-color": "hsl(75,51%,85%)",
-        "fill-opacity": {
-          "stops": [
-            [
-              0,
-              1
-            ],
-            [
-              8,
-              0.1
-            ]
-          ]
-        }
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          1,
+          8,
+          0.1
+        ]
       },
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "grass"
       ]
     },
@@ -80,22 +85,26 @@ val styleStreets = """
       "paint": {
         "fill-antialias": true,
         "fill-color": "hsl(97,51%,80%)",
-        "fill-opacity": {
-          "stops": [
-            [
-              0,
-              1
-            ],
-            [
-              8,
-              0.1
-            ]
-          ]
-        }
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          1,
+          8,
+          0.1
+        ]
       },
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "scrub"
       ]
     },
@@ -111,22 +120,26 @@ val styleStreets = """
       "paint": {
         "fill-antialias": true,
         "fill-color": "hsl(50,67%,86%)",
-        "fill-opacity": {
-          "stops": [
-            [
-              0,
-              1
-            ],
-            [
-              8,
-              0.1
-            ]
-          ]
-        }
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          1,
+          8,
+          0.1
+        ]
       },
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "crop"
       ]
     },
@@ -142,22 +155,26 @@ val styleStreets = """
       "paint": {
         "fill-antialias": true,
         "fill-color": "hsl(0,0%,100%)",
-        "fill-opacity": {
-          "stops": [
-            [
-              0,
-              1
-            ],
-            [
-              10,
-              0.7
-            ]
-          ]
-        }
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          1,
+          10,
+          0.7
+        ]
       },
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "ice"
       ]
     },
@@ -173,24 +190,33 @@ val styleStreets = """
       "paint": {
         "fill-antialias": true,
         "fill-color": "hsl(119,38%,76%)",
-        "fill-opacity": {
-          "stops": [
-            [
-              1,
-              0.8
-            ],
-            [
-              8,
-              0
-            ]
-          ]
-        }
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          1,
+          0.8,
+          8,
+          0
+        ]
       },
       "filter": [
         "in",
-        "class",
-        "forest",
-        "tree"
+        [
+          "get",
+          "class"
+        ],
+        [
+          "literal",
+          [
+            "forest",
+            "tree"
+          ]
+        ]
       ]
     },
     {
@@ -209,7 +235,10 @@ val styleStreets = """
       "metadata": {},
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "sand"
       ]
     },
@@ -228,7 +257,10 @@ val styleStreets = """
       "metadata": {},
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "wood"
       ]
     },
@@ -242,27 +274,35 @@ val styleStreets = """
         "visibility": "visible"
       },
       "paint": {
-        "fill-color": {
-          "base": 1,
-          "stops": [
-            [
-              4,
-              "hsl(44,34%,87%)"
-            ],
-            [
-              16,
-              "hsl(54, 45%, 91%)"
-            ]
-          ]
-        }
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          4,
+          "hsl(44,34%,87%)",
+          16,
+          "hsl(54, 45%, 91%)"
+        ]
       },
       "metadata": {},
       "filter": [
         "in",
-        "class",
-        "residential",
-        "suburbs",
-        "neighbourhood"
+        [
+          "get",
+          "class"
+        ],
+        [
+          "literal",
+          [
+            "residential",
+            "suburbs",
+            "neighbourhood"
+          ]
+        ]
       ]
     },
     {
@@ -338,9 +378,17 @@ val styleStreets = """
       "metadata": {},
       "filter": [
         "in",
-        "class",
-        "industrial",
-        "quarry"
+        [
+          "get",
+          "class"
+        ],
+        [
+          "literal",
+          [
+            "industrial",
+            "quarry"
+          ]
+        ]
       ]
     },
     {
@@ -359,7 +407,10 @@ val styleStreets = """
       "metadata": {},
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "grass"
       ]
     },
@@ -379,7 +430,9 @@ val styleStreets = """
       "metadata": {},
       "filter": [
         "==",
-        "${'$'}{'$'}type",
+        [
+          "geometry-type"
+        ],
         "Polygon"
       ]
     },
@@ -400,24 +453,48 @@ val styleStreets = """
         "all",
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "Polygon"
         ],
         [
-          "!has",
-          "brunnel"
+          "!",
+          [
+            "has",
+            "brunnel"
+          ]
         ],
         [
-          "!in",
-          "class",
-          "bridge",
-          "pier"
+          "!",
+          [
+            "in",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "literal",
+              [
+                "bridge",
+                "pier"
+              ]
+            ]
+          ]
         ],
         [
           "in",
-          "subclass",
-          "pedestrian",
-          "platform"
+          [
+            "get",
+            "subclass"
+          ],
+          [
+            "literal",
+            [
+              "pedestrian",
+              "platform"
+            ]
+          ]
         ]
       ]
     },
@@ -433,23 +510,27 @@ val styleStreets = """
       "paint": {
         "fill-antialias": true,
         "fill-color": "hsl(0,0%,88%)",
-        "fill-opacity": {
-          "stops": [
-            [
-              9,
-              0.25
-            ],
-            [
-              16,
-              1
-            ]
-          ]
-        }
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          0.25,
+          16,
+          1
+        ]
       },
       "metadata": {},
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "cemetery"
       ]
     },
@@ -465,23 +546,27 @@ val styleStreets = """
       "paint": {
         "fill-antialias": true,
         "fill-color": "hsl(12,63%,94%)",
-        "fill-opacity": {
-          "stops": [
-            [
-              9,
-              0.25
-            ],
-            [
-              16,
-              1
-            ]
-          ]
-        }
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          0.25,
+          16,
+          1
+        ]
       },
       "metadata": {},
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "hospital"
       ]
     },
@@ -497,26 +582,35 @@ val styleStreets = """
       "paint": {
         "fill-antialias": true,
         "fill-color": "hsl(94, 100%, 88%)",
-        "fill-opacity": {
-          "stops": [
-            [
-              9,
-              0.25
-            ],
-            [
-              16,
-              1
-            ]
-          ]
-        }
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          0.25,
+          16,
+          1
+        ]
       },
       "metadata": {},
       "filter": [
         "in",
-        "class",
-        "pitch",
-        "stadium",
-        "playground"
+        [
+          "get",
+          "class"
+        ],
+        [
+          "literal",
+          [
+            "pitch",
+            "stadium",
+            "playground"
+          ]
+        ]
       ]
     },
     {
@@ -531,26 +625,35 @@ val styleStreets = """
       "paint": {
         "fill-antialias": true,
         "fill-color": "hsl(194,52%,94%)",
-        "fill-opacity": {
-          "stops": [
-            [
-              9,
-              0.25
-            ],
-            [
-              16,
-              1
-            ]
-          ]
-        }
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          9,
+          0.25,
+          16,
+          1
+        ]
       },
       "metadata": {},
       "filter": [
         "in",
-        "class",
-        "college",
-        "school",
-        "university"
+        [
+          "get",
+          "class"
+        ],
+        [
+          "literal",
+          [
+            "college",
+            "school",
+            "university"
+          ]
+        ]
       ]
     },
     {
@@ -570,23 +673,27 @@ val styleStreets = """
           4
         ],
         "line-opacity": 0.5,
-        "line-width": {
-          "base": 1.3,
-          "stops": [
-            [
-              12,
-              0.5
-            ],
-            [
-              20,
-              6
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.3
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          0.5,
+          20,
+          6
+        ]
       },
       "filter": [
         "==",
-        "brunnel",
+        [
+          "get",
+          "brunnel"
+        ],
         "tunnel"
       ]
     },
@@ -601,23 +708,27 @@ val styleStreets = """
       },
       "paint": {
         "line-color": "hsl(210,73%,78%)",
-        "line-width": {
-          "stops": [
-            [
-              12,
-              0.5
-            ],
-            [
-              20,
-              6
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          0.5,
+          20,
+          6
+        ]
       },
       "metadata": {},
       "filter": [
         "!=",
-        "brunnel",
+        [
+          "get",
+          "brunnel"
+        ],
         "tunnel"
       ]
     },
@@ -637,7 +748,10 @@ val styleStreets = """
       "metadata": {},
       "filter": [
         "==",
-        "intermittent",
+        [
+          "get",
+          "intermittent"
+        ],
         1
       ]
     },
@@ -666,7 +780,10 @@ val styleStreets = """
       "metadata": {},
       "filter": [
         "!=",
-        "intermittent",
+        [
+          "get",
+          "intermittent"
+        ],
         1
       ]
     },
@@ -736,9 +853,17 @@ val styleStreets = """
       "metadata": {},
       "filter": [
         "in",
-        "class",
-        "helipad",
-        "heliport"
+        [
+          "get",
+          "class"
+        ],
+        [
+          "literal",
+          [
+            "helipad",
+            "heliport"
+          ]
+        ]
       ]
     },
     {
@@ -752,18 +877,19 @@ val styleStreets = """
         "visibility": "visible"
       },
       "paint": {
-        "line-color": {
-          "stops": [
-            [
-              10,
-              "hsl(205,61%,63%)"
-            ],
-            [
-              16,
-              "hsl(205,67%,47%)"
-            ]
-          ]
-        },
+        "line-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          10,
+          "hsl(205,61%,63%)",
+          16,
+          "hsl(205,67%,47%)"
+        ],
         "line-dasharray": [
           2,
           2
@@ -783,22 +909,26 @@ val styleStreets = """
           8,
           1
         ],
-        "line-width": {
-          "stops": [
-            [
-              10,
-              0.5
-            ],
-            [
-              14,
-              1.1
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          10,
+          0.5,
+          14,
+          1.1
+        ]
       },
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "ferry"
       ]
     },
@@ -1020,27 +1150,41 @@ val styleStreets = """
         "all",
         [
           "==",
-          "brunnel",
+          [
+            "get",
+            "brunnel"
+          ],
           "tunnel"
         ],
         [
-          "!in",
-          "class",
-          "bridge",
-          "ferry",
-          "rail",
-          "transit",
-          "pier",
-          "path",
-          "aerialway",
-          "motorway_construction",
-          "trunk_construction",
-          "primary_construction",
-          "secondary_construction",
-          "tertiary_construction",
-          "minor_construction",
-          "service_construction",
-          "track_construction"
+          "!",
+          [
+            "in",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "literal",
+              [
+                "bridge",
+                "ferry",
+                "rail",
+                "transit",
+                "pier",
+                "path",
+                "aerialway",
+                "motorway_construction",
+                "trunk_construction",
+                "primary_construction",
+                "secondary_construction",
+                "tertiary_construction",
+                "minor_construction",
+                "service_construction",
+                "track_construction"
+              ]
+            ]
+          ]
         ]
       ]
     },
@@ -1289,27 +1433,41 @@ val styleStreets = """
         "all",
         [
           "==",
-          "brunnel",
+          [
+            "get",
+            "brunnel"
+          ],
           "tunnel"
         ],
         [
-          "!in",
-          "class",
-          "ferry",
-          "rail",
-          "transit",
-          "pier",
-          "bridge",
-          "path",
-          "aerialway",
-          "motorway_construction",
-          "trunk_construction",
-          "primary_construction",
-          "secondary_construction",
-          "tertiary_construction",
-          "minor_construction",
-          "service_construction",
-          "track_construction"
+          "!",
+          [
+            "in",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "literal",
+              [
+                "ferry",
+                "rail",
+                "transit",
+                "pier",
+                "bridge",
+                "path",
+                "aerialway",
+                "motorway_construction",
+                "trunk_construction",
+                "primary_construction",
+                "secondary_construction",
+                "tertiary_construction",
+                "minor_construction",
+                "service_construction",
+                "track_construction"
+              ]
+            ]
+          ]
         ]
       ]
     },
@@ -1324,35 +1482,40 @@ val styleStreets = """
       "paint": {
         "line-color": "hsl(0,0%,73%)",
         "line-opacity": 0.5,
-        "line-width": {
-          "base": 1.4,
-          "stops": [
-            [
-              14,
-              0.4
-            ],
-            [
-              15,
-              0.75
-            ],
-            [
-              20,
-              2
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.4
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          0.4,
+          15,
+          0.75,
+          20,
+          2
+        ]
       },
       "metadata": {},
       "filter": [
         "all",
         [
           "==",
-          "brunnel",
+          [
+            "get",
+            "brunnel"
+          ],
           "tunnel"
         ],
         [
           "==",
-          "class",
+          [
+            "get",
+            "class"
+          ],
           "rail"
         ]
       ]
@@ -1372,35 +1535,40 @@ val styleStreets = """
           8
         ],
         "line-opacity": 0.5,
-        "line-width": {
-          "base": 1.4,
-          "stops": [
-            [
-              14.5,
-              0
-            ],
-            [
-              15,
-              3
-            ],
-            [
-              20,
-              8
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.4
+          ],
+          [
+            "zoom"
+          ],
+          14.5,
+          0,
+          15,
+          3,
+          20,
+          8
+        ]
       },
       "metadata": {},
       "filter": [
         "all",
         [
           "==",
-          "brunnel",
+          [
+            "get",
+            "brunnel"
+          ],
           "tunnel"
         ],
         [
           "==",
-          "class",
+          [
+            "get",
+            "class"
+          ],
           "rail"
         ]
       ]
@@ -1419,45 +1587,55 @@ val styleStreets = """
       "paint": {
         "line-color": "hsl(0,0%,100%)",
         "line-opacity": 1,
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              14,
-              0
-            ],
-            [
-              16,
-              0
-            ],
-            [
-              18,
-              4
-            ],
-            [
-              22,
-              8
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.2
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          0,
+          16,
+          0,
+          18,
+          4,
+          22,
+          8
+        ]
       },
       "metadata": {},
       "filter": [
         "all",
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "LineString"
         ],
         [
           "in",
-          "class",
-          "path",
-          "pedestrian"
+          [
+            "get",
+            "class"
+          ],
+          [
+            "literal",
+            [
+              "path",
+              "pedestrian"
+            ]
+          ]
         ],
         [
           "==",
-          "brunnel",
+          [
+            "get",
+            "brunnel"
+          ],
           "tunnel"
         ]
       ]
@@ -1475,64 +1653,81 @@ val styleStreets = """
       },
       "paint": {
         "line-color": "hsl(0,0%,63%)",
-        "line-dasharray": {
-          "stops": [
+        "line-dasharray": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          [
+            "literal",
             [
-              14,
-              [
-                1,
-                0.5
-              ]
-            ],
-            [
-              18,
-              [
-                1,
-                0.25
-              ]
-            ]
-          ]
-        },
-        "line-opacity": 0.4,
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              14,
+              1,
               0.5
-            ],
+            ]
+          ],
+          18,
+          [
+            "literal",
             [
-              16,
-              1
-            ],
-            [
-              18,
-              2
-            ],
-            [
-              22,
-              5
+              1,
+              0.25
             ]
           ]
-        }
+        ],
+        "line-opacity": 0.4,
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.2
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          0.5,
+          16,
+          1,
+          18,
+          2,
+          22,
+          5
+        ]
       },
       "metadata": {},
       "filter": [
         "all",
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "LineString"
         ],
         [
           "in",
-          "class",
-          "path",
-          "pedestrian"
+          [
+            "get",
+            "class"
+          ],
+          [
+            "literal",
+            [
+              "path",
+              "pedestrian"
+            ]
+          ]
         ],
         [
           "==",
-          "brunnel",
+          [
+            "get",
+            "brunnel"
+          ],
           "tunnel"
         ]
       ]
@@ -1554,12 +1749,17 @@ val styleStreets = """
         "all",
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "Polygon"
         ],
         [
           "==",
-          "class",
+          [
+            "get",
+            "class"
+          ],
           "pier"
         ]
       ]
@@ -1576,31 +1776,37 @@ val styleStreets = """
       },
       "paint": {
         "line-color": "hsl(42,49%,93%)",
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              15,
-              1
-            ],
-            [
-              17,
-              4
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.2
+          ],
+          [
+            "zoom"
+          ],
+          15,
+          1,
+          17,
+          4
+        ]
       },
       "metadata": {},
       "filter": [
         "all",
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "LineString"
         ],
         [
           "==",
-          "class",
+          [
+            "get",
+            "class"
+          ],
           "pier"
         ]
       ]
@@ -1676,15 +1882,26 @@ val styleStreets = """
         "all",
         [
           "!=",
-          "brunnel",
+          [
+            "get",
+            "brunnel"
+          ],
           "tunnel"
         ],
         [
           "in",
-          "class",
-          "motorway",
-          "primary",
-          "trunk"
+          [
+            "get",
+            "class"
+          ],
+          [
+            "literal",
+            [
+              "motorway",
+              "primary",
+              "trunk"
+            ]
+          ]
         ]
       ]
     },
@@ -1706,12 +1923,17 @@ val styleStreets = """
         "all",
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "Polygon"
         ],
         [
           "==",
-          "brunnel",
+          [
+            "get",
+            "brunnel"
+          ],
           "bridge"
         ]
       ]
@@ -1839,30 +2061,44 @@ val styleStreets = """
         "all",
         [
           "!=",
-          "brunnel",
+          [
+            "get",
+            "brunnel"
+          ],
           "tunnel"
         ],
         [
-          "!in",
-          "class",
-          "aerialway",
-          "bridge",
-          "ferry",
-          "minor_construction",
-          "motorway",
-          "motorway_construction",
-          "path",
-          "path_construction",
-          "pier",
-          "primary",
-          "primary_construction",
-          "rail",
-          "secondary_construction",
-          "service_construction",
-          "tertiary_construction",
-          "track_construction",
-          "transit",
-          "trunk_construction"
+          "!",
+          [
+            "in",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "literal",
+              [
+                "aerialway",
+                "bridge",
+                "ferry",
+                "minor_construction",
+                "motorway",
+                "motorway_construction",
+                "path",
+                "path_construction",
+                "pier",
+                "primary",
+                "primary_construction",
+                "rail",
+                "secondary_construction",
+                "service_construction",
+                "tertiary_construction",
+                "track_construction",
+                "transit",
+                "trunk_construction"
+              ]
+            ]
+          ]
         ]
       ]
     },
@@ -1973,14 +2209,25 @@ val styleStreets = """
         "all",
         [
           "!=",
-          "brunnel",
+          [
+            "get",
+            "brunnel"
+          ],
           "tunnel"
         ],
         [
           "in",
-          "class",
-          "primary",
-          "trunk"
+          [
+            "get",
+            "class"
+          ],
+          [
+            "literal",
+            [
+              "primary",
+              "trunk"
+            ]
+          ]
         ]
       ]
     },
@@ -2110,12 +2357,18 @@ val styleStreets = """
         "all",
         [
           "!=",
-          "brunnel",
+          [
+            "get",
+            "brunnel"
+          ],
           "tunnel"
         ],
         [
           "==",
-          "class",
+          [
+            "get",
+            "class"
+          ],
           "motorway"
         ]
       ]
@@ -2377,15 +2630,23 @@ val styleStreets = """
       "metadata": {},
       "filter": [
         "in",
-        "class",
-        "motorway_construction",
-        "trunk_construction",
-        "primary_construction",
-        "secondary_construction",
-        "tertiary_construction",
-        "minor_construction",
-        "service_construction",
-        "track_construction"
+        [
+          "get",
+          "class"
+        ],
+        [
+          "literal",
+          [
+            "motorway_construction",
+            "trunk_construction",
+            "primary_construction",
+            "secondary_construction",
+            "tertiary_construction",
+            "minor_construction",
+            "service_construction",
+            "track_construction"
+          ]
+        ]
       ]
     },
     {
@@ -2510,30 +2771,44 @@ val styleStreets = """
         "all",
         [
           "!=",
-          "brunnel",
+          [
+            "get",
+            "brunnel"
+          ],
           "tunnel"
         ],
         [
-          "!in",
-          "class",
-          "aerialway",
-          "bridge",
-          "ferry",
-          "minor_construction",
-          "motorway",
-          "motorway_construction",
-          "path",
-          "path_construction",
-          "pier",
-          "primary",
-          "primary_construction",
-          "rail",
-          "secondary_construction",
-          "service_construction",
-          "tertiary_construction",
-          "track_construction",
-          "transit",
-          "trunk_construction"
+          "!",
+          [
+            "in",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "literal",
+              [
+                "aerialway",
+                "bridge",
+                "ferry",
+                "minor_construction",
+                "motorway",
+                "motorway_construction",
+                "path",
+                "path_construction",
+                "pier",
+                "primary",
+                "primary_construction",
+                "rail",
+                "secondary_construction",
+                "service_construction",
+                "tertiary_construction",
+                "track_construction",
+                "transit",
+                "trunk_construction"
+              ]
+            ]
+          ]
         ]
       ]
     },
@@ -2639,14 +2914,25 @@ val styleStreets = """
         "all",
         [
           "!=",
-          "brunnel",
+          [
+            "get",
+            "brunnel"
+          ],
           "tunnel"
         ],
         [
           "in",
-          "class",
-          "primary",
-          "trunk"
+          [
+            "get",
+            "class"
+          ],
+          [
+            "literal",
+            [
+              "primary",
+              "trunk"
+            ]
+          ]
         ]
       ]
     },
@@ -2797,12 +3083,18 @@ val styleStreets = """
         "all",
         [
           "!=",
-          "brunnel",
+          [
+            "get",
+            "brunnel"
+          ],
           "tunnel"
         ],
         [
           "==",
-          "class",
+          [
+            "get",
+            "class"
+          ],
           "motorway"
         ]
       ]
@@ -2820,45 +3112,55 @@ val styleStreets = """
       },
       "paint": {
         "line-color": "hsl(0,0%,100%)",
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              14,
-              0
-            ],
-            [
-              16,
-              0
-            ],
-            [
-              18,
-              4
-            ],
-            [
-              22,
-              8
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.2
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          0,
+          16,
+          0,
+          18,
+          4,
+          22,
+          8
+        ]
       },
       "metadata": {},
       "filter": [
         "all",
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "LineString"
         ],
         [
           "in",
-          "class",
-          "path",
-          "pedestrian"
+          [
+            "get",
+            "class"
+          ],
+          [
+            "literal",
+            [
+              "path",
+              "pedestrian"
+            ]
+          ]
         ],
         [
           "!=",
-          "brunnel",
+          [
+            "get",
+            "brunnel"
+          ],
           "tunnel"
         ]
       ]
@@ -2876,62 +3178,79 @@ val styleStreets = """
       },
       "paint": {
         "line-color": "hsl(0, 0%, 79%)",
-        "line-dasharray": {
-          "stops": [
+        "line-dasharray": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          [
+            "literal",
             [
-              14,
-              [
-                1,
-                0.5
-              ]
-            ],
-            [
-              18,
-              [
-                1,
-                0.25
-              ]
-            ]
-          ]
-        },
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              14,
+              1,
               0.5
-            ],
+            ]
+          ],
+          18,
+          [
+            "literal",
             [
-              16,
-              1
-            ],
-            [
-              18,
-              2
-            ],
-            [
-              22,
-              5
+              1,
+              0.25
             ]
           ]
-        }
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.2
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          0.5,
+          16,
+          1,
+          18,
+          2,
+          22,
+          5
+        ]
       },
       "metadata": {},
       "filter": [
         "all",
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "LineString"
         ],
         [
           "in",
-          "class",
-          "path_pedestrian"
+          [
+            "get",
+            "class"
+          ],
+          [
+            "literal",
+            [
+              "path_pedestrian"
+            ]
+          ]
         ],
         [
           "!=",
-          "brunnel",
+          [
+            "get",
+            "brunnel"
+          ],
           "tunnel"
         ]
       ]
@@ -2949,63 +3268,80 @@ val styleStreets = """
       },
       "paint": {
         "line-color": "hsl(0, 0%, 79%)",
-        "line-dasharray": {
-          "stops": [
+        "line-dasharray": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          [
+            "literal",
             [
-              14,
-              [
-                1,
-                0.5
-              ]
-            ],
-            [
-              18,
-              [
-                1,
-                0.25
-              ]
-            ]
-          ]
-        },
-        "line-width": {
-          "base": 1.2,
-          "stops": [
-            [
-              14,
+              1,
               0.5
-            ],
+            ]
+          ],
+          18,
+          [
+            "literal",
             [
-              16,
-              1
-            ],
-            [
-              18,
-              2
-            ],
-            [
-              22,
-              5
+              1,
+              0.25
             ]
           ]
-        }
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.2
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          0.5,
+          16,
+          1,
+          18,
+          2,
+          22,
+          5
+        ]
       },
       "metadata": {},
       "filter": [
         "all",
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "LineString"
         ],
         [
           "in",
-          "class",
-          "path",
-          "pedestrian"
+          [
+            "get",
+            "class"
+          ],
+          [
+            "literal",
+            [
+              "path",
+              "pedestrian"
+            ]
+          ]
         ],
         [
           "!=",
-          "brunnel",
+          [
+            "get",
+            "brunnel"
+          ],
           "tunnel"
         ]
       ]
@@ -3019,18 +3355,19 @@ val styleStreets = """
         "visibility": "visible"
       },
       "paint": {
-        "line-color": {
-          "stops": [
-            [
-              8,
-              "hsl(0,0%,72%)"
-            ],
-            [
-              16,
-              "hsl(0,0%,70%)"
-            ]
-          ]
-        },
+        "line-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          "hsl(0,0%,72%)",
+          16,
+          "hsl(0,0%,70%)"
+        ],
         "line-opacity": [
           "match",
           [
@@ -3041,35 +3378,48 @@ val styleStreets = """
           0.5,
           1
         ],
-        "line-width": {
-          "base": 1.4,
-          "stops": [
-            [
-              14,
-              0.4
-            ],
-            [
-              15,
-              0.75
-            ],
-            [
-              20,
-              2
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.4
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          0.4,
+          15,
+          0.75,
+          20,
+          2
+        ]
       },
       "metadata": {},
       "filter": [
         "all",
         [
-          "!in",
-          "brunnel",
-          "tunnel"
+          "!",
+          [
+            "in",
+            [
+              "get",
+              "brunnel"
+            ],
+            [
+              "literal",
+              [
+                "tunnel"
+              ]
+            ]
+          ]
         ],
         [
           "==",
-          "class",
+          [
+            "get",
+            "class"
+          ],
           "rail"
         ]
       ]
@@ -3098,35 +3448,48 @@ val styleStreets = """
           0.5,
           1
         ],
-        "line-width": {
-          "base": 1.4,
-          "stops": [
-            [
-              14.5,
-              0
-            ],
-            [
-              15,
-              3
-            ],
-            [
-              20,
-              8
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.4
+          ],
+          [
+            "zoom"
+          ],
+          14.5,
+          0,
+          15,
+          3,
+          20,
+          8
+        ]
       },
       "metadata": {},
       "filter": [
         "all",
         [
-          "!in",
-          "brunnel",
-          "tunnel"
+          "!",
+          [
+            "in",
+            [
+              "get",
+              "brunnel"
+            ],
+            [
+              "literal",
+              [
+                "tunnel"
+              ]
+            ]
+          ]
         ],
         [
           "==",
-          "class",
+          [
+            "get",
+            "class"
+          ],
           "rail"
         ]
       ]
@@ -3141,30 +3504,37 @@ val styleStreets = """
       },
       "paint": {
         "line-color": "hsl(0,0%,73%)",
-        "line-width": {
-          "base": 1.4,
-          "stops": [
-            [
-              14,
-              0.4
-            ],
-            [
-              15,
-              0.75
-            ],
-            [
-              20,
-              2
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.4
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          0.4,
+          15,
+          0.75,
+          20,
+          2
+        ]
       },
       "metadata": {},
       "filter": [
         "in",
-        "subclass",
-        "light_rail",
-        "tram"
+        [
+          "get",
+          "subclass"
+        ],
+        [
+          "literal",
+          [
+            "light_rail",
+            "tram"
+          ]
+        ]
       ]
     },
     {
@@ -3181,30 +3551,37 @@ val styleStreets = """
           0.2,
           4
         ],
-        "line-width": {
-          "base": 1.4,
-          "stops": [
-            [
-              14.5,
-              0
-            ],
-            [
-              15,
-              2
-            ],
-            [
-              20,
-              6
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.4
+          ],
+          [
+            "zoom"
+          ],
+          14.5,
+          0,
+          15,
+          2,
+          20,
+          6
+        ]
       },
       "metadata": {},
       "filter": [
         "in",
-        "subclass",
-        "tram",
-        "light_rail"
+        [
+          "get",
+          "subclass"
+        ],
+        [
+          "literal",
+          [
+            "tram",
+            "light_rail"
+          ]
+        ]
       ]
     },
     {
@@ -3220,19 +3597,19 @@ val styleStreets = """
       "paint": {
         "fill-color": "hsl(30,6%,73%)",
         "fill-opacity": 0.3,
-        "fill-outline-color": {
-          "base": 1,
-          "stops": [
-            [
-              13,
-              "hsla(35, 6%, 79%, 0.3)"
-            ],
-            [
-              14,
-              "hsl(35, 6%, 79%)"
-            ]
-          ]
-        }
+        "fill-outline-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          13,
+          "hsla(35, 6%, 79%, 0.3)",
+          14,
+          "hsl(35, 6%, 79%)"
+        ]
       },
       "metadata": {}
     },
@@ -3246,21 +3623,24 @@ val styleStreets = """
         "visibility": "visible"
       },
       "paint": {
-        "fill-extrusion-base": {
-          "property": "render_min_height",
-          "type": "identity"
-        },
+        "fill-extrusion-base": [
+          "get",
+          "render_min_height"
+        ],
         "fill-extrusion-color": "hsl(44,14%,79%)",
-        "fill-extrusion-height": {
-          "property": "render_height",
-          "type": "identity"
-        },
+        "fill-extrusion-height": [
+          "get",
+          "render_height"
+        ],
         "fill-extrusion-opacity": 0.4
       },
       "metadata": {},
       "filter": [
-        "!has",
-        "hide_3d"
+        "!",
+        [
+          "has",
+          "hide_3d"
+        ]
       ]
     },
     {
@@ -3275,23 +3655,27 @@ val styleStreets = """
       },
       "paint": {
         "line-color": "hsl(0,0%,51%)",
-        "line-width": {
-          "base": 1.3,
-          "stops": [
-            [
-              14,
-              1
-            ],
-            [
-              20,
-              6
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.3
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          1,
+          20,
+          6
+        ]
       },
       "filter": [
         "==",
-        "brunnel",
+        [
+          "get",
+          "brunnel"
+        ],
         "bridge"
       ]
     },
@@ -3307,30 +3691,36 @@ val styleStreets = """
       },
       "paint": {
         "line-color": "hsl(204,92%,75%)",
-        "line-width": {
-          "base": 1.3,
-          "stops": [
-            [
-              12,
-              0.5
-            ],
-            [
-              20,
-              5
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.3
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          0.5,
+          20,
+          5
+        ]
       },
       "filter": [
         "all",
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "LineString"
         ],
         [
           "==",
-          "brunnel",
+          [
+            "get",
+            "brunnel"
+          ],
           "bridge"
         ]
       ]
@@ -3348,23 +3738,26 @@ val styleStreets = """
       "paint": {
         "line-blur": 1,
         "line-color": "hsl(0,0%,100%)",
-        "line-width": {
-          "base": 1,
-          "stops": [
-            [
-              13,
-              2
-            ],
-            [
-              19,
-              4
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          13,
+          2,
+          19,
+          4
+        ]
       },
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "aerialway"
       ]
     },
@@ -3385,23 +3778,26 @@ val styleStreets = """
           2,
           2
         ],
-        "line-width": {
-          "base": 1,
-          "stops": [
-            [
-              13,
-              1
-            ],
-            [
-              19,
-              2
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          13,
+          1,
+          19,
+          2
+        ]
       },
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "aerialway"
       ]
     },
@@ -3467,17 +3863,28 @@ val styleStreets = """
         "all",
         [
           "in",
-          "admin_level",
-          3,
-          4,
-          5,
-          6,
-          7,
-          8
+          [
+            "get",
+            "admin_level"
+          ],
+          [
+            "literal",
+            [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8
+            ]
+          ]
         ],
         [
           "==",
-          "maritime",
+          [
+            "get",
+            "maritime"
+          ],
           0
         ]
       ]
@@ -3499,42 +3906,48 @@ val styleStreets = """
           2,
           2
         ],
-        "line-width": {
-          "stops": [
-            [
-              1,
-              0.5
-            ],
-            [
-              5,
-              1.5
-            ],
-            [
-              10,
-              2
-            ],
-            [
-              24,
-              12
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          1,
+          0.5,
+          5,
+          1.5,
+          10,
+          2,
+          24,
+          12
+        ]
       },
       "filter": [
         "all",
         [
           "==",
-          "admin_level",
+          [
+            "get",
+            "admin_level"
+          ],
           2
         ],
         [
           "==",
-          "disputed",
+          [
+            "get",
+            "disputed"
+          ],
           1
         ],
         [
           "==",
-          "maritime",
+          [
+            "get",
+            "maritime"
+          ],
           0
         ]
       ]
@@ -3552,42 +3965,48 @@ val styleStreets = """
       },
       "paint": {
         "line-color": "hsl(0, 0%, 54%)",
-        "line-width": {
-          "stops": [
-            [
-              1,
-              0.5
-            ],
-            [
-              5,
-              1.5
-            ],
-            [
-              10,
-              2
-            ],
-            [
-              24,
-              12
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          1,
+          0.5,
+          5,
+          1.5,
+          10,
+          2,
+          24,
+          12
+        ]
       },
       "filter": [
         "all",
         [
           "==",
-          "admin_level",
+          [
+            "get",
+            "admin_level"
+          ],
           2
         ],
         [
           "==",
-          "disputed",
+          [
+            "get",
+            "disputed"
+          ],
           0
         ],
         [
           "==",
-          "maritime",
+          [
+            "get",
+            "maritime"
+          ],
           0
         ]
       ]
@@ -3619,44 +4038,46 @@ val styleStreets = """
         "text-letter-spacing": 0.2,
         "text-max-width": 5,
         "text-rotation-alignment": "map",
-        "text-size": {
-          "stops": [
-            [
-              12,
-              8
-            ],
-            [
-              16,
-              14
-            ],
-            [
-              22,
-              20
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          8,
+          16,
+          14,
+          22,
+          20
+        ],
         "visibility": "visible"
       },
       "paint": {
         "text-color": "hsl(205,84%,39%)",
         "text-halo-blur": 1,
         "text-halo-color": "hsl(202, 76%, 82%)",
-        "text-halo-width": {
-          "stops": [
-            [
-              10,
-              1
-            ],
-            [
-              18,
-              2
-            ]
-          ]
-        }
+        "text-halo-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          10,
+          1,
+          18,
+          2
+        ]
       },
       "filter": [
         "==",
-        "${'$'}{'$'}type",
+        [
+          "geometry-type"
+        ],
         "LineString"
       ]
     },
@@ -3668,7 +4089,7 @@ val styleStreets = """
       "minzoom": 0,
       "layout": {
         "symbol-placement": "point",
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Roboto Italic",
           "Noto Sans Italic"
@@ -3743,31 +4164,33 @@ val styleStreets = """
         "visibility": "visible"
       },
       "paint": {
-        "text-color": {
-          "stops": [
-            [
-              1,
-              "hsl(203,54%,54%)"
-            ],
-            [
-              4,
-              "hsl(203,72%,39%)"
-            ]
-          ]
-        },
+        "text-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          1,
+          "hsl(203,54%,54%)",
+          4,
+          "hsl(203,72%,39%)"
+        ],
         "text-halo-blur": 1,
-        "text-halo-color": {
-          "stops": [
-            [
-              1,
-              "hsla(196, 72%, 80%, 0.05)"
-            ],
-            [
-              3,
-              "hsla(200, 100%, 88%, 0.75)"
-            ]
-          ]
-        },
+        "text-halo-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          1,
+          "hsla(196, 72%, 80%, 0.05)",
+          3,
+          "hsla(200, 100%, 88%, 0.75)"
+        ],
         "text-halo-width": 1,
         "text-opacity": [
           "step",
@@ -3797,7 +4220,9 @@ val styleStreets = """
         "all",
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "Point"
         ],
         [
@@ -3806,7 +4231,10 @@ val styleStreets = """
         ],
         [
           "!=",
-          "class",
+          [
+            "get",
+            "class"
+          ],
           "lake"
         ]
       ]
@@ -3836,22 +4264,21 @@ val styleStreets = """
         ],
         "text-letter-spacing": 0.1,
         "text-max-width": 5,
-        "text-size": {
-          "stops": [
-            [
-              10,
-              13
-            ],
-            [
-              14,
-              16
-            ],
-            [
-              22,
-              20
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          10,
+          13,
+          14,
+          16,
+          22,
+          20
+        ],
         "visibility": "visible"
       },
       "paint": {
@@ -3864,12 +4291,17 @@ val styleStreets = """
         "all",
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "LineString"
         ],
         [
           "==",
-          "class",
+          [
+            "get",
+            "class"
+          ],
           "lake"
         ]
       ]
@@ -3881,7 +4313,7 @@ val styleStreets = """
       "source-layer": "housenumber",
       "minzoom": 18,
       "layout": {
-        "text-field": "{housenumber}",
+        "text-field": ["to-string", ["get", "housenumber"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -3924,27 +4356,23 @@ val styleStreets = """
           0.8,
           0.8
         ],
-        "text-size": {
-          "base": 1,
-          "stops": [
-            [
-              13,
-              11
-            ],
-            [
-              15,
-              12
-            ],
-            [
-              18,
-              13
-            ],
-            [
-              22,
-              14
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          13,
+          11,
+          15,
+          12,
+          18,
+          13,
+          22,
+          14
+        ],
         "visibility": "visible"
       },
       "paint": {
@@ -3956,9 +4384,17 @@ val styleStreets = """
       "metadata": {},
       "filter": [
         "in",
-        "subclass",
-        "gondola",
-        "cable_car"
+        [
+          "get",
+          "subclass"
+        ],
+        [
+          "literal",
+          [
+            "gondola",
+            "cable_car"
+          ]
+        ]
       ]
     },
     {
@@ -3989,19 +4425,19 @@ val styleStreets = """
           0.8,
           0.8
         ],
-        "text-size": {
-          "base": 1,
-          "stops": [
-            [
-              13,
-              11
-            ],
-            [
-              15,
-              12
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          13,
+          11,
+          15,
+          12
+        ],
         "visibility": "visible"
       },
       "paint": {
@@ -4012,7 +4448,10 @@ val styleStreets = """
       },
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "ferry"
       ]
     },
@@ -4036,18 +4475,19 @@ val styleStreets = """
           0
         ],
         "icon-rotation-alignment": "map",
-        "icon-size": {
-          "stops": [
-            [
-              16,
-              0.7
-            ],
-            [
-              19,
-              1
-            ]
-          ]
-        },
+        "icon-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          16,
+          0.7,
+          19,
+          1
+        ],
         "symbol-placement": "line",
         "symbol-spacing": 75,
         "text-font": [
@@ -4068,14 +4508,22 @@ val styleStreets = """
         ],
         [
           "in",
-          "class",
-          "motorway",
-          "trunk",
-          "primary",
-          "secondary",
-          "tertiary",
-          "minor",
-          "service"
+          [
+            "get",
+            "class"
+          ],
+          [
+            "literal",
+            [
+              "motorway",
+              "trunk",
+              "primary",
+              "secondary",
+              "tertiary",
+              "minor",
+              "service"
+            ]
+          ]
         ]
       ]
     },
@@ -4124,26 +4572,23 @@ val styleStreets = """
           0.15
         ],
         "text-optional": false,
-        "text-size": {
-          "stops": [
-            [
-              13,
-              10
-            ],
-            [
-              14,
-              11
-            ],
-            [
-              18,
-              13
-            ],
-            [
-              22,
-              15
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          13,
+          10,
+          14,
+          11,
+          18,
+          13,
+          22,
+          15
+        ],
         "visibility": "visible"
       },
       "paint": {
@@ -4157,16 +4602,38 @@ val styleStreets = """
       "filter": [
         "all",
         [
-          "!in",
-          "subclass",
-          "gondola",
-          "cable_car"
+          "!",
+          [
+            "in",
+            [
+              "get",
+              "subclass"
+            ],
+            [
+              "literal",
+              [
+                "gondola",
+                "cable_car"
+              ]
+            ]
+          ]
         ],
         [
-          "!in",
-          "class",
-          "ferry",
-          "service"
+          "!",
+          [
+            "in",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "literal",
+              [
+                "ferry",
+                "service"
+              ]
+            ]
+          ]
         ]
       ]
     },
@@ -4177,14 +4644,14 @@ val styleStreets = """
       "source-layer": "transportation_name",
       "minzoom": 16,
       "layout": {
-        "icon-image": "exit_{ref_length}",
+        "icon-image": ["image", ["concat", "exit_", ["to-string", ["get", "ref_length"]]]],
         "icon-rotation-alignment": "viewport",
         "icon-size": 1,
         "symbol-avoid-edges": true,
         "symbol-placement": "point",
         "symbol-spacing": 200,
         "symbol-z-order": "auto",
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -4206,17 +4673,25 @@ val styleStreets = """
         "all",
         [
           ">",
-          "ref_length",
+          [
+            "get",
+            "ref_length"
+          ],
           0
         ],
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "Point"
         ],
         [
           "==",
-          "subclass",
+          [
+            "get",
+            "subclass"
+          ],
           "junction"
         ]
       ]
@@ -4228,24 +4703,25 @@ val styleStreets = """
       "source-layer": "transportation_name",
       "minzoom": 8,
       "layout": {
-        "icon-image": "road_{ref_length}",
+        "icon-image": ["image", ["concat", "road_", ["to-string", ["get", "ref_length"]]]],
         "icon-rotation-alignment": "viewport",
         "icon-size": 1,
         "symbol-avoid-edges": true,
         "symbol-placement": "line",
-        "symbol-spacing": {
-          "stops": [
-            [
-              10,
-              200
-            ],
-            [
-              18,
-              400
-            ]
-          ]
-        },
-        "text-field": "{ref}",
+        "symbol-spacing": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          10,
+          200,
+          18,
+          400
+        ],
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "match",
           [
@@ -4289,25 +4765,52 @@ val styleStreets = """
         "all",
         [
           "<=",
-          "ref_length",
+          [
+            "get",
+            "ref_length"
+          ],
           6
         ],
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "LineString"
         ],
         [
-          "!in",
-          "network",
-          "us-interstate",
-          "us-highway",
-          "us-state"
+          "!",
+          [
+            "in",
+            [
+              "get",
+              "network"
+            ],
+            [
+              "literal",
+              [
+                "us-interstate",
+                "us-highway",
+                "us-state"
+              ]
+            ]
+          ]
         ],
         [
-          "!in",
-          "class",
-          "path"
+          "!",
+          [
+            "in",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "literal",
+              [
+                "path"
+              ]
+            ]
+          ]
         ]
       ]
     },
@@ -4318,29 +4821,23 @@ val styleStreets = """
       "source-layer": "transportation_name",
       "minzoom": 7,
       "layout": {
-        "icon-image": "{network}_{ref_length}",
+        "icon-image": ["image", ["concat", ["to-string", ["get", "network"]], "_", ["to-string", ["get", "ref_length"]]]],
         "icon-rotation-alignment": "viewport",
         "icon-size": 1.1,
         "symbol-avoid-edges": true,
-        "symbol-placement": {
-          "base": 1,
-          "stops": [
-            [
-              7,
-              "point"
-            ],
-            [
-              7,
-              "line"
-            ],
-            [
-              8,
-              "line"
-            ]
-          ]
-        },
+        "symbol-placement": [
+          "step",
+          [
+            "zoom"
+          ],
+          "point",
+          7,
+          "line",
+          8,
+          "line"
+        ],
         "symbol-spacing": 200,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "match",
           [
@@ -4383,24 +4880,48 @@ val styleStreets = """
         "all",
         [
           "<=",
-          "ref_length",
+          [
+            "get",
+            "ref_length"
+          ],
           6
         ],
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "LineString"
         ],
         [
           "in",
-          "network",
-          "us-highway",
-          "us-state"
+          [
+            "get",
+            "network"
+          ],
+          [
+            "literal",
+            [
+              "us-highway",
+              "us-state"
+            ]
+          ]
         ],
         [
-          "!in",
-          "class",
-          "path"
+          "!",
+          [
+            "in",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "literal",
+              [
+                "path"
+              ]
+            ]
+          ]
         ]
       ]
     },
@@ -4411,28 +4932,22 @@ val styleStreets = """
       "source-layer": "transportation_name",
       "minzoom": 7,
       "layout": {
-        "icon-image": "{network}_{ref_length}",
+        "icon-image": ["image", ["concat", ["to-string", ["get", "network"]], "_", ["to-string", ["get", "ref_length"]]]],
         "icon-rotation-alignment": "viewport",
         "icon-size": 1,
-        "symbol-placement": {
-          "base": 1,
-          "stops": [
-            [
-              7,
-              "point"
-            ],
-            [
-              7,
-              "line"
-            ],
-            [
-              8,
-              "line"
-            ]
-          ]
-        },
+        "symbol-placement": [
+          "step",
+          [
+            "zoom"
+          ],
+          "point",
+          7,
+          "line",
+          8,
+          "line"
+        ],
         "symbol-spacing": 200,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "match",
           [
@@ -4480,23 +4995,42 @@ val styleStreets = """
         "all",
         [
           "<=",
-          "ref_length",
+          [
+            "get",
+            "ref_length"
+          ],
           6
         ],
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "LineString"
         ],
         [
           "==",
-          "network",
+          [
+            "get",
+            "network"
+          ],
           "us-interstate"
         ],
         [
-          "!in",
-          "class",
-          "path"
+          "!",
+          [
+            "in",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "literal",
+              [
+                "path"
+              ]
+            ]
+          ]
         ]
       ]
     },
@@ -4507,28 +5041,22 @@ val styleStreets = """
       "source-layer": "transportation_name",
       "minzoom": 7,
       "layout": {
-        "icon-image": "{network}_{ref_length}",
+        "icon-image": ["image", ["concat", ["to-string", ["get", "network"]], "_", ["to-string", ["get", "ref_length"]]]],
         "icon-rotation-alignment": "viewport",
         "icon-size": 1,
-        "symbol-placement": {
-          "base": 1,
-          "stops": [
-            [
-              7,
-              "point"
-            ],
-            [
-              7,
-              "line"
-            ],
-            [
-              8,
-              "line"
-            ]
-          ]
-        },
+        "symbol-placement": [
+          "step",
+          [
+            "zoom"
+          ],
+          "point",
+          7,
+          "line",
+          8,
+          "line"
+        ],
         "symbol-spacing": 200,
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "match",
           [
@@ -4575,23 +5103,42 @@ val styleStreets = """
         "all",
         [
           "<=",
-          "ref_length",
+          [
+            "get",
+            "ref_length"
+          ],
           6
         ],
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "LineString"
         ],
         [
           "==",
-          "network",
+          [
+            "get",
+            "network"
+          ],
           "us-interstate"
         ],
         [
-          "!in",
-          "class",
-          "path"
+          "!",
+          [
+            "in",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "literal",
+              [
+                "path"
+              ]
+            ]
+          ]
         ]
       ]
     },
@@ -4651,7 +5198,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -4663,22 +5210,21 @@ val styleStreets = """
         ],
         "text-optional": true,
         "text-padding": 2,
-        "text-size": {
-          "stops": [
-            [
-              12,
-              10
-            ],
-            [
-              16,
-              12
-            ],
-            [
-              22,
-              14
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          10,
+          16,
+          12,
+          22,
+          14
+        ],
         "visibility": "visible"
       },
       "paint": {
@@ -4818,30 +5364,40 @@ val styleStreets = """
         "all",
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "Point"
         ],
         [
           "in",
-          "class",
-          "atm",
-          "bank",
-          "bbq",
-          "cemetery",
-          "courthouse",
-          "drinking_water",
-          "fire_station",
-          "fountain",
-          "hairdresser",
-          "office",
-          "post",
-          "prison",
-          "recycling",
-          "shower",
-          "telephone",
-          "toilets",
-          "townhall",
-          "town_hall"
+          [
+            "get",
+            "class"
+          ],
+          [
+            "literal",
+            [
+              "atm",
+              "bank",
+              "bbq",
+              "cemetery",
+              "courthouse",
+              "drinking_water",
+              "fire_station",
+              "fountain",
+              "hairdresser",
+              "office",
+              "post",
+              "prison",
+              "recycling",
+              "shower",
+              "telephone",
+              "toilets",
+              "townhall",
+              "town_hall"
+            ]
+          ]
         ]
       ]
     },
@@ -4885,7 +5441,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -4897,22 +5453,21 @@ val styleStreets = """
         ],
         "text-optional": true,
         "text-padding": 2,
-        "text-size": {
-          "stops": [
-            [
-              12,
-              10
-            ],
-            [
-              16,
-              12
-            ],
-            [
-              22,
-              14
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          10,
+          16,
+          12,
+          22,
+          14
+        ],
         "visibility": "visible"
       },
       "paint": {
@@ -5010,39 +5565,49 @@ val styleStreets = """
         "all",
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "Point"
         ],
         [
           "in",
-          "class",
-          "american_football",
-          "athletics",
-          "archery",
-          "baseball",
-          "basketball",
-          "climbing",
-          "equestrian",
-          "fitness",
-          "fitness_centre",
-          "golf",
-          "motor",
-          "multi",
-          "playground",
-          "pitch",
-          "running",
-          "sauna",
-          "soccer",
-          "sport",
-          "stadium",
-          "sports_centre",
-          "sports_hall",
-          "swimming",
-          "swimming_area",
-          "swimming_pool",
-          "tennis",
-          "volleyball",
-          "water_park"
+          [
+            "get",
+            "class"
+          ],
+          [
+            "literal",
+            [
+              "american_football",
+              "athletics",
+              "archery",
+              "baseball",
+              "basketball",
+              "climbing",
+              "equestrian",
+              "fitness",
+              "fitness_centre",
+              "golf",
+              "motor",
+              "multi",
+              "playground",
+              "pitch",
+              "running",
+              "sauna",
+              "soccer",
+              "sport",
+              "stadium",
+              "sports_centre",
+              "sports_hall",
+              "swimming",
+              "swimming_area",
+              "swimming_pool",
+              "tennis",
+              "volleyball",
+              "water_park"
+            ]
+          ]
         ],
         [
           "has",
@@ -5095,7 +5660,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -5107,22 +5672,21 @@ val styleStreets = """
         ],
         "text-optional": true,
         "text-padding": 2,
-        "text-size": {
-          "stops": [
-            [
-              12,
-              10
-            ],
-            [
-              16,
-              12
-            ],
-            [
-              22,
-              14
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          10,
+          16,
+          12,
+          22,
+          14
+        ],
         "visibility": "visible"
       },
       "paint": {
@@ -5240,19 +5804,29 @@ val styleStreets = """
         "all",
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "Point"
         ],
         [
           "in",
-          "class",
-          "college",
-          "childcare",
-          "dancing_school",
-          "driving_school",
-          "kindergarten",
-          "school",
-          "university"
+          [
+            "get",
+            "class"
+          ],
+          [
+            "literal",
+            [
+              "college",
+              "childcare",
+              "dancing_school",
+              "driving_school",
+              "kindergarten",
+              "school",
+              "university"
+            ]
+          ]
         ],
         [
           "has",
@@ -5316,7 +5890,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -5328,22 +5902,21 @@ val styleStreets = """
         ],
         "text-optional": true,
         "text-padding": 2,
-        "text-size": {
-          "stops": [
-            [
-              12,
-              10
-            ],
-            [
-              16,
-              12
-            ],
-            [
-              22,
-              14
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          10,
+          16,
+          12,
+          22,
+          14
+        ],
         "visibility": "visible"
       },
       "paint": {
@@ -5465,34 +6038,47 @@ val styleStreets = """
         "all",
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "Point"
         ],
         [
           "in",
-          "class",
-          "apartment",
-          "aquarium",
-          "attraction",
-          "campsite",
-          "camp_site",
-          "caravan_site",
-          "castle",
-          "chalet",
-          "guest_house",
-          "hotel",
-          "hostel",
-          "information",
-          "lodging",
-          "motel",
-          "reservoir",
-          "ruins",
-          "theme_park",
-          "zoo"
+          [
+            "get",
+            "class"
+          ],
+          [
+            "literal",
+            [
+              "apartment",
+              "aquarium",
+              "attraction",
+              "campsite",
+              "camp_site",
+              "caravan_site",
+              "castle",
+              "chalet",
+              "guest_house",
+              "hotel",
+              "hostel",
+              "information",
+              "lodging",
+              "motel",
+              "reservoir",
+              "ruins",
+              "theme_park",
+              "zoo"
+            ]
+          ]
         ],
         [
           "!=",
-          "subclass",
+          [
+            "get",
+            "subclass"
+          ],
           "board"
         ],
         [
@@ -5541,7 +6127,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -5553,22 +6139,21 @@ val styleStreets = """
         ],
         "text-optional": true,
         "text-padding": 2,
-        "text-size": {
-          "stops": [
-            [
-              12,
-              10
-            ],
-            [
-              16,
-              12
-            ],
-            [
-              22,
-              14
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          10,
+          16,
+          12,
+          22,
+          14
+        ],
         "visibility": "visible"
       },
       "paint": {
@@ -5726,29 +6311,42 @@ val styleStreets = """
         "all",
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "Point"
         ],
         [
           "in",
-          "class",
-          "art_gallery",
-          "archeological_site",
-          "cinema",
-          "community_centre",
-          "gallery",
-          "library",
-          "monastery",
-          "monument",
-          "museum",
-          "opera",
-          "place_of_worship",
-          "planetarium",
-          "theatre"
+          [
+            "get",
+            "class"
+          ],
+          [
+            "literal",
+            [
+              "art_gallery",
+              "archeological_site",
+              "cinema",
+              "community_centre",
+              "gallery",
+              "library",
+              "monastery",
+              "monument",
+              "museum",
+              "opera",
+              "place_of_worship",
+              "planetarium",
+              "theatre"
+            ]
+          ]
         ],
         [
           "!=",
-          "subclass",
+          [
+            "get",
+            "subclass"
+          ],
           "artwork"
         ],
         [
@@ -5797,7 +6395,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -5809,22 +6407,21 @@ val styleStreets = """
         ],
         "text-optional": true,
         "text-padding": 2,
-        "text-size": {
-          "stops": [
-            [
-              12,
-              10
-            ],
-            [
-              16,
-              12
-            ],
-            [
-              22,
-              14
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          10,
+          16,
+          12,
+          22,
+          14
+        ],
         "visibility": "visible"
       },
       "paint": {
@@ -5974,29 +6571,39 @@ val styleStreets = """
         "all",
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "Point"
         ],
         [
           "all",
           [
             "in",
-            "class",
-            "alcohol_shop",
-            "bakery",
-            "book",
-            "books",
-            "butcher",
-            "chemist",
-            "clothing_store",
-            "convenience",
-            "gift",
-            "grocery",
-            "laundry",
-            "mall",
-            "music",
-            "shop",
-            "supermarket"
+            [
+              "get",
+              "class"
+            ],
+            [
+              "literal",
+              [
+                "alcohol_shop",
+                "bakery",
+                "book",
+                "books",
+                "butcher",
+                "chemist",
+                "clothing_store",
+                "convenience",
+                "gift",
+                "grocery",
+                "laundry",
+                "mall",
+                "music",
+                "shop",
+                "supermarket"
+              ]
+            ]
           ],
           [
             "has",
@@ -6056,7 +6663,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -6068,22 +6675,21 @@ val styleStreets = """
         ],
         "text-optional": true,
         "text-padding": 2,
-        "text-size": {
-          "stops": [
-            [
-              12,
-              10
-            ],
-            [
-              16,
-              12
-            ],
-            [
-              22,
-              14
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          10,
+          16,
+          12,
+          22,
+          14
+        ],
         "visibility": "visible"
       },
       "paint": {
@@ -6231,21 +6837,31 @@ val styleStreets = """
         "all",
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "Point"
         ],
         [
           "in",
-          "class",
-          "bar",
-          "beer",
-          "biergarten",
-          "cafe",
-          "fast_food",
-          "food_court",
-          "ice_cream",
-          "pub",
-          "restaurant"
+          [
+            "get",
+            "class"
+          ],
+          [
+            "literal",
+            [
+              "bar",
+              "beer",
+              "biergarten",
+              "cafe",
+              "fast_food",
+              "food_court",
+              "ice_cream",
+              "pub",
+              "restaurant"
+            ]
+          ]
         ],
         [
           "has",
@@ -6306,7 +6922,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -6318,22 +6934,21 @@ val styleStreets = """
         ],
         "text-optional": true,
         "text-padding": 2,
-        "text-size": {
-          "stops": [
-            [
-              12,
-              10
-            ],
-            [
-              16,
-              12
-            ],
-            [
-              22,
-              14
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          10,
+          16,
+          12,
+          22,
+          14
+        ],
         "visibility": "visible"
       },
       "paint": {
@@ -6525,31 +7140,41 @@ val styleStreets = """
         "all",
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "Point"
         ],
         [
           "in",
-          "class",
-          "bicycle",
-          "bicycle_parking",
-          "bicycle_rental",
-          "car",
-          "car_rental",
-          "car_repair",
-          "charging_station",
-          "ferry_terminal",
-          "fuel",
-          "harbor",
-          "heliport",
-          "highway_rest_area",
-          "motorcycle_parking",
-          "parking",
-          "parking_garage",
-          "parking_paid",
-          "scooter",
-          "terminal",
-          "toll"
+          [
+            "get",
+            "class"
+          ],
+          [
+            "literal",
+            [
+              "bicycle",
+              "bicycle_parking",
+              "bicycle_rental",
+              "car",
+              "car_rental",
+              "car_repair",
+              "charging_station",
+              "ferry_terminal",
+              "fuel",
+              "harbor",
+              "heliport",
+              "highway_rest_area",
+              "motorcycle_parking",
+              "parking",
+              "parking_garage",
+              "parking_paid",
+              "scooter",
+              "terminal",
+              "toll"
+            ]
+          ]
         ]
       ]
     },
@@ -6570,7 +7195,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -6582,22 +7207,21 @@ val styleStreets = """
         ],
         "text-optional": true,
         "text-padding": 2,
-        "text-size": {
-          "stops": [
-            [
-              12,
-              10
-            ],
-            [
-              16,
-              12
-            ],
-            [
-              22,
-              14
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          10,
+          16,
+          12,
+          22,
+          14
+        ],
         "visibility": "visible"
       },
       "paint": {
@@ -6689,7 +7313,10 @@ val styleStreets = """
         "all",
         [
           "==",
-          "class",
+          [
+            "get",
+            "class"
+          ],
           "park"
         ],
         [
@@ -6744,7 +7371,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -6756,22 +7383,21 @@ val styleStreets = """
         ],
         "text-optional": true,
         "text-padding": 2,
-        "text-size": {
-          "stops": [
-            [
-              12,
-              10
-            ],
-            [
-              16,
-              12
-            ],
-            [
-              22,
-              14
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          10,
+          16,
+          12,
+          22,
+          14
+        ],
         "visibility": "visible"
       },
       "paint": {
@@ -6889,19 +7515,29 @@ val styleStreets = """
         "all",
         [
           "==",
-          "${'$'}{'$'}type",
+          [
+            "geometry-type"
+          ],
           "Point"
         ],
         [
           "in",
-          "class",
-          "clinic",
-          "dentist",
-          "doctors",
-          "first_aid",
-          "hospital",
-          "pharmacy",
-          "veterinary"
+          [
+            "get",
+            "class"
+          ],
+          [
+            "literal",
+            [
+              "clinic",
+              "dentist",
+              "doctors",
+              "first_aid",
+              "hospital",
+              "pharmacy",
+              "veterinary"
+            ]
+          ]
         ],
         [
           "has",
@@ -6924,7 +7560,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "center",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Regular",
           "Noto Sans Regular"
@@ -7076,16 +7712,27 @@ val styleStreets = """
       },
       "metadata": {},
       "filter": [
-        "!in",
-        "class",
-        "continent",
-        "country",
-        "state",
-        "region",
-        "province",
-        "city",
-        "town",
-        "place"
+        "!",
+        [
+          "in",
+          [
+            "get",
+            "class"
+          ],
+          [
+            "literal",
+            [
+              "continent",
+              "country",
+              "state",
+              "region",
+              "province",
+              "city",
+              "town",
+              "place"
+            ]
+          ]
+        ]
       ]
     },
     {
@@ -7134,7 +7781,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Roboto Medium",
           "Noto Sans Regular"
@@ -7147,22 +7794,21 @@ val styleStreets = """
         ],
         "text-optional": true,
         "text-padding": 2,
-        "text-size": {
-          "stops": [
-            [
-              13,
-              11
-            ],
-            [
-              16,
-              12
-            ],
-            [
-              22,
-              16
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          13,
+          11,
+          16,
+          12,
+          22,
+          16
+        ],
         "visibility": "visible"
       },
       "paint": {
@@ -7314,9 +7960,17 @@ val styleStreets = """
         "all",
         [
           "in",
-          "class",
-          "bus",
-          "railway"
+          [
+            "get",
+            "class"
+          ],
+          [
+            "literal",
+            [
+              "bus",
+              "railway"
+            ]
+          ]
         ],
         [
           "has",
@@ -7331,23 +7985,24 @@ val styleStreets = """
       "source-layer": "aeroway",
       "minzoom": 15,
       "layout": {
-        "text-field": "{ref}",
+        "text-field": ["to-string", ["get", "ref"]],
         "text-font": [
           "Roboto Medium",
           "Noto Sans Regular"
         ],
-        "text-size": {
-          "stops": [
-            [
-              15,
-              10
-            ],
-            [
-              22,
-              18
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          15,
+          10,
+          22,
+          18
+        ],
         "visibility": "visible"
       },
       "paint": {
@@ -7358,7 +8013,10 @@ val styleStreets = """
       },
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "gate"
       ]
     },
@@ -7413,22 +8071,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "top",
-        "text-field": {
-          "stops": [
-            [
-              8,
-              " "
-            ],
-            [
-              9,
-              "{iata}"
-            ],
-            [
-              12,
-              "{name:en}"
-            ]
-          ]
-        },
+        "text-field": ["step", ["zoom"], " ", 9, ["to-string", ["get", "iata"]], 12, ["to-string", ["get", "name:en"]]],
         "text-font": [
           "Roboto Medium",
           "Noto Sans Regular"
@@ -7546,9 +8189,20 @@ val styleStreets = """
           "iata"
         ],
         [
-          "!in",
-          "class",
-          "public"
+          "!",
+          [
+            "in",
+            [
+              "get",
+              "class"
+            ],
+            [
+              "literal",
+              [
+                "public"
+              ]
+            ]
+          ]
         ]
       ]
     },
@@ -7585,22 +8239,21 @@ val styleStreets = """
         "text-letter-spacing": 0.1,
         "text-max-width": 8,
         "text-padding": 2,
-        "text-size": {
-          "stops": [
-            [
-              3,
-              9
-            ],
-            [
-              5,
-              10
-            ],
-            [
-              6,
-              11
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          3,
+          9,
+          5,
+          10,
+          6,
+          11
+        ],
         "text-transform": "uppercase",
         "visibility": "visible"
       },
@@ -7649,13 +8302,24 @@ val styleStreets = """
         "all",
         [
           "in",
-          "class",
-          "state",
-          "province"
+          [
+            "get",
+            "class"
+          ],
+          [
+            "literal",
+            [
+              "state",
+              "province"
+            ]
+          ]
         ],
         [
           "<=",
-          "rank",
+          [
+            "get",
+            "rank"
+          ],
           6
         ]
       ]
@@ -7669,18 +8333,21 @@ val styleStreets = """
       "maxzoom": 16,
       "layout": {
         "icon-allow-overlap": true,
-        "icon-image": {
-          "stops": [
-            [
-              6,
-              "circle"
-            ],
-            [
-              12,
-              " "
-            ]
+        "icon-image": [
+          "step",
+          [
+            "zoom"
+          ],
+          [
+            "image",
+            "circle"
+          ],
+          12,
+          [
+            "image",
+            " "
           ]
-        },
+        ],
         "icon-optional": false,
         "icon-size": [
           "interpolate",
@@ -7802,7 +8469,10 @@ val styleStreets = """
       "metadata": {},
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "town"
       ]
     },
@@ -7834,7 +8504,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "bottom",
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Roboto Medium",
           "Noto Sans Regular"
@@ -7927,12 +8597,18 @@ val styleStreets = """
         "all",
         [
           "==",
-          "class",
+          [
+            "get",
+            "class"
+          ],
           "city"
         ],
         [
           "!=",
-          "capital",
+          [
+            "get",
+            "capital"
+          ],
           2
         ]
       ]
@@ -7980,7 +8656,7 @@ val styleStreets = """
           ]
         ],
         "text-anchor": "bottom",
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Roboto Medium",
           "Noto Sans Regular"
@@ -8025,12 +8701,18 @@ val styleStreets = """
         "all",
         [
           "==",
-          "class",
+          [
+            "get",
+            "class"
+          ],
           "city"
         ],
         [
           "==",
-          "capital",
+          [
+            "get",
+            "capital"
+          ],
           2
         ]
       ]
@@ -8051,24 +8733,25 @@ val styleStreets = """
           ]
         ],
         "text-allow-overlap": false,
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Roboto Medium",
           "Noto Sans Regular"
         ],
         "text-letter-spacing": 0.07,
-        "text-max-width": {
-          "stops": [
-            [
-              1,
-              5
-            ],
-            [
-              5,
-              8
-            ]
-          ]
-        },
+        "text-max-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          1,
+          5,
+          5,
+          8
+        ],
         "text-padding": 1,
         "text-size": [
           "interpolate",
@@ -8178,7 +8861,10 @@ val styleStreets = """
         "all",
         [
           "==",
-          "class",
+          [
+            "get",
+            "class"
+          ],
           "country"
         ],
         [
@@ -8187,7 +8873,10 @@ val styleStreets = """
         ],
         [
           "!=",
-          "iso_a2",
+          [
+            "get",
+            "iso_a2"
+          ],
           "VA"
         ]
       ]
@@ -8199,24 +8888,25 @@ val styleStreets = """
       "source-layer": "place",
       "maxzoom": 1,
       "layout": {
-        "text-field": "{name:en}",
+        "text-field": ["to-string", ["get", "name:en"]],
         "text-font": [
           "Roboto Medium",
           "Noto Sans Regular"
         ],
         "text-justify": "center",
-        "text-size": {
-          "stops": [
-            [
-              0,
-              12
-            ],
-            [
-              2,
-              13
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          12,
+          2,
+          13
+        ],
         "text-transform": "uppercase",
         "visibility": "visible"
       },
@@ -8229,7 +8919,10 @@ val styleStreets = """
       "metadata": {},
       "filter": [
         "==",
-        "class",
+        [
+          "get",
+          "class"
+        ],
         "continent"
       ]
     }

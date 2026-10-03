@@ -1,5 +1,20 @@
 KMaP TODO
 
+- Handle vector style changes for an existing canvas ID. `CanvasKernel.refreshCanvas`
+  keeps the engine and tiles processed with the old style while `VectorTileCanvas`
+  draws with the new style. Keep raw MVT tiles for reprocessing, or replace the
+  engine and reload visible tiles, keeping layer IDs, `source-layer`, and filters
+  in sync.
+
+- Revisit the magenta fallback for missing or invalid background, fill, and
+  line colors. Choose deliberate defaults for the supported style subset.
+
+- Load sprite images from style URLs and support collision handling, line
+  placement, crossfade, and remaining icon properties in vector `symbol` layers.
+
+- Expand component measurement and visibility tests for rotated and clustered
+  markers.
+
 - Ensure objects supplied through component parameters cannot be mutated, or
   observe snapshots of their contents and cancel the previous component and create
   a new one when those contents change. If using hashes, compare content hashes,

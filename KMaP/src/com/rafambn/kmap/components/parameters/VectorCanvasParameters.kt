@@ -2,7 +2,7 @@ package com.rafambn.kmap.components.parameters
 
 import com.rafambn.kmap.source.TileResult
 import com.rafambn.kmap.source.VectorTile
-import com.rafambn.kmap.style.OptimizedStyle
+import com.rafambn.kmap.style.compiled.CompiledStyle
 
 open class VectorCanvasParameters(
     override val id: Int,
@@ -10,5 +10,5 @@ open class VectorCanvasParameters(
     override val zIndex: Float = 0F,
     override val maxCacheTiles: Int = 20,
     val tileSource: suspend (zoom: Int, row: Int, column: Int) -> TileResult<VectorTile>,
-    val style: OptimizedStyle,
+    val style: CompiledStyle,
 ) : CanvasParameters

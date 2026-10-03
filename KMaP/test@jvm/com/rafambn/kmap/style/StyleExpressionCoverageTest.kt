@@ -1,6 +1,8 @@
 package com.rafambn.kmap.style
 
 import androidx.compose.ui.graphics.Color
+import com.rafambn.kmap.style.evaluation.EvaluationContext
+import com.rafambn.kmap.style.evaluation.ExpressionEvaluator
 import com.rafambn.kmap.style.expression.compare
 import com.rafambn.kmap.style.expression.evaluateComparison
 import com.rafambn.kmap.style.expression.evaluateNumber
@@ -14,30 +16,82 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 val StyleExpressionCoverageTest by testSuite {
+    test("unsigned feature data remains exact in expressions") {
+        val evaluator = ExpressionEvaluator()
+        val context = EvaluationContext(
+            featureProperties = mapOf("value" to ULong.MAX_VALUE),
+            featureId = ULong.MAX_VALUE
+        )
+
+        assertEquals(ULong.MAX_VALUE, evaluator.evaluate(listOf("id"), context))
+        assertEquals("18446744073709551615", evaluator.evaluate(listOf("to-string", listOf("id")), context))
+        assertEquals("number", evaluator.evaluate(listOf("typeof", listOf("get", "value")), context))
+        assertEquals(ULong.MAX_VALUE, evaluator.evaluate(listOf("number", listOf("get", "value")), context))
+        assertEquals(true, evaluator.evaluate(listOf("==", listOf("id"), listOf("get", "value")), context))
+        assertEquals(false, evaluator.evaluate(listOf("==", listOf("id"), 18446744073709551616.0), context))
+        assertEquals(true, evaluator.evaluate(listOf(">", listOf("id"), Long.MAX_VALUE), context))
+        assertEquals(false, evaluator.evaluate(listOf("==", 9007199254740993UL, 9007199254740992.0), context))
+        assertEquals(true, evaluator.evaluate(listOf("==", 0UL, -0.0), context))
+        assertEquals(false, evaluator.evaluate(listOf("==", Long.MAX_VALUE, 9223372036854775808.0), context))
+        assertEquals(true, evaluator.evaluate(listOf("<", Long.MAX_VALUE, 9223372036854775808.0), context))
+        assertEquals("found", evaluator.evaluate(listOf("match", listOf("id"), ULong.MAX_VALUE, "found", "missing"), context))
+        assertEquals("18,446,744,073,709,551,615", evaluator.evaluate(
+            listOf("number-format", listOf("get", "value"), emptyMap<String, Any>()), context
+        ))
+    }
+
+    test("interpolation curves apply to numbers, arrays, and colors") {
+        val evaluator = ExpressionEvaluator()
+        val context = EvaluationContext(zoomLevel = 15.0)
+        val exponential = listOf("exponential", 2.0)
+        val expected = 31.0 / 1023.0
+
+        assertEquals(100 * expected, evaluator.evaluate(
+            listOf("interpolate", exponential, listOf("zoom"), 10, 0, 20, 100), context
+        ) as Double, 0.0001)
+        val array = evaluator.evaluate(
+            listOf("interpolate", exponential, listOf("zoom"), 10, listOf(0, 0), 20, listOf(100, 200)), context
+        ) as List<*>
+        assertEquals(100 * expected, array[0] as Double, 0.0001)
+        assertEquals(200 * expected, array[1] as Double, 0.0001)
+        val color = evaluator.evaluate(
+            listOf("interpolate", exponential, listOf("zoom"), 10, "#000000", 20, "#ffffff"), context
+        ) as Color
+        assertEquals(expected.toFloat(), color.red, 0.002f)
+
+        val eased = evaluator.evaluate(
+            listOf("interpolate", listOf("cubic-bezier", 0.25, 0.1, 0.25, 1.0), listOf("zoom"), 10, 0, 20, 100), context
+        ) as Double
+        assertEquals(80.24, eased, 0.1)
+    }
+
+    test("HSL expression uses degrees and fractional alpha") {
+        val evaluator = ExpressionEvaluator()
+        val green = evaluator.evaluate(listOf("hsl", 120, 100, 50), EvaluationContext()) as Color
+        assertEquals(0f, green.red, 0.001f)
+        assertEquals(1f, green.green, 0.001f)
+        assertEquals(0f, green.blue, 0.001f)
+        val halfGreen = evaluator.evaluate(listOf("hsla", 120, 100, 50, 0.5), EvaluationContext()) as Color
+        assertEquals(0.5f, halfGreen.alpha, 0.003f)
+        assertEquals(green.green, halfGreen.green, 0.001f)
+    }
+
     testFixture { ExpressionEvaluator() } asParameterForEach {
-        test("resolves name tokens and collects their feature properties") { evaluator ->
+        test("keeps tokens literal inside expressions") { evaluator ->
             val context = EvaluationContext(
                 featureProperties = mapOf("name" to "Default", "name:pt" to "Nome"),
                 locale = "pt"
             )
 
-            assertEquals("Nome", evaluator.evaluate("{name}", context))
-            assertEquals("Default", evaluator.evaluate("{name:fr}", context))
-            assertEquals("Nome", evaluator.evaluate("{name:pt}", context))
-            assertEquals("", evaluator.evaluate("{name}", EvaluationContext()))
+            assertEquals("{name}", evaluator.evaluate("{name}", context))
+            assertEquals("{name:fr}", evaluator.evaluate("{name:fr}", context))
+            assertEquals("{name:pt}", evaluator.evaluate("{name:pt}", context))
+            assertEquals("{name}", evaluator.evaluate("{name}", EvaluationContext()))
             assertEquals("{", evaluator.evaluate("{", context))
             assertEquals("}", evaluator.evaluate("}", context))
             assertEquals("{ref}", evaluator.evaluate("{ref}", context))
-            assertEquals("Nome Default", evaluator.evaluate(listOf("concat", "{name}", " ", listOf("get", "name")), context))
+            assertEquals("{name} Default", evaluator.evaluate(listOf("concat", "{name}", " ", listOf("get", "name")), context))
 
-            assertEquals(setOf("name", "name:pt"), evaluator.getRequiredProperties("{name} {name:pt} {ref}"))
-            assertEquals(setOf("name"), evaluator.getRequiredProperties("{name:}"))
-            assertEquals(emptySet(), evaluator.getRequiredProperties("{name"))
-            assertEquals(emptySet(), evaluator.getRequiredProperties("plain text"))
-            assertEquals(setOf("class"), evaluator.getRequiredProperties(listOf("all", listOf("get", "class"), listOf("get", 1))))
-            assertEquals(emptySet(), evaluator.getRequiredProperties(listOf("get", 1)))
-            assertEquals(emptySet(), evaluator.getRequiredProperties(listOf("get")))
-            assertEquals(emptySet(), evaluator.getRequiredProperties(emptyList<Any>()))
         }
 
         test("dispatches context, map, and unsupported expressions") { evaluator ->
@@ -53,14 +107,6 @@ val StyleExpressionCoverageTest by testSuite {
 
             val literalMap = mapOf("value" to 7)
             assertEquals(literalMap, evaluator.evaluate(literalMap, context))
-            assertEquals(4.0, evaluator.evaluate(
-                mapOf("base" to "invalid", "stops" to listOf("ignored", listOf(0), listOf(0, 0), listOf(10, 10))),
-                context
-            ))
-            assertTrue((evaluator.evaluate(
-                mapOf("base" to 2.0, "stops" to listOf(listOf(0, 0), listOf(10, 10))),
-                context
-            ) as Double) in 3.0..4.0)
         }
 
         test("handles malformed feature and lookup expressions") { evaluator ->
@@ -97,7 +143,7 @@ val StyleExpressionCoverageTest by testSuite {
             assertNull(evaluator.evaluate(listOf("slice", 2, 0), context))
             assertEquals("bcd", evaluator.evaluate(listOf("slice", "abcd", 1), context))
             assertEquals(listOf(2, 3), evaluator.evaluate(listOf("slice", listOf(1, 2, 3), 1), context))
-            assertEquals("bcd", evaluator.evaluate(listOf("slice", "abcd", 1, "bad"), context))
+            assertNull(evaluator.evaluate(listOf("slice", "abcd", 1, "bad"), context))
         }
 
         test("covers conditional and type expression fallbacks") { evaluator ->
@@ -114,8 +160,9 @@ val StyleExpressionCoverageTest by testSuite {
             assertEquals("default", evaluator.evaluate(listOf("match", 5, listOf(1, 2), "array", 1, "one", 3, "three", "default"), context))
             assertNull(evaluator.evaluate(listOf("literal"), context))
             assertEquals("42", evaluator.evaluate(listOf("to-string", 42), context))
+            assertEquals("42", evaluator.evaluate(listOf("to-string", 42.0), context))
             assertNull(evaluator.evaluate(listOf("to-string"), context))
-            assertNull(evaluator.evaluate(listOf("to-string", null), context))
+            assertEquals("", evaluator.evaluate(listOf("to-string", null), context))
             assertEquals("object", evaluator.evaluate(listOf("typeof", Any()), context))
             assertEquals("4", evaluator.evaluate(listOf("concat", null, listOf("get", "absent"), 4), context))
             assertEquals("", evaluator.evaluate(listOf("concat"), context))
@@ -131,15 +178,15 @@ val StyleExpressionCoverageTest by testSuite {
             assertNull(evaluator.evaluate(listOf("rgb", "bad", 2, 3), context))
             assertNull(evaluator.evaluate(listOf("rgb", 1, "bad", 3), context))
             assertNull(evaluator.evaluate(listOf("rgb", 1, 2, "bad"), context))
-            assertEquals(Color(0, 255, 3, 255), evaluator.evaluate(listOf("rgba", -1, 300, 3, "bad"), context))
-            assertEquals(Color(0, 0, 0, 0), evaluator.evaluate(listOf("rgba", 0, 0, 0, -1), context))
+            assertNull(evaluator.evaluate(listOf("rgba", -1, 300, 3, "bad"), context))
+            assertNull(evaluator.evaluate(listOf("rgba", 0, 0, 0, -1), context))
 
             assertNull(evaluator.evaluate(listOf("hsl", 1, 2), context))
             assertNull(evaluator.evaluate(listOf("hsl", 1, 2, 3, 0.5, 6), context))
             assertNull(evaluator.evaluate(listOf("hsl", "bad", 2, 3), context))
             assertNull(evaluator.evaluate(listOf("hsl", 1, "bad", 3), context))
             assertNull(evaluator.evaluate(listOf("hsl", 1, 2, "bad"), context))
-            assertEquals(Color(255, 0, 0, 255), evaluator.evaluate(listOf("hsla", 0, 120, 50, "bad"), context))
+            assertNull(evaluator.evaluate(listOf("hsla", 0, 120, 50, "bad"), context))
 
             assertNull(evaluator.evaluate(listOf("+", 1), context))
             assertNull(evaluator.evaluate(listOf("+", "bad", 1), context))
@@ -164,11 +211,11 @@ val StyleExpressionCoverageTest by testSuite {
             assertNull(evaluator.evaluate(listOf("interpolate", listOf("linear"), listOf("zoom"), 0, 0, 10), middleZoom))
             assertEquals(0, evaluator.evaluate(listOf("interpolate", listOf("linear"), listOf("zoom"), 0, 0, 10, 10), lowZoom))
             assertEquals(10, evaluator.evaluate(listOf("interpolate", listOf("linear"), listOf("zoom"), 0, 0, 10, 10), highZoom))
-            assertEquals(5.0, evaluator.evaluate(listOf("interpolate", listOf("cubic-bezier"), listOf("zoom"), 0, 0, 10, 10), middleZoom))
-            assertEquals(5.0, evaluator.evaluate(listOf("interpolate", listOf(1), listOf("zoom"), 0, 0, 10, 10), middleZoom))
-            assertEquals(5.0, evaluator.evaluate(listOf("interpolate", listOf("exponential"), listOf("zoom"), 0, 0, 10, 10), middleZoom))
-            assertTrue((evaluator.evaluate(listOf("interpolate", listOf("exponential", 2.0), listOf("zoom"), 0, 0, 10, 10), middleZoom) as Double) in 4.0..4.2)
-            assertEquals(0.5, evaluator.evaluate(listOf("interpolate", listOf("linear"), listOf("zoom"), 0, 0, "bad", 1, 10, 3), middleZoom))
+            assertNull(evaluator.evaluate(listOf("interpolate", listOf("cubic-bezier"), listOf("zoom"), 0, 0, 10, 10), middleZoom))
+            assertNull(evaluator.evaluate(listOf("interpolate", listOf(1), listOf("zoom"), 0, 0, 10, 10), middleZoom))
+            assertNull(evaluator.evaluate(listOf("interpolate", listOf("exponential"), listOf("zoom"), 0, 0, 10, 10), middleZoom))
+            assertEquals(10.0 * 31 / 1023, evaluator.evaluate(listOf("interpolate", listOf("exponential", 2.0), listOf("zoom"), 0, 0, 10, 10), middleZoom) as Double, 0.0001)
+            assertNull(evaluator.evaluate(listOf("interpolate", listOf("linear"), listOf("zoom"), 0, 0, "bad", 1, 10, 3), middleZoom))
             assertTrue(evaluator.evaluate(
                 listOf("interpolate", listOf("linear"), listOf("zoom"), 0, "#000000", 10, "#ffffff"),
                 middleZoom
@@ -201,7 +248,6 @@ val StyleExpressionCoverageTest by testSuite {
         ) { _, method, _ -> if (method.name == "toString") null else Unit }
 
         // Java proxies can violate the nonnull toString contract, so keep this fallback covered.
-        assertEquals("", evaluator.evaluate("{name}", EvaluationContext(featureProperties = mapOf("name:en" to javaNullString))))
         assertEquals("", evaluator.evaluate(listOf("concat", listOf("get", "name:en")), EvaluationContext(featureProperties = mapOf("name:en" to javaNullString))))
 
         assertEquals(2.0, toDouble(2))
@@ -232,25 +278,30 @@ val StyleExpressionCoverageTest by testSuite {
         assertNull(parseColor("#ggg"))
         assertNull(parseColor("#0g0"))
         assertNull(parseColor("#0000gg"))
-        assertEquals(Color(17, 34, 51, 255), parseColor("#112233zz"))
+        assertNull(parseColor("#112233zz"))
 
         assertEquals(Color(1, 2, 3, 255), parseColor("rgb(1, 2, 3)"))
-        assertEquals(Color(1, 2, 3, 127), parseColor("rgb(1, 2, 3, 0.5)"))
-        assertEquals(Color(0, 255, 3, 127), parseColor("rgba(-1, 300, 3, 0.5)"))
+        assertNull(parseColor("rgb(1, 2, 3, 0.5)"))
+        assertEquals(0.5f, parseColor("rgba(-1, 300, 3, 0.5)")!!.alpha, 0.003f)
+        assertEquals(Color(255, 128, 0, 255), parseColor("rgb(100%, 50%, 0%)"))
+        assertEquals(0.25f, parseColor("rgba(100%, 50%, 0%, 25%)")!!.alpha, 0.003f)
+        assertEquals(Color(255, 0, 0, 255), parseColor("RED"))
+        assertEquals(Color(102, 51, 153, 255), parseColor("rebeccapurple"))
+        assertEquals(Color.Transparent, parseColor("transparent"))
         assertNull(parseColor("rgb(1, 2)"))
         assertNull(parseColor("rgb(x, 2, 3)"))
         assertNull(parseColor("rgb(1, x, 3)"))
         assertNull(parseColor("rgb(1, 2, x)"))
-        assertEquals(Color(1, 2, 3, 255), parseColor("rgb(1, 2, 3, x)"))
-        assertEquals(Color(1, 2, 3, 255), parseColor("rgb(1, 2, 3, 0.5, extra)"))
+        assertNull(parseColor("rgb(1, 2, 3, x)"))
+        assertNull(parseColor("rgb(1, 2, 3, 0.5, extra)"))
 
         assertNull(parseColor("hsl(1, 2)"))
         assertNull(parseColor("hsl(x, 2, 3)"))
         assertNull(parseColor("hsl(1, x%, 3%)"))
         assertNull(parseColor("hsl(1, 2%, x%)"))
         assertEquals(Color(255, 0, 0, 255), parseColor("hsl(0, 100%, 50%)"))
-        assertEquals(Color(255, 0, 0, 127), parseColor("hsla(360, 120%, 50%, 0.5)"))
-        assertEquals(Color(255, 0, 0, 255), parseColor("hsl(0, 100%, 50%, x)"))
+        assertEquals(0.5f, parseColor("hsla(360, 120%, 50%, 0.5)")!!.alpha, 0.003f)
+        assertNull(parseColor("hsl(0, 100%, 50%, x)"))
         listOf(30, 90, 150, 210, 270, 330).forEach { hue -> assertTrue(parseColor("hsl($hue, 100%, 50%)") is Color) }
     }
 }

@@ -1,17 +1,20 @@
 package com.rafambn.kmap.source.internal
 
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathFillType
 import com.rafambn.kmap.mvttile.*
 import com.rafambn.kmap.source.TileResult
 import com.rafambn.kmap.source.VectorTile
-import com.rafambn.kmap.style.OptimizedStyle
+import com.rafambn.kmap.style.compiled.CompiledLayerType
+import com.rafambn.kmap.style.compiled.CompiledStyle
+import com.rafambn.kmap.style.evaluation.FeatureGeometryContext
 import kotlinx.coroutines.CoroutineScope
 
 class VectorCanvasEngine(
     maxCacheTiles: Int,
     getTile: suspend (zoom: Int, row: Int, column: Int) -> TileResult<VectorTile>,
     coroutineScope: CoroutineScope,
-    style: OptimizedStyle
+    style: CompiledStyle
 ) : CanvasEngine<OptimizedVectorTile>(
     maxCacheTiles,
     coroutineScope,
@@ -22,18 +25,14 @@ class VectorCanvasEngine(
     )
 )
 
-private fun optimizeMVTile(tile: VectorTile, optimizedStyle: OptimizedStyle): OptimizedVectorTile {
+internal fun optimizeMVTile(tile: VectorTile, compiledStyle: CompiledStyle): OptimizedVectorTile {
     val mvtData = tile.mvtile ?: return OptimizedVectorTile(tile.zoom, tile.row, tile.col, null)
 
     val layerFeatures = mutableMapOf<String, MutableList<OptimizedRenderFeature>>()
     val extent = mvtData.layers.firstOrNull()?.extent ?: 4096
 
-    optimizedStyle.layers.forEach { optimizedStyleLayer ->
-        if (optimizedStyleLayer.type == "background") return@forEach
-
-        val currentZoom = tile.zoom.toDouble()
-        if (currentZoom < optimizedStyleLayer.minZoom) return@forEach
-        if (currentZoom > optimizedStyleLayer.maxZoom) return@forEach
+    compiledStyle.layers.forEach { optimizedStyleLayer ->
+        if (optimizedStyleLayer.type == CompiledLayerType.BACKGROUND) return@forEach
 
         val sourceLayerName = optimizedStyleLayer.sourceLayer ?: return@forEach
         val mvtLayer = mvtData.layers.find { it.name == sourceLayerName } ?: return@forEach
@@ -48,13 +47,16 @@ private fun optimizeMVTile(tile: VectorTile, optimizedStyle: OptimizedStyle): Op
             }
             val featureId = feature.id
 
-            if (optimizedStyleLayer.filter?.evaluate(featureProperties, geometryType, featureId) == false) return@mapNotNull null
+            val featureGeometry = FeatureGeometryContext(
+                feature.geometry, tile.zoom, tile.row, tile.col, mvtLayer.extent
+            )
+            if (optimizedStyleLayer.filter?.evaluate(tile.zoom.toDouble(), featureProperties, geometryType, featureId, featureGeometry) == false) return@mapNotNull null
 
             val isValidGeometry = when (optimizedStyleLayer.type) {
-                "fill" -> feature.type == RawMVTGeomType.POLYGON
-                "line" -> feature.type == RawMVTGeomType.LINESTRING
-                "symbol" -> feature.type == RawMVTGeomType.POINT
-                else -> false
+                CompiledLayerType.FILL -> feature.type == RawMVTGeomType.POLYGON
+                CompiledLayerType.LINE -> feature.type == RawMVTGeomType.LINESTRING || feature.type == RawMVTGeomType.POLYGON
+                CompiledLayerType.SYMBOL -> feature.type == RawMVTGeomType.POINT
+                CompiledLayerType.BACKGROUND -> false
             }
 
             if (!isValidGeometry) return@mapNotNull null
@@ -63,7 +65,8 @@ private fun optimizeMVTile(tile: VectorTile, optimizedStyle: OptimizedStyle): Op
 
             OptimizedRenderFeature(
                 geometry = geometry,
-                properties = featureProperties
+                properties = featureProperties,
+                id = featureId
             )
         }
 
@@ -81,8 +84,10 @@ private fun optimizeMVTile(tile: VectorTile, optimizedStyle: OptimizedStyle): Op
 private fun buildOptimizedGeometry(feature: MVTFeature): OptimizedGeometry? {
     return when (feature.type) {
         RawMVTGeomType.POLYGON -> {
-            val paths = feature.geometry.map { ring -> buildPathFromGeometry(listOf(ring), true) }
-            OptimizedGeometry.Polygon(paths)
+            val path = buildPathFromGeometry(feature.geometry, true).apply {
+                fillType = PathFillType.NonZero
+            }
+            OptimizedGeometry.Polygon(path)
         }
 
         RawMVTGeomType.LINESTRING -> {

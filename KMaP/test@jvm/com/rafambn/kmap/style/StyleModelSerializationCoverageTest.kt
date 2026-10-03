@@ -1,11 +1,16 @@
 package com.rafambn.kmap.style
 
+import com.rafambn.kmap.style.model.Light
+import com.rafambn.kmap.style.model.Source
+import com.rafambn.kmap.style.model.Style
+import com.rafambn.kmap.style.model.StyleLayer
+import com.rafambn.kmap.style.model.Transition
 import de.infix.testBalloon.framework.core.testSuite
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
-import kotlinx.serialization.SerializationException
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromByteArray
 import kotlinx.serialization.encodeToByteArray
 import kotlinx.serialization.json.Json
@@ -16,14 +21,10 @@ import kotlinx.serialization.protobuf.ProtoBuf
 val StyleModelSerializationCoverageTest by testSuite {
     testFixture { Json { ignoreUnknownKeys = true } } asParameterForEach {
         test("decodes optional style fields and their defaults") { json ->
-            val minimalStyle = json.decodeFromString<Style>("""
-                {
-                    "version": 8,
-                    "sources": {},
-                    "layers": []
-                }
-            """.trimIndent())
+            val minimalStyle = json.decodeFromString<Style>("""{"layers":[]}""")
 
+            assertNull(minimalStyle.version)
+            assertEquals(emptyMap(), minimalStyle.sources)
             assertNull(minimalStyle.name)
             assertNull(minimalStyle.metadata)
             assertNull(minimalStyle.center)
@@ -108,12 +109,25 @@ val StyleModelSerializationCoverageTest by testSuite {
                 completeStyle.sources.getValue("source")
             )
             assertEquals("landuse", completeStyle.layers.single().sourceLayer)
-            assertEquals("https://example.test/sprite", completeStyle.sprite)
+            assertEquals(JsonPrimitive("https://example.test/sprite"), completeStyle.sprite)
             assertEquals(Transition(duration = 300, delay = 25), completeStyle.transition)
 
             val encoded = json.encodeToString(Style.serializer(), completeStyle)
             assertEquals(completeStyle, json.decodeFromString<Style>(encoded))
             assertEquals(minimalStyle, json.decodeFromString<Style>(json.encodeToString(Style.serializer(), minimalStyle)))
+        }
+
+        test("decodes named sprite sources") { json ->
+            val sprite = json.parseToJsonElement("""[
+                {"id":"default","url":"https://example.test/default"},
+                {"id":"transportation","url":"https://example.test/transportation"}
+            ]""")
+            val style = json.decodeFromString<Style>("""{
+                "version":8,"sources":{},"layers":[],"sprite":$sprite
+            }""")
+
+            assertEquals(sprite, style.sprite)
+            assertEquals(style, json.decodeFromString<Style>(json.encodeToString(Style.serializer(), style)))
         }
 
         test("round trips nested model defaults when default encoding is enabled") { json ->
@@ -165,7 +179,7 @@ val StyleModelSerializationCoverageTest by testSuite {
 
         test("rejects styles that omit required model fields") { json ->
             assertFailsWith<SerializationException> {
-                json.decodeFromString<Style>("""{"sources":{},"layers":[]}""")
+                json.decodeFromString<Style>("{}")
             }
             assertFailsWith<SerializationException> {
                 json.decodeFromString<Source>("""{"url":"https://example.test/tiles"}""")
@@ -176,7 +190,7 @@ val StyleModelSerializationCoverageTest by testSuite {
         }
     }
 
-    test("serializes style models through the protobuf decoder") {
+    test("serializes style models without JSON elements through the protobuf decoder") {
         val style = Style(
             version = 8,
             name = "Binary",
@@ -187,7 +201,6 @@ val StyleModelSerializationCoverageTest by testSuite {
             light = Light("map", listOf(1.0, 2.0, 3.0), "#ffffff", 0.5),
             sources = mapOf("source" to Source(type = "vector", url = "https://example.test/tiles")),
             layers = listOf(StyleLayer("layer", "fill", source = "source", sourceLayer = "landuse", minzoom = 1.0, maxzoom = 15.0)),
-            sprite = "https://example.test/sprite",
             glyphs = "https://example.test/glyphs",
             transition = Transition(duration = 300, delay = 25)
         )

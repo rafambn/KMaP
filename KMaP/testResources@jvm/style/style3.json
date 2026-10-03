@@ -260,18 +260,19 @@
       "paint": {
         "fill-antialias": false,
         "fill-color": "hsla(109, 34%, 80%, 0.8)",
-        "fill-opacity": {
-          "stops": [
-            [
-              7,
-              0.7
-            ],
-            [
-              12,
-              1
-            ]
-          ]
-        }
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          7,
+          0.7,
+          12,
+          1
+        ]
       },
       "filter": [
         "==",
@@ -292,18 +293,19 @@
       "paint": {
         "fill-antialias": false,
         "fill-color": "hsla(109, 34%, 70%, 0.8)",
-        "fill-opacity": {
-          "stops": [
-            [
-              7,
-              0.7
-            ],
-            [
-              12,
-              1
-            ]
-          ]
-        }
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          7,
+          0.7,
+          12,
+          1
+        ]
       },
       "filter": [
         "==",
@@ -468,22 +470,21 @@
           3
         ],
         "line-opacity": 0.5,
-        "line-width": {
-          "stops": [
-            [
-              14,
-              0.5
-            ],
-            [
-              16,
-              1.2
-            ],
-            [
-              18,
-              2
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          0.5,
+          16,
+          1.2,
+          18,
+          2
+        ]
       },
       "filter": [
         "all",
@@ -849,31 +850,26 @@
           1,
           1
         ],
-        "line-width": {
-          "base": 1.55,
-          "stops": [
-            [
-              15,
-              0.5
-            ],
-            [
-              16,
-              1
-            ],
-            [
-              18,
-              2
-            ],
-            [
-              20,
-              3
-            ],
-            [
-              22,
-              4
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "exponential",
+            1.55
+          ],
+          [
+            "zoom"
+          ],
+          15,
+          0.5,
+          16,
+          1,
+          18,
+          2,
+          20,
+          3,
+          22,
+          4
+        ]
       },
       "filter": [
         "all",
@@ -1471,22 +1467,21 @@
           12,
           1
         ],
-        "line-width": {
-          "stops": [
-            [
-              4,
-              0.8
-            ],
-            [
-              11,
-              1.75
-            ],
-            [
-              18,
-              2.5
-            ]
-          ]
-        }
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          4,
+          0.8,
+          11,
+          1.75,
+          18,
+          2.5
+        ]
       },
       "filter": [
         "all",
@@ -1572,18 +1567,19 @@
         "visibility": "visible"
       },
       "paint": {
-        "line-blur": {
-          "stops": [
-            [
-              4,
-              0.5
-            ],
-            [
-              10,
-              0
-            ]
-          ]
-        },
+        "line-blur": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          4,
+          0.5,
+          10,
+          0
+        ],
         "line-color": "hsl(0, 0%, 100%)",
         "line-width": [
           "interpolate",
@@ -1651,22 +1647,21 @@
           0,
           0.5
         ],
-        "text-size": {
-          "stops": [
-            [
-              10,
-              10
-            ],
-            [
-              14,
-              12
-            ],
-            [
-              16,
-              14
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          10,
+          10,
+          14,
+          12,
+          16,
+          14
+        ],
         "visibility": "visible"
       },
       "paint": {
@@ -1721,22 +1716,21 @@
       "minzoom": 14,
       "layout": {
         "symbol-placement": "line",
-        "symbol-spacing": {
-          "stops": [
-            [
-              13,
-              250
-            ],
-            [
-              20,
-              350
-            ],
-            [
-              21,
-              1000
-            ]
-          ]
-        },
+        "symbol-spacing": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          13,
+          250,
+          20,
+          350,
+          21,
+          1000
+        ],
         "text-field": [
           "coalesce",
           [
@@ -1754,23 +1748,22 @@
         ],
         "text-letter-spacing": 0.1,
         "text-rotation-alignment": "map",
-        "text-size": {
-          "base": 1.4,
-          "stops": [
-            [
-              14,
-              8
-            ],
-            [
-              17,
-              10
-            ],
-            [
-              20,
-              12
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "exponential",
+            1.4
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          8,
+          17,
+          10,
+          20,
+          12
+        ],
         "text-transform": "uppercase",
         "visibility": "visible"
       },
@@ -1817,22 +1810,21 @@
       "minzoom": 14,
       "layout": {
         "symbol-placement": "line",
-        "symbol-spacing": {
-          "stops": [
-            [
-              13,
-              250
-            ],
-            [
-              20,
-              350
-            ],
-            [
-              21,
-              1000
-            ]
-          ]
-        },
+        "symbol-spacing": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          13,
+          250,
+          20,
+          350,
+          21,
+          1000
+        ],
         "text-field": [
           "coalesce",
           [
@@ -1850,23 +1842,22 @@
         ],
         "text-letter-spacing": 0.1,
         "text-rotation-alignment": "map",
-        "text-size": {
-          "base": 1.4,
-          "stops": [
-            [
-              14,
-              8
-            ],
-            [
-              17,
-              10
-            ],
-            [
-              20,
-              12
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "exponential",
+            1.4
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          8,
+          17,
+          10,
+          20,
+          12
+        ],
         "text-transform": "uppercase",
         "visibility": "visible"
       },
@@ -1898,7 +1889,7 @@
             "rank"
           ]
         ],
-        "text-field": "{name}",
+        "text-field": ["to-string", ["get", "name"]],
         "text-font": [
           "Inter Light",
           "Noto Sans Light"
@@ -2262,18 +2253,19 @@
           "Noto Sans Medium"
         ],
         "text-max-width": 8,
-        "text-padding": {
-          "stops": [
-            [
-              1,
-              0
-            ],
-            [
-              4,
-              2
-            ]
-          ]
-        },
+        "text-padding": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          1,
+          0,
+          4,
+          2
+        ],
         "text-size": [
           "interpolate",
           [
@@ -2360,18 +2352,19 @@
           "Noto Sans Medium"
         ],
         "text-max-width": 8,
-        "text-padding": {
-          "stops": [
-            [
-              1,
-              0
-            ],
-            [
-              4,
-              2
-            ]
-          ]
-        },
+        "text-padding": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          1,
+          0,
+          4,
+          2
+        ],
         "text-size": [
           "interpolate",
           [
@@ -2454,18 +2447,19 @@
           "Noto Sans Semi Bold"
         ],
         "text-justify": "center",
-        "text-size": {
-          "stops": [
-            [
-              0,
-              12
-            ],
-            [
-              2,
-              13
-            ]
-          ]
-        },
+        "text-size": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          12,
+          2,
+          13
+        ],
         "text-transform": "uppercase",
         "visibility": "visible"
       },

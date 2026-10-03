@@ -10,26 +10,22 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
-import com.rafambn.kmap.components.parameters.VectorCanvasParameters
 import com.rafambn.kmap.KMaP
-import com.rafambn.kmap.rememberMapState
-import com.rafambn.kmap.source.OSMMapProperties
-import com.rafambn.kmap.mapProperties.ZoomLevelRange
-import com.rafambn.kmap.source.VectorTileSource
+import com.rafambn.kmap.components.parameters.VectorCanvasParameters
 import com.rafambn.kmap.getGestureDetector
 import com.rafambn.kmap.mapProperties.TileDimension
+import com.rafambn.kmap.mapProperties.ZoomLevelRange
 import com.rafambn.kmap.mapProperties.border.BoundMapBorder
 import com.rafambn.kmap.mapProperties.border.MapBorderType
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
-import com.rafambn.kmap.style.OptimizedStyle
-import com.rafambn.kmap.style.Style
+import com.rafambn.kmap.rememberMapState
+import com.rafambn.kmap.source.OSMMapProperties
+import com.rafambn.kmap.source.VectorTileSource
 import com.rafambn.kmap.style.StyleResolver
+import com.rafambn.kmap.style.compiled.CompiledStyle
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
-import kotlinx.serialization.json.Json
-import org.jetbrains.compose.resources.InternalResourceApi
 import org.jetbrains.compose.resources.vectorResource
 
 @Composable
@@ -44,16 +40,13 @@ fun VectorTileScreen(
             tileSize = TileDimension(512.dp, 512.dp)
         )
     )
-    val json = Json {
-        ignoreUnknownKeys = true
-        isLenient = true
-        useArrayPolymorphism = false
-    }
-    val styleState = remember { mutableStateOf<OptimizedStyle?>(null) }
+    val styleState = remember { mutableStateOf<CompiledStyle?>(null) }
+    val fonts = demoStyleFonts()
 
-    LaunchedEffect(Unit) {
-        val styleJson = Res.readBytes("files/stylev4.json").decodeToString()
-        styleState.value = StyleResolver().resolve(json.decodeFromString<Style>(styleJson), locale = "pt")
+    LaunchedEffect(fonts) {
+        val styleJson = Res.readBytes("files/map-tiler-streets.json").decodeToString()
+        val sprites = loadDemoSprites(styleJson)
+        styleState.value = StyleResolver().resolve(styleJson, sprites = sprites, glyphs = fonts, locale = "pt").style
     }
 
     styleState.value?.let { style ->

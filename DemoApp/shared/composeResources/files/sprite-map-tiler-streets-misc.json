@@ -1,0 +1,18 @@
+{
+  "traffic_signal": {
+    "width": 9,
+    "height": 22,
+    "x": 0,
+    "y": 0,
+    "pixelRatio": 1,
+    "sdf": false
+  },
+  "construction_pattern": {
+    "width": 13,
+    "height": 13,
+    "x": 9,
+    "y": 0,
+    "pixelRatio": 1,
+    "sdf": false
+  }
+}

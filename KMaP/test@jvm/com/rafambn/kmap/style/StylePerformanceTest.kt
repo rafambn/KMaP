@@ -1,9 +1,15 @@
 package com.rafambn.kmap.style
 
+import com.rafambn.kmap.style.compiled.CompiledBackgroundLayer
+import com.rafambn.kmap.style.compiled.CompiledFillLayer
+import com.rafambn.kmap.style.compiled.CompiledLineLayer
+import com.rafambn.kmap.style.compiled.CompiledSymbolLayer
+import com.rafambn.kmap.style.evaluation.EvaluationContext
+import com.rafambn.kmap.style.evaluation.ExpressionEvaluator
+import com.rafambn.kmap.style.model.Style
 import de.infix.testBalloon.framework.core.testSuite
 import java.io.File
 import kotlin.test.assertTrue
-import kotlinx.serialization.json.Json
 
 /**
  * Performance tests for style compilation and evaluation.
@@ -16,22 +22,12 @@ val StylePerformanceTest by testSuite {
     testFixture {
         object {
             val styleResourceDir = "testResources@jvm/style"
-            val json = Json { ignoreUnknownKeys = true }
             val resolver = StyleResolver()
             val evaluator = ExpressionEvaluator()
 
-            fun loadStyleFile(filename: String): Style? {
+            fun loadStyleFile(filename: String): String? {
                 val file = File(styleResourceDir, filename)
-                return if (file.exists()) {
-                    try {
-                        val content = file.readText()
-                        json.decodeFromString(Style.serializer(), content)
-                    } catch (e: Exception) {
-                        null
-                    }
-                } else {
-                    null
-                }
+                return if (file.exists()) file.readText() else null
             }
         }
     } asContextForEach {
@@ -61,10 +57,8 @@ val StylePerformanceTest by testSuite {
                 }
             """.trimIndent()
 
-            val rawStyle = json.decodeFromString(Style.serializer(), rawStyleJson)
-
             val startTime = System.nanoTime()
-            val optimizedStyle = resolver.resolve(rawStyle)
+            val optimizedStyle = resolver.resolve(rawStyleJson).style!!
             val endTime = System.nanoTime()
 
             val compilationTimeMs = (endTime - startTime) / 1_000_000.0
@@ -83,7 +77,7 @@ val StylePerformanceTest by testSuite {
             }
 
             val startTime = System.nanoTime()
-            val optimizedStyle = resolver.resolve(style)
+            val optimizedStyle = resolver.resolve(style).style!!
             val endTime = System.nanoTime()
 
             val compilationTimeMs = (endTime - startTime) / 1_000_000.0
@@ -167,9 +161,8 @@ val StylePerformanceTest by testSuite {
                 }
             """.trimIndent()
 
-            val rawStyle = json.decodeFromString(Style.serializer(), rawStyleJson)
-            val optimizedStyle = resolver.resolve(rawStyle)
-            val layer = optimizedStyle.layers[0]
+            val optimizedStyle = resolver.resolve(rawStyleJson).style!!
+            val layer = optimizedStyle.layers[0] as CompiledFillLayer
 
             // Simulate rendering 1000 features at zoom 10
             val startTime = System.nanoTime()
@@ -179,8 +172,8 @@ val StylePerformanceTest by testSuite {
                     "id" to i
                 )
 
-                layer.paint.properties["fill-color"]?.evaluate(10.0, properties, null)
-                layer.paint.properties["fill-opacity"]?.evaluate(10.0, properties, null)
+                layer.color?.evaluate(10.0, properties, null)
+                layer.opacity?.evaluate(10.0, properties, null)
             }
             val endTime = System.nanoTime()
 
@@ -201,22 +194,19 @@ val StylePerformanceTest by testSuite {
 
             // Measure compilation time
             val compilationStart = System.nanoTime()
-            val optimizedStyle = resolver.resolve(style)
+            val optimizedStyle = resolver.resolve(style).style!!
             val compilationEnd = System.nanoTime()
             val compilationTimeMs = (compilationEnd - compilationStart) / 1_000_000.0
 
             // Measure evaluation time for all properties
             val evaluationStart = System.nanoTime()
-            val context = EvaluationContext(
-                zoomLevel = 10.0,
-                featureProperties = mapOf("test" to "value"),
-                geometryType = "Polygon"
-            )
-
             repeat(1000) {
                 for (layer in optimizedStyle.layers) {
-                    for ((_, compiledValue) in layer.paint.properties) {
-                        compiledValue.evaluate(10.0, emptyMap(), null)
+                    when (layer) {
+                        is CompiledBackgroundLayer -> layer.color?.evaluate(10.0, emptyMap(), null)
+                        is CompiledFillLayer -> layer.color?.evaluate(10.0, emptyMap(), null)
+                        is CompiledLineLayer -> layer.color?.evaluate(10.0, emptyMap(), null)
+                        is CompiledSymbolLayer -> layer.textColor?.evaluate(10.0, emptyMap(), null)
                     }
                 }
             }
@@ -244,7 +234,7 @@ val StylePerformanceTest by testSuite {
             val beforeMemory = runtime.totalMemory() - runtime.freeMemory()
 
             // Compile the style
-            val optimizedStyle = resolver.resolve(style)
+            val optimizedStyle = resolver.resolve(style).style!!
 
             val afterMemory = runtime.totalMemory() - runtime.freeMemory()
             val memoryUsed = (afterMemory - beforeMemory) / 1024.0  // Convert to KB
@@ -264,7 +254,7 @@ val StylePerformanceTest by testSuite {
             var totalLayers = 0
             for (file in styleFiles) {
                 val style = loadStyleFile(file) ?: continue
-                val optimized = resolver.resolve(style)
+                val optimized = resolver.resolve(style).style!!
                 totalLayers += optimized.layers.size
             }
 

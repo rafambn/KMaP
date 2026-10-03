@@ -16,6 +16,7 @@ import kotlinx.serialization.protobuf.ProtoBuf
 
 class VectorTileSource : TileSource<VectorTile> {
     private val client = HttpClient()
+    private val apiKey = "TRvgTCfAgciROrLkbKNj"
 
     private val json = Json {
         ignoreUnknownKeys = true
@@ -38,7 +39,8 @@ class VectorTileSource : TileSource<VectorTile> {
 //            val rawMVTile = ProtoBuf.decodeFromByteArray(RawMVTile.serializer(), compressedBytes)
 //            val mvTile = rawMVTile.parse()
 
-            val compressedBytes = client.get("https://api.maptiler.com/tiles/v4/$zoom/$column/$row.pbf?key=GCqxEKWuBP1S6iQ1aSBG") {
+            val compressedBytes = client.get("https://api.maptiler.com/tiles/v4/$zoom/$column/$row.pbf") {
+                parameter("key", apiKey)
                 accept(ContentType.Application.ProtoBuf)
             }.readRawBytes()
             val rawMVTile = ProtoBuf.decodeFromByteArray(RawMVTile.serializer(), compressedBytes)

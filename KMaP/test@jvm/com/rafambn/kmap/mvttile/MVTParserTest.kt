@@ -64,7 +64,7 @@ val MVTParserTest by testSuite {
     }
 
     test("testResolveFeaturePropertiesWithInvalidIndices") {
-        val feature = RawMVTFeature(tags = listOf(0, 5, 10, 0))
+        val feature = RawMVTFeature(tags = listOf(0, 5, 10, 0, -1, 0, 0, -1))
         val layer = RawMVTLayer(
             name = "test",
             keys = listOf("valid_key"),
@@ -220,7 +220,7 @@ val MVTParserTest by testSuite {
         assertEquals(1, parsedLayer.features.size)
 
         val parsedFeature = parsedLayer.features[0]
-        assertEquals(123L, parsedFeature.id)
+        assertEquals(123UL, parsedFeature.id)
         assertEquals(RawMVTGeomType.POINT, parsedFeature.type)
         assertEquals(1, parsedFeature.geometry.size)
         assertEquals(Pair(1, 2), parsedFeature.geometry[0][0])
@@ -229,7 +229,6 @@ val MVTParserTest by testSuite {
 
     test("testParseMVTWithFeatureWithoutId") {
         val feature = RawMVTFeature(
-            id = 0L,
             type = RawMVTGeomType.POINT,
             geometry = listOf(
                 (CMD_MOVETO or (1 shl 3)),

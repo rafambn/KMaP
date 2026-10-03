@@ -10,10 +10,11 @@ data class OptimizedMVTile(
 data class OptimizedRenderFeature(
     val geometry: OptimizedGeometry,
     val properties: Map<String, Any>,
+    val id: ULong? = null,
 )
 
 sealed class OptimizedGeometry {
-    data class Polygon(val paths: List<Path>) : OptimizedGeometry()
+    data class Polygon(val path: Path) : OptimizedGeometry()
     data class LineString(val path: Path) : OptimizedGeometry()
     data class Point(val coordinates: List<Pair<Float, Float>>) : OptimizedGeometry()
 }
