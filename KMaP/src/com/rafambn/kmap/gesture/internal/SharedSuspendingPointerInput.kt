@@ -42,14 +42,13 @@ class SharedPointerInputModifierNodeImpl(
     pointerInputEventHandler: suspend PointerInputScope.() -> Unit,
 ) : DelegatingNode(), PointerInputModifierNode {
 
-    private var pointerInputNode: SuspendingPointerInputModifierNode =
+    private val pointerInputNode: SuspendingPointerInputModifierNode =
         delegate(SuspendingPointerInputModifierNode(pointerInputEventHandler))
 
     override fun sharePointerInputWithSiblings(): Boolean = true
 
     fun update(pointerInputEventHandler: suspend PointerInputScope.() -> Unit) {
-        pointerInputNode.resetPointerInputHandler()
-        pointerInputNode = delegate(SuspendingPointerInputModifierNode(pointerInputEventHandler))
+        pointerInputNode.pointerInputEventHandler = PointerInputEventHandler { pointerInputEventHandler() }
     }
 
     var initialCount = 0
