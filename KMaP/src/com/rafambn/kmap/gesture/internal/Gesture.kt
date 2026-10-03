@@ -24,3 +24,9 @@ suspend fun AwaitPointerEventScope.awaitPointerEventWithTimeout(
 
 fun Offset.angle(): Degrees =
     Degrees(if (x == 0f && y == 0f) 0.0 else atan2(x, y) * 180.0 / PI)
+
+internal fun Offset.rotationTo(other: Offset): Degrees {
+    if (this == Offset.Zero || other == Offset.Zero) return Degrees.Zero
+    val delta = angle().value - other.angle().value
+    return Degrees((delta + 540.0) % 360.0 - 180.0)
+}

@@ -4,8 +4,6 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.calculatePan
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathHitTester
-import androidx.compose.ui.graphics.PathMeasure
 import androidx.compose.ui.input.pointer.*
 import com.rafambn.kmap.geometry.plane.ProjectedCoordinates
 import com.rafambn.kmap.geometry.plane.ScreenOffset
@@ -23,10 +21,7 @@ suspend fun PointerInputScope.detectPathGestures(
     threshold: Float = 10f,
     checkForInsideClick: Boolean
 ) = coroutineScope {
-    val pathMeasure = PathMeasure()
-    pathMeasure.setPath(path, false)
-    val pathHitTester = PathHitTester(path, threshold)
-    val tester = PathTester(pathHitTester, pathMeasure, threshold, checkForInsideClick, path.getBounds().topLeft)
+    val tester = PathTester(path, threshold, checkForInsideClick)
 
     awaitEachGesture {
         val longPressTimeout = viewConfiguration.longPressTimeoutMillis
@@ -54,7 +49,7 @@ suspend fun PointerInputScope.detectPathGestures(
 
             PointerEventType.Move -> {
                 event.changes.forEach {
-                    if (!it.isOutOfBounds(size, extendedTouchPadding)) {
+                    if (!it.isOutOfBounds(size, extendedTouchPadding) && tester.checkHit(it.position)) {
                         onHover?.invoke(convertScreenOffsetToProjectedCoordinates(it.position.asScreenOffset()))
                     }
                 }
@@ -188,6 +183,7 @@ suspend fun PointerInputScope.detectPathGestures(
                         when (event.type) {
                             PointerEventType.Press -> {
                                 if ((onTap != null || onDoubleTap != null || onLongPress != null) && tester.checkHit(event.changes[0].position)) {
+                                    referencePointer = event.changes[0]
                                     pathGestureState = PathGestureState.WAITING_UP
                                     break
                                 }
@@ -195,7 +191,7 @@ suspend fun PointerInputScope.detectPathGestures(
 
                             PointerEventType.Move -> {
                                 event.changes.forEach {
-                                    if (!it.isOutOfBounds(size, extendedTouchPadding)) {
+                                    if (!it.isOutOfBounds(size, extendedTouchPadding) && tester.checkHit(it.position)) {
                                         onHover?.invoke(convertScreenOffsetToProjectedCoordinates(it.position.asScreenOffset()))
                                     }
                                 }

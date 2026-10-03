@@ -113,10 +113,8 @@ suspend fun PointerInputScope.detectMapGestures(
                                             mapGestureState = MapGestureState.WAITING_DOWN
                                             break
                                         }
-                                        if (onTap != null) {
-                                            onTap.invoke(event.changes[0].position.asScreenOffset())
-                                            return@awaitEachGesture
-                                        }
+                                        onTap?.invoke(event.changes[0].position.asScreenOffset())
+                                        return@awaitEachGesture
                                     }
                                 }
 
@@ -217,7 +215,7 @@ suspend fun PointerInputScope.detectMapGestures(
 
                                 onTapSwipe?.invoke(
                                     currentCentroid.getDistance() - previousCentroid.getDistance(),
-                                    previousCentroid.angle() - currentCentroid.angle()
+                                    previousCentroid.rotationTo(currentCentroid)
                                 )
                             }
                         }

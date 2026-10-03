@@ -11,6 +11,20 @@ import androidx.compose.ui.unit.IntSize
 fun Modifier.sharedPointerInput(block: suspend PointerInputScope.() -> Unit): Modifier =
     this then SharedPointerInputElement(pointerInputEventHandler = block)
 
+/**
+ * Shares input with siblings and combines fragmented multi-touch events.
+ *
+ * Compose's HitPathTracker merges only common prefixes of hit paths. The same modifier
+ * reached through different paths can therefore receive separate batches of pointer changes.
+ * With a small marker over a larger one, one finger can hit both while another hits only
+ * the exposed part of the larger marker. The shared sibling then receives the fingers
+ * separately, which breaks map gesture recognition. This reproduces on Compose 1.12.0/1.12.1.
+ *
+ * The node collects Main changes until Final, then delivers one synthetic Main event with
+ * all received pointers. This workaround does not preserve Initial/Final delivery,
+ * currentEvent updates, or all native event metadata. A replacement must still handle
+ * the overlapping-marker case with two fingers.
+ */
 class SharedPointerInputElement(
     val pointerInputEventHandler: suspend PointerInputScope.() -> Unit,
 ) : ModifierNodeElement<SharedPointerInputModifierNodeImpl>() {
