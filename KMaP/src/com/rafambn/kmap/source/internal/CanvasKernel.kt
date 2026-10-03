@@ -54,19 +54,19 @@ class CanvasKernel(
             if (parameter.id !in canvas) {
                 val job = Job(coroutineScope.coroutineContext[Job])
                 val canvasScope = CoroutineScope(coroutineScope.coroutineContext + job)
-                val engine = when (parameter) {
-                    is RasterCanvasParameters -> RasterCanvasEngine(
-                        parameter.maxCacheTiles,
-                        parameter.tileSource,
-                        canvasScope
+                val renderer = when (parameter) {
+                    is RasterCanvasParameters -> TileRenderer(
+                        coroutineScope = canvasScope,
+                        getTile = parameter.tileSource,
+                        processTile = { it },
                     )
-                    is VectorCanvasParameters -> VectorCanvasEngine(
-                        parameter.maxCacheTiles,
-                        parameter.tileSource,
-                        canvasScope,
-                        parameter.style
+                    is VectorCanvasParameters -> TileRenderer(
+                        coroutineScope = canvasScope,
+                        getTile = parameter.tileSource,
+                        processTile = { optimizeMVTile(it, parameter.style) },
                     )
                 }
+                val engine = CanvasEngine(parameter.maxCacheTiles, canvasScope, renderer)
                 canvas[parameter.id] = CanvasEntry(engine, job)
                 zoomLevel?.let { engine.renderTiles(visibleTiles, it) }
             }

@@ -270,14 +270,19 @@ val CanvasEngineTest by testSuite {
                 val parent = Job(coroutineContext[Job])
                 val requests = Channel<TileSpecs>(Channel.UNLIMITED)
                 val finishTile = CompletableDeferred<Unit>()
-                val engine = RasterCanvasEngine(
+                val scope = CoroutineScope(parent + Dispatchers.Default)
+                val engine = CanvasEngine(
                     maxCacheTiles = 20,
-                    getTile = { zoom, row, col ->
-                        requests.send(TileSpecs(zoom, row, col))
-                        if (row == 0 && col == 3) finishTile.await()
-                        TileResult.Success(RasterTile(zoom, row, col, null))
-                    },
-                    coroutineScope = CoroutineScope(parent + Dispatchers.Default),
+                    coroutineScope = scope,
+                    tileRenderer = TileRenderer(
+                        coroutineScope = scope,
+                        getTile = { zoom, row, col ->
+                            requests.send(TileSpecs(zoom, row, col))
+                            if (row == 0 && col == 3) finishTile.await()
+                            TileResult.Success(RasterTile(zoom, row, col, null))
+                        },
+                        processTile = { it },
+                    ),
                 )
                 try {
                     engine.renderTiles(listOf(TileSpecs(2, 4, -1), TileSpecs(2, -4, 7)), 2)
@@ -432,13 +437,18 @@ val CanvasEngineTest by testSuite {
         withContext(Dispatchers.Default) {
             withTimeout(5_000) {
                 val parent = Job(coroutineContext[Job])
-                val engine = RasterCanvasEngine(
+                val scope = CoroutineScope(parent + Dispatchers.Default)
+                val engine = CanvasEngine(
                     maxCacheTiles = 20,
-                    getTile = { zoom, row, col ->
-                        yield()
-                        TileResult.Success(RasterTile(zoom, row, col, null))
-                    },
-                    coroutineScope = CoroutineScope(parent + Dispatchers.Default),
+                    coroutineScope = scope,
+                    tileRenderer = TileRenderer(
+                        coroutineScope = scope,
+                        getTile = { zoom, row, col ->
+                            yield()
+                            TileResult.Success(RasterTile(zoom, row, col, null))
+                        },
+                        processTile = { it },
+                    ),
                 )
                 try {
                     coroutineScope {

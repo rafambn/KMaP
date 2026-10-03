@@ -16,7 +16,7 @@ internal class CanvasEngineTestFixture(maxCacheTiles: Int = 20) {
     private val scope = CoroutineScope(job + dispatcher)
     private val requests = mutableListOf<TileSpecs>()
     private val pending = mutableMapOf<TileSpecs, CompletableDeferred<TileResult<RasterTile>>>()
-    val engine = object : CanvasEngine<RasterTile>(
+    val engine = CanvasEngine(
         maxCacheTiles = maxCacheTiles,
         coroutineScope = scope,
         tileRenderer = TileRenderer(
@@ -35,7 +35,7 @@ internal class CanvasEngineTestFixture(maxCacheTiles: Int = 20) {
             processTile = { it },
             dispatcher = dispatcher,
         ),
-    ) {}
+    )
 
     fun completeTile(tile: RasterTile) {
         pending.getValue(TileSpecs(tile.zoom, tile.row, tile.col)).complete(TileResult.Success(tile))
