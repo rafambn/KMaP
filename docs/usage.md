@@ -294,6 +294,10 @@ open class MarkerParameters(
 With clusters, you can merge overlapping markers. Declare it in the KMaP scope with the clusterId
 of the markers you want to group.
 
+Visible markers with the same clusterId form one group through direct or chained overlaps.
+Visibility and overlap checks use screen-aligned bounding rectangles that account for each
+marker's draw position, rotation, and `zoomToFix` scale.
+
 ```kotlin
 cluster(
     ClusterParameters(id = 1)
