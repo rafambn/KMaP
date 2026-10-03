@@ -44,8 +44,8 @@ This is where most of the important state lives. It expects an implementation of
 behaves, for example, tile size, zoom range, and projection transforms.
 ```kotlin
 interface MapProperties {
-    val boundMap: BoundMapBorder
-    val outsideTiles: OutsideTilesType
+    val boundaryBehavior: MapBoundaryBehavior
+    val tileRepeatMode: TileRepeatMode
     val zoomLevels: ZoomLevelRange
     val coordinatesRange: CoordinatesRange
     val tileSize: TileDimension
@@ -55,6 +55,13 @@ interface MapProperties {
     fun toCoordinates(projectedCoordinates: ProjectedCoordinates): Coordinates
 }
 ```
+`boundaryBehavior` controls camera movement on each axis. Set `horizontal` and
+`vertical` in `MapBoundaryBehavior` to `BoundaryMode.CLAMP` to stop at map bounds
+or `BoundaryMode.WRAP` to wrap to the opposite edge.
+`tileRepeatMode` controls tile repetition independently. Use `TileRepeatMode.NONE`
+to show tiles only within map bounds or `TileRepeatMode.REPEAT` to repeat them beyond
+the bounds.
+
 `MapProperties.zoomLevels` must be an ordered range within `0..30`.
 `MapState` rejects unsupported ranges, even when `zoomLevelPreference` is narrower.
 Create ranges with `ZoomLevelRange(min = 0, max = 19)`. The range is an immutable data class;

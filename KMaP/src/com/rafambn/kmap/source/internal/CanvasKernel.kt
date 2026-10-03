@@ -7,7 +7,7 @@ import com.rafambn.kmap.components.parameters.RasterCanvasParameters
 import com.rafambn.kmap.components.parameters.VectorCanvasParameters
 import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.TileDimension
-import com.rafambn.kmap.mapProperties.border.OutsideTilesType
+import com.rafambn.kmap.mapProperties.border.TileRepeatMode
 import com.rafambn.kmap.source.TileSpecs
 import com.rafambn.kmap.geometry.plane.TilePoint
 import kotlinx.coroutines.CoroutineScope
@@ -29,7 +29,7 @@ class CanvasKernel(
     ) {
         val visibleTiles = getVisibleTilesForLevel(
             topLeft, bottomRight, zoomLevel,
-            mapProperties.outsideTiles, mapProperties.tileSize,
+            mapProperties.tileRepeatMode, mapProperties.tileSize,
         )
         canvas.forEach { (_, engine) -> engine.renderTiles(visibleTiles, zoomLevel) }
     }
@@ -69,7 +69,7 @@ class CanvasKernel(
         topLeft: TilePoint,
         bottomRight: TilePoint,
         zoomLevel: Int,
-        outsideTilesType: OutsideTilesType,
+        tileRepeatMode: TileRepeatMode,
         tileDimension: TileDimension,
     ): List<TileSpecs> {
         require(zoomLevel in 0..30) { "Supported zoom levels are 0..30" }
@@ -78,7 +78,7 @@ class CanvasKernel(
         var maxX = floor(bottomRight.x / tileDimension.width.value * tileCount).toLong()
         var minY = floor(topLeft.y / tileDimension.height.value * tileCount).toLong()
         var maxY = floor(bottomRight.y / tileDimension.height.value * tileCount).toLong()
-        if (outsideTilesType == OutsideTilesType.NONE) {
+        if (tileRepeatMode == TileRepeatMode.NONE) {
             minX = maxOf(minX, 0L)
             maxX = minOf(maxX, tileCount - 1)
             minY = maxOf(minY, 0L)

@@ -22,9 +22,9 @@ import com.rafambn.kmap.geometry.plane.ProjectedCoordinates
 import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.mapProperties.ZoomLevelRange
-import com.rafambn.kmap.mapProperties.border.BoundMapBorder
-import com.rafambn.kmap.mapProperties.border.MapBorderType
-import com.rafambn.kmap.mapProperties.border.OutsideTilesType
+import com.rafambn.kmap.mapProperties.border.BoundaryMode
+import com.rafambn.kmap.mapProperties.border.MapBoundaryBehavior
+import com.rafambn.kmap.mapProperties.border.TileRepeatMode
 import com.rafambn.kmap.mapProperties.coordinates.CoordinatesRange
 import com.rafambn.kmap.mapProperties.coordinates.Latitude
 import com.rafambn.kmap.mapProperties.coordinates.Longitude
@@ -37,8 +37,8 @@ import kotlinx.coroutines.Dispatchers
 val KMaPTest by testSuite {
     test("KMaP updates density and viewport across recompositions") {
         val properties = object : MapProperties {
-            override val boundMap = BoundMapBorder(MapBorderType.BOUND, MapBorderType.BOUND)
-            override val outsideTiles = OutsideTilesType.NONE
+            override val boundaryBehavior = MapBoundaryBehavior(BoundaryMode.CLAMP, BoundaryMode.CLAMP)
+            override val tileRepeatMode = TileRepeatMode.NONE
             override val zoomLevels = ZoomLevelRange(0, 3)
             override val coordinatesRange = object : CoordinatesRange {
                 override val latitude = Latitude(north = 90.0, south = -90.0)

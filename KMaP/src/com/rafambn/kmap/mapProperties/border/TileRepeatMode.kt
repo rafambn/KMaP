@@ -1,6 +1,6 @@
 package com.rafambn.kmap.mapProperties.border
 
-enum class OutsideTilesType {
+enum class TileRepeatMode {
     NONE,
-    LOOP
+    REPEAT
 }

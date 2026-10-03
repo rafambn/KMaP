@@ -5,7 +5,7 @@ import androidx.compose.ui.unit.IntSize
 import com.rafambn.kmap.MapState
 import com.rafambn.kmap.geometry.angle.rotate
 import com.rafambn.kmap.geometry.angle.toRadians
-import com.rafambn.kmap.mapProperties.border.OutsideTilesType
+import com.rafambn.kmap.mapProperties.border.TileRepeatMode
 import com.rafambn.kmap.utils.toIntFloor
 import kotlin.math.pow
 
@@ -54,7 +54,7 @@ fun TilePoint.toScreenOffset(): ScreenOffset {
 
 context(mapState: MapState)
 internal fun TilePoint.toNearestScreenOffset(): ScreenOffset {
-    if (mapState.mapProperties.outsideTiles != OutsideTilesType.LOOP) return toScreenOffset()
+    if (mapState.mapProperties.tileRepeatMode != TileRepeatMode.REPEAT) return toScreenOffset()
 
     val (mapWidth, mapHeight) = mapState.mapSize()
     val cameraPoint = mapState.cameraState.tilePoint

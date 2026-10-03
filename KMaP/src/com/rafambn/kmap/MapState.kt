@@ -14,7 +14,7 @@ import com.rafambn.kmap.geometry.angle.toRadians
 import com.rafambn.kmap.geometry.plane.*
 import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.ZoomLevelRange
-import com.rafambn.kmap.mapProperties.border.MapBorderType
+import com.rafambn.kmap.mapProperties.border.BoundaryMode
 import com.rafambn.kmap.source.internal.CanvasKernel
 import com.rafambn.kmap.utils.loopInRange
 import com.rafambn.kmap.utils.toIntFloor
@@ -160,11 +160,11 @@ class MapState(
     }
 
     private fun TilePoint.coerceInMap(): TilePoint {
-        val x = if (mapProperties.boundMap.horizontal == MapBorderType.BOUND)
+        val x = if (mapProperties.boundaryBehavior.horizontal == BoundaryMode.CLAMP)
             x.coerceIn(0.0, mapProperties.tileSize.width.value.toDouble())
         else
             x.loopInRange(mapProperties.tileSize.width.value.toDouble())
-        val y = if (mapProperties.boundMap.vertical == MapBorderType.BOUND)
+        val y = if (mapProperties.boundaryBehavior.vertical == BoundaryMode.CLAMP)
             y.coerceIn(0.0, mapProperties.tileSize.height.value.toDouble())
         else
             y.loopInRange(mapProperties.tileSize.height.value.toDouble())

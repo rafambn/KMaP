@@ -5,15 +5,15 @@ import com.rafambn.kmap.mapProperties.coordinates.CoordinatesRange
 import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.mapProperties.ZoomLevelRange
-import com.rafambn.kmap.mapProperties.border.BoundMapBorder
-import com.rafambn.kmap.mapProperties.border.MapBorderType
-import com.rafambn.kmap.mapProperties.border.OutsideTilesType
+import com.rafambn.kmap.mapProperties.border.BoundaryMode
+import com.rafambn.kmap.mapProperties.border.MapBoundaryBehavior
+import com.rafambn.kmap.mapProperties.border.TileRepeatMode
 import com.rafambn.kmap.geometry.plane.Coordinates
 import com.rafambn.kmap.geometry.plane.ProjectedCoordinates
 
 data class SimpleMapProperties(
-    override val boundMap: BoundMapBorder = BoundMapBorder(MapBorderType.BOUND, MapBorderType.BOUND),
-    override val outsideTiles: OutsideTilesType = OutsideTilesType.NONE,
+    override val boundaryBehavior: MapBoundaryBehavior = MapBoundaryBehavior(BoundaryMode.CLAMP, BoundaryMode.CLAMP),
+    override val tileRepeatMode: TileRepeatMode = TileRepeatMode.NONE,
     override val zoomLevels: ZoomLevelRange = ZoomLevelRange(min = 0, max = 2),
     override val coordinatesRange: CoordinatesRange = SimpleCoordinatesRange(),
     override val tileSize: TileDimension = TileDimension(512.dp, 512.dp)
