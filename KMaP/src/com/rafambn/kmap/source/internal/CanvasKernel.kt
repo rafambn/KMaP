@@ -1,6 +1,5 @@
 package com.rafambn.kmap.source.internal
 
-import com.rafambn.kmap.MapState
 import com.rafambn.kmap.components.parameters.CanvasParameters
 import com.rafambn.kmap.components.parameters.RasterCanvasParameters
 import com.rafambn.kmap.components.parameters.VectorCanvasParameters
@@ -16,12 +15,12 @@ import kotlin.math.floor
 
 class CanvasKernel(
     val coroutineScope: CoroutineScope,
-    val mapState: MapState
 ) {
-    val canvas = mutableMapOf<Int, CanvasEngine<*>>()
-    private val canvasJobs = mutableMapOf<Int, Job>()
+    private val canvas = mutableMapOf<Int, CanvasEntry>()
+    private var visibleTiles = emptyList<TileSpecs>()
+    private var zoomLevel: Int? = null
 
-    fun getActiveTiles(id: Int): ActiveTiles = canvas.getValue(id).activeTiles.value
+    fun getActiveTiles(id: Int): ActiveTiles = canvas.getValue(id).engine.activeTiles.value
 
     internal fun resolveVisibleTiles(
         topLeft: TilePoint,
@@ -33,29 +32,29 @@ class CanvasKernel(
             topLeft, bottomRight, zoomLevel,
             mapProperties.tileRepeatMode, mapProperties.tileSize,
         )
-        canvas.forEach { (_, engine) -> engine.renderTiles(visibleTiles, zoomLevel) }
+        this.visibleTiles = visibleTiles
+        this.zoomLevel = zoomLevel
+        canvas.values.forEach { it.engine.renderTiles(visibleTiles, zoomLevel) }
     }
 
     /**
      * Cancels work owned by removed canvas IDs without cancelling [coroutineScope].
      * Cancellation is cooperative; this call does not wait for running tile sources to finish.
+     * New canvases receive the last resolved tile selection, including an empty selection.
      */
     fun refreshCanvas(currentParameters: List<CanvasParameters>) {
         val currentIds = currentParameters.map { it.id }.toSet()
-        var canvasAdded = false
 
         val keysToRemove = canvas.keys.filter { it !in currentIds }
         keysToRemove.forEach {
-            canvas.remove(it)
-            canvasJobs.remove(it)?.cancel()
+            canvas.remove(it)?.job?.cancel()
         }
 
         currentParameters.forEach { parameter ->
             if (parameter.id !in canvas) {
                 val job = Job(coroutineScope.coroutineContext[Job])
                 val canvasScope = CoroutineScope(coroutineScope.coroutineContext + job)
-                canvasJobs[parameter.id] = job
-                canvas[parameter.id] = when (parameter) {
+                val engine = when (parameter) {
                     is RasterCanvasParameters -> RasterCanvasEngine(
                         parameter.maxCacheTiles,
                         parameter.tileSource,
@@ -68,43 +67,42 @@ class CanvasKernel(
                         parameter.style
                     )
                 }
-                canvasAdded = true
+                canvas[parameter.id] = CanvasEntry(engine, job)
+                zoomLevel?.let { engine.renderTiles(visibleTiles, it) }
             }
         }
-
-        if (canvasAdded) mapState.resolveVisibleTiles()
     }
+}
 
-    private fun getVisibleTilesForLevel(
-        topLeft: TilePoint,
-        bottomRight: TilePoint,
-        zoomLevel: Int,
-        tileRepeatMode: TileRepeatMode,
-        tileDimension: TileDimension,
-    ): List<TileSpecs> {
-        require(zoomLevel in 0..30) { "Supported zoom levels are 0..30" }
-        if (topLeft.x >= bottomRight.x || topLeft.y >= bottomRight.y) return emptyList()
+internal fun getVisibleTilesForLevel(
+    topLeft: TilePoint,
+    bottomRight: TilePoint,
+    zoomLevel: Int,
+    tileRepeatMode: TileRepeatMode,
+    tileDimension: TileDimension,
+): List<TileSpecs> {
+    require(zoomLevel in 0..30) { "Supported zoom levels are 0..30" }
+    if (topLeft.x >= bottomRight.x || topLeft.y >= bottomRight.y) return emptyList()
 
-        val tileCount = 1L shl zoomLevel
-        var minX = floor(topLeft.x / tileDimension.width.value * tileCount).toLong()
-        // Right and bottom edges are exclusive: a tile that only touches them is not visible.
-        var maxX = (ceil(bottomRight.x / tileDimension.width.value * tileCount) - 1).toLong()
-        var minY = floor(topLeft.y / tileDimension.height.value * tileCount).toLong()
-        var maxY = (ceil(bottomRight.y / tileDimension.height.value * tileCount) - 1).toLong()
-        if (tileRepeatMode == TileRepeatMode.NONE) {
-            minX = maxOf(minX, 0L)
-            maxX = minOf(maxX, tileCount - 1)
-            minY = maxOf(minY, 0L)
-            maxY = minOf(maxY, tileCount - 1)
-        }
-        if (minX > maxX || minY > maxY) return emptyList()
-        require(minX >= Int.MIN_VALUE && maxX <= Int.MAX_VALUE &&
-            minY >= Int.MIN_VALUE && maxY <= Int.MAX_VALUE
-        ) { "Visible tile indices exceed the supported Int range" }
-        val visibleTiles = mutableListOf<TileSpecs>()
-        for (x in minX..maxX)
-            for (y in minY..maxY)
-                visibleTiles.add(TileSpecs(zoomLevel, y.toInt(), x.toInt()))
-        return visibleTiles
+    val tileCount = 1L shl zoomLevel
+    var minX = floor(topLeft.x / tileDimension.width.value * tileCount).toLong()
+    // Right and bottom edges are exclusive: a tile that only touches them is not visible.
+    var maxX = (ceil(bottomRight.x / tileDimension.width.value * tileCount) - 1).toLong()
+    var minY = floor(topLeft.y / tileDimension.height.value * tileCount).toLong()
+    var maxY = (ceil(bottomRight.y / tileDimension.height.value * tileCount) - 1).toLong()
+    if (tileRepeatMode == TileRepeatMode.NONE) {
+        minX = maxOf(minX, 0L)
+        maxX = minOf(maxX, tileCount - 1)
+        minY = maxOf(minY, 0L)
+        maxY = minOf(maxY, tileCount - 1)
     }
+    if (minX > maxX || minY > maxY) return emptyList()
+    require(minX >= Int.MIN_VALUE && maxX <= Int.MAX_VALUE &&
+        minY >= Int.MIN_VALUE && maxY <= Int.MAX_VALUE
+    ) { "Visible tile indices exceed the supported Int range" }
+    val visibleTiles = mutableListOf<TileSpecs>()
+    for (x in minX..maxX)
+        for (y in minY..maxY)
+            visibleTiles.add(TileSpecs(zoomLevel, y.toInt(), x.toInt()))
+    return visibleTiles
 }

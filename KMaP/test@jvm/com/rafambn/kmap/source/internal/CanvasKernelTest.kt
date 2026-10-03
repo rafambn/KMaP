@@ -19,6 +19,8 @@ import com.rafambn.kmap.mapProperties.coordinates.CoordinatesRange
 import com.rafambn.kmap.mapProperties.coordinates.Latitude
 import com.rafambn.kmap.mapProperties.coordinates.Longitude
 import com.rafambn.kmap.source.TileSpecs
+import com.rafambn.kmap.source.RasterTile
+import com.rafambn.kmap.source.TileResult
 import com.rafambn.kmap.style.compiled.CompiledStyle
 import de.infix.testBalloon.framework.core.testSuite
 import kotlinx.coroutines.CompletableDeferred
@@ -27,10 +29,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotSame
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
@@ -51,32 +55,31 @@ val CanvasKernelTest by testSuite {
                     val kernel = state.canvasKernel
                     try {
                         state.setViewportSize(IntSize(32, 32))
-                        kernel.refreshCanvas(listOf(removed, retained))
+                        kernel.refreshCanvas(listOf(removed))
                         removedStarted.await()
+                        val removedJob = parent.children.single()
+                        kernel.refreshCanvas(listOf(removed, retained))
                         retainedStarted.await()
-                        val removedEngine = kernel.canvas.getValue(1)
-                        val retainedEngine = kernel.canvas.getValue(2)
-                        val removedJob = removedEngine.coroutineScope.coroutineContext[Job]!!
+                        val retainedJob = parent.children.single { it !== removedJob }
 
                         kernel.refreshCanvas(listOf(removed, retained))
-                        assertSame(removedEngine, kernel.canvas.getValue(1))
+                        assertEquals(setOf(removedJob, retainedJob), parent.children.toSet())
                         kernel.refreshCanvas(listOf(retained))
 
                         assertTrue(removedJob.isCancelled)
                         removedJob.join()
                         removedCancelled.await()
                         assertTrue(removedJob.children.none())
-                        assertTrue(removedEngine.cachedTiles.isEmpty())
-                        assertTrue(removedEngine.activeTiles.value.tiles.isEmpty())
-                        assertEquals(setOf(2), kernel.canvas.keys)
-                        assertSame(retainedEngine, kernel.canvas.getValue(2))
-                        assertTrue(retainedEngine.coroutineScope.coroutineContext[Job]!!.isActive)
+                        assertFailsWith<NoSuchElementException> { kernel.getActiveTiles(1) }
+                        assertTrue(kernel.getActiveTiles(2).tiles.isEmpty())
+                        assertSame(retainedJob, parent.children.single())
+                        assertTrue(retainedJob.isActive)
                         assertFalse(retainedCancelled.isCompleted)
                         assertTrue(parent.isActive)
 
                         kernel.refreshCanvas(emptyList())
                         retainedCancelled.await()
-                        retainedEngine.coroutineScope.coroutineContext[Job]!!.join()
+                        retainedJob.join()
                         assertTrue(parent.children.none())
                         assertTrue(parent.isActive)
                     } finally {
@@ -100,8 +103,7 @@ val CanvasKernelTest by testSuite {
                         state.setViewportSize(IntSize(32, 32))
                         kernel.refreshCanvas(listOf(waitingCanvas(1, vector, firstStarted, firstCancelled)))
                         firstStarted.await()
-                        val firstEngine = kernel.canvas.getValue(1)
-                        val firstJob = firstEngine.coroutineScope.coroutineContext[Job]!!
+                        val firstJob = parent.children.single()
 
                         kernel.refreshCanvas(emptyList())
                         assertTrue(firstJob.isCancelled)
@@ -110,10 +112,7 @@ val CanvasKernelTest by testSuite {
                         kernel.refreshCanvas(listOf(waitingCanvas(1, vector, secondStarted, secondCancelled)))
                         secondStarted.await()
 
-                        val secondEngine = kernel.canvas.getValue(1)
-                        assertNotSame(firstEngine, secondEngine)
-                        assertNotSame(firstJob, secondEngine.coroutineScope.coroutineContext[Job])
-                        assertEquals(firstEngine.currentVisibleTiles, secondEngine.currentVisibleTiles)
+                        assertNotSame(firstJob, parent.children.single())
                         assertFalse(secondCancelled.isCompleted)
                         assertTrue(parent.isActive)
                     } finally {
@@ -147,11 +146,93 @@ val CanvasKernelTest by testSuite {
                     assertTrue(rasterCancelled.isCompleted)
                     assertTrue(vectorCancelled.isCompleted)
                     assertTrue(parent.children.none())
-                    assertTrue(state.canvasKernel.canvas.values.all { it.coroutineScope.coroutineContext[Job]!!.isCancelled })
                 } finally {
                     parent.cancelAndJoin()
                 }
             }
+        }
+    }
+
+    test("canvases wait for the first selection without a MapState") {
+        val parent = Job()
+        val kernel = CanvasKernel(CoroutineScope(parent + Dispatchers.Default))
+        val requests = Channel<TileSpecs>(Channel.UNLIMITED)
+        try {
+            kernel.refreshCanvas(listOf(RasterCanvasParameters(1, tileSource = { z, r, c ->
+                requests.send(TileSpecs(z, r, c))
+                TileResult.Success(RasterTile(z, r, c, null))
+            })))
+            assertTrue(kernel.getActiveTiles(1).tiles.isEmpty())
+
+            kernel.resolveVisibleTiles(TilePoint.Zero, TilePoint(128.0, 64.0), 1, kernelMapProperties())
+
+            kernel.awaitActiveTiles(1, 1, listOf(TileSpecs(1, 0, 0)))
+            assertEquals(TileSpecs(1, 0, 0), requests.tryReceive().getOrThrow())
+            assertTrue(requests.tryReceive().isFailure)
+        } finally {
+            parent.cancelAndJoin()
+        }
+    }
+
+    test("new canvases receive the latest selection resolved before they existed") {
+        val parent = Job()
+        val kernel = CanvasKernel(CoroutineScope(parent + Dispatchers.Default))
+        val properties = kernelMapProperties()
+        val requests = Channel<TileSpecs>(Channel.UNLIMITED)
+        try {
+            kernel.resolveVisibleTiles(TilePoint.Zero, TilePoint(128.0, 64.0), 1, properties)
+            kernel.resolveVisibleTiles(TilePoint(128.0, 64.0), TilePoint(192.0, 96.0), 2, properties)
+            kernel.refreshCanvas(listOf(RasterCanvasParameters(1, tileSource = { z, r, c ->
+                requests.send(TileSpecs(z, r, c))
+                TileResult.Success(RasterTile(z, r, c, null))
+            })))
+
+            kernel.awaitActiveTiles(1, 2, listOf(TileSpecs(2, 2, 2)))
+            assertEquals(TileSpecs(2, 2, 2), requests.tryReceive().getOrThrow())
+            assertTrue(requests.tryReceive().isFailure)
+        } finally {
+            parent.cancelAndJoin()
+        }
+    }
+
+    test("an empty selection replaces the previous tiles and retains its zoom for new canvases") {
+        val parent = Job()
+        val kernel = CanvasKernel(CoroutineScope(parent + Dispatchers.Default))
+        val properties = kernelMapProperties()
+        val parameters = RasterCanvasParameters(1, tileSource = { z, r, c -> TileResult.Success(RasterTile(z, r, c, null)) })
+        try {
+            kernel.resolveVisibleTiles(TilePoint.Zero, TilePoint(128.0, 64.0), 1, properties)
+            kernel.refreshCanvas(listOf(parameters))
+            kernel.awaitActiveTiles(1, 1, listOf(TileSpecs(1, 0, 0)))
+            val job = parent.children.single()
+            kernel.refreshCanvas(emptyList())
+            job.join()
+
+            kernel.resolveVisibleTiles(TilePoint.Zero, TilePoint.Zero, 5, properties)
+            kernel.refreshCanvas(listOf(parameters))
+
+            assertEquals(ActiveTiles(currentZoom = 5), kernel.getActiveTiles(1))
+        } finally {
+            parent.cancelAndJoin()
+        }
+    }
+
+    test("a canvas removed before the first selection releases its job") {
+        val parent = Job()
+        val kernel = CanvasKernel(CoroutineScope(parent + Dispatchers.Default))
+        try {
+            kernel.refreshCanvas(listOf(RasterCanvasParameters(1, tileSource = { _, _, _ -> error("No tiles requested") })))
+            val job = parent.children.single()
+
+            kernel.refreshCanvas(emptyList())
+            job.join()
+
+            assertTrue(job.isCancelled)
+            assertTrue(parent.children.none())
+            assertTrue(parent.isActive)
+            assertFailsWith<NoSuchElementException> { kernel.getActiveTiles(1) }
+        } finally {
+            parent.cancelAndJoin()
         }
     }
 
@@ -269,12 +350,7 @@ private fun visibleTiles(
     zoom: Int = 1,
     repeatMode: TileRepeatMode = TileRepeatMode.NONE,
 ): List<TileSpecs> {
-    val properties = kernelMapProperties(repeatMode)
-    val scope = CoroutineScope(Job().apply { cancel() })
-    val state = MapState(properties, coroutineScope = scope)
-    state.canvasKernel.refreshCanvas(listOf(RasterCanvasParameters(1, tileSource = { _, _, _ -> error("Consumer is paused") })))
-    state.canvasKernel.resolveVisibleTiles(topLeft, bottomRight, zoom, properties)
-    return state.canvasKernel.canvas.getValue(1).currentVisibleTiles
+    return getVisibleTilesForLevel(topLeft, bottomRight, zoom, repeatMode, kernelMapProperties().tileSize)
 }
 
 private fun kernelMapProperties(repeatMode: TileRepeatMode = TileRepeatMode.NONE) = object : MapProperties {
