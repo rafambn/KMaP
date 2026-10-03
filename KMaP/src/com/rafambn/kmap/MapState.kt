@@ -120,10 +120,13 @@ class MapState(
     internal val drawReference = { cameraState.tilePoint.toCanvasDrawReference() }
     internal val drawTileSize = { mapProperties.tileSize }
     internal val drawRotationDegrees = { cameraState.angleDegrees.toFloat() }
-    internal val canvasKernel = CanvasKernel(coroutineScope, this)
+    internal val canvasKernel = CanvasKernel(coroutineScope)
 
     internal fun resolveVisibleTiles() {
-        if (viewportSize.width == 0 || viewportSize.height == 0) return
+        if (viewportSize.width == 0 || viewportSize.height == 0) {
+            canvasKernel.resolveVisibleTiles(TilePoint.Zero, TilePoint.Zero, cameraState.zoom.toIntFloor(), mapProperties)
+            return
+        }
 
         val screenSize = viewportSize.asScreenOffset()
         val topLeft = ScreenOffset.Zero.toTilePoint()
