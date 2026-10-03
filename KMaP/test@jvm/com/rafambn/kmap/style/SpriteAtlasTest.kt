@@ -7,7 +7,10 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.toPixelMap
 import de.infix.testBalloon.framework.core.testSuite
+import java.io.File
+import javax.imageio.ImageIO
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 val SpriteAtlasTest by testSuite {
@@ -26,5 +29,18 @@ val SpriteAtlasTest by testSuite {
         assertTrue(sprites.getValue("misc:blue").sdf)
         assertEquals(Color.Red, sprites.getValue("misc:red").bitmap.toPixelMap()[0, 0])
         assertEquals(Color.Blue, sprites.getValue("misc:blue").bitmap.toPixelMap()[0, 0])
+    }
+
+    test("bundled sprite indices load within their PNG atlas bounds") {
+        val resources = File("../DemoApp/shared/composeResources")
+        val indices = assertNotNull(File(resources, "files").listFiles())
+            .filter { it.name.startsWith("sprite-") && it.extension == "json" }
+        assertTrue(indices.isNotEmpty())
+
+        for (index in indices) {
+            val png = assertNotNull(ImageIO.read(File(resources, "drawable/${index.nameWithoutExtension}.png")), index.name)
+            val sprites = decodeSpriteAtlas(index.readText(), ImageBitmap(png.width, png.height))
+            assertTrue(sprites.isNotEmpty(), index.name)
+        }
     }
 }

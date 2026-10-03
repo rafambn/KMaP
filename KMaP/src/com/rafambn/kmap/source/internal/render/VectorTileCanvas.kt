@@ -595,7 +595,7 @@ private fun DrawScope.drawSymbolFeature(
     screenScale: Float,
     featureId: ULong?,
 ) {
-    drawIconSymbol(canvas, geometry, properties, compiledStyleLayer, zoom, textScale, rotationDegrees, screenScale, featureId)
+    drawIconSymbol(canvas, geometry, properties, density.density, compiledStyleLayer, zoom, textScale, rotationDegrees, screenScale, featureId)
     val text = compiledStyleLayer.textField?.evaluate(zoom.toInt().toDouble(), properties, featureId)
     text?.let {
         drawTextSymbol(canvas, geometry, properties, fontResolver, density, compiledStyleLayer, glyphs, zoom, it, textScale,
@@ -607,6 +607,7 @@ private fun drawIconSymbol(
     canvas: Canvas,
     geometry: OptimizedGeometry.Point,
     properties: Map<String, Any>,
+    displayDensity: Float,
     layer: CompiledSymbolLayer,
     zoom: Double,
     textScale: Float,
@@ -636,7 +637,7 @@ private fun drawIconSymbol(
     val haloBlur = if (hasHalo) {
         layer.iconHaloBlur?.evaluate(zoom, properties, featureId)?.toFloat()?.coerceAtLeast(0f) ?: 0f
     } else 0f
-    val scale = size * textScale / screenScale
+    val scale = size * displayDensity * textScale / screenScale
     val width = (image.bitmap.width / image.pixelRatio * scale).toFloat()
     val height = (image.bitmap.height / image.pixelRatio * scale).toFloat()
     val left = when {

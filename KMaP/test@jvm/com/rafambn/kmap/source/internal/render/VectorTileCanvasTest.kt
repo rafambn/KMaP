@@ -388,6 +388,44 @@ val VectorTileCanvasTest by testSuite {
         assertEquals(0f, pixels[18, 16].alpha)
     }
 
+    test("sprite size and offset use display density across tile and map scales") {
+        val sprite = ImageBitmap(20, 20)
+        Canvas(sprite).drawRect(Rect(0f, 0f, 20f, 20f), Paint().apply { color = Color.Red })
+
+        for (pixelRatio in listOf(1.0, 2.0)) {
+            val layer = StyleResolver().resolve("""{
+                "layers": [{"id": "icons", "type": "symbol", "source-layer": "places",
+                    "layout": {"icon-image": "dot", "icon-anchor": "top-left", "icon-offset": [3, -2]}}]
+            }""", sprites = mapOf("dot" to SpriteImage(sprite, pixelRatio))).style!!.layers.single()
+
+            for ((tileScale, mapScale, displayDensity) in listOf(
+                Triple(1f, 1f, 1f),
+                Triple(1f, 1f, 2f),
+                Triple(0.125f, 1f, 2f),
+                Triple(0.125f, 1.5f, 2f)
+            )) {
+                val bitmap = ImageBitmap(200, 200)
+                val canvas = Canvas(bitmap)
+                canvas.translate(80f, 80f)
+                canvas.scale(mapScale * tileScale, mapScale * tileScale)
+                val density = Density(displayDensity)
+                CanvasDrawScope().draw(density, LayoutDirection.Ltr, canvas, Size(200f, 200f)) {
+                    drawRenderFeature(canvas, OptimizedRenderFeature(OptimizedGeometry.Point(listOf(0f to 0f)), emptyMap()),
+                        createFontFamilyResolver(), density, layer, 0.0, 1f / tileScale, 0f, tileScale, tileScale, mapScale)
+                }
+                val pixels = bitmap.toPixelMap()
+                val columns = (0 until 200).filter { x -> (0 until 200).any { y -> pixels[x, y].alpha > 0.5f } }
+                val rows = (0 until 200).filter { y -> (0 until 200).any { x -> pixels[x, y].alpha > 0.5f } }
+                val expectedSize = 20 / pixelRatio * displayDensity
+                val context = "density=$displayDensity, pixelRatio=$pixelRatio, tileScale=$tileScale, mapScale=$mapScale"
+                assertTrue(kotlin.math.abs(columns.size - expectedSize) <= 1, "icon width: $context")
+                assertTrue(kotlin.math.abs(rows.size - expectedSize) <= 1, "icon height: $context")
+                assertTrue(kotlin.math.abs(columns.first() - (80 + 3 * displayDensity)) <= 1, "icon x offset: $context")
+                assertTrue(kotlin.math.abs(rows.first() - (80 - 2 * displayDensity)) <= 1, "icon y offset: $context")
+            }
+        }
+    }
+
     test("SDF sprite renders with its default black color") {
         val sprite = ImageBitmap(2, 2)
         Canvas(sprite).drawRect(Rect(0f, 0f, 2f, 2f), Paint().apply { color = Color.White.copy(alpha = 0.5f) })
