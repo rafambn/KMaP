@@ -50,7 +50,7 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
 
     override suspend fun positionBy(center: Reference, animationSpec: AnimationSpec<Float>) {
         val startPosition = mapState.cameraState.tilePoint
-        val endPosition = getTilePoint(center) + mapState.cameraState.tilePoint
+        val endPosition = offsetPosition(center)
         animatable.snapTo(0F)
         animatable.animateTo(1f, animationSpec) {
             mapState.updateCamera(tilePoint = lerp(startPosition, endPosition, value.toDouble()))
@@ -174,7 +174,7 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
     }
 
     override fun positionBy(center: Reference) {
-        mapState.updateCamera(tilePoint = getTilePoint(center) + mapState.cameraState.tilePoint)
+        mapState.updateCamera(tilePoint = offsetPosition(center))
     }
 
     override fun zoomTo(zoom: Float) {
@@ -235,6 +235,13 @@ class MotionController(private val mapState: MapState) : AnimateInterface, MoveI
             tilePoint = previousPosition,
             centerOffset = previousOffset,
         )
+    }
+
+    private fun offsetPosition(offset: Reference): TilePoint = context(mapState) {
+        when (offset) {
+            is Coordinates -> (mapState.coordinates + offset).toTilePoint()
+            else -> getTilePoint(offset) + mapState.cameraState.tilePoint
+        }
     }
 
     fun getTilePoint(center: Reference): TilePoint {
