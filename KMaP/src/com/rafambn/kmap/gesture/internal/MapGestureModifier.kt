@@ -23,7 +23,7 @@ internal fun Modifier.mapGestures(gestureWrapper: MapGestureWrapper?): Modifier 
     } ?: Modifier
 ).then(
     gestureWrapper?.onScroll?.let {
-        Modifier.pointerInput(Unit) {
+        Modifier.pointerInput(gestureWrapper.onScroll) {
             awaitPointerEventScope {
                 while (true) {
                     val pointerEvent = awaitPointerEvent()

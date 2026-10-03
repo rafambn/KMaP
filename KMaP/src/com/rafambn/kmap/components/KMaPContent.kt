@@ -133,6 +133,7 @@ class KMaPContent(
                                     onTap = gestureWrapper.onTap,
                                     onDoubleTap = gestureWrapper.onDoubleTap,
                                     onLongPress = gestureWrapper.onLongPress,
+                                    onHover = gestureWrapper.onHover,
                                     path = originalPath,
                                     threshold = padding,
                                     checkForInsideClick = parameters.checkForClickInsidePath,
