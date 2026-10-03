@@ -3,27 +3,10 @@ package com.rafambn.kmap.source.internal
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathFillType
 import com.rafambn.kmap.mvttile.*
-import com.rafambn.kmap.source.TileResult
 import com.rafambn.kmap.source.VectorTile
 import com.rafambn.kmap.style.compiled.CompiledLayerType
 import com.rafambn.kmap.style.compiled.CompiledStyle
 import com.rafambn.kmap.style.evaluation.FeatureGeometryContext
-import kotlinx.coroutines.CoroutineScope
-
-class VectorCanvasEngine(
-    maxCacheTiles: Int,
-    getTile: suspend (zoom: Int, row: Int, column: Int) -> TileResult<VectorTile>,
-    coroutineScope: CoroutineScope,
-    style: CompiledStyle
-) : CanvasEngine<OptimizedVectorTile>(
-    maxCacheTiles,
-    coroutineScope,
-    TileRenderer(
-        coroutineScope = coroutineScope,
-        getTile = getTile,
-        processTile = { optimizeMVTile(it, style) }
-    )
-)
 
 internal fun optimizeMVTile(tile: VectorTile, compiledStyle: CompiledStyle): OptimizedVectorTile {
     val mvtData = tile.mvtile ?: return OptimizedVectorTile(tile.zoom, tile.row, tile.col, null)

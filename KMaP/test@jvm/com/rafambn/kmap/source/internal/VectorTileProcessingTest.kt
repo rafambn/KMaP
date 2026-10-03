@@ -18,7 +18,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 
-val VectorCanvasEngineTest by testSuite {
+val VectorTileProcessingTest by testSuite {
     test("filter compares full unsigned feature IDs and properties") {
         val feature = MVTFeature(
             id = ULong.MAX_VALUE,

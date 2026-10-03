@@ -2,6 +2,7 @@ package com.rafambn.kmap.source.internal
 
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.ImageBitmap
 import com.rafambn.kmap.MapState
 import com.rafambn.kmap.components.parameters.CanvasParameters
 import com.rafambn.kmap.components.parameters.RasterCanvasParameters
@@ -18,9 +19,16 @@ import com.rafambn.kmap.mapProperties.border.TileRepeatMode
 import com.rafambn.kmap.mapProperties.coordinates.CoordinatesRange
 import com.rafambn.kmap.mapProperties.coordinates.Latitude
 import com.rafambn.kmap.mapProperties.coordinates.Longitude
+import com.rafambn.kmap.mvttile.MVTFeature
+import com.rafambn.kmap.mvttile.MVTLayer
+import com.rafambn.kmap.mvttile.MVTile
+import com.rafambn.kmap.mvttile.OptimizedGeometry
+import com.rafambn.kmap.mvttile.RawMVTGeomType
 import com.rafambn.kmap.source.TileSpecs
 import com.rafambn.kmap.source.RasterTile
 import com.rafambn.kmap.source.TileResult
+import com.rafambn.kmap.source.VectorTile
+import com.rafambn.kmap.style.StyleResolver
 import com.rafambn.kmap.style.compiled.CompiledStyle
 import de.infix.testBalloon.framework.core.testSuite
 import kotlinx.coroutines.CompletableDeferred
@@ -35,6 +43,8 @@ import kotlinx.coroutines.withTimeout
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import kotlin.test.assertNotSame
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
@@ -189,6 +199,67 @@ val CanvasKernelTest by testSuite {
 
             kernel.awaitActiveTiles(1, 2, listOf(TileSpecs(2, 2, 2)))
             assertEquals(TileSpecs(2, 2, 2), requests.tryReceive().getOrThrow())
+            assertTrue(requests.tryReceive().isFailure)
+        } finally {
+            parent.cancelAndJoin()
+        }
+    }
+
+    test("mixed canvases preserve raster payloads and each vector style when reusing repeated tiles") {
+        val parent = Job()
+        val kernel = CanvasKernel(CoroutineScope(parent + Dispatchers.Default))
+        val properties = kernelMapProperties(TileRepeatMode.REPEAT)
+        val requests = Channel<Int>(Channel.UNLIMITED)
+        val bitmap = ImageBitmap(1, 1)
+        val vectorData = MVTile(listOf(MVTLayer("places", 4096, listOf(
+            MVTFeature(1UL, RawMVTGeomType.POINT, listOf(listOf(4 to 8)), mapOf("kind" to "park")),
+            MVTFeature(2UL, RawMVTGeomType.POINT, listOf(listOf(16 to 32)), mapOf("kind" to "water")),
+        ))))
+        val parkStyle = assertNotNull(StyleResolver().resolve("""{"layers":[
+            {"id":"parks","type":"symbol","source-layer":"places","filter":["==",["get","kind"],"park"]}
+        ]}""").style)
+        val waterStyle = assertNotNull(StyleResolver().resolve("""{"layers":[
+            {"id":"water","type":"symbol","source-layer":"places","filter":["==",["get","kind"],"water"]}
+        ]}""").style)
+        try {
+            kernel.resolveVisibleTiles(TilePoint.Zero, TilePoint(128.0, 64.0), 1, properties)
+            kernel.refreshCanvas(listOf(
+                RasterCanvasParameters(1, tileSource = { zoom, row, col ->
+                    requests.send(1)
+                    TileResult.Success(RasterTile(zoom, row, col, bitmap))
+                }),
+                VectorCanvasParameters(2, style = parkStyle, tileSource = { zoom, row, col ->
+                    requests.send(2)
+                    TileResult.Success(VectorTile(zoom, row, col, vectorData))
+                }),
+                VectorCanvasParameters(3, style = waterStyle, tileSource = { zoom, row, col ->
+                    requests.send(3)
+                    TileResult.Success(VectorTile(zoom, row, col, vectorData))
+                }),
+            ))
+            val initialSpecs = listOf(TileSpecs(1, 0, 0))
+            val raster = assertIs<RasterTile>(kernel.awaitActiveTiles(1, 1, initialSpecs).tiles.single())
+            val parks = assertIs<OptimizedVectorTile>(kernel.awaitActiveTiles(2, 1, initialSpecs).tiles.single())
+            val water = assertIs<OptimizedVectorTile>(kernel.awaitActiveTiles(3, 1, initialSpecs).tiles.single())
+            assertSame(bitmap, raster.imageBitmap)
+            val parkLayers = assertNotNull(parks.optimizedTile).layerFeatures
+            val waterLayers = assertNotNull(water.optimizedTile).layerFeatures
+            assertEquals(setOf("parks"), parkLayers.keys)
+            assertEquals(setOf("water"), waterLayers.keys)
+            assertEquals(1UL, parkLayers.getValue("parks").single().id)
+            assertEquals(2UL, waterLayers.getValue("water").single().id)
+            assertEquals(OptimizedGeometry.Point(listOf(4F to 8F)), parkLayers.getValue("parks").single().geometry)
+            assertEquals(OptimizedGeometry.Point(listOf(16F to 32F)), waterLayers.getValue("water").single().geometry)
+            assertEquals(listOf(1, 2, 3), List(3) { requests.tryReceive().getOrThrow() }.sorted())
+
+            kernel.resolveVisibleTiles(TilePoint(256.0, -128.0), TilePoint(384.0, -64.0), 1, properties)
+            val repeatedSpecs = listOf(TileSpecs(1, -2, 2))
+            val repeatedRaster = assertIs<RasterTile>(kernel.awaitActiveTiles(1, 1, repeatedSpecs).tiles.single())
+            val repeatedParks = assertIs<OptimizedVectorTile>(kernel.awaitActiveTiles(2, 1, repeatedSpecs).tiles.single())
+            val repeatedWater = assertIs<OptimizedVectorTile>(kernel.awaitActiveTiles(3, 1, repeatedSpecs).tiles.single())
+            assertSame(bitmap, repeatedRaster.imageBitmap)
+            assertSame(parks.optimizedTile, repeatedParks.optimizedTile)
+            assertSame(water.optimizedTile, repeatedWater.optimizedTile)
             assertTrue(requests.tryReceive().isFailure)
         } finally {
             parent.cancelAndJoin()

@@ -13,16 +13,16 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 
-abstract class CanvasEngine<T : Tile>(
+class CanvasEngine(
     private val maxCacheTiles: Int = 20,
     coroutineScope: CoroutineScope,
-    private val tileRenderer: TileRenderer<*, T>
+    private val tileRenderer: TileRenderer<*, *>
 ) {
     var activeTiles by mutableStateOf(ActiveTiles())
         private set
 
     private val selections = Channel<TileSelection>(Channel.CONFLATED)
-    private var cachedTiles = listOf<T>()
+    private var cachedTiles = listOf<Tile>()
     private var currentVisibleTiles = listOf<TileSpecs>()
     private var currentZoom: Int? = null
     private var hasFailedTiles = false
@@ -85,8 +85,7 @@ abstract class CanvasEngine<T : Tile>(
             } ?: run {
                 val normalized = normalizedSpecs(tileSpecs)
                 cachedTilesMap[normalized]?.let { cachedTile ->
-                    val newTile = cachedTile.withSpecs(tileSpecs) as T
-                    newFrontLayer.add(newTile)
+                    newFrontLayer.add(cachedTile.withSpecs(tileSpecs))
                 } ?: run {
                     // Fallbacks use display coordinates; the renderer only receives source coordinates.
                     missingTiles.add(tileSpecs)
