@@ -62,7 +62,9 @@ create a new state, for example by placing `rememberMapState` inside `key(mapCon
 
 `projectedBounds` contains the projected coordinates at the map's top-left and bottom-right
 corners before camera rotation. Its units must match `toProjectedCoordinates`, and each axis
-must have a finite, non-zero span. Axes may increase or decrease toward the bottom-right corner.
+must have a finite, positive span. `xSpan` and `ySpan` measure distance; `xDirection` and
+`yDirection` are `1` when values increase toward the right or bottom edge and `-1` when they
+decrease. Reversing an axis keeps its span positive.
 For an identity projection with X increasing right and Y increasing up:
 
 ```kotlin

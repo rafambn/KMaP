@@ -110,8 +110,8 @@ class KMaPContent(
         val tileSize = mapState.mapProperties.tileSize
         val scaleMatrix = Matrix()
         val scale = Offset(
-            (tileSize.width.value / projectedBounds.xSpan).toFloat(),
-            (tileSize.height.value / projectedBounds.ySpan).toFloat(),
+            (tileSize.width.value * projectedBounds.xDirection / projectedBounds.xSpan).toFloat(),
+            (tileSize.height.value * projectedBounds.yDirection / projectedBounds.ySpan).toFloat(),
         )
         scaleMatrix.scale(scale.x, scale.y)
         originalPath.transform(scaleMatrix)

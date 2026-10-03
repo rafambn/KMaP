@@ -127,8 +127,8 @@ internal fun measureComponent(
                 val bounds = measuredPath.parameters.path.getBounds()
                 val projectedBounds = mapState.mapProperties.projectedBounds
                 val drawPoint = ProjectedCoordinates(
-                    (if (projectedBounds.xSpan > 0.0) bounds.left else bounds.right).toDouble(),
-                    (if (projectedBounds.ySpan > 0.0) bounds.top else bounds.bottom).toDouble()
+                    (if (projectedBounds.xDirection == 1) bounds.left else bounds.right).toDouble(),
+                    (if (projectedBounds.yDirection == 1) bounds.top else bounds.bottom).toDouble()
                 )
                 measuredPath.offset = context(mapState) {
                     drawPoint.toTilePoint().toScreenOffset()

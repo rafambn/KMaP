@@ -1,6 +1,7 @@
 package com.rafambn.kmap.mapProperties
 
 import com.rafambn.kmap.geometry.plane.ProjectedCoordinates
+import kotlin.math.abs
 
 /**
  * Projected coordinates at the map's top-left and bottom-right corners before camera rotation.
@@ -11,14 +12,20 @@ data class ProjectedBounds(
     val topLeft: ProjectedCoordinates,
     val bottomRight: ProjectedCoordinates,
 ) {
-    /** Signed change in projected X from the left edge to the right edge. */
-    val xSpan: Double = bottomRight.x - topLeft.x
+    /** Positive distance in projected X between the left and right edges. */
+    val xSpan: Double = abs(bottomRight.x - topLeft.x)
 
-    /** Signed change in projected Y from the top edge to the bottom edge. */
-    val ySpan: Double = bottomRight.y - topLeft.y
+    /** Positive distance in projected Y between the top and bottom edges. */
+    val ySpan: Double = abs(bottomRight.y - topLeft.y)
+
+    /** 1 if projected X increases toward the right edge, -1 if it decreases. */
+    val xDirection: Int = bottomRight.x.compareTo(topLeft.x)
+
+    /** 1 if projected Y increases toward the bottom edge, -1 if it decreases. */
+    val yDirection: Int = bottomRight.y.compareTo(topLeft.y)
 
     init {
-        require(xSpan.isFinite() && xSpan != 0.0) { "Projected X bounds must have a finite, non-zero span" }
-        require(ySpan.isFinite() && ySpan != 0.0) { "Projected Y bounds must have a finite, non-zero span" }
+        require(xSpan.isFinite() && xSpan > 0.0) { "Projected X bounds must have a finite, positive span" }
+        require(ySpan.isFinite() && ySpan > 0.0) { "Projected Y bounds must have a finite, positive span" }
     }
 }
