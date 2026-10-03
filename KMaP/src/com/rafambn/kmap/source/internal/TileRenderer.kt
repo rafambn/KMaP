@@ -5,30 +5,38 @@ import com.rafambn.kmap.source.TileResult
 import com.rafambn.kmap.source.TileSpecs
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.selects.select
 
 /**
  * Loads and processes source coordinates already normalized by [CanvasEngine].
  * The engine owns repeated display copies; this renderer tracks only in-flight source tiles.
+ * [dispatcher] runs both coordination and tile workers.
  */
 class TileRenderer<T : Tile, R : Tile>(
     coroutineScope: CoroutineScope,
     private val getTile: suspend (zoom: Int, row: Int, column: Int) -> TileResult<T>,
-    private val processTile: suspend (T) -> R
+    private val processTile: suspend (T) -> R,
+    dispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) {
-    val tilesToProcessChannel = Channel<List<TileSpecs>>(capacity = Channel.CONFLATED)
-    val tilesProcessedChannel = Channel<R>(capacity = Channel.UNLIMITED)
+    private val requiredTiles = Channel<List<TileSpecs>>(capacity = Channel.CONFLATED)
+    private val completedTiles = Channel<TileResult<R>>(capacity = Channel.UNLIMITED)
     private val workerResultChannel = Channel<TileResult<R>>(capacity = Channel.UNLIMITED)
 
+    /** Successes and failures for one consumer. Cancelled when the renderer stops. */
+    val results: ReceiveChannel<TileResult<R>> = completedTiles
+
     init {
-        coroutineScope.launch(Dispatchers.Default + SupervisorJob(coroutineScope.coroutineContext[Job])) {
+        coroutineScope.launch(dispatcher + SupervisorJob(coroutineScope.coroutineContext[Job])) {
             val tilesBeingProcessed = mutableSetOf<TileSpecs>()
 
             while (isActive) {
                 select {
-                    tilesToProcessChannel.onReceive { tilesToProcess ->
-                        tilesToProcess.forEach { specs ->
+                    requiredTiles.onReceive { tilesToProcess ->
+                        // A newer update may arrive after this receive resumes but before workers start.
+                        val latestRequiredTiles = requiredTiles.tryReceive().getOrNull() ?: tilesToProcess
+                        latestRequiredTiles.forEach { specs ->
                             if (tilesBeingProcessed.add(specs)) {
                                 worker(specs, workerResultChannel)
                             }
@@ -36,23 +44,34 @@ class TileRenderer<T : Tile, R : Tile>(
                     }
                     workerResultChannel.onReceive { tileResult ->
                         val finishedSpecs = when (tileResult) {
-                            is TileResult.Success -> {
-                                tilesProcessedChannel.send(tileResult.tile)
-                                tileResult.tile
-                            }
+                            is TileResult.Success -> tileResult.tile
                             is TileResult.Failure -> tileResult.specs
                         }
                         tilesBeingProcessed.remove(TileSpecs(finishedSpecs.zoom, finishedSpecs.row, finishedSpecs.col))
+                        completedTiles.send(tileResult)
                     }
                 }
             }
+        }.invokeOnCompletion {
+            requiredTiles.cancel()
+            workerResultChannel.cancel()
+            completedTiles.cancel()
         }
+    }
+
+    /**
+     * Queues a copy of normalized source coordinates, replacing the previous pending update.
+     * An empty list clears pending requests. In-flight work continues and publishes its result.
+     * Calls after the renderer stops are ignored; retries require another update.
+     */
+    fun updateRequiredTiles(tiles: List<TileSpecs>) {
+        requiredTiles.trySend(tiles.toList())
     }
 
     private fun CoroutineScope.worker(
         tileToProcess: TileSpecs,
         tilesProcessResult: SendChannel<TileResult<R>>
-    ) = launch(Dispatchers.Default) {
+    ) = launch {
         try {
             when (val tileResult = getTile(tileToProcess.zoom, tileToProcess.row, tileToProcess.col)) {
                 is TileResult.Success -> {
