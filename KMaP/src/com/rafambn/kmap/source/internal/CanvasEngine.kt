@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.rafambn.kmap.source.Tile
+import com.rafambn.kmap.source.TileResult
 import com.rafambn.kmap.source.TileSpecs
 import com.rafambn.kmap.utils.loopInZoom
 import kotlinx.coroutines.CoroutineScope
@@ -24,29 +25,37 @@ abstract class CanvasEngine<T : Tile>(
     private var cachedTiles = listOf<T>()
     private var currentVisibleTiles = listOf<TileSpecs>()
     private var currentZoom: Int? = null
+    private var hasFailedTiles = false
 
     init {
         coroutineScope.launch {
             while (isActive) {
                 select<Unit> {
                     selections.onReceive { selection ->
-                        if (currentZoom == selection.zoomLevel && currentVisibleTiles == selection.visibleTiles) return@onReceive
+                        if (currentZoom == selection.zoomLevel && currentVisibleTiles == selection.visibleTiles && !hasFailedTiles) return@onReceive
 
                         currentZoom = selection.zoomLevel
                         currentVisibleTiles = selection.visibleTiles
+                        hasFailedTiles = false
                         val tilesToRender = filterActiveTiles(currentVisibleTiles, selection.zoomLevel)
-                        // An empty request also replaces pending work for tiles that are no longer visible.
-                        tileRenderer.tilesToProcessChannel.trySend(tilesToRender)
+                        tileRenderer.updateRequiredTiles(tilesToRender)
                     }
-                    tileRenderer.tilesProcessedChannel.onReceive { tile ->
-                        val newCache = cachedTiles.toMutableList()
-                        newCache.add(tile)
-                        cachedTiles = if (newCache.size > maxCacheTiles)
-                            newCache.takeLast(maxCacheTiles)
-                        else
-                            newCache.toList()
+                    tileRenderer.results.onReceive { result ->
+                        when (result) {
+                            is TileResult.Success -> {
+                                val newCache = cachedTiles.toMutableList()
+                                newCache.add(result.tile)
+                                cachedTiles = if (newCache.size > maxCacheTiles)
+                                    newCache.takeLast(maxCacheTiles)
+                                else
+                                    newCache.toList()
 
-                        currentZoom?.let { filterActiveTiles(currentVisibleTiles, it) }
+                                currentZoom?.let { filterActiveTiles(currentVisibleTiles, it) }
+                            }
+                            is TileResult.Failure -> {
+                                if (currentVisibleTiles.any { normalizedSpecs(it) == result.specs }) hasFailedTiles = true
+                            }
+                        }
                     }
                 }
             }
@@ -57,6 +66,7 @@ abstract class CanvasEngine<T : Tile>(
      * Queues a snapshot of the selection; only the latest pending selection is retained.
      * The engine updates [activeTiles] asynchronously in its scope, independently of the caller's dispatcher.
      * Calls after the engine stops are ignored.
+     * Updating the selection again retries failed visible tiles, even when the selection is unchanged.
      */
     fun renderTiles(visibleTiles: List<TileSpecs>, zoomLevel: Int) {
         selections.trySend(TileSelection(visibleTiles.toList(), zoomLevel))
@@ -73,11 +83,7 @@ abstract class CanvasEngine<T : Tile>(
             activeTilesMap[tileSpecs]?.let {
                 newFrontLayer.add(it)
             } ?: run {
-                val normalized = TileSpecs(
-                    tileSpecs.zoom,
-                    tileSpecs.row.loopInZoom(tileSpecs.zoom),
-                    tileSpecs.col.loopInZoom(tileSpecs.zoom)
-                )
+                val normalized = normalizedSpecs(tileSpecs)
                 cachedTilesMap[normalized]?.let { cachedTile ->
                     val newTile = cachedTile.withSpecs(tileSpecs) as T
                     newFrontLayer.add(newTile)
@@ -123,4 +129,10 @@ abstract class CanvasEngine<T : Tile>(
 
         return tilesToRender.toList()
     }
+
+    private fun normalizedSpecs(specs: TileSpecs) = TileSpecs(
+        specs.zoom,
+        specs.row.loopInZoom(specs.zoom),
+        specs.col.loopInZoom(specs.zoom),
+    )
 }
