@@ -106,18 +106,14 @@ class KMaPContent(
     ) {
         val originalPath = parameters.path.copy()
         val padding = parameters.totalPadding
-        val orientationMatrix = Matrix()
-        val orientationX = (mapState.mapProperties.coordinatesRange.longitude.orientation).toFloat()
-        val orientationY = (mapState.mapProperties.coordinatesRange.latitude.orientation).toFloat()
-        orientationMatrix.scale(orientationX, orientationY)
+        val projectedBounds = mapState.mapProperties.projectedBounds
+        val tileSize = mapState.mapProperties.tileSize
         val scaleMatrix = Matrix()
-        val scale = with(mapState) {
-            val scaleX = (mapState.mapProperties.tileSize.width.value / mapState.mapProperties.coordinatesRange.longitude.span).toFloat()
-            val scaleY = (mapState.mapProperties.tileSize.height.value / mapState.mapProperties.coordinatesRange.latitude.span).toFloat()
-            Offset(scaleX, scaleY)
-        }
+        val scale = Offset(
+            (tileSize.width.value / projectedBounds.xSpan).toFloat(),
+            (tileSize.height.value / projectedBounds.ySpan).toFloat(),
+        )
         scaleMatrix.scale(scale.x, scale.y)
-        originalPath.transform(orientationMatrix)
         originalPath.transform(scaleMatrix)
         val densityScale = Matrix()
         densityScale.scale(mapState.currentDensity.density, mapState.currentDensity.density)
@@ -142,8 +138,8 @@ class KMaPContent(
                                             (bounds.top - padding).toDouble()
                                         )
                                         return@detectPathGestures ProjectedCoordinates(
-                                            untranslatedPoint.x * orientationX / (scale.x * mapState.currentDensity.density),
-                                            untranslatedPoint.y * orientationY / (scale.y * mapState.currentDensity.density),
+                                            untranslatedPoint.x / (scale.x * mapState.currentDensity.density),
+                                            untranslatedPoint.y / (scale.y * mapState.currentDensity.density),
                                         )
                                     }
                                 )

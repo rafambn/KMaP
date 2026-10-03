@@ -125,10 +125,10 @@ internal fun measureComponent(
             require(measuredPath.parameters is PathParameters)
             if (measuredPath.parameters.zoomVisibilityRange.contains(mapState.cameraState.zoom)) {
                 val bounds = measuredPath.parameters.path.getBounds()
-                val coordinatesRange = mapState.mapProperties.coordinatesRange
+                val projectedBounds = mapState.mapProperties.projectedBounds
                 val drawPoint = ProjectedCoordinates(
-                    (if (coordinatesRange.longitude.orientation == 1) bounds.left else bounds.right).toDouble(),
-                    (if (coordinatesRange.latitude.orientation == 1) bounds.top else bounds.bottom).toDouble()
+                    (if (projectedBounds.xSpan > 0.0) bounds.left else bounds.right).toDouble(),
+                    (if (projectedBounds.ySpan > 0.0) bounds.top else bounds.bottom).toDouble()
                 )
                 measuredPath.offset = context(mapState) {
                     drawPoint.toTilePoint().toScreenOffset()

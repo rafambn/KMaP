@@ -47,7 +47,7 @@ interface MapProperties {
     val boundMap: BoundMapBorder
     val outsideTiles: OutsideTilesType
     val zoomLevels: ZoomLevelRange
-    val coordinatesRange: CoordinatesRange
+    val projectedBounds: ProjectedBounds
     val tileSize: TileDimension
 
     fun toProjectedCoordinates(coordinates: Coordinates): ProjectedCoordinates
@@ -55,6 +55,30 @@ interface MapProperties {
     fun toCoordinates(projectedCoordinates: ProjectedCoordinates): Coordinates
 }
 ```
+
+Keep `MapProperties` values and projection behavior unchanged for the lifetime of a `MapState`.
+`rememberMapState` retains the initial properties across recompositions. To switch configurations,
+create a new state, for example by placing `rememberMapState` inside `key(mapConfiguration)`.
+
+`projectedBounds` contains the projected coordinates at the map's top-left and bottom-right
+corners before camera rotation. Its units must match `toProjectedCoordinates`, and each axis
+must have a finite, non-zero span. Axes may increase or decrease toward the bottom-right corner.
+For an identity projection with X increasing right and Y increasing up:
+
+```kotlin
+override val projectedBounds = ProjectedBounds(
+    topLeft = ProjectedCoordinates(-180.0, 90.0),
+    bottomRight = ProjectedCoordinates(180.0, -90.0),
+)
+```
+
+This replaces `coordinatesRange: CoordinatesRange`. Migrate its west/north values to `topLeft`
+and east/south values to `bottomRight`, preserving the existing projected units. With a nonlinear
+projection, geographic bounds must be projected before constructing `ProjectedBounds`.
+Implementations must document coordinate units, supported inputs, and behavior outside that
+domain. The forward and inverse projections should round-trip valid inputs within floating-point
+precision. Bounds conversion does not clamp coordinates outside the map.
+
 `MapProperties.zoomLevels` must be an ordered range within `0..30`.
 `MapState` rejects unsupported ranges, even when `zoomLevelPreference` is narrower.
 Create ranges with `ZoomLevelRange(min = 0, max = 19)`. The range is an immutable data class;

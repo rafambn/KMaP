@@ -21,6 +21,11 @@ import com.rafambn.kmap.utils.toIntFloor
 import kotlinx.coroutines.CoroutineScope
 import kotlin.math.pow
 
+/**
+ * Remembers a map using the initial [mapProperties]. Passing different properties during
+ * recomposition does not reconfigure the existing state. Use a different composition key to
+ * create a new map when its configuration or projection changes.
+ */
 @Composable
 fun rememberMapState(
     mapProperties: MapProperties,

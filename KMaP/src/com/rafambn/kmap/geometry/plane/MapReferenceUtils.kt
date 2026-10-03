@@ -84,13 +84,13 @@ fun Coordinates.toTilePoint(): TilePoint {
 
 context(mapState: MapState)
 fun ProjectedCoordinates.toTilePoint(): TilePoint {
-    val mapProperties = mapState.mapProperties
+    val bounds = mapState.mapProperties.projectedBounds
     val (tileWidth, tileHeight) = mapState.mapSize()
     val scaledTilePoint = transformReference(
         x,
         y,
-        Pair(mapProperties.coordinatesRange.longitude.west, mapProperties.coordinatesRange.longitude.east),
-        Pair(mapProperties.coordinatesRange.latitude.north, mapProperties.coordinatesRange.latitude.south),
+        Pair(bounds.topLeft.x, bounds.bottomRight.x),
+        Pair(bounds.topLeft.y, bounds.bottomRight.y),
         Pair(0.0, tileWidth),
         Pair(0.0, tileHeight),
     )
@@ -100,14 +100,15 @@ fun ProjectedCoordinates.toTilePoint(): TilePoint {
 context(mapState: MapState)
 fun TilePoint.toCoordinates(): Coordinates {
     val mapProperties = mapState.mapProperties
+    val bounds = mapProperties.projectedBounds
     val (tileWidth, tileHeight) = mapState.mapSize()
     val scaledTileCoordinates = transformReference(
         x,
         y,
         Pair(0.0, tileWidth),
         Pair(0.0, tileHeight),
-        Pair(mapProperties.coordinatesRange.longitude.west, mapProperties.coordinatesRange.longitude.east),
-        Pair(mapProperties.coordinatesRange.latitude.north, mapProperties.coordinatesRange.latitude.south),
+        Pair(bounds.topLeft.x, bounds.bottomRight.x),
+        Pair(bounds.topLeft.y, bounds.bottomRight.y),
     )
     return mapProperties.toCoordinates(ProjectedCoordinates(scaledTileCoordinates.first, scaledTileCoordinates.second))
 }

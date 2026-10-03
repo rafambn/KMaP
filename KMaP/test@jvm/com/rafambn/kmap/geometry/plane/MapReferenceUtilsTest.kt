@@ -6,16 +6,15 @@ import androidx.compose.ui.unit.dp
 import com.rafambn.kmap.MapState
 import com.rafambn.kmap.geometry.angle.Degrees
 import com.rafambn.kmap.mapProperties.MapProperties
+import com.rafambn.kmap.mapProperties.ProjectedBounds
 import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.mapProperties.ZoomLevelRange
 import com.rafambn.kmap.mapProperties.border.BoundMapBorder
 import com.rafambn.kmap.mapProperties.border.MapBorderType
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
-import com.rafambn.kmap.mapProperties.coordinates.CoordinatesRange
-import com.rafambn.kmap.mapProperties.coordinates.Latitude
-import com.rafambn.kmap.mapProperties.coordinates.Longitude
 import de.infix.testBalloon.framework.core.testSuite
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.math.sqrt
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlinx.coroutines.CoroutineScope
@@ -29,15 +28,16 @@ private fun mapState(
     outsideTiles: OutsideTilesType = OutsideTilesType.NONE,
     tileSize: TileDimension = TileDimension(512.dp, 512.dp),
     density: Density = Density(1F),
+    projectedBounds: ProjectedBounds = ProjectedBounds(
+        topLeft = ProjectedCoordinates(-180.0, 90.0),
+        bottomRight = ProjectedCoordinates(180.0, -90.0),
+    ),
 ): MapState {
     val mapProperties = object : MapProperties {
         override val boundMap = boundMap
         override val outsideTiles = outsideTiles
         override val zoomLevels = ZoomLevelRange(min = 0, max = 30)
-        override val coordinatesRange = object : CoordinatesRange {
-            override val latitude = Latitude(north = 90.0, south = -90.0)
-            override val longitude = Longitude(west = -180.0, east = 180.0)
-        }
+        override val projectedBounds = projectedBounds
         override val tileSize = tileSize
 
         override fun toProjectedCoordinates(coordinates: Coordinates) =
@@ -58,6 +58,65 @@ private fun mapState(
 }
 
 val MapReferenceUtilsTest by testSuite {
+    test("projectedBoundsMapCornersAndInteriorPointsInEitherAxisDirection") {
+        for ((left, right) in listOf(1000.0 to 3000.0, 3000.0 to 1000.0)) {
+            for ((top, bottom) in listOf(400.0 to 800.0, 800.0 to 400.0)) {
+                val bounds = ProjectedBounds(
+                    topLeft = ProjectedCoordinates(left, top),
+                    bottomRight = ProjectedCoordinates(right, bottom),
+                )
+                val mapState = mapState(
+                    tileSize = TileDimension(height = 256.dp, width = 512.dp),
+                    density = Density(2F),
+                    zoom = 3.5F,
+                    angle = Degrees(37.0),
+                    projectedBounds = bounds,
+                )
+                val coordinates = Coordinates(left + (right - left) / 4, top + (bottom - top) * 3 / 4)
+
+                context(mapState) {
+                    assertEquals(TilePoint.Zero, bounds.topLeft.toTilePoint())
+                    assertEquals(TilePoint(512.0, 256.0), bounds.bottomRight.toTilePoint())
+                    assertEquals(TilePoint(128.0, 192.0), coordinates.toTilePoint())
+                    assertEquals(coordinates, coordinates.toTilePoint().toCoordinates())
+                }
+            }
+        }
+    }
+
+    test("nonlinearProjectionUsesProjectedBoundsAndAllowsCoordinatesOutsideTheMap") {
+        val properties = object : MapProperties by mapState().mapProperties {
+            override val projectedBounds = ProjectedBounds(
+                topLeft = ProjectedCoordinates(1000.0, 400.0),
+                bottomRight = ProjectedCoordinates(3000.0, 100.0),
+            )
+
+            override fun toProjectedCoordinates(coordinates: Coordinates) =
+                ProjectedCoordinates(coordinates.x * 1000.0, coordinates.y * coordinates.y)
+
+            override fun toCoordinates(projectedCoordinates: ProjectedCoordinates) =
+                Coordinates(projectedCoordinates.x / 1000.0, sqrt(projectedCoordinates.y))
+        }
+        val state = MapState(
+            mapProperties = properties,
+            coroutineScope = CoroutineScope(EmptyCoroutineContext),
+        )
+
+        context(state) {
+            assertEquals(TilePoint.Zero, Coordinates(1.0, 20.0).toTilePoint())
+            assertEquals(TilePoint(512.0, 512.0), Coordinates(3.0, 10.0).toTilePoint())
+            val coordinates = Coordinates(2.0, 15.0)
+            val tilePoint = coordinates.toTilePoint()
+            assertEquals(256.0, tilePoint.x, 1e-10)
+            assertEquals(512.0 * 7 / 12, tilePoint.y, 1e-10)
+            val restored = tilePoint.toCoordinates()
+            assertEquals(coordinates.x, restored.x, 1e-10)
+            assertEquals(coordinates.y, restored.y, 1e-10)
+            assertEquals(TilePoint(768.0, -384.0), Coordinates(4.0, 25.0).toTilePoint())
+            assertEquals(Coordinates(4.0, 25.0), TilePoint(768.0, -384.0).toCoordinates())
+        }
+    }
+
     test("screenAndTileConversionsAreInverseWithZoomAndRotation") {
         val mapState = mapState(
             cameraPoint = TilePoint(170.0, 210.0),

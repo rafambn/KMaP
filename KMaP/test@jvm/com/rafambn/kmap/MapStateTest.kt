@@ -28,14 +28,12 @@ import com.rafambn.kmap.geometry.plane.ScreenOffset
 import com.rafambn.kmap.geometry.plane.TilePoint
 import com.rafambn.kmap.geometry.plane.toScreenOffset
 import com.rafambn.kmap.mapProperties.MapProperties
+import com.rafambn.kmap.mapProperties.ProjectedBounds
 import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.mapProperties.ZoomLevelRange
 import com.rafambn.kmap.mapProperties.border.BoundMapBorder
 import com.rafambn.kmap.mapProperties.border.MapBorderType
 import com.rafambn.kmap.mapProperties.border.OutsideTilesType
-import com.rafambn.kmap.mapProperties.coordinates.CoordinatesRange
-import com.rafambn.kmap.mapProperties.coordinates.Latitude
-import com.rafambn.kmap.mapProperties.coordinates.Longitude
 import com.rafambn.kmap.source.RasterTile
 import com.rafambn.kmap.source.TileResult
 import com.rafambn.kmap.source.TileSpecs
@@ -89,10 +87,10 @@ private fun mapProperties() = object : MapProperties {
     override val boundMap = BoundMapBorder(MapBorderType.BOUND, MapBorderType.BOUND)
     override val outsideTiles = OutsideTilesType.NONE
     override val zoomLevels = ZoomLevelRange(0, 30)
-    override val coordinatesRange = object : CoordinatesRange {
-        override val latitude = Latitude(north = 90.0, south = -90.0)
-        override val longitude = Longitude(west = -180.0, east = 180.0)
-    }
+    override val projectedBounds = ProjectedBounds(
+        topLeft = ProjectedCoordinates(-180.0, 90.0),
+        bottomRight = ProjectedCoordinates(180.0, -90.0),
+    )
     override val tileSize = TileDimension(512.dp, 512.dp)
 
     override fun toProjectedCoordinates(coordinates: Coordinates) =
