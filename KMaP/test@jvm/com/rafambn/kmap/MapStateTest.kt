@@ -136,17 +136,18 @@ val MapStateTest by testSuite {
             override val tileRepeatMode = TileRepeatMode.REPEAT
         }
         val state = mapState(mapProperties = properties)
+        val tileSpan = 512.0 / (1L shl 30)
         for (point in listOf(
             TilePoint(1024.0, 0.0), TilePoint(-1025.0, 0.0),
             TilePoint(0.0, 1024.0), TilePoint(0.0, -1025.0)
         )) {
             assertFailsWith<IllegalArgumentException> {
-                state.canvasKernel.resolveVisibleTiles(point, point, 30, properties)
+                state.canvasKernel.resolveVisibleTiles(point, point + TilePoint(tileSpan, tileSpan), 30, properties)
             }
         }
-        val lastColumn = 1024.0 - 512.0 / 1073741824.0
+        val lastColumn = 1024.0 - tileSpan
         state.canvasKernel.resolveVisibleTiles(
-            TilePoint(lastColumn, 0.0), TilePoint(lastColumn, 0.0), 30, properties,
+            TilePoint(lastColumn, 0.0), TilePoint(1024.0, tileSpan), 30, properties,
         )
     }
 
