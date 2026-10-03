@@ -14,7 +14,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.util.fastForEach
 import com.rafambn.kmap.MapState
 import com.rafambn.kmap.components.ViewPort
-import com.rafambn.kmap.components.getViewPort
 import com.rafambn.kmap.components.parameters.MarkerParameters
 import com.rafambn.kmap.components.parameters.PathParameters
 import com.rafambn.kmap.geometry.plane.*
@@ -69,13 +68,7 @@ internal fun measureComponent(
     val visibleItems = mutableListOf<MeasuredComponent>()
 
     if (markersCount > 0) {
-        val itemsThatCanClusterMap = mutableMapOf<Int, List<MeasuredComponent>>()
-        val measuredMarkers = mutableListOf<MeasuredComponent>()
-
-        for (index in 0 until markersCount) {
-            measuredMarkers.add(measuredItemProvider.getAndMeasureMarker(index))
-        }
-
+        val itemsThatCanClusterMap = mutableMapOf<Int, MutableList<MeasuredComponent>>()
         val mapViewPort = ViewPort(
             Rect(
                 Offset.Zero,
@@ -85,37 +78,30 @@ internal fun measureComponent(
                 )
             )
         )
-        measuredMarkers.forEach { measuredComponent ->
+        repeat(markersCount) { index ->
+            val measuredComponent = measuredItemProvider.getAndMeasureMarker(index)
             require(measuredComponent.parameters is MarkerParameters)
             measuredComponent.offset = context(mapState) {
                 measuredComponent.parameters.coordinates.toTilePoint().toNearestScreenOffset()
             }
-            measuredComponent.viewPort = getViewPort(
-                measuredComponent.parameters.drawPosition,
-                measuredComponent.maxWidth.toFloat(),
-                measuredComponent.maxHeight.toFloat(),
-                measuredComponent.offset.asOffset()
+            measuredComponent.viewPort = measuredComponent.markerViewPort(
+                mapState.cameraState.angleDegrees,
+                mapState.cameraState.zoom,
             )
             if (measuredComponent.parameters.zoomVisibilityRange.contains(mapState.cameraState.zoom) &&
+                !measuredComponent.viewPort.value.isEmpty &&
                 mapViewPort.overlaps(measuredComponent.viewPort)
             ) {
-                if (measuredComponent.parameters.clusterId != null) {
-                    val map = itemsThatCanClusterMap[measuredComponent.parameters.clusterId]
-                    map?.let {
-                        itemsThatCanClusterMap[measuredComponent.parameters.clusterId] = it + measuredComponent
-                    } ?: run {
-                        itemsThatCanClusterMap.put(measuredComponent.parameters.clusterId, listOf(measuredComponent))
-                    }
-                } else
+                val clusterId = measuredComponent.parameters.clusterId
+                if (clusterId != null) {
+                    itemsThatCanClusterMap.getOrPut(clusterId) { mutableListOf() }.add(measuredComponent)
+                } else {
                     visibleItems.add(measuredComponent)
+                }
             }
-            measuredComponent.parameters
         }
-        itemsThatCanClusterMap.forEach {
-            clusterComponents(it.value, measuredItemProvider, markersCount) { nonClusteredComponent, clusters ->
-                visibleItems.addAll(nonClusteredComponent)
-                visibleItems.addAll(clusters)
-            }
+        itemsThatCanClusterMap.values.forEach {
+            visibleItems.addAll(clusterComponents(it, measuredItemProvider))
         }
     }
     if (pathsCount > 0) {
@@ -161,44 +147,39 @@ internal fun measureComponent(
 private fun clusterComponents(
     measuredComponents: List<MeasuredComponent>,
     measuredItemProvider: MeasuredComponentProvider,
-    markersCount: Int,
-    result: (nonClusteredComponent: List<MeasuredComponent>, clusters: List<MeasuredComponent>) -> Unit
-) {
-    val visited = mutableSetOf<MeasuredComponent>()
+): List<MeasuredComponent> {
+    val remaining = measuredComponents.toMutableSet()
     val clusters = mutableListOf<MeasuredComponent>()
     val nonClustered = mutableListOf<MeasuredComponent>()
 
     for (measuredComponent in measuredComponents) {
-        if (measuredComponent !in visited) {
-            visited.add(measuredComponent)
-            val intersecting = measuredComponents.filter { it.viewPort.overlaps(measuredComponent.viewPort) && !visited.contains(it) }
-            if (intersecting.isNotEmpty())
-                expandCluster(measuredComponent, intersecting, clusters, visited, measuredItemProvider, markersCount)
-            else
-                nonClustered.add(measuredComponent)
+        if (!remaining.remove(measuredComponent)) continue
+
+        val queue = ArrayDeque<MeasuredComponent>()
+        queue.addLast(measuredComponent)
+        var size = 0
+        var offsetSum = Offset.Zero
+        while (queue.isNotEmpty()) {
+            val current = queue.removeFirst()
+            size++
+            offsetSum += current.viewPort.topLeft
+            val candidates = remaining.iterator()
+            while (candidates.hasNext()) {
+                val candidate = candidates.next()
+                if (current.viewPort.overlaps(candidate.viewPort)) {
+                    candidates.remove()
+                    queue.addLast(candidate)
+                }
+            }
+        }
+
+        if (size == 1) {
+            nonClustered.add(measuredComponent)
+        } else {
+            val cluster = measuredItemProvider.getAndMeasureCluster(measuredComponent.index)
+            cluster.offset = (offsetSum / size.toFloat()).asScreenOffset()
+            clusters.add(cluster)
         }
     }
-    result(nonClustered, clusters)
-}
-
-private fun expandCluster(
-    measuredComponent: MeasuredComponent,
-    intersecting: List<MeasuredComponent>,
-    clusters: MutableList<MeasuredComponent>,
-    visited: MutableSet<MeasuredComponent>,
-    measuredItemProvider: MeasuredComponentProvider,
-    markersCount: Int,
-) {
-    var size = 1
-    var avgOffset = measuredComponent.viewPort.topLeft
-    val queue = intersecting.toMutableList()
-    while (queue.isNotEmpty()) {
-        val current = queue.removeAt(0)
-        visited.add(current)
-        size++
-        avgOffset += current.viewPort.topLeft
-    }
-    val cluster = measuredItemProvider.getAndMeasureCluster(measuredComponent.index)
-    cluster.offset = (avgOffset / size.toFloat()).asScreenOffset()
-    clusters.add(cluster)
+    return nonClustered + clusters
 }

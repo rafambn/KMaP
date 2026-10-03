@@ -1,8 +1,12 @@
 package com.rafambn.kmap.components.internal
 
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.layout.Placeable
 import com.rafambn.kmap.components.DrawPosition
 import com.rafambn.kmap.components.ViewPort
+import com.rafambn.kmap.components.getViewPort
 import com.rafambn.kmap.components.parameters.*
 import com.rafambn.kmap.geometry.angle.Degrees
 import com.rafambn.kmap.geometry.angle.rotate
@@ -15,12 +19,38 @@ internal class MeasuredComponent(
     val placeables: List<Placeable>,
     val parameters: Parameters
 ) {
-    val maxWidth: Int = placeables.maxOf { placeable -> placeable.width }
-    val maxHeight: Int = placeables.maxOf { placeable -> placeable.height }
     var offset = ScreenOffset.Zero
     var viewPort = ViewPort.Zero
 
     private val placeablesCount: Int get() = placeables.size
+
+    fun markerViewPort(cameraAngle: Degrees, cameraZoom: Float): ViewPort {
+        require(parameters is MarkerParameters)
+        if (placeables.isEmpty()) return ViewPort.Zero
+
+        val rotation = if (parameters.rotateWithMap) cameraAngle + parameters.rotation else parameters.rotation
+        val scale = parameters.zoomToFix?.let { 2F.pow(cameraZoom - it) } ?: 1F
+        val transform = Matrix()
+        transform.translate(offset.x.toFloat(), offset.y.toFloat())
+        transform.rotateZ(rotation.toFloat())
+        transform.scale(scale, scale)
+
+        // Each root rotates and scales around its own draw anchor, just as in place().
+        val bounds = placeables.map { placeable ->
+            transform.map(getViewPort(
+                parameters.drawPosition,
+                placeable.width.toFloat(),
+                placeable.height.toFloat(),
+                Offset.Zero,
+            ).value)
+        }
+        return ViewPort(Rect(
+            bounds.minOf { it.left },
+            bounds.minOf { it.top },
+            bounds.maxOf { it.right },
+            bounds.maxOf { it.bottom },
+        ))
+    }
 
     fun place(
         scope: Placeable.PlacementScope,
