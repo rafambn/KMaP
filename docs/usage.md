@@ -5,6 +5,8 @@ Here is a basic implementation of KMaP using a raster tile source.
 You can find a demo app (including OpenStreetMap sources) in the [KMaP repo](https://github.com/rafambn/KMaP).
 
 ```kotlin
+import kotlin.math.log2
+
 val mapProperties = /* your MapProperties implementation */
 val tileSource = /* your TileSource<RasterTile> implementation */
 val mapState = rememberMapState(mapProperties = mapProperties)
@@ -17,12 +19,12 @@ KMaP(
             id = 1,
             tileSource = tileSource::getTile,
         ),
-        gestureWrapper = MapGestureWrapper(
-            onGesture = { centroid, pan, zoom, rotation ->
+        gestureCallbacks = MapGestureCallbacks(
+            onTransform = { centroid, panDelta, zoomFactor, rotationDelta ->
                 mapState.motionController.move {
-                    rotateByCentered(rotation, centroid)
-                    zoomByCentered(zoom, centroid)
-                    positionBy(pan)
+                    rotateByCentered(rotationDelta, centroid)
+                    zoomByCentered(log2(zoomFactor), centroid)
+                    positionBy(panDelta)
                 }
             },
         )
@@ -223,30 +225,60 @@ See [Mapbox vector style support](vector-style-support.md) for the style layers,
 
 With a tile source you can render any tiled map you want: OSM, custom servers, offline tiles, or device-generated tiles.
 
-You can pass a MapGestureWrapper to handle input; KMaP wires it into the pointer input scope:
+Pass `MapGestureCallbacks` through the canvas's `gestureCallbacks` parameter to handle input.
+Callbacks run synchronously in the pointer input detector and must update the camera explicitly.
+The detector observes input without consuming pointer changes, so other handlers can also receive it.
+
+Positions and pan deltas use local canvas pixels, positive right and down. Rotation deltas use
+degrees, positive clockwise. Both `onTransform` and `onTapSwipe` provide a multiplicative
+`zoomFactor`: `1f` means unchanged, `2f` doubles the scale, and `0.5f` halves it. Convert it to
+the camera's additive zoom levels with `kotlin.math.log2`. No platform-specific pinch divisor is needed.
+
+For `onTransform`, the centroid is the previous position of the pointers present in both events.
+Rotate and zoom around that position before applying `panDelta`. For `onTapSwipe`, the second
+press moves around the canvas center; its zoom factor is the ratio of current to previous distance
+from that center. A zero radius produces `1f`.
+
+Nullable handlers affect recognition. With no second-tap handlers, `onTap` fires on release.
+Registering `onDoubleTap`, `onTapLongPress`, or `onTapSwipe` can delay it until the double-tap
+timeout or movement beyond touch slop. A recognized second-tap gesture replaces the single tap.
+`onTapLongPress` means a tap followed by a held second press; `onTapSwipe` means a tap followed
+by a dragged second press. `onTwoFingerTap` reports the final released pointer's position.
+
+`onScroll` forwards Compose's vertical scroll delta, positive downward, without normalization.
+Its units depend on the platform and device; it is not a pixel pan delta. Horizontal scrolling is
+ignored. The demo retains a platform-specific `scrollScale` for wheel sensitivity.
 
 ```kotlin
-MapGestureWrapper(
+import kotlin.math.log2
+
+MapGestureCallbacks(
     onDoubleTap = { offset -> mapState.motionController.move { zoomByCentered(-1 / 3F, offset) } },
-    onTapSwipe = { zoomChange, rotationChange ->
+    onTapSwipe = { zoomFactor, rotationDelta ->
         mapState.motionController.move {
-            zoomBy(zoomChange / 120F)
-            rotateBy(rotationChange)
+            zoomBy(log2(zoomFactor))
+            rotateBy(rotationDelta)
         }
     },
-    onTwoFingersTap = { offset -> mapState.motionController.move { zoomByCentered(1 / 3F, offset) } },
-    onGesture = { centroid, pan, zoom, rotation ->
+    onTwoFingerTap = { offset -> mapState.motionController.move { zoomByCentered(1 / 3F, offset) } },
+    onTransform = { centroid, panDelta, zoomFactor, rotationDelta ->
         mapState.motionController.move {
-            rotateByCentered(rotation, centroid)
-            zoomByCentered(zoom, centroid)
-            positionBy(pan)
+            rotateByCentered(rotationDelta, centroid)
+            zoomByCentered(log2(zoomFactor), centroid)
+            positionBy(panDelta)
         }
     },
-    onScroll = { mouseOffset, scrollAmount ->
-        mapState.motionController.move { zoomByCentered(scrollAmount, mouseOffset) }
+    onScroll = { position, scrollDeltaY ->
+        mapState.motionController.move { zoomByCentered(scrollDeltaY / scrollScale, position) }
     },
 )
 ```
+
+When migrating existing code, rename `MapGestureWrapper` to `MapGestureCallbacks`, the canvas
+argument `gestureWrapper` to `gestureCallbacks`, `onGesture` to `onTransform`, and
+`onTwoFingersTap` to `onTwoFingerTap`. Replace pixel zoom divisors with `log2(zoomFactor)` for
+both transform and tap-swipe handlers. `onTapSwipe`, `onTapLongPress`, and `PathGestureWrapper`
+keep their names. `MapGestureCallbacks` remains a data class, so configurations can use `copy()`.
 
 See the [Slippy map](https://wiki.openstreetmap.org/wiki/Slippy_map) docs to better understand how it works.
 

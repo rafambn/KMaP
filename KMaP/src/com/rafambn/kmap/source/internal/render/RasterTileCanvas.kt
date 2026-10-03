@@ -15,7 +15,7 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import com.rafambn.kmap.geometry.plane.CanvasDrawReference
-import com.rafambn.kmap.gesture.MapGestureWrapper
+import com.rafambn.kmap.gesture.MapGestureCallbacks
 import com.rafambn.kmap.gesture.internal.mapGestures
 import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.source.RasterTile
@@ -26,7 +26,7 @@ import kotlin.math.pow
 
 @Composable
 fun RasterTileCanvas(
-    gestureWrapper: MapGestureWrapper?,
+    gestureCallbacks: MapGestureCallbacks?,
     magnifierScale: () -> Float,
     positionOffset: () -> CanvasDrawReference,
     tileSize: () -> TileDimension,
@@ -35,7 +35,7 @@ fun RasterTileCanvas(
 ) {
     Layout(
         modifier = Modifier
-            .mapGestures(gestureWrapper)
+            .mapGestures(gestureCallbacks)
             .drawBehind {
                 val rotation = rotationDegrees()
                 val magnifierScale = magnifierScale()

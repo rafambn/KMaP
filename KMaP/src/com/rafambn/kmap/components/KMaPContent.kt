@@ -13,7 +13,7 @@ import com.rafambn.kmap.MapState
 import com.rafambn.kmap.components.parameters.*
 import com.rafambn.kmap.geometry.plane.ProjectedCoordinates
 import com.rafambn.kmap.geometry.plane.ScreenOffset
-import com.rafambn.kmap.gesture.MapGestureWrapper
+import com.rafambn.kmap.gesture.MapGestureCallbacks
 import com.rafambn.kmap.gesture.PathGestureWrapper
 import com.rafambn.kmap.gesture.internal.detectPathGestures
 import com.rafambn.kmap.gesture.internal.sharedPointerInput
@@ -41,12 +41,12 @@ class KMaPContent(
 
     fun rasterCanvas(
         parameters: RasterCanvasParameters,
-        gestureWrapper: MapGestureWrapper? = null
+        gestureCallbacks: MapGestureCallbacks? = null
     ) {
         canvas.add(
             Canvas(parameters) {
                 RasterTileCanvas(
-                    gestureWrapper = gestureWrapper,
+                    gestureCallbacks = gestureCallbacks,
                     activeTiles = { mapState.canvasKernel.getActiveTiles(parameters.id) },
                     magnifierScale = mapState.drawMagScale,
                     positionOffset = mapState.drawReference,
@@ -59,12 +59,12 @@ class KMaPContent(
 
     fun vectorCanvas(
         parameters: VectorCanvasParameters,
-        gestureWrapper: MapGestureWrapper? = null
+        gestureCallbacks: MapGestureCallbacks? = null
     ) {
         canvas.add(
             Canvas(parameters) {
                 VectorTileCanvas(
-                    gestureWrapper = gestureWrapper,
+                    gestureCallbacks = gestureCallbacks,
                     activeTiles = { mapState.canvasKernel.getActiveTiles(parameters.id) },
                     magnifierScale = mapState.drawMagScale,
                     positionOffset = mapState.drawReference,

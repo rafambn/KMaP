@@ -4,25 +4,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import com.rafambn.kmap.geometry.plane.asScreenOffset
-import com.rafambn.kmap.gesture.MapGestureWrapper
+import com.rafambn.kmap.gesture.MapGestureCallbacks
 
-internal fun Modifier.mapGestures(gestureWrapper: MapGestureWrapper?): Modifier = this.then(
-    gestureWrapper?.let {
+internal fun Modifier.mapGestures(gestureCallbacks: MapGestureCallbacks?): Modifier = this.then(
+    gestureCallbacks?.let {
         Modifier.sharedPointerInput {
             detectMapGestures(
-                onTap = gestureWrapper.onTap,
-                onDoubleTap = gestureWrapper.onDoubleTap,
-                onLongPress = gestureWrapper.onLongPress,
-                onTapLongPress = gestureWrapper.onTapLongPress,
-                onTapSwipe = gestureWrapper.onTapSwipe,
-                onGesture = gestureWrapper.onGesture,
-                onTwoFingersTap = gestureWrapper.onTwoFingersTap,
-                onHover = gestureWrapper.onHover,
+                onTap = gestureCallbacks.onTap,
+                onDoubleTap = gestureCallbacks.onDoubleTap,
+                onLongPress = gestureCallbacks.onLongPress,
+                onTapLongPress = gestureCallbacks.onTapLongPress,
+                onTapSwipe = gestureCallbacks.onTapSwipe,
+                onTransform = gestureCallbacks.onTransform,
+                onTwoFingerTap = gestureCallbacks.onTwoFingerTap,
+                onHover = gestureCallbacks.onHover,
             )
         }
     } ?: Modifier
 ).then(
-    gestureWrapper?.onScroll?.let {
+    gestureCallbacks?.onScroll?.let {
         Modifier.pointerInput(Unit) {
             awaitPointerEventScope {
                 while (true) {
@@ -30,7 +30,7 @@ internal fun Modifier.mapGestures(gestureWrapper: MapGestureWrapper?): Modifier 
                     if (pointerEvent.type == PointerEventType.Scroll) {
                         pointerEvent.changes.forEach {
                             if (it.scrollDelta.y != 0F)
-                                gestureWrapper.onScroll.invoke(it.position.asScreenOffset(), it.scrollDelta.y)
+                                gestureCallbacks.onScroll.invoke(it.position.asScreenOffset(), it.scrollDelta.y)
                         }
                     }
                 }

@@ -30,7 +30,7 @@ fun SimpleMapScreen(
         ) {
             rasterCanvas(
                 parameters = RasterCanvasParameters(id = 1, tileSource = SimpleMapTileSource()::getTile),
-                gestureWrapper = getGestureDetector(mapState.motionController)
+                gestureCallbacks = getGestureDetector(mapState.motionController)
             )
         }
         Image(

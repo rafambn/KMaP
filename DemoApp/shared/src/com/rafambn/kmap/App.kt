@@ -15,9 +15,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.rafambn.kmap.camera.MotionController
 import com.rafambn.kmap.geometry.angle.Degrees
-import com.rafambn.kmap.gesture.MapGestureWrapper
+import com.rafambn.kmap.gesture.MapGestureCallbacks
 import com.rafambn.kmap.screens.*
 import com.rafambn.kmap.theme.AppTheme
+import kotlin.math.log2
 
 @Composable
 fun App() = AppTheme {
@@ -104,23 +105,21 @@ fun App() = AppTheme {
 
 expect val scrollScale: Int
 
-expect val gestureScale: Int
-
-fun getGestureDetector(motionController: MotionController): MapGestureWrapper = MapGestureWrapper(
+fun getGestureDetector(motionController: MotionController): MapGestureCallbacks = MapGestureCallbacks(
     onDoubleTap = { offset -> motionController.move { zoomByCentered(-1 / 3F, offset) } },
-    onTapSwipe = { zoomChange, rotationChange ->
+    onTapSwipe = { zoomFactor, rotationDelta ->
         motionController.move {
-            zoomBy(zoomChange / 120)
-            rotateBy(rotationChange)
+            zoomBy(log2(zoomFactor))
+            rotateBy(rotationDelta)
         }
     },
-    onTwoFingersTap = { offset -> motionController.move { zoomByCentered(1 / 3F, offset) } },
-    onGesture = { centroid, pan, zoom, rotation ->
+    onTwoFingerTap = { offset -> motionController.move { zoomByCentered(1 / 3F, offset) } },
+    onTransform = { centroid, panDelta, zoomFactor, rotationDelta ->
         motionController.move {
-            rotateByCentered(rotation, centroid)
-            zoomByCentered(zoom / gestureScale, centroid)
-            positionBy(pan)
+            rotateByCentered(rotationDelta, centroid)
+            zoomByCentered(log2(zoomFactor), centroid)
+            positionBy(panDelta)
         }
     },
-    onScroll = { mouseOffset, scrollAmount -> motionController.move { zoomByCentered(scrollAmount / scrollScale, mouseOffset) } },
+    onScroll = { position, scrollDeltaY -> motionController.move { zoomByCentered(scrollDeltaY / scrollScale, position) } },
 )

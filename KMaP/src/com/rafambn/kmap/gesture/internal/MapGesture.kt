@@ -10,21 +10,28 @@ import com.rafambn.kmap.geometry.plane.asDifferentialScreenOffset
 import com.rafambn.kmap.geometry.plane.asScreenOffset
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
+import kotlin.math.PI
+import kotlin.math.abs
 
 suspend fun PointerInputScope.detectMapGestures(
     // common use
-    onTap: ((screenOffset: ScreenOffset) -> Unit)? = null,
-    onDoubleTap: ((screenOffset: ScreenOffset) -> Unit)? = null,
-    onLongPress: ((screenOffset: ScreenOffset) -> Unit)? = null,
-    onTapLongPress: ((screenOffset: ScreenOffset) -> Unit)? = null,
-    onTapSwipe: ((zoomChange: Float, rotationChange: Degrees) -> Unit)? = null,
-    onGesture: ((screenOffset: ScreenOffset, screenOffsetDiff: DifferentialScreenOffset, zoom: Float, rotation: Degrees) -> Unit)? = null,
+    onTap: ((position: ScreenOffset) -> Unit)? = null,
+    onDoubleTap: ((position: ScreenOffset) -> Unit)? = null,
+    onLongPress: ((position: ScreenOffset) -> Unit)? = null,
+    onTapLongPress: ((position: ScreenOffset) -> Unit)? = null,
+    onTapSwipe: ((zoomFactor: Float, rotationDelta: Degrees) -> Unit)? = null,
+    onTransform: ((
+        centroid: ScreenOffset,
+        panDelta: DifferentialScreenOffset,
+        zoomFactor: Float,
+        rotationDelta: Degrees,
+    ) -> Unit)? = null,
 
     // mobile use
-    onTwoFingersTap: ((screenOffset: ScreenOffset) -> Unit)? = null,
+    onTwoFingerTap: ((position: ScreenOffset) -> Unit)? = null,
 
     // jvm/web use
-    onHover: ((screenOffset: ScreenOffset) -> Unit)? = null,
+    onHover: ((position: ScreenOffset) -> Unit)? = null,
 ) = coroutineScope {
     awaitEachGesture {
         val longPressTimeout = viewConfiguration.longPressTimeoutMillis
@@ -40,7 +47,7 @@ suspend fun PointerInputScope.detectMapGestures(
         } while (
             event.type != PointerEventType.Scroll &&
             !(event.type == PointerEventType.Press && (onTap != null || onDoubleTap != null || onLongPress != null ||
-                    onTapLongPress != null || onTapSwipe != null || onTwoFingersTap != null || onGesture != null)) &&
+                    onTapLongPress != null || onTapSwipe != null || onTwoFingerTap != null || onTransform != null)) &&
             !(event.type == PointerEventType.Move && onHover != null)
         )
 
@@ -70,7 +77,7 @@ suspend fun PointerInputScope.detectMapGestures(
                         when (event.type) {
                             PointerEventType.Press -> {
                                 if (onTap != null || onDoubleTap != null || onLongPress != null || onTapLongPress != null ||
-                                    onTapSwipe != null || onTwoFingersTap != null || onGesture != null
+                                    onTapSwipe != null || onTwoFingerTap != null || onTransform != null
                                 ) {
                                     mapGestureState = MapGestureState.WAITING_UP
                                     break
@@ -98,12 +105,12 @@ suspend fun PointerInputScope.detectMapGestures(
 
                             when (event.type) {
                                 PointerEventType.Press -> {
-                                    if (onTwoFingersTap == null && onGesture == null) {
+                                    if (onTwoFingerTap == null && onTransform == null) {
                                         continue
                                     }
 
                                     mapGestureState =
-                                        if (onTwoFingersTap != null) MapGestureState.WAITING_UP_AFTER_TWO_PRESS else MapGestureState.GESTURE
+                                        if (onTwoFingerTap != null) MapGestureState.WAITING_UP_AFTER_TWO_PRESS else MapGestureState.GESTURE
                                     break
                                 }
 
@@ -122,7 +129,7 @@ suspend fun PointerInputScope.detectMapGestures(
 
                                 PointerEventType.Move -> {
                                     panSlop += event.calculatePan()
-                                    if (onGesture != null && panSlop.getDistance() > touchSlop) {
+                                    if (onTransform != null && panSlop.getDistance() > touchSlop) {
                                         mapGestureState = MapGestureState.GESTURE
                                         break
                                     }
@@ -208,16 +215,20 @@ suspend fun PointerInputScope.detectMapGestures(
                             }
 
                             PointerEventType.Move -> {
-                                val screenSize = size / 2
                                 val pointerInputEvent = event.changes.first { it.pressed }
 
-                                val screenCenter = Offset(screenSize.width.toFloat(), screenSize.height.toFloat())
+                                val screenCenter = Offset(size.width / 2f, size.height / 2f)
                                 val currentCentroid = pointerInputEvent.position - screenCenter
                                 val previousCentroid = pointerInputEvent.previousPosition - screenCenter
+                                val currentRadius = currentCentroid.getDistance()
+                                val previousRadius = previousCentroid.getDistance()
+                                val zoomFactor = if (currentRadius == 0f || previousRadius == 0f) 1f
+                                    else currentRadius / previousRadius
+                                val rotationDelta = previousCentroid.angle() - currentCentroid.angle()
 
                                 onTapSwipe?.invoke(
-                                    currentCentroid.getDistance() - previousCentroid.getDistance(),
-                                    previousCentroid.angle() - currentCentroid.angle()
+                                    zoomFactor,
+                                    Degrees((rotationDelta.value + 180.0).mod(360.0) - 180.0),
                                 )
                             }
                         }
@@ -226,6 +237,8 @@ suspend fun PointerInputScope.detectMapGestures(
 
                 MapGestureState.WAITING_UP_AFTER_TWO_PRESS -> {
                     var timePassed = 0L
+                    var zoomSlop = 1f
+                    var rotationSlop = 0f
                     panSlop = Offset.Zero
                     do {
                         try {
@@ -235,15 +248,20 @@ suspend fun PointerInputScope.detectMapGestures(
                             when (event.type) {
                                 PointerEventType.Release -> {
                                     if (event.changes.size == 1 && !event.changes[0].pressed) {
-                                        onTwoFingersTap?.invoke(event.changes[0].position.asScreenOffset())
+                                        onTwoFingerTap?.invoke(event.changes[0].position.asScreenOffset())
                                         return@awaitEachGesture
                                     }
                                 }
 
                                 PointerEventType.Move -> {
-                                    if (onGesture != null) {
+                                    if (onTransform != null) {
                                         panSlop += event.calculatePan()
-                                        if (panSlop.getDistance() > touchSlop) {
+                                        zoomSlop *= event.calculateZoom()
+                                        rotationSlop += event.calculateRotation()
+                                        val radius = event.calculateCentroidSize(useCurrent = false)
+                                        val zoomMotion = abs(1f - zoomSlop) * radius
+                                        val rotationMotion = abs(rotationSlop) * PI / 180.0 * radius
+                                        if (panSlop.getDistance() > touchSlop || zoomMotion > touchSlop || rotationMotion > touchSlop) {
                                             mapGestureState = MapGestureState.GESTURE
                                             break
                                         }
@@ -251,7 +269,7 @@ suspend fun PointerInputScope.detectMapGestures(
                                 }
                             }
                         } catch (_: PointerEventTimeoutCancellationException) {
-                            if (onGesture != null) {
+                            if (onTransform != null) {
                                 mapGestureState = MapGestureState.GESTURE
                                 break
                             } else {
@@ -273,22 +291,16 @@ suspend fun PointerInputScope.detectMapGestures(
                             }
 
                             PointerEventType.Move -> {
-                                val eventZoomCentroid = event.calculateCentroidSize()
-                                val previousEventZoomCentroid = event.calculateCentroidSize(false)
-                                var zoomChange = eventZoomCentroid - previousEventZoomCentroid
-                                if (eventZoomCentroid == 0f || previousEventZoomCentroid == 0f)
-                                    zoomChange = 0.0F
-
-                                val rotationChange = Degrees(event.calculateRotation().toDouble())
-
-                                val panChange = event.calculatePan()
-                                val centroid = event.calculateCentroid()
+                                val zoomFactor = event.calculateZoom()
+                                val rotationDelta = Degrees(event.calculateRotation().toDouble())
+                                val panDelta = event.calculatePan()
+                                val centroid = event.calculateCentroid(useCurrent = false)
                                 if (centroid != Offset.Unspecified) {
-                                    onGesture?.invoke(
+                                    onTransform?.invoke(
                                         centroid.asScreenOffset(),
-                                        panChange.asDifferentialScreenOffset(),
-                                        zoomChange,
-                                        rotationChange
+                                        panDelta.asDifferentialScreenOffset(),
+                                        zoomFactor,
+                                        rotationDelta,
                                     )
                                 }
                             }

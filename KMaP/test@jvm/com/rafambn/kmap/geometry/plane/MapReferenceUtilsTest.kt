@@ -16,6 +16,7 @@ import com.rafambn.kmap.mapProperties.coordinates.Latitude
 import com.rafambn.kmap.mapProperties.coordinates.Longitude
 import de.infix.testBalloon.framework.core.testSuite
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.math.log2
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlinx.coroutines.CoroutineScope
@@ -58,6 +59,39 @@ private fun mapState(
 }
 
 val MapReferenceUtilsTest by testSuite {
+    test("gesture scale factors preserve the pivot through zoom rotation and pan") {
+        for (density in listOf(1f, 3f)) {
+            for (factor in listOf(1f, 2f, 0.5f)) {
+                val state = mapState(
+                    viewportSize = ScreenOffset(800.0, 600.0),
+                    zoom = 4f,
+                    angle = Degrees(37.0),
+                    density = Density(density),
+                )
+                val centroid = ScreenOffset(350.0, 250.0)
+                val anchor = context(state) { centroid.toTilePoint() }
+                val panDelta = DifferentialScreenOffset(10.0, 20.0)
+
+                state.motionController.move {
+                    rotateByCentered(Degrees(25.0), centroid)
+                    zoomByCentered(log2(factor), centroid)
+                    positionBy(panDelta)
+                }
+
+                val movedAnchor = context(state) { anchor.toScreenOffset() }
+                assertEquals(360.0, movedAnchor.x, 0.000001)
+                assertEquals(270.0, movedAnchor.y, 0.000001)
+                val expectedZoom = when (factor) {
+                    2f -> 5f
+                    0.5f -> 3f
+                    else -> 4f
+                }
+                assertEquals(expectedZoom, state.cameraState.zoom)
+                assertEquals(Degrees(62.0), state.cameraState.angleDegrees)
+            }
+        }
+    }
+
     test("screenAndTileConversionsAreInverseWithZoomAndRotation") {
         val mapState = mapState(
             cameraPoint = TilePoint(170.0, 210.0),

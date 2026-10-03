@@ -17,7 +17,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.*
 import com.rafambn.kmap.geometry.plane.CanvasDrawReference
-import com.rafambn.kmap.gesture.MapGestureWrapper
+import com.rafambn.kmap.gesture.MapGestureCallbacks
 import com.rafambn.kmap.gesture.internal.mapGestures
 import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.mvttile.OptimizedGeometry
@@ -62,7 +62,7 @@ private fun Canvas.drawSpriteImage(image: ImageBitmap, offset: IntOffset, size: 
 
 @Composable
 fun VectorTileCanvas(
-    gestureWrapper: MapGestureWrapper?,
+    gestureCallbacks: MapGestureCallbacks?,
     magnifierScale: () -> Float,
     positionOffset: () -> CanvasDrawReference,
     tileSize: () -> TileDimension,
@@ -75,7 +75,7 @@ fun VectorTileCanvas(
     val density = LocalDensity.current
     Layout(
         modifier = Modifier
-            .mapGestures(gestureWrapper)
+            .mapGestures(gestureCallbacks)
             .drawBehind {
                 val rotation = rotationDegrees()
                 val magnifierScale = magnifierScale()

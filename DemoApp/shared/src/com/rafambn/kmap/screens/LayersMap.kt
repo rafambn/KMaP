@@ -38,7 +38,7 @@ fun LayersScreen(
         ) {
             rasterCanvas(
                 parameters = RasterCanvasParameters(id = 1, tileSource = SimpleMapTileSource()::getTile),
-                gestureWrapper = getGestureDetector(mapState.motionController)
+                gestureCallbacks = getGestureDetector(mapState.motionController)
             )
             rasterCanvas(
                 parameters = RasterCanvasParameters(id = 2, tileSource = LayerMapTileSource()::getTile, alpha = sliderPosition),

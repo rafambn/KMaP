@@ -37,6 +37,8 @@ hide: toc
 With KMaP, you implement your map logic once. Provide a `MapProperties` and a `TileSource` and use it across targets:
 
 ```kotlin
+import kotlin.math.log2
+
 val mapProperties = /* your MapProperties implementation */
 val tileSource = /* your TileSource<RasterTile> implementation */
 val mapState = rememberMapState(mapProperties = mapProperties)
@@ -50,12 +52,12 @@ KMaP(
             id = 1,
             tileSource = tileSource::getTile,
         ),
-        gestureWrapper = MapGestureWrapper(
-            onGesture = { centroid, pan, zoom, rotation ->
+        gestureCallbacks = MapGestureCallbacks(
+            onTransform = { centroid, panDelta, zoomFactor, rotationDelta ->
                 mapState.motionController.move {
-                    rotateByCentered(rotation, centroid)
-                    zoomByCentered(zoom, centroid)
-                    positionBy(pan)
+                    rotateByCentered(rotationDelta, centroid)
+                    zoomByCentered(log2(zoomFactor), centroid)
+                    positionBy(panDelta)
                 }
             },
         )

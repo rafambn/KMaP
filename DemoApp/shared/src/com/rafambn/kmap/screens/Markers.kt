@@ -50,7 +50,7 @@ fun MarkersScreen(
         ) {
             rasterCanvas(
                 parameters = RasterCanvasParameters(id = 1, tileSource = SimpleMapTileSource()::getTile),
-                gestureWrapper = getGestureDetector(mapState.motionController)
+                gestureCallbacks = getGestureDetector(mapState.motionController)
             )
             marker(
                 marker = MarkerParameters(

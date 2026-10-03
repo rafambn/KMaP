@@ -39,7 +39,7 @@ fun ViewmodelScreen(
         ) {
             rasterCanvas(
                 parameters = RasterCanvasParameters(id = 1, tileSource = SimpleMapTileSource()::getTile),
-                gestureWrapper = getGestureDetector(viewmodel.mapState.motionController)
+                gestureCallbacks = getGestureDetector(viewmodel.mapState.motionController)
             )
         }
         Image(

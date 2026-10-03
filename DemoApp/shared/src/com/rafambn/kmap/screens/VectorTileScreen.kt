@@ -57,7 +57,7 @@ fun VectorTileScreen(
             ) {
                 vectorCanvas(
                     parameters = VectorCanvasParameters(id = 1, tileSource = VectorTileSource()::getTile, style = style),
-                    gestureWrapper = getGestureDetector(mapState.motionController)
+                    gestureCallbacks = getGestureDetector(mapState.motionController)
                 )
             }
             Image(
