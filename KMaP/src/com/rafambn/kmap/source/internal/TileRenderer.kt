@@ -3,12 +3,15 @@ package com.rafambn.kmap.source.internal
 import com.rafambn.kmap.source.Tile
 import com.rafambn.kmap.source.TileResult
 import com.rafambn.kmap.source.TileSpecs
-import com.rafambn.kmap.utils.loopInZoom
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.selects.select
 
+/**
+ * Loads and processes source coordinates already normalized by [CanvasEngine].
+ * The engine owns repeated display copies; this renderer tracks only in-flight source tiles.
+ */
 class TileRenderer<T : Tile, R : Tile>(
     coroutineScope: CoroutineScope,
     private val getTile: suspend (zoom: Int, row: Int, column: Int) -> TileResult<T>,
@@ -20,56 +23,26 @@ class TileRenderer<T : Tile, R : Tile>(
 
     init {
         coroutineScope.launch(Dispatchers.Default + SupervisorJob(coroutineScope.coroutineContext[Job])) {
-            val specsBeingProcessed = mutableListOf<TileSpecs>()
-            val tilesBeingProcessed = mutableListOf<TileSpecs>()
+            val tilesBeingProcessed = mutableSetOf<TileSpecs>()
 
             while (isActive) {
                 select {
                     tilesToProcessChannel.onReceive { tilesToProcess ->
                         tilesToProcess.forEach { specs ->
-                            val loopedSpecs = TileSpecs(
-                                specs.zoom,
-                                specs.row.loopInZoom(specs.zoom),
-                                specs.col.loopInZoom(specs.zoom)
-                            )
-                            if (!specsBeingProcessed.contains(specs)) {
-                                specsBeingProcessed.add(specs)
-                                if (!tilesBeingProcessed.contains(loopedSpecs)) {
-                                    tilesBeingProcessed.add(loopedSpecs)
-                                    worker(loopedSpecs, workerResultChannel)
-                                }
+                            if (tilesBeingProcessed.add(specs)) {
+                                worker(specs, workerResultChannel)
                             }
                         }
                     }
                     workerResultChannel.onReceive { tileResult ->
-                        when (tileResult) {
+                        val finishedSpecs = when (tileResult) {
                             is TileResult.Success -> {
-                                val finishedLoopedSpecs = TileSpecs(tileResult.tile.zoom, tileResult.tile.row, tileResult.tile.col)
                                 tilesProcessedChannel.send(tileResult.tile)
-
-                                val originalSpecsToRemove = specsBeingProcessed.filter {
-                                    TileSpecs(
-                                        it.zoom,
-                                        it.row.loopInZoom(it.zoom),
-                                        it.col.loopInZoom(it.zoom)
-                                    ) == finishedLoopedSpecs
-                                }
-
-                                tilesBeingProcessed.remove(finishedLoopedSpecs)
-                                specsBeingProcessed.removeAll(originalSpecsToRemove)
+                                tileResult.tile
                             }
-
-                            is TileResult.Failure -> {
-                                tilesBeingProcessed.remove(tileResult.specs)
-                                specsBeingProcessed.removeAll {
-                                    TileSpecs(
-                                        it.zoom,
-                                        it.row.loopInZoom(it.zoom),
-                                        it.col.loopInZoom(it.zoom)
-                                    ) == tileResult.specs
-                                }
-                            }
+                            is TileResult.Failure -> tileResult.specs
                         }
+                        tilesBeingProcessed.remove(TileSpecs(finishedSpecs.zoom, finishedSpecs.row, finishedSpecs.col))
                     }
                 }
             }

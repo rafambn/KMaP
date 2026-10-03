@@ -66,7 +66,8 @@ abstract class CanvasEngine<T : Tile>(
         val activeTilesMap = activeTiles.tiles.associateBy { TileSpecs(it.zoom, it.row, it.col) }
         val cachedTilesMap = cachedTiles.associateBy { TileSpecs(it.zoom, it.row, it.col) }
         val newFrontLayer = mutableListOf<Tile>()
-        val tilesToRender = mutableListOf<TileSpecs>()
+        val missingTiles = mutableListOf<TileSpecs>()
+        val tilesToRender = mutableSetOf<TileSpecs>()
 
         visibleTiles.forEach { tileSpecs ->
             activeTilesMap[tileSpecs]?.let {
@@ -81,7 +82,9 @@ abstract class CanvasEngine<T : Tile>(
                     val newTile = cachedTile.withSpecs(tileSpecs) as T
                     newFrontLayer.add(newTile)
                 } ?: run {
-                    tilesToRender.add(tileSpecs)
+                    // Fallbacks use display coordinates; the renderer only receives source coordinates.
+                    missingTiles.add(tileSpecs)
+                    tilesToRender.add(normalized)
                 }
             }
         }
@@ -98,7 +101,7 @@ abstract class CanvasEngine<T : Tile>(
         val parentTiles = mutableSetOf<Tile>()
         val childTiles = mutableSetOf<Tile>()
 
-        for (tileToRender in tilesToRender) {
+        for (tileToRender in missingTiles) {
             for (availableTile in allAvailableTiles) {
                 if (availableTile.isParentOf(tileToRender)) {
                     parentTiles.add(availableTile)
@@ -118,6 +121,6 @@ abstract class CanvasEngine<T : Tile>(
 
         activeTiles = ActiveTiles(tiles = allTiles.sortedBy { it.zoom }, currentZoom = zoomLevel)
 
-        return tilesToRender
+        return tilesToRender.toList()
     }
 }

@@ -6,10 +6,12 @@ import com.rafambn.kmap.source.RasterTile
 import com.rafambn.kmap.source.TileResult
 import com.rafambn.kmap.source.TileSpecs
 import de.infix.testBalloon.framework.core.testSuite
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -185,6 +187,114 @@ val CanvasEngineTest by testSuite {
                 engine.activeTiles,
             )
             assertEquals(emptyList(), renderer.tilesToProcessChannel.tryReceive().getOrThrow())
+        }
+    }
+
+    for ((zoom, visible, expectedRequests) in listOf(
+        Triple(
+            0,
+            listOf(TileSpecs(0, -1, 1), TileSpecs(0, 0, 0), TileSpecs(0, Int.MIN_VALUE, Int.MAX_VALUE)),
+            listOf(TileSpecs(0, 0, 0)),
+        ),
+        Triple(
+            2,
+            listOf(TileSpecs(2, 4, -1), TileSpecs(2, -4, 7), TileSpecs(2, -1, 4), TileSpecs(2, 3, 0)),
+            listOf(TileSpecs(2, 0, 3), TileSpecs(2, 3, 0)),
+        ),
+        Triple(
+            30,
+            listOf(
+                TileSpecs(30, -1, 1073741824), TileSpecs(30, 1073741823, 0),
+                TileSpecs(30, Int.MIN_VALUE, Int.MAX_VALUE), TileSpecs(30, 0, 1073741823),
+            ),
+            listOf(TileSpecs(30, 1073741823, 0), TileSpecs(30, 0, 1073741823)),
+        ),
+    )) {
+        test("the engine requests each normalized tile once and restores every display copy at zoom $zoom") {
+            testEngine { engine, renderer, scheduler ->
+                engine.renderTiles(visible, zoom)
+                scheduler.runCurrent()
+
+                assertEquals(expectedRequests, renderer.tilesToProcessChannel.tryReceive().getOrThrow())
+                assertTrue(renderer.tilesToProcessChannel.tryReceive().isFailure)
+                for (specs in expectedRequests) {
+                    renderer.tilesProcessedChannel.trySend(RasterTile(specs.zoom, specs.row, specs.col, null)).getOrThrow()
+                }
+                scheduler.runCurrent()
+
+                assertEquals(
+                    ActiveTiles(currentZoom = zoom, tiles = visible.map { RasterTile(it.zoom, it.row, it.col, null) }),
+                    engine.activeTiles,
+                )
+            }
+        }
+    }
+
+    test("repeated parent and child fallbacks keep their display coordinates") {
+        testEngine(maxCacheTiles = 1) { engine, renderer, scheduler ->
+            val parent = TileSpecs(1, -1, 2)
+            val child = TileSpecs(2, -1, 5)
+            val parentTile = RasterTile(1, 1, 0, null)
+            val childTile = RasterTile(2, 3, 1, null)
+            engine.renderTiles(listOf(parent), 1)
+            scheduler.runCurrent()
+            assertEquals(listOf(parentTile.specs()), renderer.tilesToProcessChannel.tryReceive().getOrThrow())
+            renderer.tilesProcessedChannel.trySend(parentTile).getOrThrow()
+            scheduler.runCurrent()
+
+            engine.renderTiles(listOf(child), 2)
+            scheduler.runCurrent()
+            assertEquals(ActiveTiles(currentZoom = 2, tiles = listOf(parentTile.withSpecs(parent))), engine.activeTiles)
+            assertEquals(listOf(childTile.specs()), renderer.tilesToProcessChannel.tryReceive().getOrThrow())
+
+            renderer.tilesProcessedChannel.trySend(childTile).getOrThrow()
+            scheduler.runCurrent()
+            assertEquals(ActiveTiles(currentZoom = 2, tiles = listOf(childTile.withSpecs(child))), engine.activeTiles)
+
+            engine.renderTiles(listOf(parent), 1)
+            scheduler.runCurrent()
+            assertEquals(ActiveTiles(currentZoom = 1, tiles = listOf(childTile.withSpecs(child))), engine.activeTiles)
+            assertEquals(listOf(parentTile.specs()), renderer.tilesToProcessChannel.tryReceive().getOrThrow())
+
+            renderer.tilesProcessedChannel.trySend(parentTile).getOrThrow()
+            scheduler.runCurrent()
+            assertEquals(ActiveTiles(currentZoom = 1, tiles = listOf(parentTile.withSpecs(parent))), engine.activeTiles)
+        }
+    }
+
+    test("an in-flight source tile serves the latest repeated copies after a viewport change") {
+        withContext(Dispatchers.Default) {
+            withTimeout(5_000) {
+                val parent = Job(coroutineContext[Job])
+                val requests = Channel<TileSpecs>(Channel.UNLIMITED)
+                val finishTile = CompletableDeferred<Unit>()
+                val engine = RasterCanvasEngine(
+                    maxCacheTiles = 20,
+                    getTile = { zoom, row, col ->
+                        requests.send(TileSpecs(zoom, row, col))
+                        if (row == 0 && col == 3) finishTile.await()
+                        TileResult.Success(RasterTile(zoom, row, col, null))
+                    },
+                    coroutineScope = CoroutineScope(parent + Dispatchers.Default),
+                )
+                try {
+                    engine.renderTiles(listOf(TileSpecs(2, 4, -1), TileSpecs(2, -4, 7)), 2)
+                    assertEquals(TileSpecs(2, 0, 3), requests.receive())
+
+                    val marker = TileSpecs(2, 1, 1)
+                    val latest = listOf(TileSpecs(2, 8, 3), TileSpecs(2, 0, -5), marker)
+                    engine.renderTiles(latest, 2)
+                    // The marker confirms the renderer received this selection before the first tile finishes.
+                    assertEquals(marker, requests.receive())
+                    finishTile.complete(Unit)
+                    val expected = ActiveTiles(currentZoom = 2, tiles = latest.map { RasterTile(it.zoom, it.row, it.col, null) })
+                    while (engine.activeTiles != expected) delay(1)
+                    assertEquals(expected, engine.activeTiles)
+                    assertTrue(requests.tryReceive().isFailure)
+                } finally {
+                    parent.cancelAndJoin()
+                }
+            }
         }
     }
 
