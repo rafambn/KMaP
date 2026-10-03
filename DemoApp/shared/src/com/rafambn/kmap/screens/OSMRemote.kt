@@ -14,9 +14,9 @@ import com.rafambn.kmap.rememberMapState
 import com.rafambn.kmap.source.OSMMapProperties
 import com.rafambn.kmap.source.OSMTileSource
 import com.rafambn.kmap.getGestureDetector
-import com.rafambn.kmap.mapProperties.border.BoundMapBorder
-import com.rafambn.kmap.mapProperties.border.MapBorderType
-import com.rafambn.kmap.mapProperties.border.OutsideTilesType
+import com.rafambn.kmap.mapProperties.border.BoundaryMode
+import com.rafambn.kmap.mapProperties.border.MapBoundaryBehavior
+import com.rafambn.kmap.mapProperties.border.TileRepeatMode
 import kmap.kmapdemo.generated.resources.Res
 import kmap.kmapdemo.generated.resources.back_arrow
 import org.jetbrains.compose.resources.vectorResource
@@ -27,8 +27,8 @@ fun OSMRemoteScreen(
 ) {
     val mapState = rememberMapState(
         mapProperties = OSMMapProperties(
-            boundMap = BoundMapBorder(horizontal = MapBorderType.BOUND, vertical = MapBorderType.BOUND),
-            outsideTiles = OutsideTilesType.NONE
+            boundaryBehavior = MapBoundaryBehavior(horizontal = BoundaryMode.CLAMP, vertical = BoundaryMode.CLAMP),
+            tileRepeatMode = TileRepeatMode.NONE
         )
     )
     Box {

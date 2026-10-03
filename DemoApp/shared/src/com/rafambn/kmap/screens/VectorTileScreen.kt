@@ -16,9 +16,9 @@ import com.rafambn.kmap.components.parameters.VectorCanvasParameters
 import com.rafambn.kmap.getGestureDetector
 import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.mapProperties.ZoomLevelRange
-import com.rafambn.kmap.mapProperties.border.BoundMapBorder
-import com.rafambn.kmap.mapProperties.border.MapBorderType
-import com.rafambn.kmap.mapProperties.border.OutsideTilesType
+import com.rafambn.kmap.mapProperties.border.BoundaryMode
+import com.rafambn.kmap.mapProperties.border.MapBoundaryBehavior
+import com.rafambn.kmap.mapProperties.border.TileRepeatMode
 import com.rafambn.kmap.rememberMapState
 import com.rafambn.kmap.source.OSMMapProperties
 import com.rafambn.kmap.source.VectorTileSource
@@ -34,8 +34,8 @@ fun VectorTileScreen(
 ) {
     val mapState = rememberMapState(
         mapProperties = OSMMapProperties(
-            boundMap = BoundMapBorder(horizontal = MapBorderType.BOUND, vertical = MapBorderType.BOUND),
-            outsideTiles = OutsideTilesType.NONE,
+            boundaryBehavior = MapBoundaryBehavior(horizontal = BoundaryMode.CLAMP, vertical = BoundaryMode.CLAMP),
+            tileRepeatMode = TileRepeatMode.NONE,
             zoomLevels = ZoomLevelRange(min = 0, max = 14),
             tileSize = TileDimension(512.dp, 512.dp)
         )

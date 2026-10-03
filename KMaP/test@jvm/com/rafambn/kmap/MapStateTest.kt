@@ -30,9 +30,9 @@ import com.rafambn.kmap.geometry.plane.toScreenOffset
 import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.mapProperties.ZoomLevelRange
-import com.rafambn.kmap.mapProperties.border.BoundMapBorder
-import com.rafambn.kmap.mapProperties.border.MapBorderType
-import com.rafambn.kmap.mapProperties.border.OutsideTilesType
+import com.rafambn.kmap.mapProperties.border.BoundaryMode
+import com.rafambn.kmap.mapProperties.border.MapBoundaryBehavior
+import com.rafambn.kmap.mapProperties.border.TileRepeatMode
 import com.rafambn.kmap.mapProperties.coordinates.CoordinatesRange
 import com.rafambn.kmap.mapProperties.coordinates.Latitude
 import com.rafambn.kmap.mapProperties.coordinates.Longitude
@@ -86,8 +86,8 @@ private fun cameraState(
 )
 
 private fun mapProperties() = object : MapProperties {
-    override val boundMap = BoundMapBorder(MapBorderType.BOUND, MapBorderType.BOUND)
-    override val outsideTiles = OutsideTilesType.NONE
+    override val boundaryBehavior = MapBoundaryBehavior(BoundaryMode.CLAMP, BoundaryMode.CLAMP)
+    override val tileRepeatMode = TileRepeatMode.NONE
     override val zoomLevels = ZoomLevelRange(0, 30)
     override val coordinatesRange = object : CoordinatesRange {
         override val latitude = Latitude(north = 90.0, south = -90.0)
@@ -133,7 +133,7 @@ private suspend fun compose(content: @Composable () -> Unit) = coroutineScope {
 val MapStateTest by testSuite {
     test("repeated world indices outside the Int range are rejected") {
         val properties = object : MapProperties by mapProperties() {
-            override val outsideTiles = OutsideTilesType.LOOP
+            override val tileRepeatMode = TileRepeatMode.REPEAT
         }
         val state = mapState(mapProperties = properties)
         for (point in listOf(
@@ -232,7 +232,7 @@ val MapStateTest by testSuite {
         val renderer = TileRenderer<RasterTile, RasterTile>(scope, { _, _, _ -> error("Consumer is paused") }, { it })
         val engine = object : CanvasEngine<RasterTile>(coroutineScope = scope, tileRenderer = renderer) {}
         val properties = object : MapProperties by mapProperties() {
-            override val outsideTiles = OutsideTilesType.LOOP
+            override val tileRepeatMode = TileRepeatMode.REPEAT
         }
         val state = mapState(mapProperties = properties, coroutineScope = scope)
         state.updateCamera(zoom = 30F, tilePoint = TilePoint(512.0, 512.0))

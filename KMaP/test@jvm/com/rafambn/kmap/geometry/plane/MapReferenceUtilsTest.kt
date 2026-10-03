@@ -8,9 +8,9 @@ import com.rafambn.kmap.geometry.angle.Degrees
 import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.TileDimension
 import com.rafambn.kmap.mapProperties.ZoomLevelRange
-import com.rafambn.kmap.mapProperties.border.BoundMapBorder
-import com.rafambn.kmap.mapProperties.border.MapBorderType
-import com.rafambn.kmap.mapProperties.border.OutsideTilesType
+import com.rafambn.kmap.mapProperties.border.BoundaryMode
+import com.rafambn.kmap.mapProperties.border.MapBoundaryBehavior
+import com.rafambn.kmap.mapProperties.border.TileRepeatMode
 import com.rafambn.kmap.mapProperties.coordinates.CoordinatesRange
 import com.rafambn.kmap.mapProperties.coordinates.Latitude
 import com.rafambn.kmap.mapProperties.coordinates.Longitude
@@ -25,14 +25,14 @@ private fun mapState(
     viewportSize: ScreenOffset = ScreenOffset.Zero,
     zoom: Float = 0F,
     angle: Degrees = Degrees.Zero,
-    boundMap: BoundMapBorder = BoundMapBorder(MapBorderType.BOUND, MapBorderType.BOUND),
-    outsideTiles: OutsideTilesType = OutsideTilesType.NONE,
+    boundaryBehavior: MapBoundaryBehavior = MapBoundaryBehavior(BoundaryMode.CLAMP, BoundaryMode.CLAMP),
+    tileRepeatMode: TileRepeatMode = TileRepeatMode.NONE,
     tileSize: TileDimension = TileDimension(512.dp, 512.dp),
     density: Density = Density(1F),
 ): MapState {
     val mapProperties = object : MapProperties {
-        override val boundMap = boundMap
-        override val outsideTiles = outsideTiles
+        override val boundaryBehavior = boundaryBehavior
+        override val tileRepeatMode = tileRepeatMode
         override val zoomLevels = ZoomLevelRange(min = 0, max = 30)
         override val coordinatesRange = object : CoordinatesRange {
             override val latitude = Latitude(north = 90.0, south = -90.0)
@@ -75,11 +75,11 @@ val MapReferenceUtilsTest by testSuite {
         assertEquals(tilePoint.y, converted.y, 0.0000000001)
     }
 
-    test("markerUsesTheNearestCopyWhenOutsideTilesRepeat") {
+    test("markerUsesTheNearestCopyWhenTilesRepeat") {
         val mapState = mapState(
             cameraPoint = TilePoint(511.0, 511.0),
             viewportSize = ScreenOffset(100.0, 100.0),
-            outsideTiles = OutsideTilesType.LOOP,
+            tileRepeatMode = TileRepeatMode.REPEAT,
         )
 
         val offset = context(mapState) {
@@ -89,11 +89,11 @@ val MapReferenceUtilsTest by testSuite {
         assertEquals(ScreenOffset(52.0, 52.0), offset)
     }
 
-    test("markerStaysOnOriginalTileWhenOutsideTilesAreDisabled") {
+    test("markerStaysOnOriginalTileWhenTileRepetitionIsDisabled") {
         val mapState = mapState(
             cameraPoint = TilePoint(511.0, 511.0),
             viewportSize = ScreenOffset(1024.0, 1024.0),
-            boundMap = BoundMapBorder(MapBorderType.LOOP, MapBorderType.LOOP),
+            boundaryBehavior = MapBoundaryBehavior(BoundaryMode.WRAP, BoundaryMode.WRAP),
         )
 
         val offset = context(mapState) {
@@ -107,8 +107,8 @@ val MapReferenceUtilsTest by testSuite {
         val mapState = mapState(
             cameraPoint = TilePoint(400.0, 400.0),
             viewportSize = ScreenOffset(800.0, 800.0),
-            boundMap = BoundMapBorder(MapBorderType.LOOP, MapBorderType.LOOP),
-            outsideTiles = OutsideTilesType.LOOP,
+            boundaryBehavior = MapBoundaryBehavior(BoundaryMode.WRAP, BoundaryMode.WRAP),
+            tileRepeatMode = TileRepeatMode.REPEAT,
         )
 
         val pathOrigin = context(mapState) {
@@ -119,14 +119,14 @@ val MapReferenceUtilsTest by testSuite {
         assertEquals(ScreenOffset(400.0, 400.0), pathEnd)
     }
 
-    test("screenConversionPreservesMapCopyWithLoopZoomRotationAndDensity") {
+    test("screenConversionPreservesMapCopyWithWrapZoomRotationAndDensity") {
         val mapState = mapState(
             cameraPoint = TilePoint(1000.0, 1000.0),
             viewportSize = ScreenOffset(800.0, 600.0),
             zoom = 2.5F,
             angle = Degrees(37.0),
-            boundMap = BoundMapBorder(MapBorderType.LOOP, MapBorderType.LOOP),
-            outsideTiles = OutsideTilesType.LOOP,
+            boundaryBehavior = MapBoundaryBehavior(BoundaryMode.WRAP, BoundaryMode.WRAP),
+            tileRepeatMode = TileRepeatMode.REPEAT,
             density = Density(2F),
         )
         val tilePoint = TilePoint(1.0, 1.0)
