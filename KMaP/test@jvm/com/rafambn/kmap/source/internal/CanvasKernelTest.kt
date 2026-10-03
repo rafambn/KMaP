@@ -211,7 +211,7 @@ val CanvasKernelTest by testSuite {
             kernel.resolveVisibleTiles(TilePoint.Zero, TilePoint.Zero, 5, properties)
             kernel.refreshCanvas(listOf(parameters))
 
-            assertEquals(ActiveTiles(currentZoom = 5), kernel.getActiveTiles(1))
+            assertEquals(ActiveTiles(currentZoom = 5), kernel.awaitActiveTiles(1, 5, emptyList()))
         } finally {
             parent.cancelAndJoin()
         }

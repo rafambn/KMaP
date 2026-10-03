@@ -20,7 +20,7 @@ class CanvasKernel(
     private var visibleTiles = emptyList<TileSpecs>()
     private var zoomLevel: Int? = null
 
-    fun getActiveTiles(id: Int): ActiveTiles = canvas.getValue(id).engine.activeTiles.value
+    fun getActiveTiles(id: Int): ActiveTiles = canvas.getValue(id).engine.activeTiles
 
     internal fun resolveVisibleTiles(
         topLeft: TilePoint,
