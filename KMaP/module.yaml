@@ -2,6 +2,9 @@ product:
   type: kmp/lib
   platforms: [android, jvm, js, wasmJs, iosArm64, iosSimulatorArm64]
 
+aliases:
+  - skia: [jvm, js, wasmJs, iosArm64, iosSimulatorArm64]
+
 apply:
   - ../templates/common.module-template.yaml
 

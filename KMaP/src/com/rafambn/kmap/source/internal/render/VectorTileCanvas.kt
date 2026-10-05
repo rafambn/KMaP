@@ -196,7 +196,7 @@ internal fun DrawScope.drawVectorTileLayerWithClipping(
                 optimizedData.extent.toFloat(),
                 optimizedData.extent.toFloat()
             )
-            canvas.clipRect(clipRect)
+            canvas.clipTileBounds(clipRect)
             optimizedData.layerFeatures[optimizedLayer.id]?.forEach { renderFeature ->
                 drawRenderFeature(
                     canvas,
