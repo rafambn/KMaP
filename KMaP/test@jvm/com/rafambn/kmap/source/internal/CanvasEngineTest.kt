@@ -2,6 +2,9 @@
 
 package com.rafambn.kmap.source.internal
 
+import com.rafambn.kmap.mvttile.OptimizedGeometry
+import com.rafambn.kmap.mvttile.OptimizedMVTile
+import com.rafambn.kmap.mvttile.OptimizedRenderFeature
 import com.rafambn.kmap.source.RasterTile
 import com.rafambn.kmap.source.TileResult
 import com.rafambn.kmap.source.TileSpecs
@@ -189,6 +192,48 @@ val CanvasEngineTest by testSuite {
                 engine.activeTiles,
             )
             assertEquals(emptyList(), takeRequests())
+        }
+    }
+
+    test("vector parent and child fallbacks deduplicate without hashing feature data") {
+        testEngine(maxCacheTiles = 1) {
+            val properties = object : Map<String, Any> by emptyMap() {
+                override fun hashCode(): Int = error("Tile selection must not hash feature properties")
+            }
+            val content = OptimizedMVTile(
+                layerFeatures = mapOf("test" to listOf(
+                    OptimizedRenderFeature(OptimizedGeometry.Point(emptyList()), properties),
+                )),
+            )
+            val parent = OptimizedVectorTile(1, 0, 0, content)
+            val child = OptimizedVectorTile(2, 1, 1, content)
+
+            engine.renderTiles(listOf(TileSpecs(1, 0, 0)), 1)
+            scheduler.runCurrent()
+            takeRequests()
+            completeTile(parent)
+            scheduler.runCurrent()
+
+            engine.renderTiles(listOf(TileSpecs(2, 1, 1), TileSpecs(2, 1, 0)), 2)
+            scheduler.runCurrent()
+            assertEquals(ActiveTiles(currentZoom = 2, tiles = listOf(parent)), engine.activeTiles)
+            assertEquals(listOf(TileSpecs(2, 1, 1), TileSpecs(2, 1, 0)), takeRequests())
+
+            completeTile(child)
+            scheduler.runCurrent()
+            assertEquals(ActiveTiles(currentZoom = 2, tiles = listOf(parent, child)), engine.activeTiles)
+
+            engine.renderTiles(listOf(TileSpecs(1, 0, 0)), 1)
+            scheduler.runCurrent()
+            assertEquals(ActiveTiles(currentZoom = 1, tiles = listOf(parent)), engine.activeTiles)
+
+            engine.renderTiles(emptyList(), 1)
+            scheduler.runCurrent()
+            takeRequests()
+            engine.renderTiles(listOf(TileSpecs(1, 0, 0)), 1)
+            scheduler.runCurrent()
+            assertEquals(ActiveTiles(currentZoom = 1, tiles = listOf(child)), engine.activeTiles)
+            assertEquals(listOf(TileSpecs(1, 0, 0)), takeRequests())
         }
     }
 

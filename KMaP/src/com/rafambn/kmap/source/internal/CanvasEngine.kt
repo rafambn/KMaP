@@ -102,27 +102,30 @@ class CanvasEngine(
             return emptyList()
         }
 
-        val allAvailableTiles = (activeTiles.tiles + cachedTiles).distinct().sortedBy { it.zoom }.asReversed()
-        val parentTiles = mutableSetOf<Tile>()
-        val childTiles = mutableSetOf<Tile>()
+        val allAvailableTiles = (activeTiles.tiles + cachedTiles)
+            .distinctBy { TileSpecs(it.zoom, it.row, it.col) }
+            .sortedBy { it.zoom }
+            .asReversed()
+        val parentTiles = mutableMapOf<TileSpecs, Tile>()
+        val childTiles = mutableMapOf<TileSpecs, Tile>()
 
         for (tileToRender in missingTiles) {
             for (availableTile in allAvailableTiles) {
                 if (availableTile.isParentOf(tileToRender)) {
-                    parentTiles.add(availableTile)
+                    parentTiles[TileSpecs(availableTile.zoom, availableTile.row, availableTile.col)] = availableTile
                     break
                 } else if (availableTile.isChildOf(tileToRender)) {
-                    childTiles.add(availableTile)
+                    childTiles[TileSpecs(availableTile.zoom, availableTile.row, availableTile.col)] = availableTile
                 }
             }
         }
 
-        childTiles.removeAll { child ->
-            parentTiles.any { parent -> parent.isParentOf(child) }
+        childTiles.values.removeAll { child ->
+            parentTiles.values.any { parent -> parent.isParentOf(child) }
         }
 
-        allTiles.addAll(parentTiles)
-        allTiles.addAll(childTiles)
+        allTiles.addAll(parentTiles.values)
+        allTiles.addAll(childTiles.values)
 
         activeTiles = ActiveTiles(tiles = allTiles.sortedBy { it.zoom }, currentZoom = zoomLevel)
 
