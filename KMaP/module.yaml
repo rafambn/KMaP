@@ -5,6 +5,9 @@ product:
 apply:
   - ../templates/common.module-template.yaml
 
+aliases:
+  - jvmAndAndroid: [jvm, android]
+
 description: A flexible and powerful Compose Multiplatform mapping library.
 
 dependencies:

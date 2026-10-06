@@ -4,6 +4,10 @@ import com.rafambn.kmap.source.TileResult
 import com.rafambn.kmap.source.VectorTile
 import com.rafambn.kmap.style.compiled.CompiledStyle
 
+/**
+ * Encoded tiles use owned workers and [CompiledStyle.preparation]. Decoded tiles use local compatibility
+ * preparation. Call [com.rafambn.kmap.MapState.invalidateTiles] when source content changes.
+ */
 open class VectorCanvasParameters(
     override val id: Int,
     override val alpha: Float = 1F,

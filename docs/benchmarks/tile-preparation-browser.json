@@ -1,0 +1,52 @@
+{
+  "markerThresholdMs": 68.25,
+  "inputs": [
+    {
+      "url": "/fixtures/ohm_14_8800_5374.pbf",
+      "bytes": 118884
+    },
+    {
+      "url": "/fixtures/ohm_16_35200_21496.pbf",
+      "bytes": 16421
+    }
+  ],
+  "reports": [
+    {
+      "backend": "local",
+      "rounds": 24,
+      "elapsedMs": 272.80000001192093,
+      "markerDelayMs": 273,
+      "outputBytes": 2032488
+    },
+    {
+      "backend": "1 workers",
+      "rounds": 24,
+      "startupMs": 51.40000003576279,
+      "elapsedMs": 285.19999998807907,
+      "markerDelayMs": 0.09999996423721313,
+      "outputBytes": 2032488,
+      "identicalOutput": true,
+      "detached": true,
+      "responsivenessPassed": true
+    },
+    {
+      "backend": "2 workers",
+      "rounds": 24,
+      "startupMs": 96.19999998807907,
+      "elapsedMs": 200.5,
+      "markerDelayMs": 0.10000002384185791,
+      "outputBytes": 2032488,
+      "identicalOutput": true,
+      "detached": true,
+      "responsivenessPassed": true
+    }
+  ],
+  "note": "CPU/transport benchmark only. Compose conversion, drawing and text measurement are measured separately in the demo.",
+  "environment": {
+    "browser": "141.0.7390.37",
+    "host": "darwin",
+    "architecture": "arm64",
+    "mode": "headless",
+    "date": "2026-10-05"
+  }
+}

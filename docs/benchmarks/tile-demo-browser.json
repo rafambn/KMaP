@@ -1,0 +1,552 @@
+{
+  "date": "2026-10-05",
+  "environment": "Chromium 141 headless, SwiftShader, macOS arm64",
+  "viewport": {
+    "width": 960,
+    "height": 600
+  },
+  "scenario": "Berlin zoom 14, pan, wheel zoom out/in, resize. Wasm additionally received two-finger rotation/pinch.",
+  "notes": "Cold module loading and software drawing affect timings. Heap excludes workers; stage totals overlap. These traces do not establish a frame-rate improvement.",
+  "reports": [
+    {
+      "target": "baseline",
+      "errors": [],
+      "requests": 16,
+      "initial": {
+        "elapsedMs": 5149.699999988079,
+        "heapBytes": 109000000,
+        "workerCount": 0,
+        "workers": [],
+        "longTasks": {
+          "count": 36,
+          "totalMs": 4019,
+          "maxMs": 763,
+          "p95Ms": 397,
+          "largest": [
+            {
+              "start": 1978.4000000357628,
+              "duration": 763
+            },
+            {
+              "start": 1497.6000000238419,
+              "duration": 466
+            },
+            {
+              "start": 2769.699999988079,
+              "duration": 397
+            },
+            {
+              "start": 693.6999999880791,
+              "duration": 153
+            },
+            {
+              "start": 847.3000000119209,
+              "duration": 123
+            }
+          ]
+        }
+      },
+      "after": {
+        "elapsedMs": 25588.80000001192,
+        "heapBytes": 109000000,
+        "workerCount": 0,
+        "workers": [],
+        "longTasks": {
+          "count": 82,
+          "totalMs": 24298,
+          "maxMs": 2696,
+          "p95Ms": 693,
+          "largest": [
+            {
+              "start": 22852.30000001192,
+              "duration": 2696
+            },
+            {
+              "start": 21884,
+              "duration": 966
+            },
+            {
+              "start": 13811.199999988079,
+              "duration": 903
+            },
+            {
+              "start": 1978.4000000357628,
+              "duration": 763
+            },
+            {
+              "start": 16084.5,
+              "duration": 725
+            }
+          ]
+        }
+      },
+      "peakAdmission": {
+        "fetching": 0,
+        "pendingPreparation": 0,
+        "preparing": 0,
+        "rawCacheBytes": 0,
+        "preparedCacheBytes": 0
+      },
+      "firstPreparedMs": null,
+      "allInitialPreparedMs": null
+    },
+    {
+      "target": "basewasm",
+      "errors": [],
+      "requests": 16,
+      "initial": {
+        "elapsedMs": 3858.699999988079,
+        "heapBytes": 91700000,
+        "workerCount": 0,
+        "workers": [],
+        "longTasks": {
+          "count": 26,
+          "totalMs": 3306,
+          "maxMs": 610,
+          "p95Ms": 129,
+          "largest": [
+            {
+              "start": 1399.7999999523163,
+              "duration": 610
+            },
+            {
+              "start": 727.0999999642372,
+              "duration": 598
+            },
+            {
+              "start": 2949.699999988079,
+              "duration": 129
+            },
+            {
+              "start": 3079.199999988079,
+              "duration": 113
+            },
+            {
+              "start": 2468.7999999523163,
+              "duration": 107
+            }
+          ]
+        }
+      },
+      "after": {
+        "elapsedMs": 26382.399999976158,
+        "heapBytes": 91700000,
+        "workerCount": 0,
+        "workers": [],
+        "longTasks": {
+          "count": 74,
+          "totalMs": 25480,
+          "maxMs": 2468,
+          "p95Ms": 784,
+          "largest": [
+            {
+              "start": 23599.899999976158,
+              "duration": 2468
+            },
+            {
+              "start": 16638.5,
+              "duration": 953
+            },
+            {
+              "start": 15007.699999988079,
+              "duration": 911
+            },
+            {
+              "start": 22724.899999976158,
+              "duration": 873
+            },
+            {
+              "start": 17591.899999976158,
+              "duration": 784
+            }
+          ]
+        }
+      },
+      "peakAdmission": {
+        "fetching": 0,
+        "pendingPreparation": 0,
+        "preparing": 0,
+        "rawCacheBytes": 0,
+        "preparedCacheBytes": 0
+      },
+      "firstPreparedMs": null,
+      "allInitialPreparedMs": null
+    },
+    {
+      "target": "js",
+      "errors": [],
+      "requests": 16,
+      "initial": {
+        "elapsedMs": 4625,
+        "heapBytes": 103000000,
+        "workerCount": 2,
+        "workers": [
+          {
+            "startupMs": 83.60000002384186,
+            "prepared": 5,
+            "inputBytes": [
+              26701,
+              19482,
+              54167,
+              25496,
+              30854
+            ],
+            "outputBytes": [
+              37436,
+              23823,
+              83825,
+              37581,
+              44988
+            ],
+            "detached": true,
+            "execution": [
+              "dedicated-worker"
+            ]
+          },
+          {
+            "startupMs": 992.9000000357628,
+            "prepared": 1,
+            "inputBytes": [
+              21985
+            ],
+            "outputBytes": [
+              30184
+            ],
+            "detached": true,
+            "execution": [
+              "dedicated-worker"
+            ]
+          }
+        ],
+        "longTasks": {
+          "count": 22,
+          "totalMs": 3390,
+          "maxMs": 854,
+          "p95Ms": 164,
+          "largest": [
+            {
+              "start": 1467.2999999523163,
+              "duration": 854
+            },
+            {
+              "start": 2330.099999964237,
+              "duration": 555
+            },
+            {
+              "start": 2895.5,
+              "duration": 164
+            },
+            {
+              "start": 3561.099999964237,
+              "duration": 147
+            },
+            {
+              "start": 3178.699999988079,
+              "duration": 137
+            }
+          ]
+        },
+        "lastStatus": {
+          "time": 3178.399999976158,
+          "args": [
+            "KMaP tile pipeline: TilePipelineStatus(fetching=0, pendingPreparation=0, preparing=0, workerTiles=6, compatibilityTiles=0, rawCacheBytes=178685, preparedCacheBytes=413282, fetchMillis=1694.8999999999999, preparationMillis=3611.3, conversionMillis=8.899999999999999, failures=[])"
+          ]
+        }
+      },
+      "after": {
+        "elapsedMs": 24782.299999952316,
+        "heapBytes": 103000000,
+        "workerCount": 2,
+        "workers": [
+          {
+            "startupMs": 83.60000002384186,
+            "prepared": 9,
+            "inputBytes": [
+              26701,
+              19482,
+              54167,
+              25496,
+              30854,
+              65855,
+              87094,
+              67645,
+              18284,
+              74662
+            ],
+            "outputBytes": [
+              37436,
+              23823,
+              83825,
+              37581,
+              44988,
+              101401,
+              129253,
+              104772,
+              24622
+            ],
+            "detached": true,
+            "execution": [
+              "dedicated-worker"
+            ]
+          },
+          {
+            "startupMs": 992.9000000357628,
+            "prepared": 3,
+            "inputBytes": [
+              21985,
+              71609,
+              77399,
+              59319
+            ],
+            "outputBytes": [
+              30184,
+              110222,
+              120179
+            ],
+            "detached": true,
+            "execution": [
+              "dedicated-worker"
+            ]
+          }
+        ],
+        "longTasks": {
+          "count": 68,
+          "totalMs": 23488,
+          "maxMs": 3327,
+          "p95Ms": 674,
+          "largest": [
+            {
+              "start": 21450.299999952316,
+              "duration": 3327
+            },
+            {
+              "start": 20371.299999952316,
+              "duration": 1077
+            },
+            {
+              "start": 1467.2999999523163,
+              "duration": 854
+            },
+            {
+              "start": 14466.099999964237,
+              "duration": 719
+            },
+            {
+              "start": 13776.799999952316,
+              "duration": 674
+            }
+          ]
+        },
+        "lastStatus": {
+          "time": 24782,
+          "args": [
+            "KMaP tile pipeline: TilePipelineStatus(fetching=0, pendingPreparation=2, preparing=2, workerTiles=12, compatibilityTiles=0, rawCacheBytes=772593, preparedCacheBytes=1415176, fetchMillis=22898.9, preparationMillis=5770.9, conversionMillis=19.4, failures=[])"
+          ]
+        }
+      },
+      "peakAdmission": {
+        "fetching": 6,
+        "pendingPreparation": 4,
+        "preparing": 2,
+        "rawCacheBytes": 772593,
+        "preparedCacheBytes": 1415176
+      },
+      "firstPreparedMs": 1450.7999999523163,
+      "allInitialPreparedMs": 3173.2999999523163
+    },
+    {
+      "target": "wasm",
+      "errors": [],
+      "requests": 45,
+      "initial": {
+        "elapsedMs": 3658,
+        "heapBytes": 60300000,
+        "workerCount": 2,
+        "workers": [
+          {
+            "startupMs": 103.40000003576279,
+            "prepared": 3,
+            "inputBytes": [
+              25496,
+              26701,
+              30854
+            ],
+            "outputBytes": [
+              37581,
+              37436,
+              44988
+            ],
+            "detached": true,
+            "execution": [
+              "dedicated-worker"
+            ]
+          },
+          {
+            "startupMs": 92.69999998807907,
+            "prepared": 3,
+            "inputBytes": [
+              54167,
+              21985,
+              19482
+            ],
+            "outputBytes": [
+              83825,
+              30184,
+              23823
+            ],
+            "detached": true,
+            "execution": [
+              "dedicated-worker"
+            ]
+          }
+        ],
+        "longTasks": {
+          "count": 38,
+          "totalMs": 3105,
+          "maxMs": 391,
+          "p95Ms": 235,
+          "largest": [
+            {
+              "start": 1000.2000000476837,
+              "duration": 391
+            },
+            {
+              "start": 663.7000000476837,
+              "duration": 328
+            },
+            {
+              "start": 1533.6000000238419,
+              "duration": 235
+            },
+            {
+              "start": 1395.6000000238419,
+              "duration": 136
+            },
+            {
+              "start": 60.80000001192093,
+              "duration": 75
+            }
+          ]
+        },
+        "lastStatus": {
+          "time": 1533.300000011921,
+          "args": [
+            "KMaP tile pipeline: TilePipelineStatus(fetching=0, pendingPreparation=0, preparing=0, workerTiles=6, compatibilityTiles=0, rawCacheBytes=178685, preparedCacheBytes=413282, fetchMillis=884.7, preparationMillis=1883.9, conversionMillis=4.5, failures=[])"
+          ]
+        }
+      },
+      "after": {
+        "elapsedMs": 39281.80000001192,
+        "heapBytes": 60300000,
+        "workerCount": 2,
+        "workers": [
+          {
+            "startupMs": 103.40000003576279,
+            "prepared": 10,
+            "inputBytes": [
+              25496,
+              26701,
+              30854,
+              71609,
+              65855,
+              67645,
+              59319,
+              74662,
+              63284,
+              220250
+            ],
+            "outputBytes": [
+              37581,
+              37436,
+              44988,
+              110222,
+              101401,
+              104772,
+              93146,
+              130674,
+              101419,
+              364664
+            ],
+            "detached": true,
+            "execution": [
+              "dedicated-worker"
+            ]
+          },
+          {
+            "startupMs": 92.69999998807907,
+            "prepared": 9,
+            "inputBytes": [
+              54167,
+              21985,
+              19482,
+              87094,
+              18284,
+              77399,
+              43848,
+              28193,
+              106411
+            ],
+            "outputBytes": [
+              83825,
+              30184,
+              23823,
+              129253,
+              24622,
+              120179,
+              63830,
+              36085,
+              155332
+            ],
+            "detached": true,
+            "execution": [
+              "dedicated-worker"
+            ]
+          }
+        ],
+        "longTasks": {
+          "count": 103,
+          "totalMs": 38517,
+          "maxMs": 3302,
+          "p95Ms": 1316,
+          "largest": [
+            {
+              "start": 35963.90000003576,
+              "duration": 3302
+            },
+            {
+              "start": 29901.200000047684,
+              "duration": 3171
+            },
+            {
+              "start": 33075.60000002384,
+              "duration": 2876
+            },
+            {
+              "start": 22944.30000001192,
+              "duration": 1623
+            },
+            {
+              "start": 28458,
+              "duration": 1442
+            }
+          ]
+        },
+        "lastStatus": {
+          "time": 39281.700000047684,
+          "args": [
+            "KMaP tile pipeline: TilePipelineStatus(fetching=0, pendingPreparation=0, preparing=0, workerTiles=19, compatibilityTiles=0, rawCacheBytes=5342493, preparedCacheBytes=2768188, fetchMillis=90888.9, preparationMillis=11398.8, conversionMillis=17.700000000000003, failures=[])"
+          ]
+        }
+      },
+      "peakAdmission": {
+        "fetching": 6,
+        "pendingPreparation": 4,
+        "preparing": 2,
+        "rawCacheBytes": 5342493,
+        "preparedCacheBytes": 2768188
+      },
+      "firstPreparedMs": 657.8000000119209,
+      "allInitialPreparedMs": 1531.9000000357628
+    }
+  ]
+}

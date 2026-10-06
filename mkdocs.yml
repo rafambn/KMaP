@@ -48,6 +48,7 @@ nav:
   - Setup: setup.md
   - Usage: usage.md
   - Mapbox vector style support: vector-style-support.md
+  - Tile pipeline: tile-pipeline.md
   - Upcoming: upcoming.md
   - Development: development.md
   - Research:

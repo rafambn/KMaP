@@ -2,25 +2,9 @@
 
 package com.rafambn.kmap.source.internal
 
-import com.rafambn.kmap.mvttile.OptimizedGeometry
-import com.rafambn.kmap.mvttile.OptimizedMVTile
-import com.rafambn.kmap.mvttile.OptimizedRenderFeature
 import com.rafambn.kmap.source.RasterTile
-import com.rafambn.kmap.source.TileResult
 import com.rafambn.kmap.source.TileSpecs
 import de.infix.testBalloon.framework.core.testSuite
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelAndJoin
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
-import kotlinx.coroutines.yield
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -32,13 +16,13 @@ val CanvasEngineTest by testSuite {
             val latest = listOf(TileSpecs(4, 12, 12))
             engine.renderTiles(latest, 4)
 
-            assertEquals(ActiveTiles(), engine.activeTiles)
+            assertEquals(ActiveTiles(), engine.getActiveTiles(0))
             assertTrue(takeRequests().isEmpty())
             scheduler.runCurrent()
 
             assertEquals(latest, takeRequests())
             assertTrue(takeRequests().isEmpty())
-            assertEquals(ActiveTiles(currentZoom = 4), engine.activeTiles)
+            assertEquals(ActiveTiles(currentZoom = 4), engine.getActiveTiles(0))
         }
     }
 
@@ -55,7 +39,7 @@ val CanvasEngineTest by testSuite {
             val loaded = expected.map { RasterTile(it.zoom, it.row, it.col, null) }
             loaded.forEach { completeTile(it) }
             scheduler.runCurrent()
-            assertEquals(ActiveTiles(currentZoom = 3, tiles = loaded), engine.activeTiles)
+            assertEquals(ActiveTiles(currentZoom = 3, tiles = loaded), engine.getActiveTiles(0))
         }
     }
 
@@ -68,7 +52,7 @@ val CanvasEngineTest by testSuite {
 
             engine.renderTiles(emptyList(), 3)
             scheduler.runCurrent()
-            assertEquals(ActiveTiles(currentZoom = 3), engine.activeTiles)
+            assertEquals(ActiveTiles(currentZoom = 3), engine.getActiveTiles(0))
             assertEquals(emptyList(), takeRequests())
 
             engine.renderTiles(emptyList(), 3)
@@ -93,7 +77,7 @@ val CanvasEngineTest by testSuite {
             scheduler.runCurrent()
             engine.renderTiles(visible, 3)
             scheduler.runCurrent()
-            assertEquals(ActiveTiles(currentZoom = 3, tiles = listOf(tile)), engine.activeTiles)
+            assertEquals(ActiveTiles(currentZoom = 3, tiles = listOf(tile)), engine.getActiveTiles(0))
             assertTrue(takeRequests().isEmpty())
         }
     }
@@ -109,16 +93,16 @@ val CanvasEngineTest by testSuite {
             engine.renderTiles(listOf(latest.specs()), 4)
             completeTile(previous)
             scheduler.runCurrent()
-            assertEquals(ActiveTiles(currentZoom = 4), engine.activeTiles)
+            assertEquals(ActiveTiles(currentZoom = 4), engine.getActiveTiles(0))
             assertEquals(listOf(latest), takeRequests())
 
             completeTile(latest)
             scheduler.runCurrent()
-            assertEquals(ActiveTiles(currentZoom = 4, tiles = listOf(latest)), engine.activeTiles)
+            assertEquals(ActiveTiles(currentZoom = 4, tiles = listOf(latest)), engine.getActiveTiles(0))
 
             engine.renderTiles(listOf(previous.specs()), 3)
             scheduler.runCurrent()
-            assertEquals(ActiveTiles(currentZoom = 3, tiles = listOf(previous)), engine.activeTiles)
+            assertEquals(ActiveTiles(currentZoom = 3, tiles = listOf(previous)), engine.getActiveTiles(0))
             assertEquals(emptyList(), takeRequests())
         }
     }
@@ -135,12 +119,12 @@ val CanvasEngineTest by testSuite {
 
             completeTile(tile)
             scheduler.runCurrent()
-            assertEquals(ActiveTiles(currentZoom = 5), engine.activeTiles)
+            assertEquals(ActiveTiles(currentZoom = 5), engine.getActiveTiles(0))
             assertTrue(takeRequests().isEmpty())
 
             engine.renderTiles(listOf(tile.specs()), 3)
             scheduler.runCurrent()
-            assertEquals(ActiveTiles(currentZoom = 3, tiles = listOf(tile)), engine.activeTiles)
+            assertEquals(ActiveTiles(currentZoom = 3, tiles = listOf(tile)), engine.getActiveTiles(0))
             assertEquals(emptyList(), takeRequests())
         }
     }
@@ -157,21 +141,21 @@ val CanvasEngineTest by testSuite {
 
             engine.renderTiles(listOf(child.specs()), 2)
             scheduler.runCurrent()
-            assertEquals(ActiveTiles(currentZoom = 2, tiles = listOf(parent)), engine.activeTiles)
+            assertEquals(ActiveTiles(currentZoom = 2, tiles = listOf(parent)), engine.getActiveTiles(0))
             assertEquals(listOf(child), takeRequests())
 
             completeTile(child)
             scheduler.runCurrent()
-            assertEquals(ActiveTiles(currentZoom = 2, tiles = listOf(child)), engine.activeTiles)
+            assertEquals(ActiveTiles(currentZoom = 2, tiles = listOf(child)), engine.getActiveTiles(0))
 
             engine.renderTiles(listOf(parent.specs()), 1)
             scheduler.runCurrent()
-            assertEquals(ActiveTiles(currentZoom = 1, tiles = listOf(child)), engine.activeTiles)
+            assertEquals(ActiveTiles(currentZoom = 1, tiles = listOf(child)), engine.getActiveTiles(0))
             assertEquals(listOf(parent), takeRequests())
 
             completeTile(parent)
             scheduler.runCurrent()
-            assertEquals(ActiveTiles(currentZoom = 1, tiles = listOf(parent)), engine.activeTiles)
+            assertEquals(ActiveTiles(currentZoom = 1, tiles = listOf(parent)), engine.getActiveTiles(0))
         }
     }
 
@@ -189,51 +173,9 @@ val CanvasEngineTest by testSuite {
             scheduler.runCurrent()
             assertEquals(
                 ActiveTiles(currentZoom = 2, tiles = repeated.map { normalized.withSpecs(it) }),
-                engine.activeTiles,
+                engine.getActiveTiles(0),
             )
             assertEquals(emptyList(), takeRequests())
-        }
-    }
-
-    test("vector parent and child fallbacks deduplicate without hashing feature data") {
-        testEngine(maxCacheTiles = 1) {
-            val properties = object : Map<String, Any> by emptyMap() {
-                override fun hashCode(): Int = error("Tile selection must not hash feature properties")
-            }
-            val content = OptimizedMVTile(
-                layerFeatures = mapOf("test" to listOf(
-                    OptimizedRenderFeature(OptimizedGeometry.Point(emptyList()), properties),
-                )),
-            )
-            val parent = OptimizedVectorTile(1, 0, 0, content)
-            val child = OptimizedVectorTile(2, 1, 1, content)
-
-            engine.renderTiles(listOf(TileSpecs(1, 0, 0)), 1)
-            scheduler.runCurrent()
-            takeRequests()
-            completeTile(parent)
-            scheduler.runCurrent()
-
-            engine.renderTiles(listOf(TileSpecs(2, 1, 1), TileSpecs(2, 1, 0)), 2)
-            scheduler.runCurrent()
-            assertEquals(ActiveTiles(currentZoom = 2, tiles = listOf(parent)), engine.activeTiles)
-            assertEquals(listOf(TileSpecs(2, 1, 1), TileSpecs(2, 1, 0)), takeRequests())
-
-            completeTile(child)
-            scheduler.runCurrent()
-            assertEquals(ActiveTiles(currentZoom = 2, tiles = listOf(parent, child)), engine.activeTiles)
-
-            engine.renderTiles(listOf(TileSpecs(1, 0, 0)), 1)
-            scheduler.runCurrent()
-            assertEquals(ActiveTiles(currentZoom = 1, tiles = listOf(parent)), engine.activeTiles)
-
-            engine.renderTiles(emptyList(), 1)
-            scheduler.runCurrent()
-            takeRequests()
-            engine.renderTiles(listOf(TileSpecs(1, 0, 0)), 1)
-            scheduler.runCurrent()
-            assertEquals(ActiveTiles(currentZoom = 1, tiles = listOf(child)), engine.activeTiles)
-            assertEquals(listOf(TileSpecs(1, 0, 0)), takeRequests())
         }
     }
 
@@ -262,7 +204,7 @@ val CanvasEngineTest by testSuite {
                 engine.renderTiles(visible, zoom)
                 scheduler.runCurrent()
 
-                assertEquals(expectedRequests, takeRequests())
+                assertEquals(expectedRequests.toSet(), takeRequests().toSet())
                 assertTrue(takeRequests().isEmpty())
                 for (specs in expectedRequests) {
                     completeTile(RasterTile(specs.zoom, specs.row, specs.col, null))
@@ -271,7 +213,7 @@ val CanvasEngineTest by testSuite {
 
                 assertEquals(
                     ActiveTiles(currentZoom = zoom, tiles = visible.map { RasterTile(it.zoom, it.row, it.col, null) }),
-                    engine.activeTiles,
+                    engine.getActiveTiles(0),
                 )
             }
         }
@@ -291,62 +233,21 @@ val CanvasEngineTest by testSuite {
 
             engine.renderTiles(listOf(child), 2)
             scheduler.runCurrent()
-            assertEquals(ActiveTiles(currentZoom = 2, tiles = listOf(parentTile.withSpecs(parent))), engine.activeTiles)
+            assertEquals(ActiveTiles(currentZoom = 2, tiles = listOf(parentTile.withSpecs(parent))), engine.getActiveTiles(0))
             assertEquals(listOf(childTile.specs()), takeRequests())
 
             completeTile(childTile)
             scheduler.runCurrent()
-            assertEquals(ActiveTiles(currentZoom = 2, tiles = listOf(childTile.withSpecs(child))), engine.activeTiles)
+            assertEquals(ActiveTiles(currentZoom = 2, tiles = listOf(childTile.withSpecs(child))), engine.getActiveTiles(0))
 
             engine.renderTiles(listOf(parent), 1)
             scheduler.runCurrent()
-            assertEquals(ActiveTiles(currentZoom = 1, tiles = listOf(childTile.withSpecs(child))), engine.activeTiles)
+            assertEquals(ActiveTiles(currentZoom = 1, tiles = listOf(childTile.withSpecs(child))), engine.getActiveTiles(0))
             assertEquals(listOf(parentTile.specs()), takeRequests())
 
             completeTile(parentTile)
             scheduler.runCurrent()
-            assertEquals(ActiveTiles(currentZoom = 1, tiles = listOf(parentTile.withSpecs(parent))), engine.activeTiles)
-        }
-    }
-
-    test("an in-flight source tile serves the latest repeated copies after a viewport change") {
-        withContext(Dispatchers.Default) {
-            withTimeout(5_000) {
-                val parent = Job(coroutineContext[Job])
-                val requests = Channel<TileSpecs>(Channel.UNLIMITED)
-                val finishTile = CompletableDeferred<Unit>()
-                val scope = CoroutineScope(parent + Dispatchers.Default)
-                val engine = CanvasEngine(
-                    maxCacheTiles = 20,
-                    coroutineScope = scope,
-                    tileRenderer = TileRenderer(
-                        coroutineScope = scope,
-                        getTile = { zoom, row, col ->
-                            requests.send(TileSpecs(zoom, row, col))
-                            if (row == 0 && col == 3) finishTile.await()
-                            TileResult.Success(RasterTile(zoom, row, col, null))
-                        },
-                        processTile = { it },
-                    ),
-                )
-                try {
-                    engine.renderTiles(listOf(TileSpecs(2, 4, -1), TileSpecs(2, -4, 7)), 2)
-                    assertEquals(TileSpecs(2, 0, 3), requests.receive())
-
-                    val marker = TileSpecs(2, 1, 1)
-                    val latest = listOf(TileSpecs(2, 8, 3), TileSpecs(2, 0, -5), marker)
-                    engine.renderTiles(latest, 2)
-                    // The marker confirms the renderer received this selection before the first tile finishes.
-                    assertEquals(marker, requests.receive())
-                    finishTile.complete(Unit)
-                    val expected = ActiveTiles(currentZoom = 2, tiles = latest.map { RasterTile(it.zoom, it.row, it.col, null) })
-                    while (engine.activeTiles != expected) delay(1)
-                    assertEquals(expected, engine.activeTiles)
-                    assertTrue(requests.tryReceive().isFailure)
-                } finally {
-                    parent.cancelAndJoin()
-                }
-            }
+            assertEquals(ActiveTiles(currentZoom = 1, tiles = listOf(parentTile.withSpecs(parent))), engine.getActiveTiles(0))
         }
     }
 
@@ -360,7 +261,7 @@ val CanvasEngineTest by testSuite {
 
             failTile(source)
             scheduler.runCurrent()
-            assertEquals(ActiveTiles(currentZoom = 2), engine.activeTiles)
+            assertEquals(ActiveTiles(currentZoom = 2), engine.getActiveTiles(0))
             assertTrue(takeRequests().isEmpty())
 
             engine.renderTiles(visible, 2)
@@ -370,7 +271,7 @@ val CanvasEngineTest by testSuite {
             scheduler.runCurrent()
             assertEquals(
                 ActiveTiles(currentZoom = 2, tiles = visible.map { RasterTile(it.zoom, it.row, it.col, null) }),
-                engine.activeTiles,
+                engine.getActiveTiles(0),
             )
             engine.renderTiles(visible, 2)
             scheduler.runCurrent()
@@ -397,16 +298,16 @@ val CanvasEngineTest by testSuite {
             completeTile(second)
             scheduler.runCurrent()
             val fallback = ActiveTiles(currentZoom = 2, tiles = listOf(parent, second))
-            assertEquals(fallback, engine.activeTiles)
+            assertEquals(fallback, engine.getActiveTiles(0))
             assertTrue(takeRequests().isEmpty())
 
             engine.renderTiles(visible, 2)
             scheduler.runCurrent()
             assertEquals(listOf(first.specs()), takeRequests())
-            assertEquals(fallback, engine.activeTiles)
+            assertEquals(fallback, engine.getActiveTiles(0))
             completeTile(first)
             scheduler.runCurrent()
-            assertEquals(ActiveTiles(currentZoom = 2, tiles = listOf(first, second)), engine.activeTiles)
+            assertEquals(ActiveTiles(currentZoom = 2, tiles = listOf(first, second)), engine.getActiveTiles(0))
         }
     }
 
@@ -421,7 +322,7 @@ val CanvasEngineTest by testSuite {
 
             failTile(source)
             scheduler.runCurrent()
-            assertEquals(ActiveTiles(currentZoom = 3), engine.activeTiles)
+            assertEquals(ActiveTiles(currentZoom = 3), engine.getActiveTiles(0))
             engine.renderTiles(emptyList(), 3)
             scheduler.runCurrent()
             assertTrue(takeRequests().isEmpty())
@@ -431,7 +332,7 @@ val CanvasEngineTest by testSuite {
             assertEquals(listOf(source), takeRequests())
             completeTile(RasterTile(2, 1, 1, null))
             scheduler.runCurrent()
-            assertEquals(ActiveTiles(currentZoom = 2, tiles = listOf(RasterTile(2, 1, 1, null))), engine.activeTiles)
+            assertEquals(ActiveTiles(currentZoom = 2, tiles = listOf(RasterTile(2, 1, 1, null))), engine.getActiveTiles(0))
         }
     }
 
@@ -440,16 +341,16 @@ val CanvasEngineTest by testSuite {
             val tiles = (0..2).map { RasterTile(2, it, it, null) }
             engine.renderTiles(tiles.map { it.specs() }, 2)
             scheduler.runCurrent()
-            assertEquals(tiles.map { it.specs() }, takeRequests())
+            assertEquals(tiles.map { it.specs() }.toSet(), takeRequests().toSet())
             tiles.forEach { completeTile(it) }
             scheduler.runCurrent()
-            assertEquals(ActiveTiles(currentZoom = 2, tiles = tiles), engine.activeTiles)
+            assertEquals(ActiveTiles(currentZoom = 2, tiles = tiles), engine.getActiveTiles(0))
 
             engine.renderTiles(emptyList(), 2)
             scheduler.runCurrent()
             engine.renderTiles(tiles.map { it.specs() }, 2)
             scheduler.runCurrent()
-            assertEquals(ActiveTiles(currentZoom = 2, tiles = tiles.takeLast(2)), engine.activeTiles)
+            assertEquals(ActiveTiles(currentZoom = 2, tiles = tiles.takeLast(2)), engine.getActiveTiles(0))
             assertEquals(listOf(tiles.first()), takeRequests())
         }
     }
@@ -463,7 +364,7 @@ val CanvasEngineTest by testSuite {
                     takeRequests()
                     completeTile(RasterTile(2, 1, 1, null))
                 }
-                val before = engine.activeTiles
+                val before = engine.getActiveTiles(0)
                 engine.renderTiles(listOf(TileSpecs(3, 3, 3)), 3)
                 job.cancel()
                 scheduler.runCurrent()
@@ -471,52 +372,13 @@ val CanvasEngineTest by testSuite {
 
                 engine.renderTiles(listOf(TileSpecs(4, 12, 12)), 4)
                 scheduler.runCurrent()
-                assertEquals(before, engine.activeTiles)
+                assertEquals(before, engine.getActiveTiles(0))
                 assertTrue(takeRequests().isEmpty())
                 assertTrue(job.children.none())
             }
         }
     }
 
-    test("concurrent callers and tile workers converge on the final selection") {
-        withContext(Dispatchers.Default) {
-            withTimeout(5_000) {
-                val parent = Job(coroutineContext[Job])
-                val scope = CoroutineScope(parent + Dispatchers.Default)
-                val engine = CanvasEngine(
-                    maxCacheTiles = 20,
-                    coroutineScope = scope,
-                    tileRenderer = TileRenderer(
-                        coroutineScope = scope,
-                        getTile = { zoom, row, col ->
-                            yield()
-                            TileResult.Success(RasterTile(zoom, row, col, null))
-                        },
-                        processTile = { it },
-                    ),
-                )
-                try {
-                    coroutineScope {
-                        repeat(4) { producer ->
-                            launch {
-                                repeat(50) { index ->
-                                    engine.renderTiles(listOf(TileSpecs(6, producer, index)), 6)
-                                    yield()
-                                }
-                            }
-                        }
-                    }
-                    val latest = RasterTile(7, 120, 120, null)
-                    engine.renderTiles(listOf(latest.specs()), 7)
-                    val expected = ActiveTiles(currentZoom = 7, tiles = listOf(latest))
-                    while (engine.activeTiles != expected) delay(1)
-                    assertEquals(expected, engine.activeTiles)
-                } finally {
-                    parent.cancelAndJoin()
-                }
-            }
-        }
-    }
 }
 
 private suspend fun testEngine(

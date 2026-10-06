@@ -2,7 +2,8 @@ package com.rafambn.kmap.source
 
 import com.rafambn.kmap.mvttile.MVTile
 
-class VectorTile(
+/** Decoded-source compatibility input. Use [EncodedVectorTile] to move decoding and filtering to workers. */
+open class VectorTile(
     zoom: Int,
     row: Int,
     col: Int,

@@ -16,6 +16,8 @@ import com.rafambn.kmap.style.expression.numberToDouble
 import com.rafambn.kmap.style.expression.parseColor
 import com.rafambn.kmap.style.model.Style
 import com.rafambn.kmap.style.model.StyleLayer
+import com.rafambn.kmap.source.preparation.PreparationStyle
+import com.rafambn.kmap.source.preparation.PreparationLayer
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.*
 
@@ -55,7 +57,14 @@ class StyleResolver(private val evaluator: ExpressionEvaluator = ExpressionEvalu
         return CompiledStyle(
             layers = compiledLayers,
             sprites = sprites,
-            glyphs = glyphs
+            glyphs = glyphs,
+            preparation = PreparationStyle(rawStyle.layers.filter { raw ->
+                raw.sourceLayer != null && compiledLayers.any { it.id == raw.id }
+            }.map { layer ->
+                val filter = layer.filter?.let { JsonArray(it) }
+                PreparationLayer(layer.id, layer.type, layer.sourceLayer!!,
+                    if (filter != null && hasLegacyFilterSyntax(filter)) JsonPrimitive(false) else filter)
+            }, locale),
         )
     }
 

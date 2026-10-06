@@ -1,0 +1,13 @@
+product: js/app
+
+apply:
+  - ../templates/common.module-template.yaml
+
+dependencies:
+  - //KMaP
+  - $kotlin.serialization.json
+  - $kotlin.serialization.protobuf
+
+settings:
+  kotlin:
+    serialization: enabled

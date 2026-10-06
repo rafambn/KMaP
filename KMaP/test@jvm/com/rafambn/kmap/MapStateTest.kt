@@ -48,6 +48,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNotSame
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlinx.coroutines.CoroutineScope
@@ -59,6 +60,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlin.time.Duration.Companion.milliseconds
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -132,6 +135,44 @@ private suspend fun compose(content: @Composable () -> Unit) = coroutineScope {
 }
 
 val MapStateTest by testSuite {
+    test("invalidateTiles reloads the current viewport without changing the camera") {
+        val scheduler = TestCoroutineScheduler()
+        val parent = Job()
+        val state = mapState(coroutineScope = CoroutineScope(parent + StandardTestDispatcher(scheduler)))
+        val fetched = mutableListOf<RasterTile>()
+        try {
+            state.setViewportSize(IntSize(64, 64))
+            state.canvasEngine.refreshCanvas(listOf(RasterCanvasParameters(1, tileSource = { z, r, c ->
+                val tile = RasterTile(z, r, c, null)
+                fetched.add(tile)
+                TileResult.Success(tile)
+            })))
+            scheduler.runCurrent()
+            assertEquals(1, fetched.size)
+            val initialTile = state.canvasEngine.getActiveTiles(1).tiles.single()
+            assertEquals(fetched[0], initialTile)
+            val camera = state.cameraState
+
+            state.invalidateTiles(1)
+            scheduler.runCurrent()
+            assertEquals(2, fetched.size)
+            val reloadedTile = state.canvasEngine.getActiveTiles(1).tiles.single()
+            assertEquals(fetched[1], reloadedTile)
+            assertNotSame(initialTile, reloadedTile)
+            assertEquals(camera, state.cameraState)
+
+            state.invalidateTiles()
+            scheduler.runCurrent()
+            assertEquals(3, fetched.size)
+            assertEquals(fetched[2], state.canvasEngine.getActiveTiles(1).tiles.single())
+            assertNotSame(reloadedTile, state.canvasEngine.getActiveTiles(1).tiles.single())
+        } finally {
+            state.close()
+            parent.cancel()
+            scheduler.runCurrent()
+            parent.join()
+        }
+    }
     test("repeated world indices outside the Int range are rejected") {
         val properties = object : MapProperties by mapProperties() {
             override val tileRepeatMode = TileRepeatMode.REPEAT
@@ -143,11 +184,11 @@ val MapStateTest by testSuite {
             TilePoint(0.0, 1024.0), TilePoint(0.0, -1025.0)
         )) {
             assertFailsWith<IllegalArgumentException> {
-                state.canvasKernel.resolveVisibleTiles(point, point + TilePoint(tileSpan, tileSpan), 30, properties)
+                state.canvasEngine.resolveVisibleTiles(point, point + TilePoint(tileSpan, tileSpan), 30, properties)
             }
         }
         val lastColumn = 1024.0 - tileSpan
-        state.canvasKernel.resolveVisibleTiles(
+        state.canvasEngine.resolveVisibleTiles(
             TilePoint(lastColumn, 0.0), TilePoint(1024.0, tileSpan), 30, properties,
         )
     }
@@ -191,19 +232,19 @@ val MapStateTest by testSuite {
             val state = mapState(coroutineScope = CoroutineScope(coroutineContext + parent))
             try {
                 state.updateCamera(zoom = 30F)
-                state.canvasKernel.refreshCanvas(listOf(RasterCanvasParameters(1, tileSource = { z, r, c ->
+                state.canvasEngine.refreshCanvas(listOf(RasterCanvasParameters(1, tileSource = { z, r, c ->
                     TileResult.Success(RasterTile(z, r, c, null))
                 })))
                 state.setViewportSize(IntSize(512, 512))
                 val middle = 536870912
-                state.canvasKernel.awaitActiveTiles(1, 30, listOf(
+                state.canvasEngine.awaitActiveTiles(1, 30, listOf(
                     TileSpecs(30, middle - 1, middle - 1), TileSpecs(30, middle, middle - 1),
                     TileSpecs(30, middle - 1, middle), TileSpecs(30, middle, middle)
                 ))
                 state.updateCamera(tilePoint = TilePoint(512.0, 512.0))
-                state.canvasKernel.awaitActiveTiles(1, 30, listOf(TileSpecs(30, 1073741823, 1073741823)))
+                state.canvasEngine.awaitActiveTiles(1, 30, listOf(TileSpecs(30, 1073741823, 1073741823)))
                 state.updateCamera(tilePoint = TilePoint.Zero)
-                state.canvasKernel.awaitActiveTiles(1, 30, listOf(TileSpecs(30, 0, 0)))
+                state.canvasEngine.awaitActiveTiles(1, 30, listOf(TileSpecs(30, 0, 0)))
             } finally {
                 parent.cancelAndJoin()
             }
@@ -219,17 +260,17 @@ val MapStateTest by testSuite {
             val state = mapState(mapProperties = properties, coroutineScope = CoroutineScope(coroutineContext + parent))
             try {
                 state.updateCamera(zoom = 30F, tilePoint = TilePoint(512.0, 512.0))
-                state.canvasKernel.refreshCanvas(listOf(RasterCanvasParameters(1, tileSource = { z, r, c ->
+                state.canvasEngine.refreshCanvas(listOf(RasterCanvasParameters(1, tileSource = { z, r, c ->
                     TileResult.Success(RasterTile(z, r, c, null))
                 })))
                 state.setViewportSize(IntSize(512, 512))
                 val edge = 1073741824
-                state.canvasKernel.awaitActiveTiles(1, 30, listOf(
+                state.canvasEngine.awaitActiveTiles(1, 30, listOf(
                     TileSpecs(30, edge - 1, edge - 1), TileSpecs(30, edge, edge - 1),
                     TileSpecs(30, edge - 1, edge), TileSpecs(30, edge, edge)
                 ))
                 state.updateCamera(tilePoint = TilePoint.Zero)
-                state.canvasKernel.awaitActiveTiles(1, 30, listOf(
+                state.canvasEngine.awaitActiveTiles(1, 30, listOf(
                     TileSpecs(30, -1, -1), TileSpecs(30, 0, -1), TileSpecs(30, -1, 0), TileSpecs(30, 0, 0)
                 ))
             } finally {
@@ -245,13 +286,13 @@ val MapStateTest by testSuite {
             val requests = ConcurrentLinkedQueue<TileSpecs>()
             try {
                 mapState.updateCamera(zoom = 2F)
-                mapState.canvasKernel.refreshCanvas(listOf(RasterCanvasParameters(1, tileSource = { z, r, c ->
+                mapState.canvasEngine.refreshCanvas(listOf(RasterCanvasParameters(1, tileSource = { z, r, c ->
                     requests.add(TileSpecs(z, r, c))
                     TileResult.Success(RasterTile(z, r, c, null))
                 })))
                 mapState.setViewportSize(IntSize(64, 64))
                 val expected = listOf(TileSpecs(2, 1, 1), TileSpecs(2, 2, 1), TileSpecs(2, 1, 2), TileSpecs(2, 2, 2))
-                mapState.canvasKernel.awaitActiveTiles(1, 2, expected)
+                mapState.canvasEngine.awaitActiveTiles(1, 2, expected)
                 var frames = 0
                 val clock = object : MonotonicFrameClock {
                     override suspend fun <R> withFrameNanos(onFrame: (Long) -> R): R = onFrame(++frames * 16_000_000L)
@@ -266,7 +307,7 @@ val MapStateTest by testSuite {
                 }
 
                 assertTrue(frames > 20)
-                mapState.canvasKernel.awaitActiveTiles(1, 2, expected)
+                mapState.canvasEngine.awaitActiveTiles(1, 2, expected)
                 assertEquals(expected.toSet(), requests.toSet())
                 assertEquals(expected.size, requests.size)
             } finally {
@@ -281,7 +322,7 @@ val MapStateTest by testSuite {
             val state = mapState(coroutineScope = CoroutineScope(coroutineContext + parent))
             try {
                 state.updateCamera(zoom = 3F)
-                state.canvasKernel.refreshCanvas(listOf(RasterCanvasParameters(1, tileSource = { z, r, c ->
+                state.canvasEngine.refreshCanvas(listOf(RasterCanvasParameters(1, tileSource = { z, r, c ->
                     TileResult.Success(RasterTile(z, r, c, null))
                 })))
                 state.setViewportSize(IntSize(64, 64))
@@ -297,7 +338,7 @@ val MapStateTest by testSuite {
                     }
                 }
 
-                state.canvasKernel.awaitActiveTiles(1, 4, listOf(TileSpecs(4, 12, 12)))
+                state.canvasEngine.awaitActiveTiles(1, 4, listOf(TileSpecs(4, 12, 12)))
             } finally {
                 parent.cancelAndJoin()
             }
@@ -312,12 +353,12 @@ val MapStateTest by testSuite {
                 mapState.setViewportSize(IntSize(64, 64))
                 val first = RasterCanvasParameters(id = 1, tileSource = { z, r, c -> TileResult.Success(RasterTile(z, r, c, null)) })
                 val second = RasterCanvasParameters(id = 2, tileSource = first.tileSource)
-                mapState.canvasKernel.refreshCanvas(listOf(first))
-                val initialTiles = mapState.canvasKernel.awaitActiveTiles(1, 0, listOf(TileSpecs(0, 0, 0)))
+                mapState.canvasEngine.refreshCanvas(listOf(first))
+                val initialTiles = mapState.canvasEngine.awaitActiveTiles(1, 0, listOf(TileSpecs(0, 0, 0)))
 
-                mapState.canvasKernel.refreshCanvas(listOf(first, second))
+                mapState.canvasEngine.refreshCanvas(listOf(first, second))
 
-                assertEquals(initialTiles, mapState.canvasKernel.awaitActiveTiles(2, 0, listOf(TileSpecs(0, 0, 0))))
+                assertEquals(initialTiles, mapState.canvasEngine.awaitActiveTiles(2, 0, listOf(TileSpecs(0, 0, 0))))
             } finally {
                 parent.cancelAndJoin()
             }
@@ -334,18 +375,18 @@ val MapStateTest by testSuite {
                 try {
                     state.updateCamera(zoom = 3F)
                     state.setViewportSize(IntSize(64, 64))
-                    state.canvasKernel.refreshCanvas(listOf(first))
+                    state.canvasEngine.refreshCanvas(listOf(first))
                     val expected = listOf(TileSpecs(3, 3, 3), TileSpecs(3, 4, 3), TileSpecs(3, 3, 4), TileSpecs(3, 4, 4))
-                    state.canvasKernel.awaitActiveTiles(1, 3, expected)
+                    state.canvasEngine.awaitActiveTiles(1, 3, expected)
 
                     state.setViewportSize(emptySize)
-                    state.canvasKernel.refreshCanvas(listOf(first, second))
+                    state.canvasEngine.refreshCanvas(listOf(first, second))
 
-                    assertEquals(ActiveTiles(currentZoom = 3), state.canvasKernel.awaitActiveTiles(1, 3, emptyList()))
-                    assertEquals(ActiveTiles(currentZoom = 3), state.canvasKernel.awaitActiveTiles(2, 3, emptyList()))
+                    assertEquals(ActiveTiles(currentZoom = 3), state.canvasEngine.awaitActiveTiles(1, 3, emptyList()))
+                    assertEquals(ActiveTiles(currentZoom = 3), state.canvasEngine.awaitActiveTiles(2, 3, emptyList()))
                     state.setViewportSize(IntSize(64, 64))
-                    state.canvasKernel.awaitActiveTiles(1, 3, expected)
-                    state.canvasKernel.awaitActiveTiles(2, 3, expected)
+                    state.canvasEngine.awaitActiveTiles(1, 3, expected)
+                    state.canvasEngine.awaitActiveTiles(2, 3, expected)
                 } finally {
                     parent.cancelAndJoin()
                 }
@@ -899,7 +940,6 @@ val MapStateTest by testSuite {
         val restored = assertNotNull(saver.restore(saved))
 
         assertSame(mapProperties, restored.mapProperties)
-        assertSame(coroutineScope, restored.canvasKernel.coroutineScope)
         assertSame(currentZoomLevelPreference, restored.zoomLevelPreference)
         assertEquals(2F, restored.currentDensity.density)
         assertEquals(1.5F, restored.currentDensity.fontScale)

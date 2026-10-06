@@ -1,0 +1,747 @@
+KMaP tile pipeline redesign plan
+Date: 2026-10-05
+Status: Proposed architecture and implementation plan for review.
+
+Purpose
+
+Replace the orchestration spread across CanvasKernel, CanvasEngine and
+TileRenderer with one CanvasEngine that owns canvas configuration, tile
+selection, fetching, processing, caching, publication and lifecycle.
+
+Keep three explicit stages:
+
+1. Fetch tile payloads using structured coroutines and asynchronous IO.
+2. Decode and prepare vector tiles using actual parallel workers. Use Web
+   Workers for browser targets and a bounded thread executor on other targets.
+3. Draw with the existing Compose renderer. Preserve its current behavior and
+   defer replacement of the drawing backend.
+
+The first implementation must demonstrate that expensive vector preparation
+executes outside the browser UI thread. A successful build or a dispatcher
+switch alone does not demonstrate this.
+
+This document plans the work. It does not authorize a commit, publication or
+replacement of the renderer.
+
+
+1. Current implementation and constraints
+
+Relevant files, relative to the project root:
+
+  KMaP/src/com/rafambn/kmap/source/internal/CanvasKernel.kt
+  KMaP/src/com/rafambn/kmap/source/internal/CanvasEngine.kt
+  KMaP/src/com/rafambn/kmap/source/internal/TileRenderer.kt
+  KMaP/src/com/rafambn/kmap/source/internal/VectorTileProcessing.kt
+  KMaP/src/com/rafambn/kmap/source/internal/OptimizedVectorTile.kt
+  KMaP/src/com/rafambn/kmap/mvttile/OptimizedMVTile.kt
+  KMaP/src/com/rafambn/kmap/source/internal/render/VectorTileCanvas.kt
+  KMaP/src/com/rafambn/kmap/style/compiled/CompiledStyle.kt
+  KMaP/src/com/rafambn/kmap/style/compiled/CompiledValue.kt
+  KMaP/src/com/rafambn/kmap/components/parameters/VectorCanvasParameters.kt
+  KMaP/src/com/rafambn/kmap/components/KMaPContent.kt
+  KMaP/src/com/rafambn/kmap/MapState.kt
+  DemoApp/shared/src/com/rafambn/kmap/source/VectorTileSource.kt
+  DemoApp/jsApp/package-js-browser.sh
+
+Current responsibilities:
+
+- CanvasKernel resolves visible tiles and creates a separate engine, renderer
+  and child Job for each canvas ID.
+- CanvasEngine consumes selections and renderer results in one coroutine. It
+  owns active tiles, cache contents, fallback selection and normalization of
+  repeated tile coordinates.
+- TileRenderer launches a coroutine for each new required tile. The same
+  dispatcher runs coordination, fetching and processing. It deduplicates
+  in-flight requests but has no explicit admission limit for tile jobs.
+- Conflated request channels replace pending selections. Work that has already
+  started continues, and completed results use unlimited channels.
+- CanvasKernel only creates entries for previously unseen IDs. Replacing a
+  source, style or cache setting under an existing ID needs explicit handling.
+
+The three intended stages do not yet match the code boundaries:
+
+- The demo VectorTileSource downloads bytes, decodes protobuf and parses MVT
+  geometry before returning VectorTile. Its current getTile operation therefore
+  includes CPU work that should move to stage 2.
+- optimizeMVTile evaluates filters, assigns features to style layers and builds
+  Compose Path objects. OptimizedMVTile is not a portable worker payload.
+- CompiledValue and CompiledFilter contain evaluator functions. CompiledStyle
+  also contains sprite and font resources. These objects cannot be treated as
+  browser message data.
+- VectorTileCanvas evaluates paint and layout properties, measures text and
+  performs path transformations during drawing. These costs remain while the
+  drawing implementation stays unchanged.
+- Geometry construction currently occurs inside the style-layer loop. A feature
+  referenced by several style layers can produce repeated geometry objects.
+
+Preserve these existing rules:
+
+- Canvas IDs are unique.
+- Source requests use normalized coordinates. Display copies preserve their
+  own coordinates for world repetition and fallback placement.
+- Parent and child fallback tiles remain visible while replacements load.
+- Failed tiles do not remove successful neighbors or useful fallbacks.
+- Removing a canvas cancels its work without cancelling the caller's scope.
+- Late results never restore an obsolete viewport selection.
+- Tile sources report outcomes through TileResult.
+- Coordinate conversions continue to use the reference types from
+  MapReferenceUtils.kt. Preserve zoom, rotation, density and border behavior.
+- Keep iosX64 disabled. Verify iOS using supported Apple Silicon targets.
+
+The existing instruction that vector work is paused pending Compose async
+measurement/drawing support remains relevant. This redesign isolates portable
+preparation; it does not assume that Compose drawing or text measurement has
+become safe to move to workers.
+
+
+2. Alternatives and recommendation
+
+Alternative A: One coordinator with independent tile jobs
+
+CanvasEngine owns scheduling, caches and visible state. Each worker receives a
+tile payload and a style revision, prepares the tile and returns portable data.
+Workers may retain compiled style definitions, but do not initially own a
+persistent decoded-tile cache.
+
+Benefits:
+- One place decides which work matters and when it may start.
+- Any available worker can process a tile.
+- Worker replacement and failure recovery are relatively simple.
+- Main-thread and worker responsibilities can be verified independently.
+
+Costs:
+- Restyling can repeat decoding unless raw or decoded data is retained.
+- Output conversion and Compose Path construction still cost main-thread time.
+- Browser transport requires explicit encoding and buffer ownership.
+
+Recommendation: Start with this design. It meets the current requirements with
+the fewest distributed ownership decisions.
+
+Alternative B: One coordinator with workers that retain decoded tiles
+
+Workers own decoded geometry for assigned tiles. CanvasEngine sends prepare,
+restyle and release commands, and routes follow-up work to the worker holding
+the tile.
+
+Benefits:
+- Frequent style changes can reuse decoded geometry.
+- Fewer repeated input transfers and decodes.
+
+Costs:
+- Requires tile affinity, worker cache budgets and explicit eviction.
+- A failed worker loses its tile cache.
+- Load balancing becomes harder when expensive tiles concentrate on one worker.
+- Removing styles and canvases requires releasing retained worker state.
+
+Adopt this only if measurements show repeated decoding or transfer dominates
+the workloads the library needs to support.
+
+Alternative C: A background engine owns selection, fetching and preparation
+
+The browser UI sends viewport/configuration messages to a background engine and
+receives prepared tile snapshots. A further worker pool may parallelize CPU
+processing. Compose drawing still runs on the UI thread.
+
+Benefits:
+- Moves more coordination and cache work away from the UI thread.
+- Could fit a later background rendering or command-recording backend.
+
+Costs:
+- Custom source lambdas cannot simply cross into a browser worker.
+- More configuration, state and resource changes cross the message boundary.
+- A single background engine still needs additional execution capacity for
+  parallel CPU jobs.
+- Larger migration with less direct benefit to the current Compose renderer.
+
+Defer this option until there is evidence that coordination itself is expensive
+or a future renderer requires this ownership model.
+
+
+3. Recommended ownership model
+
+Use one CanvasEngine per map. It replaces the orchestration roles of all three
+current classes and contains per-canvas data records.
+
+CanvasEngine owns:
+
+- Canvas registration, configuration changes and removal.
+- The latest resolved viewport selection.
+- Normalized tile demand and display-coordinate mappings.
+- Fetch and processing queues, priorities and admission limits.
+- In-flight request tracking and request IDs.
+- Source/style revisions and canvas generations.
+- Tile caches, active tiles and fallback selection.
+- Failure handling and retry scheduling.
+- Worker creation, readiness, replacement and disposal.
+- Publication of results for the existing Compose drawing code.
+
+Keep this mutable state confined to one owner, normally the map's UI scope.
+Coroutine fetch completions and worker callbacks enqueue small results for that
+owner to handle. Workers never mutate Compose state or the engine's maps.
+
+The engine may use a private coroutine event loop for coordination. Coroutines
+are still appropriate for IO, waiting and lifecycle. The worker implementation
+provides the actual CPU execution guarantee.
+
+Do not process geometry or large result conversions inside the coordination
+loop without accounting for their main-thread cost. Keep state updates small
+and allow drawing to proceed between batches of completed tiles.
+
+Supporting code still exists where it expresses a real boundary:
+
+- Pure functions for tile decoding, style filtering and geometry preparation.
+- Immutable command/result data.
+- A platform worker implementation with real threads or Web Workers.
+- A conversion function that creates existing Compose tile objects.
+
+There is no need for a generic event bus, generic remote-function executor or
+another manager that forwards calls between these pieces. Each top-level type
+should have its own file, following the project's Kotlin style.
+
+Keep platform execution details behind the worker boundary. Common processing
+code stays in common source; platform code follows the repository's source-set
+layout. A separate processing module is justified if it is needed to emit a
+browser worker without bringing in the Compose application.
+
+
+4. Data flow and public integration
+
+Viewport/configuration
+        |
+        v
+   CanvasEngine ---- fetch request ----> coroutine source
+        ^                                     |
+        |-------------- encoded tile ---------|
+        |
+        |-------- prepare command ------> worker pool
+        ^                                     |
+        |------------ prepared data ----------|
+        |
+        v
+   Compose object creation -> ActiveTiles -> existing drawing
+
+Keep the integration small:
+
+- MapState owns the engine as an ordinary property.
+- KMaPContent supplies canvas configuration and reads each canvas's ActiveTiles.
+- Viewport updates submit the latest selection.
+- Raster results bypass vector preparation and use their existing drawing path.
+
+Preserve safe same-frame registration. KMaPContent currently refreshes canvases
+before looking up active tiles. If configuration becomes asynchronous, drawing
+must receive a valid empty snapshot while registration is pending; it must not
+call getValue on an entry that the engine has not created yet.
+
+Keep per-canvas observable snapshots so a result for one canvas does not require
+unnecessary updates to every canvas. Stable sources, workers and engine objects
+remain ordinary properties, not StateFlow values.
+
+A future drawing backend should consume prepared geometry through a separate
+conversion path. Do not design a universal GPU command format during this work.
+
+
+5. Stage 1: fetching
+
+Introduce an encoded vector input path so network retrieval can return bytes
+without decoding protobuf or MVT geometry. Continue wrapping source outcomes
+in TileResult. Choose the exact encoded tile type after reviewing the existing
+public Tile hierarchy and compatibility requirements.
+
+The engine owns the fetch coroutine and passes its encoded result to stage 2.
+Use nonblocking HTTP APIs. A dispatcher intended for blocking IO does not make
+CPU processing parallel on browser targets.
+
+Do not silently change the meaning of existing VectorTile sources. A source
+returning an already decoded MVTile can remain supported through a compatibility
+path, but decoding inside that source cannot be moved by the engine. Document
+that limitation and migrate the demo to the encoded path.
+
+Arbitrary custom source lambdas stay in the caller's runtime. The engine sends
+their resulting data to workers rather than attempting to serialize the lambda.
+
+Use a bounded fetch admission limit shared across the map. Keep pending requests
+in the engine instead of launching an unbounded number of suspended jobs.
+Throttle further fetch admission when the encoded-payload queue is full.
+
+Preserve coroutine cancellation. Audit source implementations that catch broad
+Exception values so cancellation is rethrown rather than converted into an
+ordinary failed tile.
+
+Raster sources may also perform image decoding inside getTile. Preserve their
+current path for this migration and report raster decoding separately if it
+appears in measurements.
+
+
+6. Stage 2: portable vector preparation
+
+The first worker implementation performs:
+
+- Protobuf decoding.
+- MVT geometry decoding.
+- Filter evaluation against feature properties and geometry.
+- Assignment of features to style layers.
+- Preparation of tile-local coordinates, rings and feature metadata.
+
+Output should contain data such as:
+
+- Geometry type and coordinate buffers.
+- Ring/part offsets and closure information.
+- Feature IDs and typed property values.
+- Style-layer membership through references to prepared features.
+- The extent needed to interpret each geometry or a documented normalization
+  to one extent.
+
+Avoid nested Pair and collection graphs in the transport format where packed
+arrays express the same data clearly. Preserve property numeric semantics and
+feature ID precision. Do not coerce ULong IDs through a JavaScript Number when
+that would lose information.
+
+Build geometry once per source feature. Several style layers should reference
+that geometry rather than rebuilding it. Preserve winding, fill rules, feature
+order and style-layer draw order.
+
+Keep geometry in tile coordinates. Panning, rotation and density changes should
+not rebuild tile-local geometry. Use the existing coordinate reference types at
+the map/display boundary.
+
+The portable result must not contain Compose Path, Canvas, Paint, ImageBitmap,
+FontFamily, TextMeasurer, coroutine scopes, channels or evaluator closures.
+
+Resource handles and native graphics objects remain owned by the rendering
+runtime. The worker result is independent of the lifetime of a graphics context.
+
+
+7. Style preparation and invalidation
+
+Send a portable style definition to each worker once per style revision. The
+worker compiles its own processing evaluators and acknowledges readiness before
+accepting jobs that depend on that revision.
+
+Start with the data needed for layer matching and filters. Reuse existing style
+models and expression semantics where possible. Introduce a new expression
+bytecode format only if a measured need justifies it.
+
+The current public API accepts CompiledStyle. Determine how to retain or supply
+the original serializable definition for worker processing. Do not assume a
+CompiledStyle built from arbitrary user evaluator functions can be reconstructed
+in another browser runtime. Preserve a documented local compatibility path or
+require a portable definition for worker-enabled sources.
+
+Keep sprite and font objects on the drawing side. If a preparation expression
+depends on resource availability, send the relevant plain metadata and include
+its revision in invalidation decisions.
+
+Distinguish preparation dependencies from drawing dependencies:
+
+- Source data, layer mapping and filter changes can require reprocessing.
+- A paint-only change should not force a refetch.
+- Continuous zoom-dependent paint values stay in the existing renderer for now.
+- Layout/filter expressions must preserve their existing evaluation zoom rules.
+- Resource availability and locale changes only invalidate work that depends
+  on them; the initial implementation may conservatively reprocess if needed.
+
+Do not freeze all style evaluation at a tile's integer zoom. Parent fallback
+tiles can be drawn at a different display zoom, and the current renderer uses
+both integer and continuous zoom evaluations.
+
+Old style revisions must remain available while accepted jobs still use them,
+or those jobs must finish with an explicit obsolete/failure result. Release
+unused revisions to avoid retaining every historical style in workers.
+
+
+8. Worker commands, transport and lifetime
+
+Conceptual commands and replies:
+
+  InstallStyle(styleRevision, portableDefinition)
+  StyleReady(styleRevision)
+  PrepareTile(requestId, canvasGeneration, sourceRevision,
+              normalizedTileKey, styleRevision, payload)
+  TilePrepared(requestId, revisions, preparedData)
+  TileFailed(requestId, failure)
+
+Add cancellation or release messages only for state the implementation actually
+retains. Include a startup readiness/protocol check so incompatible or missing
+worker assets produce an explicit failure instead of leaving requests pending.
+
+Use a small domain-specific worker contract. It must support submitting tile
+work, receiving terminal replies, observing worker failure and closing real
+worker resources. Keep browser serialization inside the browser implementation.
+
+On JVM/native targets, immutable messages may be handed to a thread executor
+without encoding them as browser buffers. Ensure submitted arrays are no longer
+mutated by the sender. Workers return results to the engine's owner.
+
+For browsers, use transferable ArrayBuffers for substantial binary payloads.
+Transferring detaches the sender's buffer. Raw cache policy must therefore choose
+one of these explicitly:
+
+- Retain a copy and transfer a separate buffer.
+- Transfer ownership and arrange to regain the raw payload if it must be cached.
+- Do not retain raw bytes and accept later refetching or another cache source.
+
+Start with the simplest measured policy. Do not describe the pipeline as
+zero-copy merely because postMessage uses a transfer list. Kotlin collection
+conversion and Kotlin/Wasm interop can still introduce copying and allocation.
+
+Use one bounded pool per map initially, shared by its canvases. Avoid one worker
+per tile or per canvas. Consider an application-wide pool later only if multiple
+simultaneous maps demonstrate a need for shared resource limits.
+
+On map disposal, cancel fetches, reject new work, ignore later callbacks and
+terminate or close the owned workers. Removing one canvas only invalidates that
+canvas's work. Do not cancel the parent application scope.
+
+
+9. Browser and native execution choices
+
+Browser option 1: Kotlin/JS processing worker
+
+Compile the portable processing code to JavaScript and load it in a dedicated
+worker. Both JS and Wasm UIs can communicate with that worker through the same
+message contract. The UI compilation target does not dictate the worker target.
+
+Browser option 2: Kotlin/Wasm processing worker
+
+Load a separate Kotlin/Wasm processing module in each dedicated worker. Treat
+its runtime and objects as separate from the UI runtime. Measure startup,
+module loading, memory use and conversions at the JS interop boundary.
+
+Prototype both only as needed to choose a backend. Prefer a shared Kotlin
+algorithm over separately maintained JavaScript and Kotlin processing logic.
+Do not assume Kotlin/Wasm object references are transferable between workers.
+
+Do not make SharedArrayBuffer or shared Wasm memory a requirement of the first
+implementation. Message passing is sufficient to establish the required
+execution boundary; shared-memory support and deployment requirements would
+need their own investigation.
+
+JVM/Android/iOS:
+
+Use a bounded platform thread executor behind the same worker contract. Keep
+graphics and Compose objects out of those tasks even where native APIs might
+permit specific graphics operations off-thread. That preserves one processing
+contract across platforms.
+
+Coroutines may adapt replies into suspending waits, but submission to a real
+executor is the CPU offload mechanism. Select the concrete executor APIs against
+the project's supported toolchain before implementation.
+
+Browser packaging is part of the feature:
+
+- Emit a worker entry point that does not initialize the Compose application.
+- Package any worker JS/Wasm files and required auxiliary assets.
+- Resolve worker/module URLs correctly under a hosted subpath.
+- Verify the existing JS packaging script includes the required outputs.
+- Verify Wasm packaging separately rather than assuming JS packaging covers it.
+- Surface startup, asset loading and worker runtime failures.
+- Document required hosting/CSP settings if the selected worker loading method
+  introduces any.
+
+A fallback to local processing must be explicit and observable if provided. A
+silent fallback would hide failure of the main requirement, browser parallelism.
+
+
+10. Scheduling, versions and failure behavior
+
+Maintain separate limits for active fetches, pending encoded payloads, active
+processing jobs and completed data waiting for Compose conversion. Start with
+internal limits and measured defaults; expose configuration only where library
+consumers need it.
+
+Use worker availability to admit processing jobs. Keep most pending work in the
+engine so a new viewport can replace priorities without messages queued behind
+long CPU tasks in workers.
+
+Prioritize currently visible missing tiles. Center-first ordering is a reasonable
+initial policy. Preserve useful fallback tiles while replacements are pending.
+Do not add speculative prefetching in the first implementation.
+
+Separate these identities:
+
+- Display tile coordinates: where a repeated tile is drawn.
+- Source tile key: source identity/revision plus normalized zoom, row and column.
+- Prepared tile key: source tile key plus preparation style/dependency revision.
+- Request ID: identifies a specific attempt and its terminal completion.
+- Canvas generation: prevents a removed and recreated ID from accepting old work.
+- Current viewport selection: determines publication, not whether all older
+  content has become invalid.
+
+Do not compare callback identity alone to detect source changes. Recomposition
+can create new lambda instances without changing the source. Establish stable
+configuration identity or an explicit content revision contract.
+
+Handle result ordering deliberately:
+
+- A result from an earlier viewport may populate cache if its content revisions
+  remain valid. Publish it only if it contributes to the current selection.
+- A result from an old style/source revision cannot replace current content.
+- A reply for an old canvas generation cannot revive a removed canvas.
+- A late reply from a replaced worker cannot complete a newer retry.
+- Every accepted request reaches one terminal state and releases its capacity.
+
+Cancel pending obsolete work before admission. Cancel obsolete fetches when
+their results have no remaining demand or deliberate cache use.
+
+CPU cancellation is best effort. A busy browser worker cannot process a queued
+cancel message while executing a long synchronous function. Choose between
+letting a bounded task finish and discarding its obsolete result, or explicitly
+chunking work to allow cancellation messages between chunks. Reserve worker
+termination for disposal, failure or a justified recovery policy.
+
+Bound retries and preserve failure visibility. Distinguish source failure,
+preparation failure and worker failure internally. Do not retry malformed tiles
+forever or discard successful neighboring tiles when one request fails.
+
+After a worker crash, account for its accepted requests, replace the worker if
+appropriate, reinstall required styles and retry only eligible current work.
+
+
+11. Caching and publication
+
+Preserve active-tile and fallback behavior before changing cache policy.
+
+Use separate keys for raw source data and style-dependent prepared data. This
+allows a style change to reuse bytes when available without pretending that
+previously prepared geometry/filter membership is still valid.
+
+Do not add raw, decoded, prepared and graphics caches simultaneously. Begin with
+the existing active/prepared cache semantics and a deliberate raw-byte policy.
+Add a persistent decoded cache only if measurements justify Alternative B or
+another clearly owned cache.
+
+Tile count alone does not describe memory use for dense vector data. Track
+payload and prepared buffer sizes during experiments. Add a byte budget where
+tile-count limits fail to keep memory bounded in realistic workloads.
+
+Preserve the existing per-canvas maxCacheTiles setting during migration. Clarify
+that active tiles and fallback resources may have lifetimes beyond cache
+membership. Cache eviction must not invalidate objects still being drawn.
+
+Cross-canvas source deduplication is optional. It requires an explicit shared
+source identity and demand tracking, not an assumption that equal coordinates
+or equal URLs always imply interchangeable tile content.
+
+Convert portable geometry to Compose objects once when accepting prepared data,
+then reuse those objects for drawing. Preserve the existing OptimizedVectorTile
+and ActiveTiles contracts where practical so the renderer does not change.
+
+Measure bursts of completed tiles. If Path construction blocks drawing, limit
+conversion work admitted between frames. Parallel workers can finish many tiles
+at once and move the bottleneck to main-thread result acceptance.
+
+Continue drawing with the current renderer's global style-layer order, clipping,
+fallback scaling, density, symbols, sprites and text measurement behavior.
+
+
+12. Implementation sequence
+
+Phase 0: Establish a baseline
+
+- Record representative sparse and dense vector tiles and styles.
+- Measure the existing remote vector demo on JVM, JS and Wasm.
+- Separate fetch wait, protobuf/geometry decoding, filtering, Path creation,
+  drawing and text measurement where the existing code allows it.
+- Record cold startup, first useful tiles, pan/zoom responsiveness and memory.
+- Audit existing tests for normalization, fallbacks, cancellation and retries.
+
+Exit criterion: There is a reproducible baseline and a clear account of which
+costs this plan moves and which remain in drawing.
+
+Phase 1: Extract a portable preparation path
+
+- Define encoded vector input and portable prepared geometry.
+- Retain a portable style definition alongside the existing rendering style.
+- Extract decoder/filter/geometry functions from graphics object construction.
+- Add a conversion function producing the existing optimized tile objects.
+- Execute this path locally first and verify output parity.
+- Preserve decoded-source compatibility and TileResult behavior.
+
+Exit criterion: Existing drawing can consume equivalent results from portable
+preparation, with no worker dependency and no renderer replacement.
+
+Phase 2: Prove the browser worker boundary
+
+- Emit and package a minimal real worker using the processing code.
+- Install a style, transfer an encoded tile, receive prepared data and draw it.
+- Test the path from both JS and Wasm UIs.
+- Verify execution location and responsive UI during expensive processing.
+- Compare local preparation, one worker and two workers.
+- Include transfer, startup and Compose conversion costs in the comparison.
+
+Exit criterion: The existing remote vector demo visibly works through real
+workers on both browser targets. The measurements justify continuing, or identify
+the boundary that must change before further consolidation.
+
+Phase 3: Consolidate orchestration
+
+- Make one CanvasEngine own the canvas registry and per-canvas state records.
+- Move required-tile tracking, fetch admission and worker admission into it.
+- Preserve selection normalization, display copies and fallback selection.
+- Integrate MapState and KMaPContent with safe registration/publication ordering.
+- Handle source/style/cache configuration changes under existing canvas IDs.
+- Remove CanvasKernel and TileRenderer once their responsibilities are covered.
+
+Exit criterion: One owner controls pipeline state and lifecycle, existing
+behavior tests pass, and removed classes leave no duplicate scheduling path.
+
+Phase 4: Complete execution and lifecycle behavior
+
+- Implement the supported JVM/Android/iOS thread executors.
+- Add bounded queues, priorities, revisions, stale-result checks and failure
+  recovery to the consolidated owner.
+- Handle worker readiness and shutdown, style lifetime and buffer ownership.
+- Verify removal, recreation, retries and disposal under delayed completions.
+
+Exit criterion: All supported targets use the intended execution implementation
+and maintain bounded, correctly owned work through lifecycle changes.
+
+Phase 5: Measure, tune and document
+
+- Repeat the baseline scenarios with cold and warm workers.
+- Tune worker count, fetch limits and conversion admission using measurements.
+- Decide whether raw caching or worker-retained decoded tiles pays its cost.
+- Update source/API documentation, ownership KDoc and demo usage together.
+- Document worker asset packaging and any explicit compatibility fallback.
+
+Exit criterion: Runtime verification, correctness checks and performance evidence
+support adopting the new path. Renderer replacement remains a separate task.
+
+
+13. Verification and acceptance criteria
+
+Build and checks during implementation:
+
+  rtk proxy ./kotlin build -m KMaP -p jvm
+  rtk proxy ./kotlin check
+  rtk proxy ./DemoApp/jsApp/package-js-browser.sh
+
+Use the repository's supported commands for other target builds and demos after
+checking their current configuration. Keep iosX64 disabled. If necessary, use
+writable KOTLIN_SHARED_CACHE_DIR, KOTLIN_CLI_BOOTSTRAP_CACHE_DIR and XDG_DATA_HOME
+locations outside the repository.
+
+Tests should verify behavior and ownership rather than mirror implementation
+details. Extend or adapt the existing CanvasKernelTest, CanvasEngineTest,
+TileRendererTest and VectorTileProcessingTest coverage as responsibilities move.
+
+Required correctness cases:
+
+- Repeated world copies fetch/process one normalized tile within their demand
+  scope and draw at the correct display coordinates.
+- Parent/child fallbacks retain placement, ordering and clipping during loading.
+- Panning away and back accepts reusable content without restoring old selection.
+- Style changes preserve raw source reuse where configured and reject stale
+  prepared results, including replies arriving out of order.
+- Source replacement invalidates old source results even at identical z/x/y.
+- Removing/recreating a canvas with the same ID rejects the old generation.
+- Empty selections stop admitting pending work and handle later replies safely.
+- Map disposal closes workers and cancels owned fetches without cancelling the
+  caller's scope.
+- One tile or worker failure leaves successful neighbors and fallbacks usable.
+- Admission limits hold during rapid viewport changes and slow processing.
+- Transferred buffers are never read after detachment by their former owner.
+- Portable properties and feature IDs survive transport without precision loss.
+- Layer filters, geometry-dependent expressions and zoom evaluation retain
+  existing semantics.
+- Raster behavior remains equivalent.
+
+Runtime and visual checks:
+
+- Open the actual JS and Wasm remote vector demos, including deployment under
+  their expected URL subpaths, and confirm that worker assets load.
+- Verify CPU preparation is executing in workers rather than a silent local
+  fallback.
+- Exercise dense tiles while panning, zooming, rotating and changing density.
+- Compare style-layer order, transparency, line geometry, fills, sprites, labels,
+  clipping, repeated worlds and zoom fallbacks with the baseline.
+- Run supported Android/iOS demos and JVM behavior checks for the same pipeline.
+
+Performance acceptance:
+
+- Report end-to-end results, including transfer, conversion and drawing costs.
+- Compare main-thread stalls during preparation and viewport interaction.
+- Record cold startup separately from steady-state processing.
+- Keep queues and retained payloads bounded during sustained movement.
+- Check whether additional workers improve responsiveness or merely increase
+  memory and bursts of Path construction.
+- Choose numerical performance thresholds from the baseline before declaring
+  a performance improvement. Do not infer improvement from worker count alone.
+
+If main-thread Path construction or text measurement dominates after offloading,
+record that result. It is evidence for the later renderer work, not proof that
+all vector processing has moved off the UI thread.
+
+
+14. Decisions to resolve through the prototype
+
+- Exact encoded vector source API and compatibility policy for decoded sources.
+- How portable style definitions accompany public CompiledStyle values.
+- Kotlin/JS worker versus Kotlin/Wasm worker for the browser implementation.
+- Concrete thread executor APIs for supported non-browser targets.
+- Buffer ownership and whether retaining raw tile bytes is worthwhile.
+- Worker count, queue capacity and main-thread conversion budget.
+- Failure/retry policy and whether an explicit local compatibility path is needed.
+- Whether measurements justify persistent decoded-tile ownership in workers.
+
+These are implementation decisions with testable tradeoffs. They do not require
+adding all alternative backends or caches to the first implementation.
+
+
+15. Prior discussion context
+
+The October 3 canvas refactor discussion established single-owner engine state,
+normalized source requests, per-canvas lifecycle isolation, explicit outcomes
+and composition instead of specialized engine inheritance. Preserve the useful
+behavior from those changes while replacing the multi-class orchestration.
+
+The August 26-27 Graphite discussions exposed a different problem: compiling
+targets did not establish that the intended backend worked in the existing demo.
+Use actual runtime checks for this worker migration. Keep platform plumbing at
+the execution boundary and use the existing remote vector demo as the primary
+integration exercise.
+
+Relevant T3 thread references:
+
+  October canvas refactors:
+  8738a23c-f75e-4647-b877-afd199078fd5
+
+  Earlier stale-work discussion:
+  f62257bf-3822-424d-b99c-2c1056c4b17e
+
+  Graphite integration and follow-up:
+  80548870-1c76-4bc5-9231-09077540f405
+  b0d82aa4-7dda-4161-9788-7fc87964141a
+
+
+16. Technical references
+
+Consult the versions matching the project toolchain during implementation.
+The architecture does not depend on browser dispatchers gaining thread support.
+
+Kotlin coroutine JS dispatcher implementation:
+https://github.com/Kotlin/kotlinx.coroutines/blob/master/kotlinx-coroutines-core/js/src/CoroutineContext.kt
+
+Kotlin coroutine Wasm JS dispatcher implementation:
+https://github.com/Kotlin/kotlinx.coroutines/blob/master/kotlinx-coroutines-core/wasmJs/src/CoroutineContext.kt
+
+Kotlin dispatcher platform behavior:
+https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-dispatchers/-default.html
+
+Browser worker execution and messaging:
+https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers
+
+Structured clone limits, including functions and object prototypes:
+https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm
+
+Transferable buffers and sender detachment:
+https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Transferable_objects
+
+Kotlin/Wasm JavaScript interop:
+https://kotlinlang.org/docs/wasm-js-interop.html
+
+Mapbox style semantics:
+https://docs.mapbox.com/style-spec/
+
+Vector tile format:
+https://github.com/mapbox/vector-tile-spec

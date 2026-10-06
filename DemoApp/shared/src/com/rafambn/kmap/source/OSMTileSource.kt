@@ -7,6 +7,7 @@ import com.rafambn.kmap.source.TileSpecs
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
+import kotlinx.coroutines.CancellationException
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.decodeToImageBitmap
 
@@ -21,6 +22,8 @@ class OSMTileSource(private val userAgent: String) : TileSource<RasterTile> {
             }.readRawBytes()
             imageBitmap = byteArray.decodeToImageBitmap()
             return TileResult.Success(RasterTile(zoom, row, column, imageBitmap))
+        } catch (cancelled: CancellationException) {
+            throw cancelled
         } catch (ex: Exception) {
             println(ex)
             return TileResult.Failure(TileSpecs(zoom, row, column))

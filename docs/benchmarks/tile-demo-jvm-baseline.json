@@ -1,0 +1,69 @@
+{
+  "baseline": "2d4138c",
+  "date": "2026-10-05",
+  "target": "JVM",
+  "scenario": "Remote Berlin zoom 14, 1000x1000 window",
+  "tiles": 9,
+  "fetchMillis": 3894.903918,
+  "decodeMillis": 67.83579200000001,
+  "filterAndPathMillis": 46.197376999999996,
+  "samples": [
+    {
+      "fetchMillis": 362.406583,
+      "decodeMillis": 16.721917,
+      "totalMillis": 379.130792
+    },
+    {
+      "fetchMillis": 404.338584,
+      "decodeMillis": 6.642875,
+      "totalMillis": 410.986459
+    },
+    {
+      "fetchMillis": 404.201875,
+      "decodeMillis": 7.682417,
+      "totalMillis": 411.887292
+    },
+    {
+      "fetchMillis": 403.594,
+      "decodeMillis": 14.351292,
+      "totalMillis": 417.947292
+    },
+    {
+      "fetchMillis": 406.176625,
+      "decodeMillis": 12.088708,
+      "totalMillis": 418.267083
+    },
+    {
+      "fetchMillis": 461.821667,
+      "decodeMillis": 2.347375,
+      "totalMillis": 464.17225
+    },
+    {
+      "fetchMillis": 468.18,
+      "decodeMillis": 3.380375,
+      "totalMillis": 471.564292
+    },
+    {
+      "fetchMillis": 492.655792,
+      "decodeMillis": 1.91875,
+      "totalMillis": 494.576084
+    },
+    {
+      "fetchMillis": 491.528792,
+      "decodeMillis": 2.702083,
+      "totalMillis": 494.232375
+    }
+  ],
+  "filterAndPathSamples": [
+    9.664375,
+    3.984084,
+    7.780167,
+    8.079334,
+    8.379167,
+    1.709958,
+    3.543417,
+    1.23625,
+    1.820625
+  ],
+  "note": "Cold single-run stage sums overlap across requests. Filter and Path construction share one original operation; drawing/text measurement remain in the original renderer. Not a throughput comparison against worker transport."
+}

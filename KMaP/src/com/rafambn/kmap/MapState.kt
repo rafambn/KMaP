@@ -15,7 +15,8 @@ import com.rafambn.kmap.geometry.plane.*
 import com.rafambn.kmap.mapProperties.MapProperties
 import com.rafambn.kmap.mapProperties.ZoomLevelRange
 import com.rafambn.kmap.mapProperties.border.BoundaryMode
-import com.rafambn.kmap.source.internal.CanvasKernel
+import com.rafambn.kmap.source.internal.CanvasEngine
+import com.rafambn.kmap.source.TilePipelineStatus
 import com.rafambn.kmap.utils.loopInRange
 import com.rafambn.kmap.utils.toIntFloor
 import kotlinx.coroutines.CoroutineScope
@@ -30,7 +31,7 @@ fun rememberMapState(
     initialCameraState: CameraState? = null,
 ): MapState {
     val currentZoomLevelPreference = zoomLevelPreference ?: mapProperties.zoomLevels
-    return rememberSaveable(
+    val state = rememberSaveable(
         saver = MapState.saver(
             mapProperties = mapProperties,
             zoomLevelPreference = currentZoomLevelPreference,
@@ -47,6 +48,10 @@ fun rememberMapState(
             )
         }
     )
+    DisposableEffect(state) {
+        onDispose { state.close() }
+    }
+    return state
 }
 
 class MapState(
@@ -120,11 +125,23 @@ class MapState(
     internal val drawReference = { cameraState.tilePoint.toCanvasDrawReference() }
     internal val drawTileSize = { mapProperties.tileSize }
     internal val drawRotationDegrees = { cameraState.angleDegrees.toFloat() }
-    internal val canvasKernel = CanvasKernel(coroutineScope)
+    internal val canvasEngine = CanvasEngine(coroutineScope)
+
+    fun tilePipelineStatus(canvasId: Int): TilePipelineStatus = canvasEngine.getStatus(canvasId)
+
+    /**
+     * Discard cached and displayed tiles, cancel fetches and reload the current viewport asynchronously.
+     * Call on the map's UI dispatcher after changing content used by its registered tile source.
+     * A null [canvasId] invalidates every canvas. Replies from previous work are discarded.
+     */
+    fun invalidateTiles(canvasId: Int? = null) { canvasEngine.invalidateTiles(canvasId) }
+
+    /** Release this map's fetches and native/browser workers when manually managing MapState. */
+    fun close() { canvasEngine.close() }
 
     internal fun resolveVisibleTiles() {
         if (viewportSize.width == 0 || viewportSize.height == 0) {
-            canvasKernel.resolveVisibleTiles(TilePoint.Zero, TilePoint.Zero, cameraState.zoom.toIntFloor(), mapProperties)
+            canvasEngine.resolveVisibleTiles(TilePoint.Zero, TilePoint.Zero, cameraState.zoom.toIntFloor(), mapProperties)
             return
         }
 
@@ -133,7 +150,7 @@ class MapState(
         val topRight = ScreenOffset(screenSize.x, 0.0).toTilePoint()
         val bottomLeft = ScreenOffset(0.0, screenSize.y).toTilePoint()
         val bottomRight = screenSize.toTilePoint()
-        canvasKernel.resolveVisibleTiles(
+        canvasEngine.resolveVisibleTiles(
             TilePoint(
                 minOf(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x),
                 minOf(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y),

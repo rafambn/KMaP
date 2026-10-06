@@ -10,6 +10,8 @@ runtime_version="0.150.1"
 runtime_sha256="aff08515ebd22863e9bb0b776068dfd2c7f7a384ed5e7e480b2ded349b653a0c"
 runtime_url="https://repo1.maven.org/maven2/org/jetbrains/skiko/skiko-js-wasm-runtime/$runtime_version/skiko-js-wasm-runtime-$runtime_version.jar"
 
+# CLI 0.12 can reuse an application link after a dependency changes. Re-link packaged applications.
+rm -rf "$project_dir/build/tasks/_jsApp_buildJsAppJsRelease" "$artifact_root/jsAppjsrelease"
 "$project_dir/kotlin" build -m jsApp -p js -v release
 
 artifact_dir=$(find "$artifact_root" -maxdepth 1 -type d -name "jsAppjsrelease" -print -quit)
@@ -47,5 +49,7 @@ cp -R "$project_dir/DemoApp/shared/composeResources/." \
     "$output_dir/composeResources/kmap.kmapdemo.generated.resources/"
 cp "$project_dir/DemoApp/jsApp/resources/index.html" "$output_dir/index.html"
 cp "$project_dir/DemoApp/jsApp/resources/styles.css" "$output_dir/styles.css"
+
+"$project_dir/TileWorker/package-worker.sh" "$output_dir"
 
 echo "Kotlin/JS browser distribution: $output_dir"

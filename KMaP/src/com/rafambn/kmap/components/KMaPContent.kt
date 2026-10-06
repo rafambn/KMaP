@@ -36,7 +36,7 @@ class KMaPContent(
         require(canvasIds.size == canvasIds.toSet().size) {
             "Canvas must have different ids"
         }
-        mapState.canvasKernel.refreshCanvas(canvas.map { it.parameters })
+        mapState.canvasEngine.refreshCanvas(canvas.map { it.parameters })
     }
 
     fun rasterCanvas(
@@ -47,7 +47,7 @@ class KMaPContent(
             Canvas(parameters) {
                 RasterTileCanvas(
                     gestureWrapper = gestureWrapper,
-                    activeTiles = { mapState.canvasKernel.getActiveTiles(parameters.id) },
+                    activeTiles = { mapState.canvasEngine.getActiveTiles(parameters.id) },
                     magnifierScale = mapState.drawMagScale,
                     positionOffset = mapState.drawReference,
                     tileSize = mapState.drawTileSize,
@@ -65,7 +65,7 @@ class KMaPContent(
             Canvas(parameters) {
                 VectorTileCanvas(
                     gestureWrapper = gestureWrapper,
-                    activeTiles = { mapState.canvasKernel.getActiveTiles(parameters.id) },
+                    activeTiles = { mapState.canvasEngine.getActiveTiles(parameters.id) },
                     magnifierScale = mapState.drawMagScale,
                     positionOffset = mapState.drawReference,
                     tileSize = mapState.drawTileSize,

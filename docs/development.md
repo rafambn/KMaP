@@ -12,6 +12,8 @@ Run every configured check:
 ./kotlin check
 ```
 
+See [Tile pipeline](tile-pipeline.md) for JS/Wasm worker packaging, runtime diagnostics and the reproducible preparation benchmark.
+
 Preview the documentation locally:
 
 ```shell

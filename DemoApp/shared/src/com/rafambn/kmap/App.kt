@@ -20,12 +20,12 @@ import com.rafambn.kmap.screens.*
 import com.rafambn.kmap.theme.AppTheme
 
 @Composable
-fun App() = AppTheme {
+fun App(initialRoute: Any = Routes.Start, vectorZoom: Float = 0F) = AppTheme {
     Surface(modifier = Modifier.systemBarsPadding().fillMaxSize()) {
         val navigationController = rememberNavController()
         NavHost(
             navController = navigationController,
-            startDestination = Routes.Start,
+            startDestination = initialRoute,
             enterTransition = {
                 slideInHorizontally(
                     initialOffsetX = { fullWidth -> fullWidth },
@@ -94,6 +94,7 @@ fun App() = AppTheme {
             }
             composable<Routes.VectorTiles> {
                 VectorTileScreen(
+                    initialZoom = vectorZoom,
                     navigateBack = { navigationController.popBackStack() }
                 )
             }

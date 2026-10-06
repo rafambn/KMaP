@@ -6,7 +6,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 
-internal suspend fun CanvasKernel.awaitActiveTiles(id: Int, zoom: Int, expected: List<TileSpecs>): ActiveTiles =
+internal suspend fun CanvasEngine.awaitActiveTiles(id: Int, zoom: Int, expected: List<TileSpecs>): ActiveTiles =
     withContext(Dispatchers.Default) {
         withTimeout(5_000) {
             val expectedSpecs = expected.toSet()

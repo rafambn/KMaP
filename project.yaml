@@ -6,3 +6,4 @@ modules:
   - DemoApp/shared
   - DemoApp/wasmApp
   - KMaP
+  - TileWorker
